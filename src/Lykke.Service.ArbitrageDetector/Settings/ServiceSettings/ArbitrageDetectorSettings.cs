@@ -8,6 +8,8 @@ namespace Lykke.Service.ArbitrageDetector.Settings.ServiceSettings
         [AzureTableCheck]
         public string LogsConnString { get; set; }
 
+        public int ArbitrageDetectorExecutionDelayInSeconds { get; set; }
+
         public IReadOnlyCollection<string> WantedCurrencies { get; set; }
 
         public RabbitMqSettings RabbitMq { get; set; }

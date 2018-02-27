@@ -4,6 +4,7 @@ using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.RabbitSubscribers;
 using Lykke.Service.ArbitrageDetector.Settings.ServiceSettings;
 using Lykke.Service.ArbitrageDetector.Services;
+using Lykke.Service.ArbitrageDetector.Settings;
 using Lykke.SettingsReader;
 
 namespace Lykke.Service.ArbitrageDetector.Modules
@@ -43,6 +44,10 @@ namespace Lykke.Service.ArbitrageDetector.Modules
 
             builder.RegisterType<ArbitrageCalculator>()
                 .As<IArbitrageCalculator>()
+                .WithParameter("wantedCurrencies", _settings.CurrentValue.WantedCurrencies)
+                .WithParameter("executionDelay", _settings.CurrentValue.ArbitrageDetectorExecutionDelayInSeconds)
+                .As<IStartable>()
+                .AutoActivate()
                 .SingleInstance();
 
             builder.RegisterType<OrderBookProcessor>()

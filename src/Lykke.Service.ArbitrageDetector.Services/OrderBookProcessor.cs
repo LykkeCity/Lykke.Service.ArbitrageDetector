@@ -12,8 +12,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
 {
     public class OrderBookProcessor : TimerPeriod, IOrderBookProcessor
     {
-        private readonly ILog log;
-        private readonly IArbitrageCalculator arbitrageCalculator;
+        private readonly ILog _log;
+        private readonly IArbitrageCalculator _arbitrageCalculator;
 
         public OrderBookProcessor(
             ILog log,
@@ -21,8 +21,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
             IShutdownManager shutdownManager)
             : base((int)TimeSpan.FromMinutes(90).TotalMilliseconds, log)
         {
-            this.log = log;
-            this.arbitrageCalculator = arbitrageCalculator;
+            _log = log;
+            _arbitrageCalculator = arbitrageCalculator;
             shutdownManager.Register(this);
         }
 
@@ -36,20 +36,20 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
             catch(JsonSerializationException ex)
             {
-                log.WriteErrorAsync(nameof(OrderBookProcessor), nameof(Execute), ex);
+                _log.WriteErrorAsync(nameof(OrderBookProcessor), nameof(Execute), ex);
             }
 
             if (orderBook != null)
             {
-                arbitrageCalculator.Process(orderBook);
+                _arbitrageCalculator.Process(orderBook);
 
-                log.WriteMonitor(nameof(OrderBookProcessor), nameof(Process), $"Exchange: {orderBook.Source}, assetPair: {orderBook.AssetPairId}");
+                _log.WriteMonitor(nameof(OrderBookProcessor), nameof(Process), $"Exchange: {orderBook.Source}, assetPair: {orderBook.AssetPairId}");
             }
         }
 
         public override async Task Execute()
         {
-            await log.WriteMonitorAsync(nameof(OrderBookProcessor), nameof(Execute), $"OrderBookProcessor.Execute()");
+            await _log.WriteMonitorAsync(nameof(OrderBookProcessor), nameof(Execute), $"OrderBookProcessor.Execute()");
         }
     }
 }

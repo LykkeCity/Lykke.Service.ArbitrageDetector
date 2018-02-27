@@ -1,21 +1,27 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
+using Common;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Services;
-using MoreLinq;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
-    public class ArbitrageCalculator : IArbitrageCalculator
+    public class ArbitrageCalculator : TimerPeriod, IArbitrageCalculator
     {
-        private readonly ILog log;
-        private static readonly ConcurrentDictionary<string, CrossRateInfo> orderBooks = new ConcurrentDictionary<string, CrossRateInfo>();
+        private readonly ILog _log;
+        private static readonly ConcurrentDictionary<string, CrossRateInfo> _orderBooks = new ConcurrentDictionary<string, CrossRateInfo>();
+        private readonly IReadOnlyCollection<string> _wantedCurrencies;
 
-        public ArbitrageCalculator(ILog log)
+        // Периодичность запуска Execute() надо брать из конфига
+        public ArbitrageCalculator(ILog log, IReadOnlyCollection<string> wantedCurrencies, int executionDelay = 10)
+            : base((int)TimeSpan.FromSeconds(executionDelay).TotalMilliseconds, log)
         {
-            this.log = log;
+            _log = log;
+            _wantedCurrencies = wantedCurrencies;
         }
 
         public void Process(OrderBook orderBook)
@@ -39,7 +45,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 else
                 {
                     var sameExchangeBtcUsdKey = $"{orderBook.Source}-BTCUSD";
-                    var btcusd = orderBooks.ContainsKey(sameExchangeBtcUsdKey) ? orderBooks[sameExchangeBtcUsdKey] : (CrossRateInfo?)null;
+                    var btcusd = _orderBooks.ContainsKey(sameExchangeBtcUsdKey) ? _orderBooks[sameExchangeBtcUsdKey] : (CrossRateInfo?)null;
                     if (btcusd.HasValue)
                     {
                         // Calculating cross rate
@@ -66,14 +72,19 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 {
                     
                     CrossRateInfo temp;
-                    if (orderBooks.ContainsKey(key))
-                        orderBooks.Remove(key, out temp);
+                    if (_orderBooks.ContainsKey(key))
+                        _orderBooks.Remove(key, out temp);
 
-                    orderBooks.TryAdd(key, crossRateInfo.Value);
+                    _orderBooks.TryAdd(key, crossRateInfo.Value);
                 }
             }
 
-            log.WriteMonitor(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Exchange: {orderBook.Source}, assetPair: {orderBook.AssetPairId}");
+            _log.WriteMonitor(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Exchange: {orderBook.Source}, assetPair: {orderBook.AssetPairId}");
+        }
+
+        public override async Task Execute()
+        {
+            await _log.WriteMonitorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"ArbitrageCalculator.Execute()");
         }
     }
 }
