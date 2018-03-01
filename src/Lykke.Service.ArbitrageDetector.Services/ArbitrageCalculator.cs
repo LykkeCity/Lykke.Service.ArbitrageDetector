@@ -97,7 +97,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     {
                         continue;
                     }
-
                     if (!orderBook.Asks.Any() || orderBook.GetBestAsk() == 0 || !orderBook.Bids.Any() || orderBook.GetBestBid() == 0)
                     {
                         continue;
