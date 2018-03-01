@@ -21,8 +21,6 @@ namespace Lykke.Service.ArbitrageDetector
 {
     public class Startup
     {
-        private LogToConsole consoleLogger;
-
         public IHostingEnvironment Environment { get; }
         public IContainer ApplicationContainer { get; private set; }
         public IConfigurationRoot Configuration { get; }
@@ -59,7 +57,7 @@ namespace Lykke.Service.ArbitrageDetector
 
                 Log = CreateLogWithSlack(services, appSettings);
 
-                builder.RegisterModule(new ServiceModule(appSettings.Nested(x => x.ArbitrageDetector), Log, consoleLogger));
+                builder.RegisterModule(new ServiceModule(appSettings.Nested(x => x.ArbitrageDetector), Log));
                 builder.Populate(services);
                 ApplicationContainer = builder.Build();
 
@@ -166,14 +164,14 @@ namespace Lykke.Service.ArbitrageDetector
             }
         }
 
-        private ILog CreateLogWithSlack(IServiceCollection services, IReloadingManager<AppSettings> settings)
+        private static ILog CreateLogWithSlack(IServiceCollection services, IReloadingManager<AppSettings> settings)
         {
-            consoleLogger = new LogToConsole();
+            var consoleLogger = new LogToConsole();
             var aggregateLogger = new AggregateLogger();
 
             aggregateLogger.AddLog(consoleLogger);
 
-            var dbLogConnectionStringManager = settings.Nested(x => x.ArbitrageDetector.LogsConnString);
+            var dbLogConnectionStringManager = settings.Nested(x => x.ArbitrageDetector.Db.LogsConnString);
             var dbLogConnectionString = dbLogConnectionStringManager.CurrentValue;
 
             if (string.IsNullOrEmpty(dbLogConnectionString))
@@ -186,7 +184,7 @@ namespace Lykke.Service.ArbitrageDetector
                 throw new InvalidOperationException($"LogsConnString {dbLogConnectionString} is not filled in settings");
 
             var persistenceManager = new LykkeLogToAzureStoragePersistenceManager(
-                AzureTableStorage<LogEntity>.Create(dbLogConnectionStringManager, "ArbitrageDetectorLog", consoleLogger),
+                AzureTableStorage<LogEntity>.Create(dbLogConnectionStringManager, "TempLog", consoleLogger),
                 consoleLogger);
 
             // Creating slack notification service, which logs own azure queue processing messages to aggregate log

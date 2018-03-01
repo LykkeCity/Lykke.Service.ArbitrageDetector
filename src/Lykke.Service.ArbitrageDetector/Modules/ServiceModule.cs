@@ -2,9 +2,8 @@
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.RabbitSubscribers;
-using Lykke.Service.ArbitrageDetector.Settings.ServiceSettings;
 using Lykke.Service.ArbitrageDetector.Services;
-using Lykke.Service.ArbitrageDetector.Settings;
+using Lykke.Service.ArbitrageDetector.Settings.ServiceSettings;
 using Lykke.SettingsReader;
 
 namespace Lykke.Service.ArbitrageDetector.Modules
@@ -13,23 +12,17 @@ namespace Lykke.Service.ArbitrageDetector.Modules
     {
         private readonly IReloadingManager<ArbitrageDetectorSettings> _settings;
         private readonly ILog _log;
-        private readonly IConsole _console;
 
-        public ServiceModule(IReloadingManager<ArbitrageDetectorSettings> settings, ILog log, IConsole console)
+        public ServiceModule(IReloadingManager<ArbitrageDetectorSettings> settings, ILog log)
         {
             _settings = settings;
             _log = log;
-            _console = console;
         }
 
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterInstance(_log)
                 .As<ILog>()
-                .SingleInstance();
-
-            builder.RegisterInstance(_console)
-                .As<IConsole>()
                 .SingleInstance();
 
             builder.RegisterType<HealthService>()
@@ -45,7 +38,9 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             builder.RegisterType<ArbitrageCalculator>()
                 .As<IArbitrageCalculator>()
                 .WithParameter("wantedCurrencies", _settings.CurrentValue.WantedCurrencies)
+                .WithParameter("baseCurrency", _settings.CurrentValue.BaseCurrency)
                 .WithParameter("executionDelay", _settings.CurrentValue.ArbitrageDetectorExecutionDelayInSeconds)
+                .WithParameter("expirationTimeInSeconds", _settings.CurrentValue.ExpirationTimeInSeconds)
                 .As<IStartable>()
                 .AutoActivate()
                 .SingleInstance();

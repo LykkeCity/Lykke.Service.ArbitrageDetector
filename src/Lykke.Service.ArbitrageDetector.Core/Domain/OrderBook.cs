@@ -22,7 +22,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         [JsonProperty("bids")]
         public IReadOnlyCollection<VolumePrice> Bids { get; }
 
-        public OrderBook(string source, string assetPairId, IReadOnlyCollection<VolumePrice> asks, IReadOnlyCollection<VolumePrice> bids, DateTime timestamp)
+        public OrderBook(string source, string assetPairId, IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks, DateTime timestamp)
         {
             Source = source;
             AssetPairId = assetPairId;
@@ -31,23 +31,23 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             Timestamp = timestamp;
         }
 
-        /// Must be removed after base and quoting fields implementation in the Exchange Connector's OrderBook model
-        public (string fromAsset, string toAsset)? GetAssetPairIfContainsUSD()
+        /// Must be refactored after addind base and quoting fields implementation in the Exchange Connector's OrderBook model
+        public (string fromAsset, string toAsset)? GetAssetPairIfContains(string currency)
         {
             var orderBookAssetPair = AssetPairId.ToUpper();
-            if (orderBookAssetPair.Contains("USD"))
+            if (orderBookAssetPair.Contains(currency))
             {
                 var fromAsset = string.Empty;
                 var toAsset = string.Empty;
-                if (orderBookAssetPair.StartsWith("USD"))
+                if (orderBookAssetPair.StartsWith(currency))
                 {
-                    fromAsset = "USD";
+                    fromAsset = currency;
                     toAsset = orderBookAssetPair.Replace(fromAsset, string.Empty);
                 }
                 else
                 {
-                    fromAsset = orderBookAssetPair.Replace(fromAsset, string.Empty);
-                    toAsset = "USD";
+                    fromAsset = orderBookAssetPair.Replace(currency, string.Empty);
+                    toAsset = currency;
                 }
 
                 return (fromAsset, toAsset);

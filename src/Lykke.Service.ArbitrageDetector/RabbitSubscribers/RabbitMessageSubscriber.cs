@@ -12,7 +12,6 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
     public class RabbitMessageSubscriber : IStartable, IStopable, IMessageDeserializer<byte[]>
     {
         private readonly ILog _log;
-        private readonly IConsole _console;
         private readonly IOrderBookProcessor _orderBookProcessor;
         private readonly string _connectionString;
         private readonly string _exchangeName;
@@ -20,14 +19,12 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
 
         public RabbitMessageSubscriber(
             ILog log,
-            IConsole console,
             IOrderBookProcessor orderBookProcessor,
             IShutdownManager shutdownManager,
             string connectionString,
             string exchangeName)
         {
             _log = log;
-            _console = console;
             _orderBookProcessor = orderBookProcessor;
             _connectionString = connectionString;
             _exchangeName = exchangeName;
@@ -48,7 +45,6 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
                 .Subscribe(ProcessMessageAsync)
                 .CreateDefaultBinding()
                 .SetLogger(_log)
-                .SetConsole(_console)
                 .Start();
         }
 

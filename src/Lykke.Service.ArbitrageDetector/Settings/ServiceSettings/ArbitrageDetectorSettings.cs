@@ -5,10 +5,13 @@ namespace Lykke.Service.ArbitrageDetector.Settings.ServiceSettings
 {
     public class ArbitrageDetectorSettings
     {
-        [AzureTableCheck]
-        public string LogsConnString { get; set; }
+        public DbSettings Db { get; set; }
 
         public int ArbitrageDetectorExecutionDelayInSeconds { get; set; }
+
+        public int ExpirationTimeInSeconds { get; set; }
+
+        public string BaseCurrency { get; set; }
 
         public IReadOnlyCollection<string> WantedCurrencies { get; set; }
 

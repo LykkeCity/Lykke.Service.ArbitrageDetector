@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    public struct CrossRateInfo
+    public class CrossRateInfo
     {
         /// Exchange name
         public string Source { get; }
@@ -23,17 +24,17 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public DateTime Timestamp { get; }
 
         /// Original order book for cross rate calculation
-        public OrderBook OriginalOrderBook { get; }
+        public IList<OrderBook> OriginalOrderBooks { get; }
 
         public CrossRateInfo(string source, string assetPair, decimal bestBid, decimal bestAsk, string conversionPath,
-            OrderBook originalOrderBook) : this()
+            IList<OrderBook> originalOrderBooks)
         {
             Source = source ?? throw new ArgumentNullException(nameof(source));
             AssetPair = assetPair ?? throw new ArgumentNullException(nameof(assetPair));
             BestBid = bestBid;
             BestAsk = bestAsk;
             ConversionPath = conversionPath ?? throw new ArgumentNullException(nameof(conversionPath));
-            OriginalOrderBook = originalOrderBook ?? throw new ArgumentNullException(nameof(originalOrderBook));
+            OriginalOrderBooks = originalOrderBooks ?? throw new ArgumentNullException(nameof(originalOrderBooks));
         }
     }
 }
