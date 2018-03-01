@@ -54,7 +54,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var crossRate = crossRates.First();
             Assert.Equal(exchange, crossRate.Key.Source);
             Assert.Equal(btcusd, crossRate.Key.AssetPair);
-            Assert.Equal(exchange, crossRate.Value.Source);
             Assert.Equal(btcusd, crossRate.Value.AssetPair);
             Assert.Equal(10769.1475m, crossRate.Value.BestBid, 5);
             Assert.Equal(10982.90898m, crossRate.Value.BestAsk, 5);
@@ -106,7 +105,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var crossRate = crossRates.First();
             Assert.Equal(exchange, crossRate.Key.Source);
             Assert.Equal(btcusd, crossRate.Key.AssetPair);
-            Assert.Equal(exchange, crossRate.Value.Source);
             Assert.Equal(btcusd, crossRate.Value.AssetPair);
             Assert.Equal(10769.1475m, crossRate.Value.BestBid, 5);
             Assert.Equal(10982.90898m, crossRate.Value.BestAsk, 5);
@@ -158,7 +156,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var crossRate = crossRates.First();
             Assert.Equal(exchange, crossRate.Key.Source);
             Assert.Equal(btcusd, crossRate.Key.AssetPair);
-            Assert.Equal(exchange, crossRate.Value.Source);
             Assert.Equal(btcusd, crossRate.Value.AssetPair);
             Assert.Equal(10769.1475m, crossRate.Value.BestBid, 5);
             Assert.Equal(10982.90898m, crossRate.Value.BestAsk, 5);
@@ -210,7 +207,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var crossRate = crossRates.First();
             Assert.Equal(exchange, crossRate.Key.Source);
             Assert.Equal(btcusd, crossRate.Key.AssetPair);
-            Assert.Equal(exchange, crossRate.Value.Source);
             Assert.Equal(btcusd, crossRate.Value.AssetPair);
             Assert.Equal(10769.1475m, crossRate.Value.BestBid, 5);
             Assert.Equal(10982.90898m, crossRate.Value.BestAsk, 5);

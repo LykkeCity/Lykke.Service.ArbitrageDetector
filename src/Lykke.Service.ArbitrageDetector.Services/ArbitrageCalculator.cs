@@ -69,7 +69,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
             await _log?.WriteMonitorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, string.Empty);
 
             RemoveExpiredOrderBooks();
-            CalculateCrossRates();
+            var crossRatesInfo = CalculateCrossRates();
+            var arbitrages = FindArbitrage(crossRatesInfo);
+            foreach (var arbitrage in arbitrages)
+            {
+                await _log?.WriteWarningAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"arbitrage: {arbitrage}");
+            }
         }
 
         private void RemoveExpiredOrderBooks()
@@ -123,7 +128,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                                 wantedCurrency + intermediateCurrency,
                                 wantedOrderBook.GetBestBid(),
                                 wantedOrderBook.GetBestAsk(),
-                                "",
+                                currentExchange,
                                 new List<OrderBook> { wantedOrderBook }
                             );
                         }
@@ -147,51 +152,66 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         }
 
                         crossRates.Add((currentExchange, intermediateWantedCrossRateInfo.AssetPair), intermediateWantedCrossRateInfo);
+                        continue;
                     }
 
                     // Trying to find intermediate/base or base/intermediate pair from any exchange
-                    var intermediateBaseCurrencyKey = _orderBooks.Keys
-                        .FirstOrDefault(x => x.assetPair.Contains(intermediateCurrency) && x.assetPair.Contains(_baseCurrency));
+                    var intermediateBaseCurrencyKeys = _orderBooks.Keys
+                        .Where(x => x.assetPair.Contains(intermediateCurrency) && x.assetPair.Contains(_baseCurrency)).ToList();
 
-                    if (intermediateBaseCurrencyKey.assetPair == null || intermediateBaseCurrencyKey.source == null)
-                        continue;
+                    foreach (var intermediateBaseCurrencyKey in intermediateBaseCurrencyKeys)
+                    {
+                        // Calculating cross rate for base/wanted pair
+                        var wantedIntermediateOrderBook = wantedOrderBook;
+                        var intermediateBaseOrderBook = _orderBooks[intermediateBaseCurrencyKey];
 
-                    // Calculating cross rate for base/wanted pair
+                        var intermediateBasePair = intermediateBaseOrderBook.GetAssetPairIfContains(_baseCurrency).Value;
+                        
+                        // Getting wanted/intermediate and intermediate/base bid and ask
+                        var wantedIntermediateBidAsk = GetBidAndAsk(wantedIntermediatePair, wantedCurrency, intermediateCurrency, wantedIntermediateOrderBook);
+                        var intermediateBaseBidAsk = GetBidAndAsk(intermediateBasePair, intermediateCurrency, _baseCurrency, intermediateBaseOrderBook);
 
-                    var wantedIntermediateOrderBook = wantedOrderBook;
-                    var intermediateBaseOrderBook = _orderBooks[intermediateBaseCurrencyKey];
+                        // Calculating wanted/base bid and ask
+                        var wantedBaseBid = wantedIntermediateBidAsk.Bid * intermediateBaseBidAsk.Bid;
+                        var wantedBaseAsk = wantedIntermediateBidAsk.Ask * intermediateBaseBidAsk.Ask;
 
-                    var intermediateBasePairTuple = intermediateBaseOrderBook.GetAssetPairIfContains(_baseCurrency);
-                    if (!intermediateBasePairTuple.HasValue)
-                        continue;
+                        // Saving to CrossRateInfo collection
+                        var wantedBasePairStr = wantedCurrency + _baseCurrency;
+                        var wantedBaseCrossRateInfo = new CrossRateInfo(
+                            $"{currentExchange}-{intermediateBaseOrderBook.Source}",
+                            wantedBasePairStr,
+                            wantedBaseBid,
+                            wantedBaseAsk,
+                            $"{wantedBasePairStr} = {wantedIntermediateOrderBook.Source}-{wantedIntermediateOrderBook.AssetPairId} * {intermediateBaseOrderBook.Source}-{intermediateBaseOrderBook.AssetPairId}",
+                            new List<OrderBook> { wantedIntermediateOrderBook, intermediateBaseOrderBook }
+                        );
 
-                    var wantedIntermediateBidAsk = GetBidAndAsk(wantedIntermediatePair, wantedCurrency, intermediateCurrency, wantedIntermediateOrderBook);
-                    var intermediateBaseBidAsk = GetBidAndAsk(intermediateBasePairTuple.Value, intermediateCurrency, _baseCurrency, intermediateBaseOrderBook);
-
-                    var wantedBaseBid = wantedIntermediateBidAsk.Bid * intermediateBaseBidAsk.Bid;
-                    var wantedBaseAsk = wantedIntermediateBidAsk.Ask * intermediateBaseBidAsk.Ask;
-
-                    var wantedBasePairStr = wantedCurrency + _baseCurrency;
-                    var wantedBaseCrossRateInfo = new CrossRateInfo(
-                        currentExchange,
-                        wantedBasePairStr,
-                        wantedBaseBid,
-                        wantedBaseAsk,
-                        $"{wantedBasePairStr} = {wantedIntermediateOrderBook.AssetPairId} + {intermediateBaseOrderBook.AssetPairId}",
-                        new List<OrderBook> { wantedIntermediateOrderBook, intermediateBaseOrderBook }
-                    );
-
-                    crossRates.Add((currentExchange, wantedBasePairStr), wantedBaseCrossRateInfo);
+                        crossRates.Add((currentExchange, wantedBasePairStr), wantedBaseCrossRateInfo);
+                    }
                 }
             }
 
             return crossRates;
         }
-        
-        //TODO: !!!
-        public void GetCrossRatesWithTheLargestSpread()
-        {    
-            throw new NotImplementedException();
+
+        public IList<string> FindArbitrage(Dictionary<(string Source, string AssetPair), CrossRateInfo> crossRatesList)
+        {
+            var result = new List<string>();
+
+            foreach (var crossRateInfo1 in crossRatesList)
+            foreach (var crossRateInfo2 in crossRatesList)
+            {
+                if (crossRateInfo1.Value == crossRateInfo2.Value)
+                    continue;
+
+                var crossRate1 = crossRateInfo1.Value;
+                var crossRate2 = crossRateInfo2.Value;
+
+                if (crossRateInfo1.Value.BestAsk < crossRateInfo2.Value.BestBid)
+                    result.Add($"{crossRate1.AssetPair}: {crossRate1.ConversionPath}.ask={crossRate1.BestAsk} < {crossRate2.ConversionPath}.bid={crossRate2.BestBid}, {crossRate1.Timestamp}, {crossRate2.Timestamp}");
+            }
+
+            return result;
         }
 
         private (decimal Bid, decimal Ask) GetBidAndAsk((string fromAsset, string toAsset) pair, string fromAsset, string toAsset, OrderBook orderBook)
