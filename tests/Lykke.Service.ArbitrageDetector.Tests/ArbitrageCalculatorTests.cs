@@ -12,6 +12,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void StraightConversionTest()
         {
+            // BTCEUR * EURUSD
             var wantedCurrencies = new List<string> { "BTC" };
             const string baseCurrency = "USD";
             const string exchange = "Lykke";
@@ -63,6 +64,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void ReverseConversionFirstPairTest()
         {
+            // BTCEUR * USDEUR
             var wantedCurrencies = new List<string> { "BTC" };
             const string baseCurrency = "USD";
             const string exchange = "Lykke";
@@ -114,6 +116,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void ReverseConversionSecondPairTest()
         {
+            // EURBTC * EURUSD
             var wantedCurrencies = new List<string> { "BTC" };
             const string baseCurrency = "USD";
             const string exchange = "Lykke";
@@ -165,6 +168,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void ReverseConversionBothPairsTest()
         {
+            // EURBTC * USDEUR
             var wantedCurrencies = new List<string> { "BTC" };
             const string baseCurrency = "USD";
             const string exchange = "Lykke";

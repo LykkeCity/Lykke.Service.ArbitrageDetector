@@ -9,6 +9,7 @@ using Common;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Services;
+using MoreLinq;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
@@ -89,53 +90,54 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 var wantedCurrencyKeys = _orderBooks.Keys.Where(x => x.assetPair.Contains(wantedCurrency)).ToList();
                 foreach (var key in wantedCurrencyKeys)
                 {
-                    var orderBook = _orderBooks[key];
-                    var currentExchange = orderBook.Source;
+                    var wantedOrderBook = _orderBooks[key];
+                    var currentExchange = wantedOrderBook.Source;
 
-                    var wantedIntermediateAssetPair = orderBook.GetAssetPairIfContains(wantedCurrency);
-                    if (wantedIntermediateAssetPair == null)
-                    {
-                        continue;
-                    }
-                    if (!orderBook.Asks.Any() || orderBook.GetBestAsk() == 0 || !orderBook.Bids.Any() || orderBook.GetBestBid() == 0)
-                    {
-                        continue;
-                    }
-
+                    // Trying to find wanted asset in current orderBook's asset pair
+                    var wantedIntermediateAssetPair = wantedOrderBook.GetAssetPairIfContains(wantedCurrency);
                     var wantedIntermediatePair = wantedIntermediateAssetPair.Value;
 
+                    // If something wrong with orderBook then continue
+                    if (!wantedOrderBook.Asks.Any() || wantedOrderBook.GetBestAsk() == 0 ||
+                        !wantedOrderBook.Bids.Any() || wantedOrderBook.GetBestBid() == 0)
+                    {
+                        _log?.WriteMonitorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Skip {currentExchange}, {wantedOrderBook.AssetPairId}, bids.Count: {wantedOrderBook.Bids.Count}, asks.Count: {wantedOrderBook.Asks.Count}");
+                        continue;
+                    }
+                    
+                    // Get intermediate currency
                     var intermediateCurrency = wantedIntermediatePair.fromAsset == wantedCurrency
                         ? wantedIntermediatePair.toAsset
                         : wantedIntermediatePair.fromAsset;
 
-                    // Original wanted/base or base/wanted rate
+                    // If original wanted/base or base/wanted rate then just save it
                     if (intermediateCurrency == _baseCurrency)
                     {
                         CrossRateInfo intermediateWantedCrossRateInfo = null;
 
-                        if (wantedIntermediatePair.fromAsset == wantedCurrency &&
-                            wantedIntermediatePair.toAsset == intermediateCurrency)
+                        // Straight pair (wanted/base)
+                        if (wantedIntermediatePair.fromAsset == wantedCurrency && wantedIntermediatePair.toAsset == intermediateCurrency)
                         {
                             intermediateWantedCrossRateInfo = new CrossRateInfo(
                                 currentExchange,
                                 wantedCurrency + intermediateCurrency,
-                                orderBook.GetBestBid(),
-                                orderBook.GetBestAsk(),
+                                wantedOrderBook.GetBestBid(),
+                                wantedOrderBook.GetBestAsk(),
                                 "",
-                                new List<OrderBook> { orderBook }
+                                new List<OrderBook> { wantedOrderBook }
                             );
                         }
 
-                        if (wantedIntermediatePair.fromAsset == wantedCurrency &&
-                            wantedIntermediatePair.toAsset == intermediateCurrency)
+                        // Reversed pair (base/wanted)
+                        if (wantedIntermediatePair.fromAsset == intermediateCurrency && wantedIntermediatePair.toAsset == wantedCurrency)
                         {
                             intermediateWantedCrossRateInfo = new CrossRateInfo(
                                 currentExchange,
                                 intermediateCurrency + wantedCurrency,
-                                1 / orderBook.GetBestAsk(), // reversed
-                                1 / orderBook.GetBestBid(), // reversed
-                                orderBook.AssetPairId,
-                                new List<OrderBook> { orderBook }
+                                1 / wantedOrderBook.GetBestAsk(), // reversed
+                                1 / wantedOrderBook.GetBestBid(), // reversed
+                                wantedOrderBook.AssetPairId,
+                                new List<OrderBook> { wantedOrderBook }
                             );
                         }
 
@@ -147,18 +149,16 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         crossRates.Add((currentExchange, intermediateWantedCrossRateInfo.AssetPair), intermediateWantedCrossRateInfo);
                     }
 
-                    // Trying to find intermediate/_base or _base/intermediate pair within the same exchange
+                    // Trying to find intermediate/base or base/intermediate pair from any exchange
                     var intermediateBaseCurrencyKey = _orderBooks.Keys
-                        .FirstOrDefault(x => x.source == currentExchange &&
-                                    x.assetPair.Contains(intermediateCurrency) &&
-                                    x.assetPair.Contains(_baseCurrency));
+                        .FirstOrDefault(x => x.assetPair.Contains(intermediateCurrency) && x.assetPair.Contains(_baseCurrency));
 
                     if (intermediateBaseCurrencyKey.assetPair == null || intermediateBaseCurrencyKey.source == null)
                         continue;
 
                     // Calculating cross rate for base/wanted pair
 
-                    var wantedIntermediateOrderBook = orderBook;
+                    var wantedIntermediateOrderBook = wantedOrderBook;
                     var intermediateBaseOrderBook = _orderBooks[intermediateBaseCurrencyKey];
 
                     var intermediateBasePairTuple = intermediateBaseOrderBook.GetAssetPairIfContains(_baseCurrency);
