@@ -64,7 +64,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public override async Task Execute()
         {
-            RemoveExpiredOrderBooks();
             CalculateCrossRates();
             var arbitrages = FindArbitrage();
             foreach (var arbitrage in arbitrages)
@@ -84,6 +83,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public IDictionary<(string Source, string AssetPair), CrossRate> CalculateCrossRates()
         {
+            RemoveExpiredOrderBooks();
+
             foreach (var wantedCurrency in _wantedCurrencies)
             {
                 var wantedCurrencyKeys = _orderBooks.Keys.Where(x => x.assetPair.Contains(wantedCurrency)).ToList();
@@ -202,6 +203,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             var result = new List<string>();
 
+            RemoveExpiredCrossRates();
+
             foreach (var crossRateInfo1 in _crossRates)
                 foreach (var crossRateInfo2 in _crossRates)
                 {
@@ -259,6 +262,16 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
 
             return (intermediateBaseBid, intermediateBaseAsk);
+        }
+
+        private void RemoveExpiredCrossRates()
+        {
+            foreach (var keyValue in _crossRates)
+            {
+                var isExpired = keyValue.Value.OriginalOrderBooks.Any(x => DateTime.UtcNow - x.Timestamp > new TimeSpan(0, 0, 0, _expirationTimeInSeconds));
+                if (isExpired)
+                    _crossRates.Remove(keyValue.Key);
+            }
         }
     }
 }
