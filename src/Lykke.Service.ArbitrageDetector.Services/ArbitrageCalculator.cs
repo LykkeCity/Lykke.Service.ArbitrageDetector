@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -9,7 +8,6 @@ using Common;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Services;
-using MoreLinq;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
@@ -42,7 +40,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 CheckForCurrencyAndUpdateOrderBooks(wantedCurrency, orderBook);
             }
 
-            _log?.WriteMonitor(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Exchange: {orderBook.Source}, assetPair: {orderBook.AssetPairId}");
+            _log?.WriteInfo(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Exchange: {orderBook.Source}, assetPair: {orderBook.AssetPairId}");
         }
 
         private void CheckForCurrencyAndUpdateOrderBooks(string currency, OrderBook orderBook)
@@ -66,14 +64,14 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public override async Task Execute()
         {
-            await _log?.WriteMonitorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, string.Empty);
+            await _log?.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, string.Empty);
 
             RemoveExpiredOrderBooks();
             var crossRatesInfo = CalculateCrossRates();
             var arbitrages = FindArbitrage(crossRatesInfo);
             foreach (var arbitrage in arbitrages)
             {
-                await _log?.WriteWarningAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"arbitrage: {arbitrage}");
+                await _log?.WriteMonitorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"arbitrage: {arbitrage}");
             }
         }
 
@@ -106,7 +104,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     if (!wantedOrderBook.Asks.Any() || wantedOrderBook.GetBestAsk() == 0 ||
                         !wantedOrderBook.Bids.Any() || wantedOrderBook.GetBestBid() == 0)
                     {
-                        _log?.WriteMonitorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Skip {currentExchange}, {wantedOrderBook.AssetPairId}, bids.Count: {wantedOrderBook.Bids.Count}, asks.Count: {wantedOrderBook.Asks.Count}");
+                        _log?.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Skip {currentExchange}, {wantedOrderBook.AssetPairId}, bids.Count: {wantedOrderBook.Bids.Count}, asks.Count: {wantedOrderBook.Asks.Count}");
                         continue;
                     }
                     

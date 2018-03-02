@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
@@ -43,13 +41,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
             {
                 _arbitrageCalculator.Process(orderBook);
 
-                _log.WriteMonitor(nameof(OrderBookProcessor), nameof(Process), $"Exchange: {orderBook.Source}, assetPair: {orderBook.AssetPairId}");
+                _log.WriteInfo(nameof(OrderBookProcessor), nameof(Process), $"Exchange: {orderBook.Source}, assetPair: {orderBook.AssetPairId}");
             }
         }
 
         public override async Task Execute()
         {
-            await _log.WriteMonitorAsync(nameof(OrderBookProcessor), nameof(Execute), $"OrderBookProcessor.Execute()");
+            await _log.WriteInfoAsync(nameof(OrderBookProcessor), nameof(Execute), $"OrderBookProcessor.Execute()");
         }
     }
 }
