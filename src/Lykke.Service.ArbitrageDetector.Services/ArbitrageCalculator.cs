@@ -62,8 +62,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public override async Task Execute()
         {
-            await _log?.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, string.Empty);
-
             RemoveExpiredOrderBooks();
             var crossRatesInfo = CalculateCrossRates();
             var arbitrages = FindArbitrage(crossRatesInfo);

@@ -40,14 +40,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
             if (orderBook != null)
             {
                 _arbitrageCalculator.Process(orderBook);
-
-                _log.WriteInfo(nameof(OrderBookProcessor), nameof(Process), $"Exchange: {orderBook.Source}, assetPair: {orderBook.AssetPairId}");
             }
         }
 
         public override async Task Execute()
         {
-            await _log.WriteInfoAsync(nameof(OrderBookProcessor), nameof(Execute), $"OrderBookProcessor.Execute()");
         }
     }
 }
