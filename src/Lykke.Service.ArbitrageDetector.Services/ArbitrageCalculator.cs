@@ -69,7 +69,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var arbitrages = FindArbitrage();
             foreach (var arbitrage in arbitrages)
             {
-                await _log?.WriteMonitorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"arbitrage: {arbitrage}");
+                await _log?.WriteMonitorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{arbitrage}");
             }
         }
 
@@ -177,7 +177,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             wantedBasePairStr,
                             wantedBaseBid,
                             wantedBaseAsk,
-                            $"{wantedBasePairStr} = {wantedIntermediateOrderBook.Source}-{wantedIntermediateOrderBook.AssetPairId} * {intermediateBaseOrderBook.Source}-{intermediateBaseOrderBook.AssetPairId}",
+                            $"({wantedIntermediateOrderBook.Source}-{wantedIntermediateOrderBook.AssetPairId}*{intermediateBaseOrderBook.Source}-{intermediateBaseOrderBook.AssetPairId})",
                             new List<OrderBook> { wantedIntermediateOrderBook, intermediateBaseOrderBook }
                         );
 
@@ -215,9 +215,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         result.Add(string.Format("{0}: {1}.ask={2} < {3}.bid={4}, {5}, {6}",
                             crossRate1.AssetPair,
                             crossRate1.ConversionPath,
-                            crossRate1.BestAsk,
+                            crossRate1.BestAsk.ToString("0.#####"),
                             crossRate2.ConversionPath,
-                            crossRate2.BestBid,
+                            crossRate2.BestBid.ToString("0.#####"),
                             crossRate1.OriginalOrderBooks.Count == 1 ? crossRate1.OriginalOrderBooks.First().Timestamp : crossRate1.Timestamp,
                             crossRate2.OriginalOrderBooks.Count == 1 ? crossRate2.OriginalOrderBooks.First().Timestamp : crossRate2.Timestamp
                             ));
