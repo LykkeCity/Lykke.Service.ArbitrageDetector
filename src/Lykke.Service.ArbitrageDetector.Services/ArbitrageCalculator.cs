@@ -39,8 +39,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
             {
                 CheckForCurrencyAndUpdateOrderBooks(wantedCurrency, orderBook);
             }
-
-            _log?.WriteInfo(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Exchange: {orderBook.Source}, assetPair: {orderBook.AssetPairId}");
         }
 
         private void CheckForCurrencyAndUpdateOrderBooks(string currency, OrderBook orderBook)
