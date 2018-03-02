@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    public class CrossRateInfo
+    public class CrossRate
     {
         /// Exchange name
         public string Source { get; }
@@ -26,7 +26,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// Original order book for cross rate calculation
         public IList<OrderBook> OriginalOrderBooks { get; }
 
-        public CrossRateInfo(string source, string assetPair, decimal bestBid, decimal bestAsk, string conversionPath,
+        public CrossRate(string source, string assetPair, decimal bestBid, decimal bestAsk, string conversionPath,
             IList<OrderBook> originalOrderBooks)
         {
             Source = source ?? throw new ArgumentNullException(nameof(source));
@@ -34,6 +34,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             BestBid = bestBid;
             BestAsk = bestAsk;
             ConversionPath = conversionPath ?? throw new ArgumentNullException(nameof(conversionPath));
+            Timestamp = DateTime.UtcNow;
             OriginalOrderBooks = originalOrderBooks ?? throw new ArgumentNullException(nameof(originalOrderBooks));
         }
     }

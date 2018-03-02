@@ -171,7 +171,7 @@ namespace Lykke.Service.ArbitrageDetector
 
             aggregateLogger.AddLog(consoleLogger);
 
-            var dbLogConnectionStringManager = settings.Nested(x => x.ArbitrageDetector.Db.LogsConnString);
+            var dbLogConnectionStringManager = settings.Nested(x => x.ArbitrageDetector.Db.LogsConnectionString);
             var dbLogConnectionString = dbLogConnectionStringManager.CurrentValue;
 
             if (string.IsNullOrEmpty(dbLogConnectionString))
@@ -181,7 +181,7 @@ namespace Lykke.Service.ArbitrageDetector
             }
 
             if (dbLogConnectionString.StartsWith("${") && dbLogConnectionString.EndsWith("}"))
-                throw new InvalidOperationException($"LogsConnString {dbLogConnectionString} is not filled in settings");
+                throw new InvalidOperationException($"LogsConnectionString {dbLogConnectionString} is not filled in settings");
 
             var persistenceManager = new LykkeLogToAzureStoragePersistenceManager(
                 AzureTableStorage<LogEntity>.Create(dbLogConnectionStringManager, "ArbitrageDetectorLog", consoleLogger),

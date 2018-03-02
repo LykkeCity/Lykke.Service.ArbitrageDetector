@@ -15,6 +15,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
     {
         private readonly ILog _log;
         private readonly IDictionary<(string source, string assetPair), OrderBook> _orderBooks;
+        private readonly IDictionary<(string Source, string AssetPair), CrossRate> _crossRates;
         private readonly IReadOnlyCollection<string> _wantedCurrencies;
         private readonly string _baseCurrency;
         private readonly int _expirationTimeInSeconds;
@@ -24,6 +25,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             _log = log;
             _orderBooks = new ConcurrentDictionary<(string, string), OrderBook>();
+            _crossRates = new ConcurrentDictionary<(string, string), CrossRate>();
             _wantedCurrencies = wantedCurrencies;
             _baseCurrency = baseCurrency;
             _expirationTimeInSeconds = expirationTimeInSeconds;
@@ -63,8 +65,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
         public override async Task Execute()
         {
             RemoveExpiredOrderBooks();
-            var crossRatesInfo = CalculateCrossRates();
-            var arbitrages = FindArbitrage(crossRatesInfo);
+            CalculateCrossRates();
+            var arbitrages = FindArbitrage();
             foreach (var arbitrage in arbitrages)
             {
                 await _log?.WriteMonitorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"arbitrage: {arbitrage}");
@@ -80,10 +82,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
         }
 
-        public Dictionary<(string Source, string AssetPair), CrossRateInfo> CalculateCrossRates()
+        public IDictionary<(string Source, string AssetPair), CrossRate> CalculateCrossRates()
         {
-            var crossRates = new Dictionary<(string Source, string AssetPair), CrossRateInfo>();
-
             foreach (var wantedCurrency in _wantedCurrencies)
             {
                 var wantedCurrencyKeys = _orderBooks.Keys.Where(x => x.assetPair.Contains(wantedCurrency)).ToList();
@@ -112,12 +112,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     // If original wanted/base or base/wanted rate then just save it
                     if (intermediateCurrency == _baseCurrency)
                     {
-                        CrossRateInfo intermediateWantedCrossRateInfo = null;
+                        CrossRate intermediateWantedCrossRate = null;
 
                         // Straight pair (wanted/base)
                         if (wantedIntermediatePair.fromAsset == wantedCurrency && wantedIntermediatePair.toAsset == intermediateCurrency)
                         {
-                            intermediateWantedCrossRateInfo = new CrossRateInfo(
+                            intermediateWantedCrossRate = new CrossRate(
                                 currentExchange,
                                 wantedCurrency + intermediateCurrency,
                                 wantedOrderBook.GetBestBid(),
@@ -130,7 +130,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         // Reversed pair (base/wanted)
                         if (wantedIntermediatePair.fromAsset == intermediateCurrency && wantedIntermediatePair.toAsset == wantedCurrency)
                         {
-                            intermediateWantedCrossRateInfo = new CrossRateInfo(
+                            intermediateWantedCrossRate = new CrossRate(
                                 currentExchange,
                                 intermediateCurrency + wantedCurrency,
                                 1 / wantedOrderBook.GetBestAsk(), // reversed
@@ -140,12 +140,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             );
                         }
 
-                        if (intermediateWantedCrossRateInfo == null)
+                        if (intermediateWantedCrossRate == null)
                         {
-                            throw new NullReferenceException($"intermediateWantedCrossRateInfo is null");
+                            throw new NullReferenceException($"intermediateWantedCrossRate is null");
                         }
 
-                        crossRates.Add((currentExchange, intermediateWantedCrossRateInfo.AssetPair), intermediateWantedCrossRateInfo);
+                        AddOrUpdateCrossRate((currentExchange, intermediateWantedCrossRate.AssetPair), intermediateWantedCrossRate);
+
                         continue;
                     }
 
@@ -169,9 +170,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var wantedBaseBid = wantedIntermediateBidAsk.Bid * intermediateBaseBidAsk.Bid;
                         var wantedBaseAsk = wantedIntermediateBidAsk.Ask * intermediateBaseBidAsk.Ask;
 
-                        // Saving to CrossRateInfo collection
+                        // Saving to CrossRate collection
                         var wantedBasePairStr = wantedCurrency + _baseCurrency;
-                        var wantedBaseCrossRateInfo = new CrossRateInfo(
+                        var wantedBaseCrossRateInfo = new CrossRate(
                             $"{currentExchange}-{intermediateBaseOrderBook.Source}",
                             wantedBasePairStr,
                             wantedBaseBid,
@@ -180,30 +181,47 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             new List<OrderBook> { wantedIntermediateOrderBook, intermediateBaseOrderBook }
                         );
 
-                        crossRates.Add((currentExchange, wantedBasePairStr), wantedBaseCrossRateInfo);
+                        AddOrUpdateCrossRate((currentExchange, wantedBasePairStr), wantedBaseCrossRateInfo);
                     }
                 }
             }
 
-            return crossRates;
+            return _crossRates;
         }
 
-        public IList<string> FindArbitrage(Dictionary<(string Source, string AssetPair), CrossRateInfo> crossRatesList)
+        private void AddOrUpdateCrossRate((string exchange, string wantedBasePair) key, CrossRate crossRate)
+        {
+            if (_crossRates.ContainsKey(key))
+            {
+                _crossRates.Remove(key);
+            }
+            _crossRates.Add(key, crossRate);
+        }
+
+        public IList<string> FindArbitrage()
         {
             var result = new List<string>();
 
-            foreach (var crossRateInfo1 in crossRatesList)
-            foreach (var crossRateInfo2 in crossRatesList)
-            {
-                if (crossRateInfo1.Value == crossRateInfo2.Value)
-                    continue;
+            foreach (var crossRateInfo1 in _crossRates)
+                foreach (var crossRateInfo2 in _crossRates)
+                {
+                    if (crossRateInfo1.Value == crossRateInfo2.Value)
+                        continue;
 
-                var crossRate1 = crossRateInfo1.Value;
-                var crossRate2 = crossRateInfo2.Value;
+                    var crossRate1 = crossRateInfo1.Value;
+                    var crossRate2 = crossRateInfo2.Value;
 
-                if (crossRateInfo1.Value.BestAsk < crossRateInfo2.Value.BestBid)
-                    result.Add($"{crossRate1.AssetPair}: {crossRate1.ConversionPath}.ask={crossRate1.BestAsk} < {crossRate2.ConversionPath}.bid={crossRate2.BestBid}, {crossRate1.Timestamp}, {crossRate2.Timestamp}");
-            }
+                    if (crossRateInfo1.Value.BestAsk < crossRateInfo2.Value.BestBid)
+                        result.Add(string.Format("{0}: {1}.ask={2} < {3}.bid={4}, {5}, {6}",
+                            crossRate1.AssetPair,
+                            crossRate1.ConversionPath,
+                            crossRate1.BestAsk,
+                            crossRate2.ConversionPath,
+                            crossRate2.BestBid,
+                            crossRate1.OriginalOrderBooks.Count == 1 ? crossRate1.OriginalOrderBooks.First().Timestamp : crossRate1.Timestamp,
+                            crossRate2.OriginalOrderBooks.Count == 1 ? crossRate2.OriginalOrderBooks.First().Timestamp : crossRate2.Timestamp
+                            ));
+                }
 
             return result;
         }
