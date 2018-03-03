@@ -45,27 +45,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
         }
 
-        public override async Task Execute()
-        {
-            CalculateCrossRates();
-            var arbitrages = GetArbitragesStrings();
-            foreach (var arbitrage in arbitrages)
-            {
-                await _log?.WriteMonitorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{arbitrage}");
-            }
-        }
-
-        private void RemoveExpiredOrderBooks()
-        {
-            foreach (var keyValue in _orderBooks)
-            {
-                if (DateTime.UtcNow - keyValue.Value.Timestamp > new TimeSpan(0, 0, 0, _expirationTimeInSeconds))
-                {
-                    _orderBooks.Remove(keyValue.Key);
-                }
-            }
-        }
-
         public ConcurrentDictionary<ExchangeAssetPair, CrossRate> CalculateCrossRates()
         {
             RemoveExpiredOrderBooks();
@@ -89,7 +68,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         _log?.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Skip {currentExchange}, {wantedOrderBook.AssetPairId}, bids.Count: {wantedOrderBook.Bids.Count}, asks.Count: {wantedOrderBook.Asks.Count}");
                         continue;
                     }
-                    
+
                     // Get intermediate currency
                     var intermediateCurrency = wantedIntermediatePair.Base == wantedCurrency
                         ? wantedIntermediatePair.Quote
@@ -148,7 +127,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var intermediateBaseOrderBook = _orderBooks[intermediateBaseCurrencyKey];
 
                         var intermediateBasePair = intermediateBaseOrderBook.GetAssetPairIfContains(_baseCurrency).Value;
-                        
+
                         // Getting wanted/intermediate and intermediate/base bid and ask
                         var wantedIntermediateBidAsk = GetBidAndAsk(wantedIntermediatePair, wantedCurrency, intermediateCurrency, wantedIntermediateOrderBook);
                         var intermediateBaseBidAsk = GetBidAndAsk(intermediateBasePair, intermediateCurrency, _baseCurrency, intermediateBaseOrderBook);
@@ -168,7 +147,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             new List<OrderBook> { wantedIntermediateOrderBook, intermediateBaseOrderBook }
                         );
 
-                        
+
                         var key = new ExchangeAssetPair(currentExchange, wantedBasePairStr);
                         _crossRates.AddOrUpdate(key, wantedBaseCrossRateInfo);
                     }
@@ -178,7 +157,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return _crossRates;
         }
 
-        public IList<string> GetArbitragesStrings()
+        public IEnumerable<string> GetArbitragesStrings()
         {
             var result = new List<string>();
 
@@ -203,7 +182,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return result;
         }
 
-        public IList<Arbitrage> GetArbitrages()
+        public IEnumerable<Arbitrage> GetArbitrages()
         {
             var result = new List<Arbitrage>();
 
@@ -217,12 +196,44 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 var lowAsk = crossRateInfo1.Value;
                 var highBid = crossRateInfo2.Value;
-                
+
                 if (lowAsk.BestAsk < highBid.BestBid)
                     result.Add(new Arbitrage(lowAsk, highBid));
             }
 
             return result;
+        }
+
+        public override async Task Execute()
+        {
+            CalculateCrossRates();
+            var arbitrages = GetArbitragesStrings();
+            foreach (var arbitrage in arbitrages)
+            {
+                await _log?.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{arbitrage}");
+            }
+        }
+
+        public IDictionary<ExchangeAssetPair, OrderBook> GetOrderBooks()
+        {
+            return _orderBooks;
+        }
+
+        public IDictionary<ExchangeAssetPair, CrossRate> GetCrossRates()
+        {
+            return _crossRates;
+        }
+
+
+        private void RemoveExpiredOrderBooks()
+        {
+            foreach (var keyValue in _orderBooks)
+            {
+                if (DateTime.UtcNow - keyValue.Value.Timestamp > new TimeSpan(0, 0, 0, _expirationTimeInSeconds))
+                {
+                    _orderBooks.Remove(keyValue.Key);
+                }
+            }
         }
 
         private void CheckForCurrencyAndUpdateOrderBooks(string currency, OrderBook orderBook)

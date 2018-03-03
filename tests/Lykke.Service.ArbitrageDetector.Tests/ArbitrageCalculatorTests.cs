@@ -10,7 +10,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
     public class ArbitrageCalculatorTests
     {
         [Fact]
-        public void StraightConversionTest()
+        public async void StraightConversionTest()
         {
             // BTCEUR * EURUSD
             var wantedCurrencies = new List<string> { "BTC" };
@@ -46,8 +46,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            arbitrageCalculator.Process(btcEurOrderBook);
-            arbitrageCalculator.Process(eurUsdOrderBook);
+            await arbitrageCalculator.Process(btcEurOrderBook);
+            await arbitrageCalculator.Process(eurUsdOrderBook);
 
             var crossRates = arbitrageCalculator.CalculateCrossRates();
             Assert.Single(crossRates);
@@ -61,7 +61,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         }
 
         [Fact]
-        public void ReverseConversionFirstPairTest()
+        public async void ReverseConversionFirstPairTest()
         {
             // BTCEUR * USDEUR
             var wantedCurrencies = new List<string> { "BTC" };
@@ -97,8 +97,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            arbitrageCalculator.Process(btcEurOrderBook);
-            arbitrageCalculator.Process(usdEurOrderBook);
+            await arbitrageCalculator.Process(btcEurOrderBook);
+            await arbitrageCalculator.Process(usdEurOrderBook);
 
             var crossRates = arbitrageCalculator.CalculateCrossRates();
             Assert.Single(crossRates);
@@ -112,7 +112,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         }
 
         [Fact]
-        public void ReverseConversionSecondPairTest()
+        public async void ReverseConversionSecondPairTest()
         {
             // EURBTC * EURUSD
             var wantedCurrencies = new List<string> { "BTC" };
@@ -148,8 +148,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            arbitrageCalculator.Process(btcEurOrderBook);
-            arbitrageCalculator.Process(eurUsdOrderBook);
+            await arbitrageCalculator.Process(btcEurOrderBook);
+            await arbitrageCalculator.Process(eurUsdOrderBook);
 
             var crossRates = arbitrageCalculator.CalculateCrossRates();
             Assert.Single(crossRates);
@@ -163,7 +163,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         }
 
         [Fact]
-        public void ReverseConversionBothPairsTest()
+        public async void ReverseConversionBothPairsTest()
         {
             // EURBTC * USDEUR
             var wantedCurrencies = new List<string> { "BTC" };
@@ -199,8 +199,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            arbitrageCalculator.Process(eurBtcOrderBook);
-            arbitrageCalculator.Process(usdEurOrderBook);
+            await arbitrageCalculator.Process(eurBtcOrderBook);
+            await arbitrageCalculator.Process(usdEurOrderBook);
 
             var crossRates = arbitrageCalculator.CalculateCrossRates();
             Assert.Single(crossRates);

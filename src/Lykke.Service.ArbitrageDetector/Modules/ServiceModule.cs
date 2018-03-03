@@ -35,18 +35,16 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             builder.RegisterType<ShutdownManager>()
                 .As<IShutdownManager>();
 
+            builder.RegisterType<OrderBookProcessor>()
+                .As<IOrderBookProcessor>()
+                .SingleInstance();
+
             builder.RegisterType<ArbitrageDetectorService>()
                 .As<IArbitrageDetectorService>()
                 .WithParameter("wantedCurrencies", _settings.CurrentValue.WantedCurrencies)
                 .WithParameter("baseCurrency", _settings.CurrentValue.BaseCurrency)
                 .WithParameter("executionDelay", _settings.CurrentValue.ArbitrageDetectorExecutionDelayInSeconds)
                 .WithParameter("expirationTimeInSeconds", _settings.CurrentValue.ExpirationTimeInSeconds)
-                .As<IStartable>()
-                .AutoActivate()
-                .SingleInstance();
-
-            builder.RegisterType<OrderBookProcessor>()
-                .As<IOrderBookProcessor>()
                 .As<IStartable>()
                 .AutoActivate()
                 .SingleInstance();
