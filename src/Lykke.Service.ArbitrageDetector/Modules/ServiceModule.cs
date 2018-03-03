@@ -35,8 +35,8 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             builder.RegisterType<ShutdownManager>()
                 .As<IShutdownManager>();
 
-            builder.RegisterType<ArbitrageCalculator>()
-                .As<IArbitrageCalculator>()
+            builder.RegisterType<ArbitrageDetectorService>()
+                .As<IArbitrageDetectorService>()
                 .WithParameter("wantedCurrencies", _settings.CurrentValue.WantedCurrencies)
                 .WithParameter("baseCurrency", _settings.CurrentValue.BaseCurrency)
                 .WithParameter("executionDelay", _settings.CurrentValue.ArbitrageDetectorExecutionDelayInSeconds)

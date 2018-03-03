@@ -2,7 +2,7 @@
 
 namespace Lykke.Service.ArbitrageDetector.Core.Services
 {
-    public interface IArbitrageCalculator
+    public interface IArbitrageDetectorService
     {
         void Process(OrderBook orderBook);
     }

@@ -6,6 +6,6 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
     [Route("api/[controller]")]
     public class ArbitrageDetectorController : Controller
     {
-        private readonly IArbitrageCalculator _clientRegulationService;
+        private readonly IArbitrageDetectorService _arbitrageDetectorService;
     }
 }

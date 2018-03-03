@@ -18,7 +18,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var arbitrageCalculator = new ArbitrageCalculator(null, wantedCurrencies, baseCurrency, 10, 10);
+            var arbitrageCalculator = new ArbitrageDetectorService(null, null, wantedCurrencies, baseCurrency, 10, 10);
 
             var btcEurOrderBook = new OrderBook(exchange, "BTCEUR",
                 new List<VolumePrice> // bids
@@ -69,7 +69,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var arbitrageCalculator = new ArbitrageCalculator(null, wantedCurrencies, baseCurrency, 10, 10);
+            var arbitrageCalculator = new ArbitrageDetectorService(null, null, wantedCurrencies, baseCurrency, 10, 10);
 
             var btcEurOrderBook = new OrderBook(exchange, "BTCEUR",
                 new List<VolumePrice> // bids
@@ -120,7 +120,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var arbitrageCalculator = new ArbitrageCalculator(null, wantedCurrencies, baseCurrency, 10, 10);
+            var arbitrageCalculator = new ArbitrageDetectorService(null, null, wantedCurrencies, baseCurrency, 10, 10);
 
             var btcEurOrderBook = new OrderBook(exchange, "EURBTC",
                 new List<VolumePrice> // asks
@@ -171,7 +171,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var arbitrageCalculator = new ArbitrageCalculator(null, wantedCurrencies, baseCurrency, 10, 10);
+            var arbitrageCalculator = new ArbitrageDetectorService(null, null, wantedCurrencies, baseCurrency, 10, 10);
 
             var eurBtcOrderBook = new OrderBook(exchange, "EURBTC",
                 new List<VolumePrice> // bids

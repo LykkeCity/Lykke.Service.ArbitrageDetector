@@ -1,27 +1,21 @@
-﻿using System;
-using System.Threading.Tasks;
-using Common;
-using Common.Log;
+﻿using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Newtonsoft.Json;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
-    public class OrderBookProcessor : TimerPeriod, IOrderBookProcessor
+    public class OrderBookProcessor : IOrderBookProcessor
     {
         private readonly ILog _log;
-        private readonly IArbitrageCalculator _arbitrageCalculator;
+        private readonly IArbitrageDetectorService _arbitrageDetectorService;
 
         public OrderBookProcessor(
             ILog log,
-            IArbitrageCalculator arbitrageCalculator,
-            IShutdownManager shutdownManager)
-            : base((int)TimeSpan.FromMinutes(90).TotalMilliseconds, log)
+            IArbitrageDetectorService arbitrageDetectorService)
         {
             _log = log;
-            _arbitrageCalculator = arbitrageCalculator;
-            shutdownManager.Register(this);
+            _arbitrageDetectorService = arbitrageDetectorService;
         }
 
         public void Process(byte[] data)
@@ -34,17 +28,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
             catch(JsonSerializationException ex)
             {
-                _log.WriteErrorAsync(nameof(OrderBookProcessor), nameof(Execute), ex);
+                _log.WriteErrorAsync(nameof(OrderBookProcessor), nameof(Process), ex);
             }
 
             if (orderBook != null)
             {
-                _arbitrageCalculator.Process(orderBook);
+                _arbitrageDetectorService.Process(orderBook);
             }
-        }
-
-        public override async Task Execute()
-        {
         }
     }
 }
