@@ -52,7 +52,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var crossRates = arbitrageCalculator.CalculateCrossRates();
             Assert.Single(crossRates);
             var crossRate = crossRates.First();
-            Assert.Equal(exchange, crossRate.Key.Source);
+            Assert.Equal(exchange, crossRate.Key.Exchange);
             Assert.Equal(btcusd, crossRate.Key.AssetPair);
             Assert.Equal(btcusd, crossRate.Value.AssetPair);
             Assert.Equal(10769.1475m, crossRate.Value.BestBid, 5);
@@ -103,7 +103,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var crossRates = arbitrageCalculator.CalculateCrossRates();
             Assert.Single(crossRates);
             var crossRate = crossRates.First();
-            Assert.Equal(exchange, crossRate.Key.Source);
+            Assert.Equal(exchange, crossRate.Key.Exchange);
             Assert.Equal(btcusd, crossRate.Key.AssetPair);
             Assert.Equal(btcusd, crossRate.Value.AssetPair);
             Assert.Equal(10769.1475m, crossRate.Value.BestBid, 5);
@@ -154,7 +154,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var crossRates = arbitrageCalculator.CalculateCrossRates();
             Assert.Single(crossRates);
             var crossRate = crossRates.First();
-            Assert.Equal(exchange, crossRate.Key.Source);
+            Assert.Equal(exchange, crossRate.Key.Exchange);
             Assert.Equal(btcusd, crossRate.Key.AssetPair);
             Assert.Equal(btcusd, crossRate.Value.AssetPair);
             Assert.Equal(10769.1475m, crossRate.Value.BestBid, 5);
@@ -205,7 +205,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var crossRates = arbitrageCalculator.CalculateCrossRates();
             Assert.Single(crossRates);
             var crossRate = crossRates.First();
-            Assert.Equal(exchange, crossRate.Key.Source);
+            Assert.Equal(exchange, crossRate.Key.Exchange);
             Assert.Equal(btcusd, crossRate.Key.AssetPair);
             Assert.Equal(btcusd, crossRate.Value.AssetPair);
             Assert.Equal(10769.1475m, crossRate.Value.BestBid, 5);

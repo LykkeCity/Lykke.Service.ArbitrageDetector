@@ -31,8 +31,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             Timestamp = timestamp;
         }
 
-        /// Must be refactored after addind base and quoting fields implementation in the Exchange Connector's OrderBook model
-        public (string fromAsset, string toAsset)? GetAssetPairIfContains(string currency)
+        /// Must be removed after adding AssetsPairService
+        public AssetPair? GetAssetPairIfContains(string currency)
         {
             var orderBookAssetPair = AssetPairId.ToUpper();
             if (orderBookAssetPair.Contains(currency))
@@ -50,7 +50,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                     toAsset = currency;
                 }
 
-                return (fromAsset, toAsset);
+                return new AssetPair(fromAsset, toAsset);
             }
 
             return null;
@@ -65,20 +65,5 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         {
             return Asks.MinBy(x => x.Price).Price;
         }
-    }
-
-    public sealed class VolumePrice
-    {
-        public VolumePrice(decimal price, decimal volume)
-        {
-            Price = price;
-            Volume = Math.Abs(volume);
-        }
-
-        [JsonProperty("price")]
-        public decimal Price { get; }
-
-        [JsonProperty("volume")]
-        public decimal Volume { get; }
     }
 }
