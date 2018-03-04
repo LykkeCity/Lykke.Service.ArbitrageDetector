@@ -147,7 +147,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 }
             }
 
-            return _crossRates;
+            return _crossRates.ToList().AsReadOnly();
         }
 
         public IEnumerable<Arbitrage> GetArbitrages()
@@ -278,7 +278,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         private void RemoveExpiredCrossRates()
         {
-            foreach (var crossRate in _crossRates)
+            foreach (var crossRate in _crossRates.ToList())
             {
                 var isExpired = crossRate.OriginalOrderBooks.Any(x => DateTime.UtcNow - x.Timestamp > new TimeSpan(0, 0, 0, _expirationTimeInSeconds));
                 if (isExpired)
