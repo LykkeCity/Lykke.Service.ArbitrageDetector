@@ -24,11 +24,11 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 
         [HttpGet("orderBooks")]
         [SwaggerOperation("GetOrderBooks")]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<OrderBook>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetOrderBoooks()
+        public async Task<IActionResult> GetOrderBooks()
         {
-            IDictionary<ExchangeAssetPair, OrderBook> result;
+            IEnumerable<OrderBook> result;
 
             try
             {
@@ -36,7 +36,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(GetOrderBoooks), "", exception);
+                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(GetOrderBooks), "", exception);
 
                 return BadRequest(ErrorResponse.Create(exception.Message));
             }
@@ -46,11 +46,11 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 
         [HttpGet("crossRates")]
         [SwaggerOperation("GetCrossRates")]
-        [ProducesResponseType(typeof(IDictionary<ExchangeAssetPair, CrossRate>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<CrossRate>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetCrossRates()
         {
-            IDictionary<ExchangeAssetPair, CrossRate> result;
+            IEnumerable<CrossRate> result;
 
             try
             {
@@ -68,15 +68,15 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 
         [HttpGet("arbitrages")]
         [SwaggerOperation("GetArbitrages")]
-        [ProducesResponseType(typeof(IEnumerable<string>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<Arbitrage>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetArbitrages()
         {
-            IEnumerable<string> result;
+            IEnumerable<Arbitrage> result;
 
             try
             {
-                result = _arbitrageDetectorService.GetArbitragesStrings();
+                result = _arbitrageDetectorService.GetArbitrages();
             }
             catch (Exception exception)
             {

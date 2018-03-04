@@ -7,12 +7,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
     {
         void Process(OrderBook orderBook);
 
+        IEnumerable<OrderBook> GetOrderBooks();
+
+        IEnumerable<CrossRate> GetCrossRates();
+
         IEnumerable<Arbitrage> GetArbitrages();
-
-        IEnumerable<string> GetArbitragesStrings();
-
-        IDictionary<ExchangeAssetPair, OrderBook> GetOrderBooks();
-
-        IDictionary<ExchangeAssetPair, CrossRate> GetCrossRates();
     }
 }

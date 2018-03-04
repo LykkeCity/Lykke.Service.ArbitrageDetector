@@ -15,7 +15,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
     public class ArbitrageDetectorService : TimerPeriod, IArbitrageDetectorService
     {
         private readonly ConcurrentDictionary<ExchangeAssetPair, OrderBook> _orderBooks;
-        private readonly ConcurrentDictionary<ExchangeAssetPair, CrossRate> _crossRates;
+        private readonly HashSet<CrossRate> _crossRates;
         private readonly IReadOnlyCollection<string> _wantedCurrencies;
         private readonly string _baseCurrency;
         private readonly int _expirationTimeInSeconds;
@@ -26,7 +26,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             _log = log;
             _orderBooks = new ConcurrentDictionary<ExchangeAssetPair, OrderBook>();
-            _crossRates = new ConcurrentDictionary<ExchangeAssetPair, CrossRate>();
+            _crossRates = new HashSet<CrossRate>();
             _wantedCurrencies = wantedCurrencies;
             _baseCurrency = baseCurrency;
             _expirationTimeInSeconds = expirationTimeInSeconds;
@@ -45,7 +45,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
         }
 
-        public ConcurrentDictionary<ExchangeAssetPair, CrossRate> CalculateCrossRates()
+        public IEnumerable<CrossRate> CalculateCrossRates()
         {
             RemoveExpiredOrderBooks();
 
@@ -105,13 +105,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             );
                         }
 
-                        if (intermediateWantedCrossRate == null)
-                        {
-                            throw new NullReferenceException($"intermediateWantedCrossRate is null");
-                        }
-
-                        var key = new ExchangeAssetPair(currentExchange, intermediateWantedCrossRate.AssetPair);
-                        _crossRates.AddOrUpdate(key, intermediateWantedCrossRate);
+                        _crossRates.AddOrUpdate(intermediateWantedCrossRate);
 
                         continue;
                     }
@@ -148,8 +142,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         );
 
 
-                        var key = new ExchangeAssetPair(currentExchange, wantedBasePairStr);
-                        _crossRates.AddOrUpdate(key, wantedBaseCrossRateInfo);
+                        _crossRates.AddOrUpdate(wantedBaseCrossRateInfo);
                     }
                 }
             }
@@ -157,7 +150,52 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return _crossRates;
         }
 
-        public IEnumerable<string> GetArbitragesStrings()
+        public IEnumerable<Arbitrage> GetArbitrages()
+        {
+            var result = new List<Arbitrage>();
+
+            RemoveExpiredCrossRates();
+
+            for (var i = 0; i < _crossRates.Count; i++)
+            {
+                for (var j = i + 1; j < _crossRates.Count; j++)
+                {
+                    var crossRate1 = _crossRates.ElementAt(i);
+                    var crossRate2 = _crossRates.ElementAt(j);
+
+                    if (crossRate1.BestAsk < crossRate2.BestBid)
+                        result.Add(new Arbitrage(crossRate1, crossRate2));
+
+                    if (crossRate2.BestAsk < crossRate1.BestBid)
+                        result.Add(new Arbitrage(crossRate2, crossRate1));
+                }
+            }
+
+            return result;
+        }
+
+        public override async Task Execute()
+        {
+            CalculateCrossRates();
+            var arbitrages = GetArbitragesStrings();
+            foreach (var arbitrage in arbitrages)
+            {
+                await _log?.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{arbitrage}");
+            }
+        }
+
+        public IEnumerable<OrderBook> GetOrderBooks()
+        {
+            return _orderBooks.Select(x => x.Value).ToList();
+        }
+
+        public IEnumerable<CrossRate> GetCrossRates()
+        {
+            return _crossRates.ToList().AsReadOnly();
+        }
+
+
+        private IEnumerable<string> GetArbitragesStrings()
         {
             var result = new List<string>();
 
@@ -181,49 +219,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             return result;
         }
-
-        public IEnumerable<Arbitrage> GetArbitrages()
-        {
-            var result = new List<Arbitrage>();
-
-            RemoveExpiredCrossRates();
-
-            foreach (var crossRateInfo1 in _crossRates)
-            foreach (var crossRateInfo2 in _crossRates)
-            {
-                if (crossRateInfo1.Value == crossRateInfo2.Value)
-                    continue;
-
-                var lowAsk = crossRateInfo1.Value;
-                var highBid = crossRateInfo2.Value;
-
-                if (lowAsk.BestAsk < highBid.BestBid)
-                    result.Add(new Arbitrage(lowAsk, highBid));
-            }
-
-            return result;
-        }
-
-        public override async Task Execute()
-        {
-            CalculateCrossRates();
-            var arbitrages = GetArbitragesStrings();
-            foreach (var arbitrage in arbitrages)
-            {
-                await _log?.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{arbitrage}");
-            }
-        }
-
-        public IDictionary<ExchangeAssetPair, OrderBook> GetOrderBooks()
-        {
-            return _orderBooks;
-        }
-
-        public IDictionary<ExchangeAssetPair, CrossRate> GetCrossRates()
-        {
-            return _crossRates;
-        }
-
 
         private void RemoveExpiredOrderBooks()
         {
@@ -283,11 +278,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         private void RemoveExpiredCrossRates()
         {
-            foreach (var keyValue in _crossRates)
+            foreach (var crossRate in _crossRates)
             {
-                var isExpired = keyValue.Value.OriginalOrderBooks.Any(x => DateTime.UtcNow - x.Timestamp > new TimeSpan(0, 0, 0, _expirationTimeInSeconds));
+                var isExpired = crossRate.OriginalOrderBooks.Any(x => DateTime.UtcNow - x.Timestamp > new TimeSpan(0, 0, 0, _expirationTimeInSeconds));
                 if (isExpired)
-                    _crossRates.Remove(keyValue.Key);
+                    _crossRates.Remove(crossRate);
             }
         }
     }
