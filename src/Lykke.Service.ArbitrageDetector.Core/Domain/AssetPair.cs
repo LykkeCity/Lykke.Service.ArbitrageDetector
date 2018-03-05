@@ -13,8 +13,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public AssetPair(string _base, string quote)
         {
-            Base = _base ?? throw new ArgumentNullException(nameof(_base));
-            Quote = quote ?? throw new ArgumentNullException(nameof(quote));
+            Base = string.IsNullOrEmpty(_base) ? throw new ArgumentNullException(nameof(_base)) : _base;
+            Quote = string.IsNullOrEmpty(quote) ? throw new ArgumentNullException(nameof(quote)) : quote;
         }
     }
 }

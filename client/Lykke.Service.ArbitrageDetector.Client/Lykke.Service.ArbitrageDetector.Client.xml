@@ -4,5 +4,452 @@
         <name>Lykke.Service.ArbitrageDetector.Client</name>
     </assembly>
     <members>
+        <member name="T:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorClient">
+            <summary>
+            Contains methods for work with arbitrage detector service.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorClient.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorClient"/> class.
+            </summary>
+            <param name="serviceUrl">The arbitrage detector service url.</param>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPI.BaseUri">
+            <summary>
+            The base URI of the service.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPI.SerializationSettings">
+            <summary>
+            Gets or sets json serialization settings.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPI.DeserializationSettings">
+            <summary>
+            Gets or sets json deserialization settings.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPI.#ctor(System.Net.Http.DelegatingHandler[])">
+            <summary>
+            Initializes a new instance of the ArbitrageDetectorAPI class.
+            </summary>
+            <param name='handlers'>
+            Optional. The delegating handlers to add to the http client pipeline.
+            </param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPI.#ctor(System.Net.Http.HttpClientHandler,System.Net.Http.DelegatingHandler[])">
+            <summary>
+            Initializes a new instance of the ArbitrageDetectorAPI class.
+            </summary>
+            <param name='rootHandler'>
+            Optional. The http client handler used to handle http transport.
+            </param>
+            <param name='handlers'>
+            Optional. The delegating handlers to add to the http client pipeline.
+            </param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPI.#ctor(System.Uri,System.Net.Http.DelegatingHandler[])">
+            <summary>
+            Initializes a new instance of the ArbitrageDetectorAPI class.
+            </summary>
+            <param name='baseUri'>
+            Optional. The base URI of the service.
+            </param>
+            <param name='handlers'>
+            Optional. The delegating handlers to add to the http client pipeline.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown when a required parameter is null
+            </exception>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPI.#ctor(System.Uri,System.Net.Http.HttpClientHandler,System.Net.Http.DelegatingHandler[])">
+            <summary>
+            Initializes a new instance of the ArbitrageDetectorAPI class.
+            </summary>
+            <param name='baseUri'>
+            Optional. The base URI of the service.
+            </param>
+            <param name='rootHandler'>
+            Optional. The http client handler used to handle http transport.
+            </param>
+            <param name='handlers'>
+            Optional. The delegating handlers to add to the http client pipeline.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown when a required parameter is null
+            </exception>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPI.Initialize">
+            <summary>
+            Initializes client properties.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPI.GetOrderBooksWithHttpMessagesAsync(System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.List{System.String}},System.Threading.CancellationToken)">
+            <param name='customHeaders'>
+            Headers that will be added to request.
+            </param>
+            <param name='cancellationToken'>
+            The cancellation token.
+            </param>
+            <exception cref="T:Microsoft.Rest.HttpOperationException">
+            Thrown when the operation returned an invalid status code
+            </exception>
+            <exception cref="T:Microsoft.Rest.SerializationException">
+            Thrown when unable to deserialize the response
+            </exception>
+            <return>
+            A response object containing the response body and response headers.
+            </return>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPI.GetCrossRatesWithHttpMessagesAsync(System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.List{System.String}},System.Threading.CancellationToken)">
+            <param name='customHeaders'>
+            Headers that will be added to request.
+            </param>
+            <param name='cancellationToken'>
+            The cancellation token.
+            </param>
+            <exception cref="T:Microsoft.Rest.HttpOperationException">
+            Thrown when the operation returned an invalid status code
+            </exception>
+            <exception cref="T:Microsoft.Rest.SerializationException">
+            Thrown when unable to deserialize the response
+            </exception>
+            <return>
+            A response object containing the response body and response headers.
+            </return>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPI.GetArbitragesWithHttpMessagesAsync(System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.List{System.String}},System.Threading.CancellationToken)">
+            <param name='customHeaders'>
+            Headers that will be added to request.
+            </param>
+            <param name='cancellationToken'>
+            The cancellation token.
+            </param>
+            <exception cref="T:Microsoft.Rest.HttpOperationException">
+            Thrown when the operation returned an invalid status code
+            </exception>
+            <exception cref="T:Microsoft.Rest.SerializationException">
+            Thrown when unable to deserialize the response
+            </exception>
+            <return>
+            A response object containing the response body and response headers.
+            </return>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPI.IsAliveWithHttpMessagesAsync(System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.List{System.String}},System.Threading.CancellationToken)">
+            <summary>
+            Checks service is alive
+            </summary>
+            <param name='customHeaders'>
+            Headers that will be added to request.
+            </param>
+            <param name='cancellationToken'>
+            The cancellation token.
+            </param>
+            <exception cref="T:Microsoft.Rest.HttpOperationException">
+            Thrown when the operation returned an invalid status code
+            </exception>
+            <exception cref="T:Microsoft.Rest.SerializationException">
+            Thrown when unable to deserialize the response
+            </exception>
+            <return>
+            A response object containing the response body and response headers.
+            </return>
+        </member>
+        <member name="T:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPIExtensions">
+            <summary>
+            Extension methods for ArbitrageDetectorAPI.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPIExtensions.GetOrderBooks(Lykke.Service.ArbitrageDetector.Client.AutorestClient.IArbitrageDetectorAPI)">
+            <param name='operations'>
+            The operations group for this extension method.
+            </param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPIExtensions.GetOrderBooksAsync(Lykke.Service.ArbitrageDetector.Client.AutorestClient.IArbitrageDetectorAPI,System.Threading.CancellationToken)">
+            <param name='operations'>
+            The operations group for this extension method.
+            </param>
+            <param name='cancellationToken'>
+            The cancellation token.
+            </param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPIExtensions.GetCrossRates(Lykke.Service.ArbitrageDetector.Client.AutorestClient.IArbitrageDetectorAPI)">
+            <param name='operations'>
+            The operations group for this extension method.
+            </param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPIExtensions.GetCrossRatesAsync(Lykke.Service.ArbitrageDetector.Client.AutorestClient.IArbitrageDetectorAPI,System.Threading.CancellationToken)">
+            <param name='operations'>
+            The operations group for this extension method.
+            </param>
+            <param name='cancellationToken'>
+            The cancellation token.
+            </param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPIExtensions.GetArbitrages(Lykke.Service.ArbitrageDetector.Client.AutorestClient.IArbitrageDetectorAPI)">
+            <param name='operations'>
+            The operations group for this extension method.
+            </param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPIExtensions.GetArbitragesAsync(Lykke.Service.ArbitrageDetector.Client.AutorestClient.IArbitrageDetectorAPI,System.Threading.CancellationToken)">
+            <param name='operations'>
+            The operations group for this extension method.
+            </param>
+            <param name='cancellationToken'>
+            The cancellation token.
+            </param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPIExtensions.IsAlive(Lykke.Service.ArbitrageDetector.Client.AutorestClient.IArbitrageDetectorAPI)">
+            <summary>
+            Checks service is alive
+            </summary>
+            <param name='operations'>
+            The operations group for this extension method.
+            </param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.ArbitrageDetectorAPIExtensions.IsAliveAsync(Lykke.Service.ArbitrageDetector.Client.AutorestClient.IArbitrageDetectorAPI,System.Threading.CancellationToken)">
+            <summary>
+            Checks service is alive
+            </summary>
+            <param name='operations'>
+            The operations group for this extension method.
+            </param>
+            <param name='cancellationToken'>
+            The cancellation token.
+            </param>
+        </member>
+        <member name="T:Lykke.Service.ArbitrageDetector.Client.AutorestClient.IArbitrageDetectorAPI">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.IArbitrageDetectorAPI.BaseUri">
+            <summary>
+            The base URI of the service.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.IArbitrageDetectorAPI.SerializationSettings">
+            <summary>
+            Gets or sets json serialization settings.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.IArbitrageDetectorAPI.DeserializationSettings">
+            <summary>
+            Gets or sets json deserialization settings.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.IArbitrageDetectorAPI.GetOrderBooksWithHttpMessagesAsync(System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.List{System.String}},System.Threading.CancellationToken)">
+            <param name='customHeaders'>
+            The headers that will be added to request.
+            </param>
+            <param name='cancellationToken'>
+            The cancellation token.
+            </param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.IArbitrageDetectorAPI.GetCrossRatesWithHttpMessagesAsync(System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.List{System.String}},System.Threading.CancellationToken)">
+            <param name='customHeaders'>
+            The headers that will be added to request.
+            </param>
+            <param name='cancellationToken'>
+            The cancellation token.
+            </param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.IArbitrageDetectorAPI.GetArbitragesWithHttpMessagesAsync(System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.List{System.String}},System.Threading.CancellationToken)">
+            <param name='customHeaders'>
+            The headers that will be added to request.
+            </param>
+            <param name='cancellationToken'>
+            The cancellation token.
+            </param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.IArbitrageDetectorAPI.IsAliveWithHttpMessagesAsync(System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.List{System.String}},System.Threading.CancellationToken)">
+            <summary>
+            Checks service is alive
+            </summary>
+            <param name='customHeaders'>
+            The headers that will be added to request.
+            </param>
+            <param name='cancellationToken'>
+            The cancellation token.
+            </param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.Arbitrage.#ctor">
+            <summary>
+            Initializes a new instance of the Arbitrage class.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.Arbitrage.#ctor(Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.CrossRate,Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.CrossRate)">
+            <summary>
+            Initializes a new instance of the Arbitrage class.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.Arbitrage.Ask">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.Arbitrage.Bid">
+            <summary>
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.CrossRate.#ctor">
+            <summary>
+            Initializes a new instance of the CrossRate class.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.CrossRate.#ctor(System.String,System.String,System.Nullable{System.Double},System.Nullable{System.Double},System.String,System.Nullable{System.DateTime},System.Collections.Generic.IList{Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.OrderBook})">
+            <summary>
+            Initializes a new instance of the CrossRate class.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.CrossRate.Source">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.CrossRate.AssetPair">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.CrossRate.BestBid">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.CrossRate.BestAsk">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.CrossRate.ConversionPath">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.CrossRate.Timestamp">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.CrossRate.OriginalOrderBooks">
+            <summary>
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.ErrorResponse.#ctor">
+            <summary>
+            Initializes a new instance of the ErrorResponse class.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.ErrorResponse.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.Collections.Generic.IList{System.String}})">
+            <summary>
+            Initializes a new instance of the ErrorResponse class.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.ErrorResponse.ErrorMessage">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.ErrorResponse.ModelErrors">
+            <summary>
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.IsAliveResponse.#ctor">
+            <summary>
+            Initializes a new instance of the IsAliveResponse class.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.IsAliveResponse.#ctor(System.Boolean,System.String,System.String,System.String,System.Collections.Generic.IList{Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.IssueIndicator})">
+            <summary>
+            Initializes a new instance of the IsAliveResponse class.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.IsAliveResponse.Name">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.IsAliveResponse.Version">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.IsAliveResponse.Env">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.IsAliveResponse.IsDebug">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.IsAliveResponse.IssueIndicators">
+            <summary>
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.IsAliveResponse.Validate">
+            <summary>
+            Validate the object.
+            </summary>
+            <exception cref="T:Microsoft.Rest.ValidationException">
+            Thrown if validation fails
+            </exception>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.IssueIndicator.#ctor">
+            <summary>
+            Initializes a new instance of the IssueIndicator class.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.IssueIndicator.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the IssueIndicator class.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.IssueIndicator.Type">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.IssueIndicator.Value">
+            <summary>
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.OrderBook.#ctor">
+            <summary>
+            Initializes a new instance of the OrderBook class.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.OrderBook.#ctor(System.String,System.String,System.Nullable{System.DateTime},System.Collections.Generic.IList{Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.VolumePrice},System.Collections.Generic.IList{Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.VolumePrice})">
+            <summary>
+            Initializes a new instance of the OrderBook class.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.OrderBook.Source">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.OrderBook.Asset">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.OrderBook.Timestamp">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.OrderBook.Asks">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.OrderBook.Bids">
+            <summary>
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.VolumePrice.#ctor">
+            <summary>
+            Initializes a new instance of the VolumePrice class.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.VolumePrice.#ctor(System.Nullable{System.Double},System.Nullable{System.Double})">
+            <summary>
+            Initializes a new instance of the VolumePrice class.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.VolumePrice.Price">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.VolumePrice.Volume">
+            <summary>
+            </summary>
+        </member>
     </members>
 </doc>
