@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.Service.ArbitrageDetector.Client.AutorestClient;
-using Lykke.Service.ArbitrageDetector.Client.Models;
+using Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models;
 
 namespace Lykke.Service.ArbitrageDetector.Client
 {
@@ -30,7 +30,7 @@ namespace Lykke.Service.ArbitrageDetector.Client
             _service = null;
         }
 
-        public async Task<IEnumerable<OrderBookModel>> GetOrderBooks()
+        public async Task<IEnumerable<OrderBook>> GetOrderBooks()
         {
             var result = await _service.GetOrderBooksAsync();
 
@@ -38,12 +38,12 @@ namespace Lykke.Service.ArbitrageDetector.Client
             //return result;
         }
 
-        public async Task<IEnumerable<CrossRateModel>> GetCrossRates()
+        public async Task<IEnumerable<CrossRate>> GetCrossRates()
         {
             return null;
         }
 
-        public async Task<IEnumerable<ArbitrageModel>> GetArbitrages()
+        public async Task<IEnumerable<Arbitrage>> GetArbitrages()
         {
             return null;
         }

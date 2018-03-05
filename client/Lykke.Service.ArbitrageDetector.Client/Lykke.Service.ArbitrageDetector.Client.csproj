@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <Folder Include="AutorestClient\" />
+    <Folder Include="Models\" />
   </ItemGroup>
 
 </Project>
