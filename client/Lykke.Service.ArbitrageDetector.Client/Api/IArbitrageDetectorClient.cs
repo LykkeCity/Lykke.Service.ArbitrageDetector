@@ -7,7 +7,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
 {
     internal interface IArbitrageDetectorApi
     {
-        [Get("/api/orderBooks")]
+        [Get("/orderBooks")]
         Task<IReadOnlyList<OrderBook>> GetOrderBooksAsync();
 
         [Get("/orderBooks/exchange/{exchange}")]
@@ -19,10 +19,10 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
         [Get("/orderBooks/exchange/{exchange}/instrument/{instrument}")]
         Task<IReadOnlyList<OrderBook>> GetOrderBooksAsync(string exchange, string instrument);
 
-        [Get("/api/crossRates")]
+        [Get("/crossRates")]
         Task<IReadOnlyList<CrossRate>> GetCrossRatesAsync();
 
-        [Get("/api/arbitrages")]
+        [Get("/arbitrages")]
         Task<IReadOnlyList<Arbitrage>> GetArbitragesAsync();
     }
 }
