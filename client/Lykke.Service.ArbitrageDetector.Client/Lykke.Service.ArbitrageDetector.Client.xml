@@ -309,11 +309,11 @@
             <summary>
             </summary>
         </member>
-        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.CrossRate.BestBid">
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.CrossRate.Bid">
             <summary>
             </summary>
         </member>
-        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.CrossRate.BestAsk">
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.AutorestClient.Models.CrossRate.Ask">
             <summary>
             </summary>
         </member>

@@ -163,10 +163,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     var crossRate1 = _crossRates.ElementAt(i);
                     var crossRate2 = _crossRates.ElementAt(j);
 
-                    if (crossRate1.BestAsk < crossRate2.BestBid)
+                    if (crossRate1.Ask < crossRate2.Bid)
                         result.Add(new Arbitrage(crossRate1, crossRate2));
 
-                    if (crossRate2.BestAsk < crossRate1.BestBid)
+                    if (crossRate2.Ask < crossRate1.Bid)
                         result.Add(new Arbitrage(crossRate2, crossRate1));
                 }
             }
@@ -209,9 +209,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 result.Add(string.Format("{0}: {1}.ask={2} < {3}.bid={4}, {5}, {6}",
                     lowAsk.AssetPair,
                     lowAsk.ConversionPath,
-                    lowAsk.BestAsk.ToString("0.#####"),
+                    lowAsk.Ask.ToString("0.#####"),
                     highBid.ConversionPath,
-                    highBid.BestBid.ToString("0.#####"),
+                    highBid.Bid.ToString("0.#####"),
                     lowAsk.OriginalOrderBooks.Count == 1 ? lowAsk.OriginalOrderBooks.First().Timestamp : lowAsk.Timestamp,
                     highBid.OriginalOrderBooks.Count == 1 ? highBid.OriginalOrderBooks.First().Timestamp : highBid.Timestamp
                 ));
