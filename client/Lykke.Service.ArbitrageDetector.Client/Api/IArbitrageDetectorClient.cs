@@ -10,13 +10,13 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
         [Get("/api/orderBooks")]
         Task<IReadOnlyList<OrderBook>> GetOrderBooksAsync();
 
-        [Get("orderBooks/exchange/{exchange}")]
+        [Get("/orderBooks/exchange/{exchange}")]
         Task<IReadOnlyList<OrderBook>> GetOrderBooksByExchangeAsync(string exchange);
 
-        [Get("orderBooks/instrument/{instrument}")]
+        [Get("/orderBooks/instrument/{instrument}")]
         Task<IReadOnlyList<OrderBook>> GetOrderBooksByInstrumentAsync(string instrument);
 
-        [Get("orderBooks/exchange/{exchange}/instrument/{instrument}")]
+        [Get("/orderBooks/exchange/{exchange}/instrument/{instrument}")]
         Task<IReadOnlyList<OrderBook>> GetOrderBooksAsync(string exchange, string instrument);
 
         [Get("/api/crossRates")]
