@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using MoreLinq;
 using Newtonsoft.Json;
 
@@ -26,8 +27,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         {
             Source = source;
             AssetPairId = assetPairId;
-            Asks = asks;
-            Bids = bids;
+            Asks = asks.OrderBy(x => x.Price).ToList();
+            Bids = bids.OrderByDescending(x => x.Price).ToList();
             Timestamp = timestamp;
         }
 

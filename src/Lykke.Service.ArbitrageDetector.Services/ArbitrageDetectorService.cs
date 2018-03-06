@@ -33,6 +33,76 @@ namespace Lykke.Service.ArbitrageDetector.Services
             shutdownManager?.Register(this);
         }
 
+
+        public IEnumerable<OrderBook> GetOrderBooks()
+        {
+            return _orderBooks.Select(x => x.Value)
+                .OrderByDescending(x => x.Timestamp)
+                .ToList()
+                .AsReadOnly();
+        }
+
+        public IEnumerable<OrderBook> GetOrderBooksByExchange(string exchange)
+        {
+            return _orderBooks
+                .Where(x => x.Key.Exchange.ToUpper().Trim() == exchange.ToUpper().Trim())
+                .Select(x => x.Value)
+                .OrderByDescending(x => x.Timestamp)
+                .ToList();
+        }
+
+        public IEnumerable<OrderBook> GetOrderBooksByInstrument(string instrument)
+        {
+            return _orderBooks
+                .Where(x => x.Key.AssetPair.ToUpper().Trim() == instrument.ToUpper().Trim())
+                .Select(x => x.Value)
+                .OrderByDescending(x => x.Timestamp)
+                .ToList();
+        }
+
+        public IEnumerable<OrderBook> GetOrderBooks(string exchange, string instrument)
+        {
+            return _orderBooks
+                .Where(x => x.Key.Exchange.ToUpper().Trim() == exchange.ToUpper().Trim()
+                         && x.Key.AssetPair.ToUpper().Trim() == instrument.ToUpper().Trim())
+                .Select(x => x.Value)
+                .OrderByDescending(x => x.Timestamp)
+                .ToList();
+        }
+
+        public IEnumerable<CrossRate> GetCrossRates()
+        {
+            return _crossRates
+                .OrderByDescending(x => x.Timestamp)
+                .ToList()
+                .AsReadOnly();
+        }
+
+        public IEnumerable<Arbitrage> GetArbitrages()
+        {
+            var result = new List<Arbitrage>();
+
+            RemoveExpiredCrossRates();
+
+            for (var i = 0; i < _crossRates.Count; i++)
+            {
+                for (var j = i + 1; j < _crossRates.Count; j++)
+                {
+                    var crossRate1 = _crossRates.ElementAt(i);
+                    var crossRate2 = _crossRates.ElementAt(j);
+
+                    if (crossRate1.Ask < crossRate2.Bid)
+                        result.Add(new Arbitrage(crossRate1, crossRate2));
+
+                    if (crossRate2.Ask < crossRate1.Bid)
+                        result.Add(new Arbitrage(crossRate2, crossRate1));
+                }
+            }
+
+            return result;
+        }
+
+
         public void Process(OrderBook orderBook)
         {
             // Update if contains base currency
@@ -45,16 +115,26 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
         }
 
+        public override async Task Execute()
+        {
+            CalculateCrossRates();
+            var arbitrages = GetArbitragesStrings();
+            foreach (var arbitrage in arbitrages)
+            {
+                await _log?.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{arbitrage}");
+            }
+        }
+
         public IEnumerable<CrossRate> CalculateCrossRates()
         {
-            RemoveExpiredOrderBooks();
+            var actualOrderBooks = GetActualOrderBooks();
 
             foreach (var wantedCurrency in _wantedCurrencies)
             {
-                var wantedCurrencyKeys = _orderBooks.Keys.Where(x => x.AssetPair.Contains(wantedCurrency)).ToList();
+                var wantedCurrencyKeys = actualOrderBooks.Keys.Where(x => x.AssetPair.Contains(wantedCurrency)).ToList();
                 foreach (var wantedCurrencykey in wantedCurrencyKeys)
                 {
-                    var wantedOrderBook = _orderBooks[wantedCurrencykey];
+                    var wantedOrderBook = actualOrderBooks[wantedCurrencykey];
                     var currentExchange = wantedOrderBook.Source;
 
                     // Trying to find wanted asset in current orderBook's asset pair
@@ -111,14 +191,14 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     }
 
                     // Trying to find intermediate/base or base/intermediate pair from any exchange
-                    var intermediateBaseCurrencyKeys = _orderBooks.Keys
+                    var intermediateBaseCurrencyKeys = actualOrderBooks.Keys
                         .Where(x => x.AssetPair.Contains(intermediateCurrency) && x.AssetPair.Contains(_baseCurrency)).ToList();
 
                     foreach (var intermediateBaseCurrencyKey in intermediateBaseCurrencyKeys)
                     {
                         // Calculating cross rate for base/wanted pair
                         var wantedIntermediateOrderBook = wantedOrderBook;
-                        var intermediateBaseOrderBook = _orderBooks[intermediateBaseCurrencyKey];
+                        var intermediateBaseOrderBook = actualOrderBooks[intermediateBaseCurrencyKey];
 
                         var intermediateBasePair = intermediateBaseOrderBook.GetAssetPairIfContains(_baseCurrency).Value;
 
@@ -141,7 +221,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             new List<OrderBook> { wantedIntermediateOrderBook, intermediateBaseOrderBook }
                         );
 
-
                         _crossRates.AddOrUpdate(wantedBaseCrossRateInfo);
                     }
                 }
@@ -149,51 +228,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             return _crossRates.ToList().AsReadOnly();
         }
-
-        public IEnumerable<Arbitrage> GetArbitrages()
-        {
-            var result = new List<Arbitrage>();
-
-            RemoveExpiredCrossRates();
-
-            for (var i = 0; i < _crossRates.Count; i++)
-            {
-                for (var j = i + 1; j < _crossRates.Count; j++)
-                {
-                    var crossRate1 = _crossRates.ElementAt(i);
-                    var crossRate2 = _crossRates.ElementAt(j);
-
-                    if (crossRate1.Ask < crossRate2.Bid)
-                        result.Add(new Arbitrage(crossRate1, crossRate2));
-
-                    if (crossRate2.Ask < crossRate1.Bid)
-                        result.Add(new Arbitrage(crossRate2, crossRate1));
-                }
-            }
-
-            return result;
-        }
-
-        public override async Task Execute()
-        {
-            CalculateCrossRates();
-            var arbitrages = GetArbitragesStrings();
-            foreach (var arbitrage in arbitrages)
-            {
-                await _log?.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{arbitrage}");
-            }
-        }
-
-        public IEnumerable<OrderBook> GetOrderBooks()
-        {
-            return _orderBooks.Select(x => x.Value).ToList();
-        }
-
-        public IEnumerable<CrossRate> GetCrossRates()
-        {
-            return _crossRates.ToList().AsReadOnly();
-        }
-
+        
 
         private IEnumerable<string> GetArbitragesStrings()
         {
@@ -220,15 +255,19 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return result;
         }
 
-        private void RemoveExpiredOrderBooks()
+        private Dictionary<ExchangeAssetPair, OrderBook> GetActualOrderBooks()
         {
+            var result = new Dictionary<ExchangeAssetPair, OrderBook>();
+
             foreach (var keyValue in _orderBooks)
             {
-                if (DateTime.UtcNow - keyValue.Value.Timestamp > new TimeSpan(0, 0, 0, _expirationTimeInSeconds))
+                if (DateTime.UtcNow - keyValue.Value.Timestamp < new TimeSpan(0, 0, 0, _expirationTimeInSeconds))
                 {
-                    _orderBooks.Remove(keyValue.Key);
+                    result.Add(keyValue.Key, keyValue.Value);
                 }
             }
+
+            return result;
         }
 
         private void CheckForCurrencyAndUpdateOrderBooks(string currency, OrderBook orderBook)

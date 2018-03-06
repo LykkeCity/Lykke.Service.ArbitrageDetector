@@ -27,7 +27,7 @@ namespace Lykke.Service.ArbitrageDetector.Client
                 throw new ArgumentException("Service URL Required");
 
             _httpClient = new HttpClient
-            {
+            { 
                 BaseAddress = new Uri(settings.ServiceUrl),
                 DefaultRequestHeaders =
                 {
@@ -46,6 +46,21 @@ namespace Lykke.Service.ArbitrageDetector.Client
         public async Task<IReadOnlyList<OrderBook>> GetOrderBooksAsync()
         {
             return await _runner.RunAsync(() => _arbitrageDetectorApi.GetOrderBooksAsync());
+        }
+
+        public async Task<IReadOnlyList<OrderBook>> GetOrderBooksByExchangeAsync(string exchange)
+        {
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.GetOrderBooksByInstrumentAsync(exchange));
+        }
+
+        public async Task<IReadOnlyList<OrderBook>> GetOrderBooksByInstrumentAsync(string instrument)
+        {
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.GetOrderBooksByInstrumentAsync(instrument));
+        }
+
+        public async Task<IReadOnlyList<OrderBook>> GetOrderBooksAsync(string exchange, string instrument)
+        {
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.GetOrderBooksAsync(exchange, instrument));
         }
 
         public async Task<IReadOnlyList<CrossRate>> GetCrossRatesAsync()

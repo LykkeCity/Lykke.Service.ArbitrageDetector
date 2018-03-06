@@ -22,7 +22,8 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             _log = log;
         }
 
-        [HttpGet("orderBooks")]
+        [HttpGet]
+        [Route("orderBooks")]
         [SwaggerOperation("GetOrderBooks")]
         [ProducesResponseType(typeof(IEnumerable<OrderBook>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -44,7 +45,77 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet("crossRates")]
+        [HttpGet]
+        [Route("orderBooks/exchange/{exchange}")]
+        [SwaggerOperation("GetOrderBooksByExchange")]
+        [ProducesResponseType(typeof(IEnumerable<CrossRate>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetOrderBooksByExchange(string exchange)
+        {
+            IEnumerable<OrderBook> result;
+
+            try
+            {
+                result = _arbitrageDetectorService.GetOrderBooksByExchange(exchange);
+            }
+            catch (Exception exception)
+            {
+                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(GetOrderBooksByExchange), "", exception);
+
+                return BadRequest(ErrorResponse.Create(exception.Message));
+            }
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("orderBooks/instrument/{instrument}")]
+        [SwaggerOperation("GetOrderBooksByInstrument")]
+        [ProducesResponseType(typeof(IEnumerable<CrossRate>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetOrderBooksByInstrument(string instrument)
+        {
+            IEnumerable<OrderBook> result;
+
+            try
+            {
+                result = _arbitrageDetectorService.GetOrderBooksByInstrument(instrument);
+            }
+            catch (Exception exception)
+            {
+                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(GetOrderBooksByExchange), "", exception);
+
+                return BadRequest(ErrorResponse.Create(exception.Message));
+            }
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("orderBooks/exchange/{exchange}/instrument/{instrument}")]
+        [SwaggerOperation("GetOrderBooks")]
+        [ProducesResponseType(typeof(IEnumerable<CrossRate>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetOrderBooks(string exchange, string instrument)
+        {
+            IEnumerable<OrderBook> result;
+
+            try
+            {
+                result = _arbitrageDetectorService.GetOrderBooks(exchange, instrument);
+            }
+            catch (Exception exception)
+            {
+                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(GetOrderBooksByExchange), "", exception);
+
+                return BadRequest(ErrorResponse.Create(exception.Message));
+            }
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("crossRates")]
         [SwaggerOperation("GetCrossRates")]
         [ProducesResponseType(typeof(IEnumerable<CrossRate>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -66,7 +137,8 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet("arbitrages")]
+        [HttpGet]
+        [Route("arbitrages")]
         [SwaggerOperation("GetArbitrages")]
         [ProducesResponseType(typeof(IEnumerable<Arbitrage>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
