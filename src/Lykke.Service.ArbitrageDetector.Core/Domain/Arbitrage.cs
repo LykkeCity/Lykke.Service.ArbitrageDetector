@@ -5,10 +5,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
     public struct Arbitrage
     {
-        [JsonProperty("ask")]
+        [JsonProperty("lowAsk")]
         public CrossRate LowAsk{ get; }
 
-        [JsonProperty("bid")]
+        [JsonProperty("highBid")]
         public CrossRate HighBid { get; }
 
         public Arbitrage(CrossRate lowAsk, CrossRate highBid)

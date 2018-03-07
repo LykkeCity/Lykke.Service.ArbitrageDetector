@@ -13,6 +13,6 @@
         /// <summary>
         /// Quoting asset.
         /// </summary>
-        public string Quote { get; set; }
+        public string Quoting { get; set; }
     }
 }

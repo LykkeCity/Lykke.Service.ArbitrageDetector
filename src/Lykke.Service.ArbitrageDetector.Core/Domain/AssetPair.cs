@@ -8,13 +8,13 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         [JsonProperty("base")]
         public string Base{ get; }
 
-        [JsonProperty("quote")]
-        public string Quote { get; }
+        [JsonProperty("quoting")]
+        public string Quoting { get; }
 
-        public AssetPair(string _base, string quote)
+        public AssetPair(string _base, string quoting)
         {
             Base = string.IsNullOrEmpty(_base) ? throw new ArgumentNullException(nameof(_base)) : _base;
-            Quote = string.IsNullOrEmpty(quote) ? throw new ArgumentNullException(nameof(quote)) : quote;
+            Quoting = string.IsNullOrEmpty(quoting) ? throw new ArgumentNullException(nameof(quoting)) : quoting;
         }
     }
 }

@@ -58,7 +58,7 @@
             Base asset.
             </summary>
         </member>
-        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.Quote">
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.Quoting">
             <summary>
             Quoting asset.
             </summary>

@@ -151,7 +151,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                     // Get intermediate currency
                     var intermediateCurrency = wantedIntermediatePair.Base == wantedCurrency
-                        ? wantedIntermediatePair.Quote
+                        ? wantedIntermediatePair.Quoting
                         : wantedIntermediatePair.Base;
 
                     // If original wanted/base or base/wanted rate then just save it
@@ -160,7 +160,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         CrossRate intermediateWantedCrossRate = null;
 
                         // Straight pair (wanted/base)
-                        if (wantedIntermediatePair.Base == wantedCurrency && wantedIntermediatePair.Quote == intermediateCurrency)
+                        if (wantedIntermediatePair.Base == wantedCurrency && wantedIntermediatePair.Quoting == intermediateCurrency)
                         {
                             intermediateWantedCrossRate = new CrossRate(
                                 currentExchange,
@@ -173,7 +173,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         }
 
                         // Reversed pair (base/wanted)
-                        if (wantedIntermediatePair.Base == intermediateCurrency && wantedIntermediatePair.Quote == wantedCurrency)
+                        if (wantedIntermediatePair.Base == intermediateCurrency && wantedIntermediatePair.Quoting == wantedCurrency)
                         {
                             intermediateWantedCrossRate = new CrossRate(
                                 currentExchange,
@@ -280,29 +280,29 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
         }
 
-        private BidAsk GetBidAndAsk(AssetPair pair, string _base, string quote, OrderBook orderBook)
+        private BidAsk GetBidAndAsk(AssetPair pair, string _base, string quoting, OrderBook orderBook)
         {
             #region Argument checking
 
-            if (pair.Base == null || pair.Quote == null)
+            if (pair.Base == null || pair.Quoting == null)
                 throw new ArgumentNullException(nameof(pair));
 
             if (string.IsNullOrWhiteSpace(_base))
                 throw new ArgumentOutOfRangeException(nameof(_base));
 
-            if (string.IsNullOrWhiteSpace(quote))
-                throw new ArgumentOutOfRangeException(nameof(quote));
+            if (string.IsNullOrWhiteSpace(quoting))
+                throw new ArgumentOutOfRangeException(nameof(quoting));
 
             #endregion
 
             decimal intermediateBaseBid;
             decimal intermediateBaseAsk;
-            if (pair.Base == _base && pair.Quote == quote)
+            if (pair.Base == _base && pair.Quoting == quoting)
             {
                 intermediateBaseBid = orderBook.GetBestBid();
                 intermediateBaseAsk = orderBook.GetBestAsk();
             }
-            else if (pair.Base == quote && pair.Quote == _base)
+            else if (pair.Base == quoting && pair.Quoting == _base)
             {
                 intermediateBaseBid = 1 / orderBook.GetBestAsk();
                 intermediateBaseAsk = 1 / orderBook.GetBestBid();
