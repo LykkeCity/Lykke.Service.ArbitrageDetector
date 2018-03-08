@@ -1,14 +1,11 @@
 ﻿using System;
-using Newtonsoft.Json;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
     public struct ExchangeAssetPair
     {
-        [JsonProperty("exchange")]
         public string Exchange { get; }
-
-        [JsonProperty("assetPair")]
+        
         public string AssetPair{ get; }
 
         public ExchangeAssetPair(string exchange, string assetPair)
