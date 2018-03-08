@@ -19,10 +19,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public IReadOnlyCollection<VolumePrice> Bids { get; }
 
-        public OrderBook(string source, string assetPairId, IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks, DateTime timestamp)
+        public OrderBook(string source, string assetPair, IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks, DateTime timestamp)
         {
             Source = string.IsNullOrEmpty(source) ? throw new ArgumentNullException(nameof(source)) : source;
-            AssetPair = string.IsNullOrEmpty(assetPairId) ? throw new ArgumentNullException(nameof(assetPairId)) : assetPairId;
+            AssetPair = string.IsNullOrEmpty(assetPair) ? throw new ArgumentNullException(nameof(assetPair)) : assetPair;
             Asks = asks.OrderBy(x => x.Price).ToList();
             Bids = bids.OrderByDescending(x => x.Price).ToList();
             Timestamp = timestamp;
