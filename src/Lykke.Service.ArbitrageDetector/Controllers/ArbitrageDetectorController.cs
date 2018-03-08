@@ -11,7 +11,8 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.ArbitrageDetector.Controllers
 {
-    public class ArbitrageDetectorController : BaseController
+    [Produces("application/json")]
+    public class ArbitrageDetectorController : Controller
     {
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
         private readonly ILog _log;
