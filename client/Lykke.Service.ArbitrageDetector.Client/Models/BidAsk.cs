@@ -8,11 +8,22 @@
         /// <summary>
         /// Bid.
         /// </summary>
-        public decimal Bid { get; set; }
+        public decimal Bid { get; }
 
         /// <summary>
         /// Ask.
         /// </summary>
-        public decimal Ask { get; set; }
+        public decimal Ask { get; }
+
+        /// <summary>
+        /// Contrsuctor.
+        /// </summary>
+        /// <param name="bid">Bid.</param>
+        /// <param name="ask">Ask.</param>
+        public BidAsk(decimal bid, decimal ask)
+        {
+            Bid = bid;
+            Ask = ask;
+        }
     }
 }

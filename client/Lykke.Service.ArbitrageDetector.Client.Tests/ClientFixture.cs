@@ -4,14 +4,17 @@ using Xunit;
 
 namespace Lykke.Service.ArbitrageDetector.Client.Tests
 {
+    /// <summary>
+    /// Main fixture, initialize client only once for all tests with [Collection("Client collection")] attribute.
+    /// </summary>
     public class ClientFixture : IDisposable
     {
-        public IArbitrageDetectorClient Client { get; private set; }
+        protected IArbitrageDetectorClient Client { get; private set; }
 
         public ClientFixture()
         {
             // Must be started
-            var settings = new ArbitrageDetectorServiceClientSettings("http://localhost:5000/api/v1/ArbitrageDetector");
+            var settings = new ArbitrageDetectorServiceClientSettings("http://localhost:5000");
             Client = new ArbitrageDetectorClient(settings);
         }
 

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using MoreLinq;
+using Newtonsoft.Json;
 
 namespace Lykke.Service.ArbitrageDetector.Client.Models
 {
@@ -10,29 +12,47 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
     public sealed class OrderBook
     {
         /// <summary>
-        /// A name of an exchange.
+        /// Name of an exchange.
         /// </summary>
-        public string Source { get; set; }
+        public string Source { get; }
 
         /// <summary>
-        /// A name of an asset pair.
+        /// Name of an asset pair.
         /// </summary>
-        public string AssetPair { get; set; }
+        [JsonProperty("asset")]
+        public string AssetPair { get; }
 
         /// <summary>
         /// The time when the current order book was actual.
         /// </summary>
-        public DateTime Timestamp { get; set; }
+        public DateTime Timestamp { get; }
         
         /// <summary>
         /// Asks of the current order book.
         /// </summary>
-        public IReadOnlyCollection<VolumePrice> Asks { get; set; }
+        public IReadOnlyCollection<VolumePrice> Asks { get; }
 
         /// <summary>
         /// Bids of the current order book.
         /// </summary>
-        public IReadOnlyCollection<VolumePrice> Bids { get; set; }
+        public IReadOnlyCollection<VolumePrice> Bids { get; }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="source">Exchange name.</param>
+        /// <param name="assetPair">Asset pair.</param>
+        /// <param name="bids">Bids.</param>
+        /// <param name="asks">Asks.</param>
+        /// <param name="timestamp">Timestamp.</param>
+        public OrderBook(string source, string assetPair, IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks, DateTime timestamp)
+        {
+            Source = string.IsNullOrEmpty(source) ? throw new ArgumentNullException(nameof(source)) : source;
+            AssetPair = string.IsNullOrEmpty(assetPair) ? throw new ArgumentNullException(nameof(assetPair)) : assetPair;
+            Asks = asks.OrderBy(x => x.Price).ToList();
+            Bids = bids.OrderByDescending(x => x.Price).ToList();
+            Timestamp = timestamp;
+        }
 
         /// <summary>
         /// Returns the maximum bid from this order book.
@@ -51,5 +71,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         {
             return Asks.MinBy(x => x.Price).Price;
         }
+
+
     }
 }
