@@ -2,6 +2,7 @@
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
@@ -24,7 +25,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
             OrderBook orderBook = null;
             try
             {
-                orderBook = JsonConvert.DeserializeObject<OrderBook>(dataStr);
+                var serializerSettings = new JsonSerializerSettings();
+                serializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                orderBook = JsonConvert.DeserializeObject<OrderBook>(dataStr, serializerSettings);
             }
             catch(JsonSerializationException ex)
             {

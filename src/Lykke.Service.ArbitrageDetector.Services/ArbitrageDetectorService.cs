@@ -145,7 +145,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     if (!wantedOrderBook.Asks.Any() || wantedOrderBook.GetBestAsk() == 0 ||
                         !wantedOrderBook.Bids.Any() || wantedOrderBook.GetBestBid() == 0)
                     {
-                        _log?.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Skip {currentExchange}, {wantedOrderBook.AssetPairId}, bids.Count: {wantedOrderBook.Bids.Count}, asks.Count: {wantedOrderBook.Asks.Count}");
+                        _log?.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Skip {currentExchange}, {wantedOrderBook.AssetPair}, bids.Count: {wantedOrderBook.Bids.Count}, asks.Count: {wantedOrderBook.Asks.Count}");
                         continue;
                     }
 
@@ -180,7 +180,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                                 intermediateCurrency + wantedCurrency,
                                 1 / wantedOrderBook.GetBestAsk(), // reversed
                                 1 / wantedOrderBook.GetBestBid(), // reversed
-                                wantedOrderBook.AssetPairId,
+                                wantedOrderBook.AssetPair,
                                 new List<OrderBook> { wantedOrderBook }
                             );
                         }
@@ -217,7 +217,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             wantedBasePairStr,
                             wantedBaseBid,
                             wantedBaseAsk,
-                            $"({wantedIntermediateOrderBook.Source}-{wantedIntermediateOrderBook.AssetPairId}*{intermediateBaseOrderBook.Source}-{intermediateBaseOrderBook.AssetPairId})",
+                            $"({wantedIntermediateOrderBook.Source}-{wantedIntermediateOrderBook.AssetPair}*{intermediateBaseOrderBook.Source}-{intermediateBaseOrderBook.AssetPair})",
                             new List<OrderBook> { wantedIntermediateOrderBook, intermediateBaseOrderBook }
                         );
 
@@ -275,7 +275,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var baseAssetPair = orderBook.GetAssetPairIfContains(currency);
             if (baseAssetPair.HasValue)
             {
-                var key = new ExchangeAssetPair(orderBook.Source, orderBook.AssetPairId);
+                var key = new ExchangeAssetPair(orderBook.Source, orderBook.AssetPair);
                 _orderBooks.AddOrUpdate(key, orderBook);
             }
         }

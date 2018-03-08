@@ -143,7 +143,7 @@
             A name of an exchange.
             </summary>
         </member>
-        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.AssetPairId">
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.AssetPair">
             <summary>
             A name of an asset pair.
             </summary>

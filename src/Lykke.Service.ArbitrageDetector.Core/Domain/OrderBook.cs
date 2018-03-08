@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using MoreLinq;
+using Newtonsoft.Json;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
@@ -9,7 +10,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
     {
         public string Source { get; }
 
-        public string AssetPairId { get; }
+        [JsonProperty("asset")]
+        public string AssetPair { get; }
 
         public DateTime Timestamp { get; }
 
@@ -19,8 +21,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public OrderBook(string source, string assetPairId, IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks, DateTime timestamp)
         {
-            Source = source;
-            AssetPairId = assetPairId;
+            Source = string.IsNullOrEmpty(source) ? throw new ArgumentNullException(nameof(source)) : source;
+            AssetPair = string.IsNullOrEmpty(assetPairId) ? throw new ArgumentNullException(nameof(assetPairId)) : assetPairId;
             Asks = asks.OrderBy(x => x.Price).ToList();
             Bids = bids.OrderByDescending(x => x.Price).ToList();
             Timestamp = timestamp;
@@ -29,7 +31,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// Must be removed after adding AssetsPairService
         public AssetPair? GetAssetPairIfContains(string currency)
         {
-            var orderBookAssetPair = AssetPairId.ToUpper();
+            if (string.IsNullOrWhiteSpace(currency))
+                throw new ArgumentNullException(nameof(currency));
+
+            var orderBookAssetPair = AssetPair.ToUpper();
             if (orderBookAssetPair.Contains(currency))
             {
                 var fromAsset = string.Empty;

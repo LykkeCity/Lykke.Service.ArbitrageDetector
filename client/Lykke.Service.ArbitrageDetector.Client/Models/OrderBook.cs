@@ -17,7 +17,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// A name of an asset pair.
         /// </summary>
-        public string AssetPairId { get; set; }
+        public string AssetPair { get; set; }
 
         /// <summary>
         /// The time when the current order book was actual.
