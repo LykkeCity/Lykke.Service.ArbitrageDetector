@@ -50,7 +50,7 @@ namespace Lykke.Service.ArbitrageDetector.Client
 
         public async Task<IReadOnlyList<OrderBook>> GetOrderBooksByExchangeAsync(string exchange)
         {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.GetOrderBooksByInstrumentAsync(exchange));
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.GetOrderBooksByExchangeAsync(exchange));
         }
 
         public async Task<IReadOnlyList<OrderBook>> GetOrderBooksByInstrumentAsync(string instrument)
