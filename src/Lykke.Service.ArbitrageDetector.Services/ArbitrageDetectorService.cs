@@ -43,31 +43,36 @@ namespace Lykke.Service.ArbitrageDetector.Services
         }
 
         public IEnumerable<OrderBook> GetOrderBooksByExchange(string exchange)
-        {
-            return _orderBooks
-                .Where(x => x.Key.Exchange.ToUpper().Trim() == exchange.ToUpper().Trim())
-                .Select(x => x.Value)
-                .OrderByDescending(x => x.Timestamp)
-                .ToList();
+        {            
+            var result = _orderBooks.Select(x => x.Value).ToList();
+
+            if (!string.IsNullOrWhiteSpace(exchange))
+                result = result.Where(x => x.Source.ToUpper().Trim() == exchange.ToUpper().Trim()).ToList();
+
+            return result.OrderByDescending(x => x.Timestamp).ToList();
         }
 
         public IEnumerable<OrderBook> GetOrderBooksByInstrument(string instrument)
         {
-            return _orderBooks
-                .Where(x => x.Key.AssetPair.ToUpper().Trim() == instrument.ToUpper().Trim())
-                .Select(x => x.Value)
-                .OrderByDescending(x => x.Timestamp)
-                .ToList();
+            var result = _orderBooks.Select(x => x.Value).ToList();
+
+            if (!string.IsNullOrWhiteSpace(instrument))
+                result = result.Where(x => x.AssetPair.ToUpper().Trim() == instrument.ToUpper().Trim()).ToList();
+
+            return result.OrderByDescending(x => x.Timestamp).ToList();
         }
 
         public IEnumerable<OrderBook> GetOrderBooks(string exchange, string instrument)
         {
-            return _orderBooks
-                .Where(x => x.Key.Exchange.ToUpper().Trim() == exchange.ToUpper().Trim()
-                         && x.Key.AssetPair.ToUpper().Trim() == instrument.ToUpper().Trim())
-                .Select(x => x.Value)
-                .OrderByDescending(x => x.Timestamp)
-                .ToList();
+            var result = _orderBooks.Select(x => x.Value).ToList();
+
+            if (!string.IsNullOrWhiteSpace(exchange))
+                result = result.Where(x => x.Source.ToUpper().Trim() == exchange.ToUpper().Trim()).ToList();
+
+            if (!string.IsNullOrWhiteSpace(instrument))
+                result = result.Where(x => x.AssetPair.ToUpper().Trim() == instrument.ToUpper().Trim()).ToList();
+
+            return result.OrderByDescending(x => x.Timestamp).ToList();
         }
 
         public IEnumerable<CrossRate> GetCrossRates()

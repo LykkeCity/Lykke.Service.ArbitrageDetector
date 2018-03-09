@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Lykke.Service.ArbitrageDetector.Client.Tests
@@ -8,7 +9,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
     public class ClientTest : ClientFixture
     {
         [Fact]
-        public async void GetOrderBooksTest()
+        public async Task GetOrderBooksTest()
         {
             var orderBooks = await Client.GetOrderBooksAsync();
 
