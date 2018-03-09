@@ -222,7 +222,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             wantedBasePairStr,
                             wantedBaseBid,
                             wantedBaseAsk,
-                            $"({wantedIntermediateOrderBook.Source}-{wantedIntermediateOrderBook.AssetPair}*{intermediateBaseOrderBook.Source}-{intermediateBaseOrderBook.AssetPair})",
+                            $"{wantedIntermediateOrderBook.Source}-{wantedIntermediateOrderBook.AssetPair} & {intermediateBaseOrderBook.Source}-{intermediateBaseOrderBook.AssetPair}",
                             new List<OrderBook> { wantedIntermediateOrderBook, intermediateBaseOrderBook }
                         );
 

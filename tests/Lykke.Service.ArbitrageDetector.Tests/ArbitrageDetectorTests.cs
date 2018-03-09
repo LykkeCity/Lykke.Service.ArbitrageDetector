@@ -49,6 +49,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Single(crossRates);
             var crossRate = crossRates.First();
             Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
+            Assert.Equal("Lykke-BTCEUR & Lykke-EURUSD", crossRate.ConversionPath);
             Assert.Equal(btcusd, crossRate.AssetPair);
             Assert.Equal(10769.1475m, crossRate.Bid, 5);
             Assert.Equal(10982.90898m, crossRate.Ask, 5);
@@ -99,6 +100,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Single(crossRates);
             var crossRate = crossRates.First();
             Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
+            Assert.Equal("Lykke-BTCEUR & Lykke-USDEUR", crossRate.ConversionPath);
             Assert.Equal(btcusd, crossRate.AssetPair);
             Assert.Equal(10769.1475m, crossRate.Bid, 5);
             Assert.Equal(10982.90898m, crossRate.Ask, 5);
@@ -149,6 +151,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Single(crossRates);
             var crossRate = crossRates.First();
             Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
+            Assert.Equal("Lykke-EURBTC & Lykke-EURUSD", crossRate.ConversionPath);
             Assert.Equal(btcusd, crossRate.AssetPair);
             Assert.Equal(10769.1475m, crossRate.Bid, 5);
             Assert.Equal(10982.90898m, crossRate.Ask, 5);
@@ -199,6 +202,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Single(crossRates);
             var crossRate = crossRates.First();
             Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
+            Assert.Equal("Lykke-EURBTC & Lykke-USDEUR", crossRate.ConversionPath);
             Assert.Equal(btcusd, crossRate.AssetPair);
             Assert.Equal(10769.1475m, crossRate.Bid, 5);
             Assert.Equal(10982.90898m, crossRate.Ask, 5);

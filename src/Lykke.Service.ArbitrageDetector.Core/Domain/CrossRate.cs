@@ -19,14 +19,13 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public IList<OrderBook> OriginalOrderBooks { get; }
 
-        public CrossRate(string source, string assetPair, decimal bid, decimal ask, string conversionPath,
-            IList<OrderBook> originalOrderBooks)
+        public CrossRate(string source, string assetPair, decimal bid, decimal ask, string conversionPath, IList<OrderBook> originalOrderBooks)
         {
-            Source = source ?? throw new ArgumentNullException(nameof(source));
-            AssetPair = assetPair ?? throw new ArgumentNullException(nameof(assetPair));
+            Source = string.IsNullOrEmpty(source) ? throw new ArgumentNullException(nameof(source)) : source;
+            AssetPair = string.IsNullOrEmpty(assetPair) ? throw new ArgumentNullException(nameof(assetPair)) : assetPair;
             Bid = bid;
             Ask = ask;
-            ConversionPath = conversionPath ?? throw new ArgumentNullException(nameof(conversionPath));
+            ConversionPath = string.IsNullOrEmpty(conversionPath) ? throw new ArgumentNullException(nameof(conversionPath)) : conversionPath;
             Timestamp = DateTime.UtcNow;
             OriginalOrderBooks = originalOrderBooks ?? throw new ArgumentNullException(nameof(originalOrderBooks));
         }
