@@ -87,14 +87,14 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             var result = new List<Arbitrage>();
 
-            RemoveExpiredCrossRates();
+            var actualCrossRates = GetActualCrossRates();
 
-            for (var i = 0; i < _crossRates.Count; i++)
+            for (var i = 0; i < actualCrossRates.Count; i++)
             {
-                for (var j = i + 1; j < _crossRates.Count; j++)
+                for (var j = i + 1; j < actualCrossRates.Count; j++)
                 {
-                    var crossRate1 = _crossRates.ElementAt(i);
-                    var crossRate2 = _crossRates.ElementAt(j);
+                    var crossRate1 = actualCrossRates.ElementAt(i);
+                    var crossRate2 = actualCrossRates.ElementAt(j);
 
                     if (crossRate1.Ask < crossRate2.Bid)
                         result.Add(new Arbitrage(crossRate1, crossRate2));
@@ -260,21 +260,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return result;
         }
 
-        private Dictionary<ExchangeAssetPair, OrderBook> GetActualOrderBooks()
-        {
-            var result = new Dictionary<ExchangeAssetPair, OrderBook>();
-
-            foreach (var keyValue in _orderBooks)
-            {
-                if (DateTime.UtcNow - keyValue.Value.Timestamp < new TimeSpan(0, 0, 0, _expirationTimeInSeconds))
-                {
-                    result.Add(keyValue.Key, keyValue.Value);
-                }
-            }
-
-            return result;
-        }
-
         private void CheckForCurrencyAndUpdateOrderBooks(string currency, OrderBook orderBook)
         {
             var baseAssetPair = orderBook.GetAssetPairIfContains(currency);
@@ -320,14 +305,34 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return new BidAsk(intermediateBaseBid, intermediateBaseAsk);
         }
 
-        private void RemoveExpiredCrossRates()
+        private Dictionary<ExchangeAssetPair, OrderBook> GetActualOrderBooks()
         {
-            foreach (var crossRate in _crossRates.ToList())
+            var result = new Dictionary<ExchangeAssetPair, OrderBook>();
+
+            foreach (var keyValue in _orderBooks)
             {
-                var isExpired = crossRate.OriginalOrderBooks.Any(x => DateTime.UtcNow - x.Timestamp > new TimeSpan(0, 0, 0, _expirationTimeInSeconds));
-                if (isExpired)
-                    _crossRates.Remove(crossRate);
+                if (DateTime.UtcNow - keyValue.Value.Timestamp < new TimeSpan(0, 0, 0, _expirationTimeInSeconds))
+                {
+                    result.Add(keyValue.Key, keyValue.Value);
+                }
             }
+
+            return result;
+        }
+
+        private IList<CrossRate> GetActualCrossRates()
+        {
+            var result = new List<CrossRate>();
+
+            foreach (var crossRate in _crossRates)
+            {
+                if (DateTime.UtcNow - crossRate.Timestamp < new TimeSpan(0, 0, 0, _expirationTimeInSeconds))
+                {
+                    result.Add(crossRate);
+                }
+            }
+
+            return result;
         }
     }
 }
