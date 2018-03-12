@@ -15,7 +15,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
     public class ArbitrageDetectorService : TimerPeriod, IArbitrageDetectorService
     {
         private readonly ConcurrentDictionary<ExchangeAssetPair, OrderBook> _orderBooks;
-        private readonly ConcurrentDictionary<ExchangeConversionPath, CrossRate> _crossRates;
+        private readonly ConcurrentDictionary<ExchangeAssetPair, CrossRate> _crossRates;
         private readonly IReadOnlyCollection<string> _wantedCurrencies;
         private readonly string _baseCurrency;
         private readonly int _expirationTimeInSeconds;
@@ -26,7 +26,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             _log = log;
             _orderBooks = new ConcurrentDictionary<ExchangeAssetPair, OrderBook>();
-            _crossRates = new ConcurrentDictionary<ExchangeConversionPath, CrossRate>();
+            _crossRates = new ConcurrentDictionary<ExchangeAssetPair, CrossRate>();
             _wantedCurrencies = wantedCurrencies;
             _baseCurrency = baseCurrency;
             _expirationTimeInSeconds = expirationTimeInSeconds;
@@ -172,7 +172,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                                 wantedCurrency + intermediateCurrency,
                                 wantedOrderBook.GetBestBid(),
                                 wantedOrderBook.GetBestAsk(),
-                                currentExchange,
+                                $"{currentExchange}-{wantedCurrency}{intermediateCurrency}",
                                 new List<OrderBook> { wantedOrderBook }
                             );
                         }
@@ -185,12 +185,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
                                 intermediateCurrency + wantedCurrency,
                                 1 / wantedOrderBook.GetBestAsk(), // reversed
                                 1 / wantedOrderBook.GetBestBid(), // reversed
-                                wantedOrderBook.AssetPair,
+                                $"{currentExchange}-{wantedCurrency}{intermediateCurrency}",
                                 new List<OrderBook> { wantedOrderBook }
                             );
                         }
 
-                        var key = new ExchangeConversionPath(intermediateWantedCrossRate.Source, intermediateWantedCrossRate.ConversionPath);
+                        var key = new ExchangeAssetPair(intermediateWantedCrossRate.ConversionPath, intermediateWantedCrossRate.AssetPair);
                         _crossRates.AddOrUpdate(key, intermediateWantedCrossRate);
 
                         continue;
@@ -227,7 +227,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             new List<OrderBook> { wantedIntermediateOrderBook, intermediateBaseOrderBook }
                         );
 
-                        var key = new ExchangeConversionPath(wantedBaseCrossRateInfo.Source, wantedBaseCrossRateInfo.ConversionPath);
+                        var key = new ExchangeAssetPair(wantedBaseCrossRateInfo.ConversionPath, wantedBaseCrossRateInfo.AssetPair);
                         _crossRates.AddOrUpdate(key, wantedBaseCrossRateInfo);
                     }
                 }
