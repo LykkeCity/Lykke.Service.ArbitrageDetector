@@ -15,7 +15,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
     public class ArbitrageDetectorService : TimerPeriod, IArbitrageDetectorService
     {
         private readonly ConcurrentDictionary<ExchangeAssetPair, OrderBook> _orderBooks;
-        private readonly HashSet<CrossRate> _crossRates;
+        private readonly ConcurrentDictionary<ExchangeConversionPath, CrossRate> _crossRates;
         private readonly IReadOnlyCollection<string> _wantedCurrencies;
         private readonly string _baseCurrency;
         private readonly int _expirationTimeInSeconds;
@@ -26,7 +26,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             _log = log;
             _orderBooks = new ConcurrentDictionary<ExchangeAssetPair, OrderBook>();
-            _crossRates = new HashSet<CrossRate>();
+            _crossRates = new ConcurrentDictionary<ExchangeConversionPath, CrossRate>();
             _wantedCurrencies = wantedCurrencies;
             _baseCurrency = baseCurrency;
             _expirationTimeInSeconds = expirationTimeInSeconds;
@@ -77,7 +77,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public IEnumerable<CrossRate> GetCrossRates()
         {
-            return _crossRates
+            return _crossRates.Values
                 .OrderByDescending(x => x.Timestamp)
                 .ToList()
                 .AsReadOnly();
@@ -190,7 +190,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             );
                         }
 
-                        _crossRates.AddOrUpdate(intermediateWantedCrossRate);
+                        var key = new ExchangeConversionPath(intermediateWantedCrossRate.Source, intermediateWantedCrossRate.ConversionPath);
+                        _crossRates.AddOrUpdate(key, intermediateWantedCrossRate);
 
                         continue;
                     }
@@ -226,12 +227,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             new List<OrderBook> { wantedIntermediateOrderBook, intermediateBaseOrderBook }
                         );
 
-                        _crossRates.AddOrUpdate(wantedBaseCrossRateInfo);
+                        var key = new ExchangeConversionPath(wantedBaseCrossRateInfo.Source, wantedBaseCrossRateInfo.ConversionPath);
+                        _crossRates.AddOrUpdate(key, wantedBaseCrossRateInfo);
                     }
                 }
             }
 
-            return _crossRates.ToList().AsReadOnly();
+            return _crossRates.Values.ToList().AsReadOnly();
         }
         
 
@@ -326,9 +328,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             foreach (var crossRate in _crossRates)
             {
-                if (DateTime.UtcNow - crossRate.Timestamp < new TimeSpan(0, 0, 0, _expirationTimeInSeconds))
+                if (DateTime.UtcNow - crossRate.Value.Timestamp < new TimeSpan(0, 0, 0, _expirationTimeInSeconds))
                 {
-                    result.Add(crossRate);
+                    result.Add(crossRate.Value);
                 }
             }
 
