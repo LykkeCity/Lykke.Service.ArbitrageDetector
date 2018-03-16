@@ -9,8 +9,6 @@ using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Utils;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Services;
-using Lykke.Service.Assets.Client;
-using Lykke.Service.Assets.Client.Models;
 using AssetPair = Lykke.Service.ArbitrageDetector.Core.Domain.AssetPair;
 
 namespace Lykke.Service.ArbitrageDetector.Services

@@ -16,10 +16,4 @@
     <ProjectReference Include="..\Lykke.Service.ArbitrageDetector.Core\Lykke.Service.ArbitrageDetector.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Lykke.Service.Assets.Client">
-      <HintPath>..\..\..\..\..\..\.nuget\packages\lykke.service.assets.client\3.3.2\lib\netstandard2.0\Lykke.Service.Assets.Client.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>
