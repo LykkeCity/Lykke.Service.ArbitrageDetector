@@ -9,6 +9,9 @@ using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Utils;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Services;
+using Lykke.Service.Assets.Client;
+using Lykke.Service.Assets.Client.Models;
+using AssetPair = Lykke.Service.ArbitrageDetector.Core.Domain.AssetPair;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
@@ -21,8 +24,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly int _expirationTimeInSeconds;
         private readonly ILog _log;
 
-        public ArbitrageDetectorService(ILog log, IShutdownManager shutdownManager, IReadOnlyCollection<string> wantedCurrencies, string baseCurrency, int executionDelay, int expirationTimeInSeconds)
-            : base((int)TimeSpan.FromSeconds(executionDelay).TotalMilliseconds, log)
+        public ArbitrageDetectorService(ILog log, IShutdownManager shutdownManager,
+            IReadOnlyCollection<string> wantedCurrencies, string baseCurrency, int executionDelay,
+            int expirationTimeInSeconds)
+            : base((int) TimeSpan.FromSeconds(executionDelay).TotalMilliseconds, log)
         {
             _log = log;
             _orderBooks = new ConcurrentDictionary<ExchangeAssetPair, OrderBook>();
@@ -33,7 +38,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
             shutdownManager?.Register(this);
         }
 
-
         public IEnumerable<OrderBook> GetOrderBooks()
         {
             return _orderBooks.Select(x => x.Value)
@@ -43,7 +47,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         }
 
         public IEnumerable<OrderBook> GetOrderBooksByExchange(string exchange)
-        {            
+        {
             var result = _orderBooks.Select(x => x.Value).ToList();
 
             if (!string.IsNullOrWhiteSpace(exchange))
@@ -57,7 +61,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var result = _orderBooks.Select(x => x.Value).ToList();
 
             if (!string.IsNullOrWhiteSpace(instrument))
-                result = result.Where(x => x.AssetPair.ToUpper().Trim() == instrument.ToUpper().Trim()).ToList();
+                result = result.Where(x => x.AssetPairStr.ToUpper().Trim() == instrument.ToUpper().Trim()).ToList();
 
             return result.OrderByDescending(x => x.Timestamp).ToList();
         }
@@ -70,7 +74,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 result = result.Where(x => x.Source.ToUpper().Trim() == exchange.ToUpper().Trim()).ToList();
 
             if (!string.IsNullOrWhiteSpace(instrument))
-                result = result.Where(x => x.AssetPair.ToUpper().Trim() == instrument.ToUpper().Trim()).ToList();
+                result = result.Where(x => x.AssetPairStr.ToUpper().Trim() == instrument.ToUpper().Trim()).ToList();
 
             return result.OrderByDescending(x => x.Timestamp).ToList();
         }
@@ -96,10 +100,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     var crossRate1 = actualCrossRates.ElementAt(i);
                     var crossRate2 = actualCrossRates.ElementAt(j);
 
-                    if (crossRate1.Ask < crossRate2.Bid)
+                    if (crossRate1.BestAskPrice < crossRate2.BestBidPrice)
                         result.Add(new Arbitrage(crossRate1, crossRate2));
 
-                    if (crossRate2.Ask < crossRate1.Bid)
+                    if (crossRate2.BestAskPrice < crossRate1.BestBidPrice)
                         result.Add(new Arbitrage(crossRate2, crossRate1));
                 }
             }
@@ -143,54 +147,28 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     var currentExchange = wantedOrderBook.Source;
 
                     // Trying to find wanted asset in current orderBook's asset pair
-                    var wantedIntermediateAssetPair = wantedOrderBook.GetAssetPairIfContains(wantedCurrency);
-                    var wantedIntermediatePair = wantedIntermediateAssetPair.Value;
+                    var wantedIntermediateAssetPair = AssetPair.FromString(wantedOrderBook.AssetPairStr, wantedCurrency);
 
                     // If something wrong with orderBook then continue
-                    if (!wantedOrderBook.Asks.Any() || wantedOrderBook.GetBestAsk() == 0 ||
-                        !wantedOrderBook.Bids.Any() || wantedOrderBook.GetBestBid() == 0)
+                    if (!wantedOrderBook.Asks.Any() || wantedOrderBook.BestAskPrice == 0 ||
+                        !wantedOrderBook.Bids.Any() || wantedOrderBook.BestBidPrice == 0)
                     {
-                        _log?.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Skip {currentExchange}, {wantedOrderBook.AssetPair}, bids.Count: {wantedOrderBook.Bids.Count}, asks.Count: {wantedOrderBook.Asks.Count}");
+                        _log?.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name,
+                            $"Skip {currentExchange}, {wantedOrderBook.AssetPairStr}, bids.Count: {wantedOrderBook.Bids.Count}, asks.Count: {wantedOrderBook.Asks.Count}");
                         continue;
                     }
 
                     // Get intermediate currency
-                    var intermediateCurrency = wantedIntermediatePair.Base == wantedCurrency
-                        ? wantedIntermediatePair.Quoting
-                        : wantedIntermediatePair.Base;
+                    var intermediateCurrency = wantedIntermediateAssetPair.Base == wantedCurrency
+                        ? wantedIntermediateAssetPair.Quoting
+                        : wantedIntermediateAssetPair.Base;
 
                     // If original wanted/base or base/wanted rate then just save it
                     if (intermediateCurrency == _baseCurrency)
                     {
-                        CrossRate intermediateWantedCrossRate = null;
+                        var intermediateWantedCrossRate = CrossRate.FromOrderBook(wantedOrderBook, new AssetPair(wantedCurrency, _baseCurrency));
 
-                        // Straight pair (wanted/base)
-                        if (wantedIntermediatePair.Base == wantedCurrency && wantedIntermediatePair.Quoting == intermediateCurrency)
-                        {
-                            intermediateWantedCrossRate = new CrossRate(
-                                currentExchange,
-                                wantedCurrency + intermediateCurrency,
-                                wantedOrderBook.GetBestBid(),
-                                wantedOrderBook.GetBestAsk(),
-                                $"{currentExchange}-{wantedCurrency}{intermediateCurrency}",
-                                new List<OrderBook> { wantedOrderBook }
-                            );
-                        }
-
-                        // Reversed pair (base/wanted)
-                        if (wantedIntermediatePair.Base == intermediateCurrency && wantedIntermediatePair.Quoting == wantedCurrency)
-                        {
-                            intermediateWantedCrossRate = new CrossRate(
-                                currentExchange,
-                                intermediateCurrency + wantedCurrency,
-                                1 / wantedOrderBook.GetBestAsk(), // reversed
-                                1 / wantedOrderBook.GetBestBid(), // reversed
-                                $"{currentExchange}-{wantedCurrency}{intermediateCurrency}",
-                                new List<OrderBook> { wantedOrderBook }
-                            );
-                        }
-
-                        var key = new ExchangeAssetPair(intermediateWantedCrossRate.ConversionPath, intermediateWantedCrossRate.AssetPair);
+                        var key = new ExchangeAssetPair(intermediateWantedCrossRate.ConversionPath, intermediateWantedCrossRate.AssetPairStr);
                         _crossRates.AddOrUpdate(key, intermediateWantedCrossRate);
 
                         continue;
@@ -198,7 +176,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                     // Trying to find intermediate/base or base/intermediate pair from any exchange
                     var intermediateBaseCurrencyKeys = actualOrderBooks.Keys
-                        .Where(x => x.AssetPair.Contains(intermediateCurrency) && x.AssetPair.Contains(_baseCurrency)).ToList();
+                        .Where(x => x.AssetPair.Contains(intermediateCurrency) && x.AssetPair.Contains(_baseCurrency))
+                        .ToList();
 
                     foreach (var intermediateBaseCurrencyKey in intermediateBaseCurrencyKeys)
                     {
@@ -206,36 +185,18 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var wantedIntermediateOrderBook = wantedOrderBook;
                         var intermediateBaseOrderBook = actualOrderBooks[intermediateBaseCurrencyKey];
 
-                        var intermediateBasePair = intermediateBaseOrderBook.GetAssetPairIfContains(_baseCurrency).Value;
+                        var targetBaseAssetPair = new AssetPair(wantedCurrency, _baseCurrency);
+                        var crossRate = CrossRate.FromOrderBooks(wantedIntermediateOrderBook, intermediateBaseOrderBook, targetBaseAssetPair);
 
-                        // Getting wanted/intermediate and intermediate/base bid and ask
-                        var wantedIntermediateBidAsk = GetBidAndAsk(wantedIntermediatePair, wantedCurrency, intermediateCurrency, wantedIntermediateOrderBook);
-                        var intermediateBaseBidAsk = GetBidAndAsk(intermediateBasePair, intermediateCurrency, _baseCurrency, intermediateBaseOrderBook);
-
-                        // Calculating wanted/base bid and ask
-                        var wantedBaseBid = wantedIntermediateBidAsk.Bid * intermediateBaseBidAsk.Bid;
-                        var wantedBaseAsk = wantedIntermediateBidAsk.Ask * intermediateBaseBidAsk.Ask;
-
-                        // Saving to CrossRate collection
-                        var wantedBasePairStr = wantedCurrency + _baseCurrency;
-                        var wantedBaseCrossRateInfo = new CrossRate(
-                            $"{currentExchange}-{intermediateBaseOrderBook.Source}",
-                            wantedBasePairStr,
-                            wantedBaseBid,
-                            wantedBaseAsk,
-                            $"{wantedIntermediateOrderBook.Source}-{wantedIntermediateOrderBook.AssetPair} & {intermediateBaseOrderBook.Source}-{intermediateBaseOrderBook.AssetPair}",
-                            new List<OrderBook> { wantedIntermediateOrderBook, intermediateBaseOrderBook }
-                        );
-
-                        var key = new ExchangeAssetPair(wantedBaseCrossRateInfo.ConversionPath, wantedBaseCrossRateInfo.AssetPair);
-                        _crossRates.AddOrUpdate(key, wantedBaseCrossRateInfo);
+                        var key = new ExchangeAssetPair(crossRate.ConversionPath, crossRate.AssetPairStr);
+                        _crossRates.AddOrUpdate(key, crossRate);
                     }
                 }
             }
 
             return _crossRates.Values.ToList().AsReadOnly();
         }
-        
+
 
         private IEnumerable<string> GetArbitragesStrings()
         {
@@ -249,13 +210,17 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 var highBid = arbitrage.HighBid;
 
                 result.Add(string.Format("{0}: {1}.ask={2} < {3}.bid={4}, {5}, {6}",
-                    lowAsk.AssetPair,
+                    lowAsk.AssetPairStr,
                     lowAsk.ConversionPath,
-                    lowAsk.Ask.ToString("0.#####"),
+                    lowAsk.BestAskPrice.ToString("0.#####"),
                     highBid.ConversionPath,
-                    highBid.Bid.ToString("0.#####"),
-                    lowAsk.OriginalOrderBooks.Count == 1 ? lowAsk.OriginalOrderBooks.First().Timestamp : lowAsk.Timestamp,
-                    highBid.OriginalOrderBooks.Count == 1 ? highBid.OriginalOrderBooks.First().Timestamp : highBid.Timestamp
+                    highBid.BestBidPrice.ToString("0.#####"),
+                    lowAsk.OriginalOrderBooks.Count == 1
+                        ? lowAsk.OriginalOrderBooks.First().Timestamp
+                        : lowAsk.Timestamp,
+                    highBid.OriginalOrderBooks.Count == 1
+                        ? highBid.OriginalOrderBooks.First().Timestamp
+                        : highBid.Timestamp
                 ));
             }
 
@@ -264,47 +229,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         private void CheckForCurrencyAndUpdateOrderBooks(string currency, OrderBook orderBook)
         {
-            var baseAssetPair = orderBook.GetAssetPairIfContains(currency);
-            if (baseAssetPair.HasValue)
-            {
-                var key = new ExchangeAssetPair(orderBook.Source, orderBook.AssetPair);
-                _orderBooks.AddOrUpdate(key, orderBook);
-            }
-        }
+            if (!orderBook.AssetPairStr.Contains(currency))
+                return;
 
-        private BidAsk GetBidAndAsk(AssetPair pair, string _base, string quoting, OrderBook orderBook)
-        {
-            #region Argument checking
+            orderBook.SetAssetPair(currency);
 
-            if (pair.Base == null || pair.Quoting == null)
-                throw new ArgumentNullException(nameof(pair));
-
-            if (string.IsNullOrWhiteSpace(_base))
-                throw new ArgumentOutOfRangeException(nameof(_base));
-
-            if (string.IsNullOrWhiteSpace(quoting))
-                throw new ArgumentOutOfRangeException(nameof(quoting));
-
-            #endregion
-
-            decimal intermediateBaseBid;
-            decimal intermediateBaseAsk;
-            if (pair.Base == _base && pair.Quoting == quoting)
-            {
-                intermediateBaseBid = orderBook.GetBestBid();
-                intermediateBaseAsk = orderBook.GetBestAsk();
-            }
-            else if (pair.Base == quoting && pair.Quoting == _base)
-            {
-                intermediateBaseBid = 1 / orderBook.GetBestAsk();
-                intermediateBaseAsk = 1 / orderBook.GetBestBid();
-            }
-            else
-            {
-                throw new InvalidOperationException("Assets must be the same");
-            }
-
-            return new BidAsk(intermediateBaseBid, intermediateBaseAsk);
+            var key = new ExchangeAssetPair(orderBook.Source, orderBook.AssetPairStr);
+            _orderBooks.AddOrUpdate(key, orderBook);
         }
 
         private Dictionary<ExchangeAssetPair, OrderBook> GetActualOrderBooks()

@@ -9,13 +9,13 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
     /// </summary>
     public class ClientFixture : IDisposable
     {
-        protected IArbitrageDetectorClient Client { get; private set; }
+        protected IArbitrageDetectorService Client { get; private set; }
 
         public ClientFixture()
         {
             // Must be started
             var settings = new ArbitrageDetectorServiceClientSettings("http://localhost:5000");
-            Client = new ArbitrageDetectorClient(settings);
+            Client = new ArbitrageDetectorService(settings);
         }
 
         public void Dispose()

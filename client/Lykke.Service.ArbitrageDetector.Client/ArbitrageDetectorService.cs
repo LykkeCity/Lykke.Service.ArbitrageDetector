@@ -12,13 +12,13 @@ namespace Lykke.Service.ArbitrageDetector.Client
     /// <summary>
     /// Contains methods for work with arbitrage detector service.
     /// </summary>
-    public class ArbitrageDetectorClient : IArbitrageDetectorClient, IDisposable
+    public class ArbitrageDetectorService : IArbitrageDetectorService, IDisposable
     {
         private readonly HttpClient _httpClient;
         private readonly IArbitrageDetectorApi _arbitrageDetectorApi;
         private readonly ApiRunner _runner;
 
-        public ArbitrageDetectorClient(ArbitrageDetectorServiceClientSettings settings)
+        public ArbitrageDetectorService(ArbitrageDetectorServiceClientSettings settings)
         {
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));

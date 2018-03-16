@@ -8,11 +8,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lykke.Common" Version="4.4.2" />
+    <PackageReference Include="Lykke.Common" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.10" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Lykke.Service.ArbitrageDetector.Core\Lykke.Service.ArbitrageDetector.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Lykke.Service.Assets.Client">
+      <HintPath>..\..\..\..\..\..\.nuget\packages\lykke.service.assets.client\3.3.2\lib\netstandard2.0\Lykke.Service.Assets.Client.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

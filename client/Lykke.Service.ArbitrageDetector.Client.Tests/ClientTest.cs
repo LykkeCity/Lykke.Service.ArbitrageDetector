@@ -16,7 +16,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             Assert.NotNull(orderBooks);
             Assert.NotEmpty(orderBooks);
             Assert.NotEmpty(orderBooks.First().Source);
-            Assert.NotEmpty(orderBooks.First().AssetPair);
+            Assert.True(!orderBooks.First().AssetPair.IsEmpty());
             Assert.NotEqual(default(DateTime), orderBooks.First().Timestamp);
             Assert.NotEmpty(orderBooks.First().Asks);
             Assert.NotEmpty(orderBooks.First().Bids);

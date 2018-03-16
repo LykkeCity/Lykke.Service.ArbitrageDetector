@@ -6,64 +6,53 @@ using Newtonsoft.Json;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    public sealed class OrderBook
+    public class OrderBook
     {
         public string Source { get; }
 
         [JsonProperty("asset")]
-        public string AssetPair { get; }
+        public string AssetPairStr { get; }
 
-        public DateTime Timestamp { get; }
+        public AssetPair AssetPair { get; set; }
+
+        public DateTime Timestamp { get; protected set; }
 
         public IReadOnlyCollection<VolumePrice> Asks { get; }
 
         public IReadOnlyCollection<VolumePrice> Bids { get; }
 
-        public OrderBook(string source, string assetPair, IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks, DateTime timestamp)
+        public decimal BestBidPrice => Bids.MaxBy(x => x.Price).Price;
+        public decimal BestBidVolume => Bids.MaxBy(x => x.Price).Volume;
+        public decimal BestAskPrice => Asks.MinBy(x => x.Price).Price;
+        public decimal BestAskVolume => Asks.MinBy(x => x.Price).Volume;
+
+        public OrderBook(string source, string asset, IReadOnlyCollection<VolumePrice> asks, IReadOnlyCollection<VolumePrice> bids, DateTime timestamp)
         {
-            Source = string.IsNullOrEmpty(source) ? throw new ArgumentNullException(nameof(source)) : source;
-            AssetPair = string.IsNullOrEmpty(assetPair) ? throw new ArgumentNullException(nameof(assetPair)) : assetPair;
+            Source = string.IsNullOrEmpty(source) ? throw new ArgumentException(nameof(source)) : source;
+            AssetPairStr = string.IsNullOrEmpty(asset) ? throw new ArgumentException(nameof(asset)) : asset;
             Asks = asks.OrderBy(x => x.Price).ToList();
             Bids = bids.OrderByDescending(x => x.Price).ToList();
             Timestamp = timestamp;
         }
 
-        /// Must be removed after adding AssetsPairService
-        public AssetPair? GetAssetPairIfContains(string currency)
+        public void SetAssetPair(string oneOfTheAssets)
         {
-            if (string.IsNullOrWhiteSpace(currency))
-                throw new ArgumentNullException(nameof(currency));
+            if (string.IsNullOrWhiteSpace(oneOfTheAssets))
+                throw new ArgumentNullException(nameof(oneOfTheAssets));
 
-            var orderBookAssetPair = AssetPair.ToUpper();
-            if (orderBookAssetPair.Contains(currency))
-            {
-                var fromAsset = string.Empty;
-                var toAsset = string.Empty;
-                if (orderBookAssetPair.StartsWith(currency))
-                {
-                    fromAsset = currency;
-                    toAsset = orderBookAssetPair.Replace(fromAsset, string.Empty);
-                }
-                else
-                {
-                    fromAsset = orderBookAssetPair.Replace(currency, string.Empty);
-                    toAsset = currency;
-                }
-
-                return new AssetPair(fromAsset, toAsset);
-            }
-
-            return null;
+            AssetPair = AssetPair.FromString(AssetPairStr, oneOfTheAssets);
         }
 
-        public decimal GetBestBid()
+        public OrderBook Reverse()
         {
-            return Bids.MaxBy(x => x.Price).Price;
-        }
+            var inversedAssetPair = AssetPair.Quoting + AssetPair.Base;
+            var result = new OrderBook(Source, inversedAssetPair,
+                Bids.Select(x => new VolumePrice(1 / x.Price, x.Volume)).OrderByDescending(x => x.Price).ToList(),
+                Asks.Select(x => new VolumePrice(1 / x.Price, x.Volume)).OrderByDescending(x => x.Price).ToList(),
+                Timestamp);
+            result.AssetPair = new AssetPair(AssetPair.Quoting, AssetPair.Base);
 
-        public decimal GetBestAsk()
-        {
-            return Asks.MinBy(x => x.Price).Price;
+            return result;
         }
     }
 }

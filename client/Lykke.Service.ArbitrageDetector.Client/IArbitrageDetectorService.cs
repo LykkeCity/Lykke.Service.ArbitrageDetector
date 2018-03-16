@@ -7,7 +7,7 @@ namespace Lykke.Service.ArbitrageDetector.Client
     /// <summary>
     /// HTTP client for arbitrage detector service.
     /// </summary>
-    public interface IArbitrageDetectorClient
+    public interface IArbitrageDetectorService
     {
         /// <summary>
         /// Returns a collection of OrderBook entities.
