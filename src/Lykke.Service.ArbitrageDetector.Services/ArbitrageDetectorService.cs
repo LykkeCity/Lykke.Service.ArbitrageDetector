@@ -49,7 +49,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var result = _orderBooks.Select(x => x.Value).ToList();
 
             if (!string.IsNullOrWhiteSpace(exchange))
-                result = result.Where(x => x.Source.ToUpper().Trim() == exchange.ToUpper().Trim()).ToList();
+                result = result.Where(x => x.Source.ToUpper().Trim().Contains(exchange.ToUpper().Trim())).ToList();
 
             return result.OrderByDescending(x => x.Timestamp).ToList();
         }
@@ -59,7 +59,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var result = _orderBooks.Select(x => x.Value).ToList();
 
             if (!string.IsNullOrWhiteSpace(instrument))
-                result = result.Where(x => x.AssetPairStr.ToUpper().Trim() == instrument.ToUpper().Trim()).ToList();
+                result = result.Where(x => x.AssetPairStr.ToUpper().Trim().Contains(instrument.ToUpper().Trim())).ToList();
 
             return result.OrderByDescending(x => x.Timestamp).ToList();
         }
@@ -69,10 +69,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var result = _orderBooks.Select(x => x.Value).ToList();
 
             if (!string.IsNullOrWhiteSpace(exchange))
-                result = result.Where(x => x.Source.ToUpper().Trim() == exchange.ToUpper().Trim()).ToList();
+                result = result.Where(x => x.Source.ToUpper().Trim().Contains(exchange.ToUpper().Trim())).ToList();
 
             if (!string.IsNullOrWhiteSpace(instrument))
-                result = result.Where(x => x.AssetPairStr.ToUpper().Trim() == instrument.ToUpper().Trim()).ToList();
+                result = result.Where(x => x.AssetPairStr.ToUpper().Trim().Contains(instrument.ToUpper().Trim())).ToList();
 
             return result.OrderByDescending(x => x.Timestamp).ToList();
         }
@@ -91,6 +91,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             var actualCrossRates = GetActualCrossRates();
 
+            // TODO: To list, sort and one iteration (as in BO.AE)
             for (var i = 0; i < actualCrossRates.Count; i++)
             {
                 for (var j = i + 1; j < actualCrossRates.Count; j++)
