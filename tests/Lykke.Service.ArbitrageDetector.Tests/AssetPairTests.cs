@@ -152,6 +152,26 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         }
 
         [Fact]
+        public void AssetPairContainsTest()
+        {
+            const string btc = "BTC";
+            const string usd = "USD";
+            const string eur = "EUR";
+
+            var btcusd = new AssetPair(btc, usd);
+
+            Assert.True(btcusd.ContainsAsset(btc));
+            Assert.True(btcusd.ContainsAsset(usd));
+            Assert.False(btcusd.ContainsAsset(eur));
+
+            void ContainsAsset1() => btcusd.ContainsAsset(null);
+            Assert.Throws<ArgumentException>((Action)ContainsAsset1);
+
+            void ContainsAsset2() => btcusd.ContainsAsset("");
+            Assert.Throws<ArgumentException>((Action)ContainsAsset2);
+        }
+
+        [Fact]
         public void AssetPairFromStringTest()
         {
             const string btcusd = "BTCUSD";

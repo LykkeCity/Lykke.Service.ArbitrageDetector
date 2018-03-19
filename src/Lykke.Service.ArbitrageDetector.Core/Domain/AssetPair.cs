@@ -18,11 +18,15 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public AssetPair Reverse()
         {
+            ValidateAssetPair();
+
             return new AssetPair(Quoting, Base);
         }
 
         public bool IsReversed(AssetPair assetPair)
         {
+            ValidateAssetPair();
+
             if (assetPair.IsEmpty())
                 throw new ArgumentException($"{nameof(assetPair)} is not filled properly.");
 
@@ -31,6 +35,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public bool IsEqual(AssetPair assetPair)
         {
+            ValidateAssetPair();
+
             if (assetPair.IsEmpty())
                 throw new ArgumentException($"{nameof(assetPair)} is not filled properly.");
 
@@ -39,6 +45,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public bool IsEqualOrReversed(AssetPair assetPair)
         {
+            ValidateAssetPair();
+
             if (assetPair.IsEmpty())
                 throw new ArgumentException($"{nameof(assetPair)} is not filled properly.");
 
@@ -47,10 +55,22 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public bool HasCommonAsset(AssetPair assetPair)
         {
+            ValidateAssetPair();
+
             if (assetPair.IsEmpty())
                 throw new ArgumentException($"{nameof(assetPair)} is not filled properly.");
 
             return Base == assetPair.Base || Base == assetPair.Quoting || Quoting == assetPair.Base || Quoting == assetPair.Quoting;
+        }
+
+        public bool ContainsAsset(string asset)
+        {
+            ValidateAssetPair();
+
+            if (string.IsNullOrWhiteSpace(asset))
+                throw new ArgumentException(nameof(asset));
+
+            return Base == asset || Quoting == asset;
         }
 
         public static AssetPair FromString(string assetPair, string oneOfTheAssets)
@@ -84,7 +104,18 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public override string ToString()
         {
+            ValidateAssetPair();
+
             return Name;
+        }
+
+        private void ValidateAssetPair()
+        {
+            if (string.IsNullOrWhiteSpace(Base))
+                throw new ArgumentException(nameof(Base));
+
+            if (string.IsNullOrWhiteSpace(Quoting))
+                throw new ArgumentException(nameof(Quoting));
         }
     }
 }

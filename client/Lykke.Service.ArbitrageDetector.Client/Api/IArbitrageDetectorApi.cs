@@ -5,6 +5,7 @@ using Refit;
 
 namespace Lykke.Service.ArbitrageDetector.Client.Api
 {
+    // TODO: Change GetOrderBooks to one method with arguments (exchange and instrument)
     internal interface IArbitrageDetectorApi
     {
         [Get("/orderBooks")]

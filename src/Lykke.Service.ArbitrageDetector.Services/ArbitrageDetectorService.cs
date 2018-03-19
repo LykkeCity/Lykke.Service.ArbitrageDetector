@@ -139,7 +139,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             foreach (var wantedCurrency in _wantedCurrencies)
             {
-                var wantedCurrencyKeys = actualOrderBooks.Keys.Where(x => x.AssetPair.Contains(wantedCurrency)).ToList();
+                var wantedCurrencyKeys = actualOrderBooks.Keys.Where(x => x.AssetPair.ContainsAsset(wantedCurrency)).ToList();
                 foreach (var wantedCurrencykey in wantedCurrencyKeys)
                 {
                     var wantedOrderBook = actualOrderBooks[wantedCurrencykey];
@@ -167,7 +167,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     {
                         var intermediateWantedCrossRate = CrossRate.FromOrderBook(wantedOrderBook, new AssetPair(wantedCurrency, _baseCurrency));
 
-                        var key = new ExchangeAssetPair(intermediateWantedCrossRate.ConversionPath, intermediateWantedCrossRate.AssetPairStr);
+                        var key = new ExchangeAssetPair(intermediateWantedCrossRate.ConversionPath, intermediateWantedCrossRate.AssetPair);
                         _crossRates.AddOrUpdate(key, intermediateWantedCrossRate);
 
                         continue;
@@ -175,7 +175,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                     // Trying to find intermediate/base or base/intermediate pair from any exchange
                     var intermediateBaseCurrencyKeys = actualOrderBooks.Keys
-                        .Where(x => x.AssetPair.Contains(intermediateCurrency) && x.AssetPair.Contains(_baseCurrency))
+                        .Where(x => x.AssetPair.ContainsAsset(intermediateCurrency) && x.AssetPair.ContainsAsset(_baseCurrency))
                         .ToList();
 
                     foreach (var intermediateBaseCurrencyKey in intermediateBaseCurrencyKeys)
@@ -187,7 +187,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var targetBaseAssetPair = new AssetPair(wantedCurrency, _baseCurrency);
                         var crossRate = CrossRate.FromOrderBooks(wantedIntermediateOrderBook, intermediateBaseOrderBook, targetBaseAssetPair);
 
-                        var key = new ExchangeAssetPair(crossRate.ConversionPath, crossRate.AssetPairStr);
+                        var key = new ExchangeAssetPair(crossRate.ConversionPath, crossRate.AssetPair);
                         _crossRates.AddOrUpdate(key, crossRate);
                     }
                 }
@@ -233,7 +233,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             orderBook.SetAssetPair(currency);
 
-            var key = new ExchangeAssetPair(orderBook.Source, orderBook.AssetPairStr);
+            var key = new ExchangeAssetPair(orderBook.Source, orderBook.AssetPair);
             _orderBooks.AddOrUpdate(key, orderBook);
         }
 
