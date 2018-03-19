@@ -60,7 +60,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
                 orderBookResult = orderBook.Reverse();
                 originalOrderBooks.Add(orderBook);
             }
-
+            
             var result = new CrossRate(orderBookResult.Source, targetAssetPair, orderBookResult.Asks, orderBookResult.Bids, conversionPath, originalOrderBooks, orderBook.Timestamp);
 
             return result;

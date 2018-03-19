@@ -1,6 +1,6 @@
 ﻿namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    public sealed class BidAsk
+    public struct BidAsk
     {
         public decimal Bid { get; }
 

@@ -1,29 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.Service.ArbitrageDetector.Client.Models;
 using Refit;
 
 namespace Lykke.Service.ArbitrageDetector.Client.Api
 {
-    // TODO: Change GetOrderBooks to one method with arguments (exchange and instrument)
     internal interface IArbitrageDetectorApi
     {
         [Get("/orderBooks")]
-        Task<IReadOnlyList<OrderBook>> GetOrderBooksAsync();
-
-        [Get("/orderBooks/exchange/{exchange}")]
-        Task<IReadOnlyList<OrderBook>> GetOrderBooksByExchangeAsync(string exchange);
-
-        [Get("/orderBooks/instrument/{instrument}")]
-        Task<IReadOnlyList<OrderBook>> GetOrderBooksByInstrumentAsync(string instrument);
-
-        [Get("/orderBooks/exchange/{exchange}/instrument/{instrument}")]
-        Task<IReadOnlyList<OrderBook>> GetOrderBooksAsync(string exchange, string instrument);
+        Task<IReadOnlyList<OrderBook>> OrderBooksAsync(string exchange, string instrument);
 
         [Get("/crossRates")]
-        Task<IReadOnlyList<CrossRate>> GetCrossRatesAsync();
+        Task<IReadOnlyList<CrossRate>> CrossRatesAsync();
 
         [Get("/arbitrages")]
-        Task<IReadOnlyList<Arbitrage>> GetArbitragesAsync();
+        Task<IReadOnlyList<Arbitrage>> ArbitragesAsync();
+
+        [Get("/arbitrageHistory")]
+        Task<IReadOnlyList<ArbitrageHistory>> ArbitrageHistory(DateTime since);
     }
 }

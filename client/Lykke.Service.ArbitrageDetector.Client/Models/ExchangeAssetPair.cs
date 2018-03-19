@@ -2,30 +2,29 @@
 
 namespace Lykke.Service.ArbitrageDetector.Client.Models
 {
-    /// <summary>
-    /// Represents a pair of exchange and an asset pair.
-    /// </summary>
-    public struct ExchangeAssetPair
+    public struct ExchangeAssetPair : IComparable
     {
-        /// <summary>
-        /// Name of exchange.
-        /// </summary>
         public string Exchange { get; }
+        
+        public AssetPair AssetPair { get; }
 
-        /// <summary>
-        /// Asset pair.
-        /// </summary>
-        public string AssetPair{ get; }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="exchange">Exchange name.</param>
-        /// <param name="assetPair">Asset pair.</param>
-        public ExchangeAssetPair(string exchange, string assetPair)
+        public ExchangeAssetPair(string exchange, AssetPair assetPair)
         {
             Exchange = string.IsNullOrEmpty(exchange) ? throw new ArgumentNullException(nameof(exchange)) : exchange;
-            AssetPair = string.IsNullOrEmpty(assetPair) ? throw new ArgumentNullException(nameof(assetPair)) : assetPair;
+            AssetPair = string.IsNullOrEmpty(assetPair.Base) || string.IsNullOrEmpty(assetPair.Quoting) ? throw new ArgumentNullException(nameof(assetPair)) : assetPair;
+        }
+
+        public override string ToString()
+        {
+            return $"{Exchange}-{AssetPair}";
+        }
+
+        public int CompareTo(object obj)
+        {
+            if (obj == null || !(obj is ExchangeAssetPair))
+                throw new ArgumentException(nameof(obj));
+
+            return string.Compare(ToString(), ((ExchangeAssetPair)obj).ToString(), StringComparison.Ordinal);
         }
     }
 }

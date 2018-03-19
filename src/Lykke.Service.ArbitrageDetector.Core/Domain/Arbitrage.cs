@@ -2,16 +2,40 @@
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    public struct Arbitrage
+    public sealed class Arbitrage
     {
-        public CrossRate LowAsk{ get; }
+        public CrossRate AskCrossRate { get; }
 
-        public CrossRate HighBid { get; }
+        public VolumePrice Ask { get; }
 
-        public Arbitrage(CrossRate lowAsk, CrossRate highBid)
+
+        public CrossRate BidCrossRate { get; }
+
+        public VolumePrice Bid { get; }
+
+
+        public decimal Spread { get; }
+
+        public decimal Volume { get; }
+
+
+        public DateTime StartedTimestamp { get; }
+
+
+        public Arbitrage(CrossRate askCrossRate, VolumePrice ask, CrossRate bidCrossRate, VolumePrice bid)
         {
-            LowAsk = lowAsk ?? throw new ArgumentNullException(nameof(lowAsk));
-            HighBid = highBid ?? throw new ArgumentNullException(nameof(highBid));
+            AskCrossRate = askCrossRate ?? throw new ArgumentNullException(nameof(askCrossRate));
+            BidCrossRate = bidCrossRate ?? throw new ArgumentNullException(nameof(bidCrossRate));
+            Ask = ask;
+            Bid = bid;
+            Spread = (Ask.Price - Bid.Price) / Bid.Price * 100;
+            Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
+            StartedTimestamp = DateTime.UtcNow;
+        }
+
+        public override string ToString()
+        {
+            return $"{AskCrossRate.AssetPair}, spread: {Spread}, volume: {Volume}, path: ({AskCrossRate.ConversionPath}) * ({BidCrossRate.ConversionPath})";
         }
     }
 }

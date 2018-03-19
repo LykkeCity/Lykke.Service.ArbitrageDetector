@@ -18,11 +18,15 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
 
         public AssetPair Reverse()
         {
+            Validate();
+
             return new AssetPair(Quoting, Base);
         }
 
         public bool IsReversed(AssetPair assetPair)
         {
+            Validate();
+
             if (assetPair.IsEmpty())
                 throw new ArgumentException($"{nameof(assetPair)} is not filled properly.");
 
@@ -31,6 +35,8 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
 
         public bool IsEqual(AssetPair assetPair)
         {
+            Validate();
+
             if (assetPair.IsEmpty())
                 throw new ArgumentException($"{nameof(assetPair)} is not filled properly.");
 
@@ -39,6 +45,8 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
 
         public bool IsEqualOrReversed(AssetPair assetPair)
         {
+            Validate();
+
             if (assetPair.IsEmpty())
                 throw new ArgumentException($"{nameof(assetPair)} is not filled properly.");
 
@@ -47,10 +55,22 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
 
         public bool HasCommonAsset(AssetPair assetPair)
         {
+            Validate();
+
             if (assetPair.IsEmpty())
                 throw new ArgumentException($"{nameof(assetPair)} is not filled properly.");
 
             return Base == assetPair.Base || Base == assetPair.Quoting || Quoting == assetPair.Base || Quoting == assetPair.Quoting;
+        }
+
+        public bool ContainsAsset(string asset)
+        {
+            Validate();
+
+            if (string.IsNullOrWhiteSpace(asset))
+                throw new ArgumentException(nameof(asset));
+
+            return Base == asset || Quoting == asset;
         }
 
         public static AssetPair FromString(string assetPair, string oneOfTheAssets)
@@ -84,7 +104,18 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
 
         public override string ToString()
         {
+            Validate();
+
             return Name;
+        }
+
+        private void Validate()
+        {
+            if (string.IsNullOrWhiteSpace(Base))
+                throw new ArgumentException(nameof(Base));
+
+            if (string.IsNullOrWhiteSpace(Quoting))
+                throw new ArgumentException(nameof(Quoting));
         }
     }
 }

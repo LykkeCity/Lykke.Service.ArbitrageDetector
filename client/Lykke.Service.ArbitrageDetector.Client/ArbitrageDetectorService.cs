@@ -43,34 +43,24 @@ namespace Lykke.Service.ArbitrageDetector.Client
             _runner = new ApiRunner();
         }
 
-        public async Task<IReadOnlyList<OrderBook>> GetOrderBooksAsync()
+        public async Task<IReadOnlyList<OrderBook>> OrderBooksAsync(string exchange, string instrument)
         {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.GetOrderBooksAsync());
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.OrderBooksAsync(exchange, instrument));
         }
 
-        public async Task<IReadOnlyList<OrderBook>> GetOrderBooksByExchangeAsync(string exchange)
+        public async Task<IReadOnlyList<CrossRate>> CrossRatesAsync()
         {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.GetOrderBooksByExchangeAsync(exchange));
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.CrossRatesAsync());
         }
 
-        public async Task<IReadOnlyList<OrderBook>> GetOrderBooksByInstrumentAsync(string instrument)
+        public async Task<IReadOnlyList<Arbitrage>> ArbitragesAsync()
         {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.GetOrderBooksByInstrumentAsync(instrument));
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.ArbitragesAsync());
         }
 
-        public async Task<IReadOnlyList<OrderBook>> GetOrderBooksAsync(string exchange, string instrument)
+        public async Task<IReadOnlyList<ArbitrageHistory>> ArbitrageHistoryAsync(DateTime since)
         {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.GetOrderBooksAsync(exchange, instrument));
-        }
-
-        public async Task<IReadOnlyList<CrossRate>> GetCrossRatesAsync()
-        {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.GetCrossRatesAsync());
-        }
-
-        public async Task<IReadOnlyList<Arbitrage>> GetArbitragesAsync()
-        {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.GetArbitragesAsync());
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.ArbitrageHistory(since));
         }
 
         public void Dispose()

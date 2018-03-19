@@ -25,79 +25,10 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 
         [HttpGet]
         [Route("orderBooks")]
-        [SwaggerOperation("GetOrderBooks")]
-        [ProducesResponseType(typeof(IEnumerable<OrderBook>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetOrderBooks()
-        {
-            IEnumerable<OrderBook> result;
-
-            try
-            {
-                result = _arbitrageDetectorService.GetOrderBooks();
-            }
-            catch (Exception exception)
-            {
-                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(GetOrderBooks), "", exception);
-
-                return BadRequest(ErrorResponse.Create(exception.Message));
-            }
-
-            return Ok(result);
-        }
-
-        [HttpGet]
-        [Route("orderBooks/exchange/{exchange}")]
-        [SwaggerOperation("GetOrderBooksByExchange")]
+        [SwaggerOperation("OrderBooks")]
         [ProducesResponseType(typeof(IEnumerable<CrossRate>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetOrderBooksByExchange(string exchange)
-        {
-            IEnumerable<OrderBook> result;
-
-            try
-            {
-                result = _arbitrageDetectorService.GetOrderBooksByExchange(exchange);
-            }
-            catch (Exception exception)
-            {
-                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(GetOrderBooksByExchange), "", exception);
-
-                return BadRequest(ErrorResponse.Create(exception.Message));
-            }
-
-            return Ok(result);
-        }
-
-        [HttpGet]
-        [Route("orderBooks/instrument/{instrument}")]
-        [SwaggerOperation("GetOrderBooksByInstrument")]
-        [ProducesResponseType(typeof(IEnumerable<CrossRate>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetOrderBooksByInstrument(string instrument)
-        {
-            IEnumerable<OrderBook> result;
-
-            try
-            {
-                result = _arbitrageDetectorService.GetOrderBooksByInstrument(instrument);
-            }
-            catch (Exception exception)
-            {
-                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(GetOrderBooksByExchange), "", exception);
-
-                return BadRequest(ErrorResponse.Create(exception.Message));
-            }
-
-            return Ok(result);
-        }
-
-        [HttpGet]
-        [Route("orderBooks/exchange/{exchange}/instrument/{instrument}")]
-        [SwaggerOperation("GetOrderBooks")]
-        [ProducesResponseType(typeof(IEnumerable<CrossRate>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetOrderBooks(string exchange, string instrument)
+        public async Task<IActionResult> OrderBooks(string exchange, string instrument)
         {
             IEnumerable<OrderBook> result;
 
@@ -107,7 +38,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(GetOrderBooksByExchange), "", exception);
+                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(OrderBooks), "", exception);
 
                 return BadRequest(ErrorResponse.Create(exception.Message));
             }
@@ -117,10 +48,10 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 
         [HttpGet]
         [Route("crossRates")]
-        [SwaggerOperation("GetCrossRates")]
+        [SwaggerOperation("CrossRates")]
         [ProducesResponseType(typeof(IEnumerable<CrossRate>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetCrossRates()
+        public async Task<IActionResult> CrossRates()
         {
             IEnumerable<CrossRate> result;
 
@@ -130,7 +61,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(GetCrossRates), "", exception);
+                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(CrossRates), "", exception);
 
                 return BadRequest(ErrorResponse.Create(exception.Message));
             }
@@ -140,10 +71,10 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 
         [HttpGet]
         [Route("arbitrages")]
-        [SwaggerOperation("GetArbitrages")]
+        [SwaggerOperation("Arbitrages")]
         [ProducesResponseType(typeof(IEnumerable<Arbitrage>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetArbitrages()
+        public async Task<IActionResult> Arbitrages()
         {
             IEnumerable<Arbitrage> result;
 
@@ -153,7 +84,30 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(GetArbitrages), "", exception);
+                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(Arbitrages), "", exception);
+
+                return BadRequest(ErrorResponse.Create(exception.Message));
+            }
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("arbitrageHistory")]
+        [SwaggerOperation("ArbitrageHistory")]
+        [ProducesResponseType(typeof(IEnumerable<ArbitrageHistory>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> ArbitrageHistory(DateTime since)
+        {
+            IEnumerable<ArbitrageHistory> result;
+
+            try
+            {
+                result = _arbitrageDetectorService.GetArbitrageHistory(since);
+            }
+            catch (Exception exception)
+            {
+                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(Arbitrages), "", exception);
 
                 return BadRequest(ErrorResponse.Create(exception.Message));
             }

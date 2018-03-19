@@ -2,7 +2,7 @@
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    public sealed class VolumePrice
+    public struct VolumePrice
     {
         public decimal Price { get; }
 

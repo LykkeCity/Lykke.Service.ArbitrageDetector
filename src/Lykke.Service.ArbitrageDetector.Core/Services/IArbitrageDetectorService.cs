@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Services
@@ -7,19 +8,12 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
     {
         void Process(OrderBook orderBook);
 
-
         IEnumerable<OrderBook> GetOrderBooks();
-
-        IEnumerable<OrderBook> GetOrderBooksByExchange(string exchange);
-
-        IEnumerable<OrderBook> GetOrderBooksByInstrument(string instrument);
-
         IEnumerable<OrderBook> GetOrderBooks(string exchange, string instrument);
-
 
         IEnumerable<CrossRate> GetCrossRates();
 
-
         IEnumerable<Arbitrage> GetArbitrages();
+        IEnumerable<ArbitrageHistory> GetArbitrageHistory(DateTime since);
     }
 }

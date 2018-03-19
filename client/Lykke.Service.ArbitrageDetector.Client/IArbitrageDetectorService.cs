@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.Service.ArbitrageDetector.Client.Models;
 
@@ -10,43 +11,31 @@ namespace Lykke.Service.ArbitrageDetector.Client
     public interface IArbitrageDetectorService
     {
         /// <summary>
-        /// Returns a collection of OrderBook entities.
-        /// </summary>
-        /// <returns>A collection of OrderBook entities.</returns>
-        Task<IReadOnlyList<OrderBook>> GetOrderBooksAsync();
-
-        /// <summary>
-        /// Returns a collection of OrderBook entities by exchange name.
-        /// </summary>
-        /// <param name="exchange">A name of an exchange.</param>
-        /// <returns>A collection of OrderBook entities.</returns>
-        Task<IReadOnlyList<OrderBook>> GetOrderBooksByExchangeAsync(string exchange);
-
-        /// <summary>
-        /// Returns a collection of OrderBook entities by instrument name.
-        /// </summary>
-        /// <param name="instrument">A name of an instrument.</param>
-        /// <returns>A collection of OrderBook entities.</returns>
-        Task<IReadOnlyList<OrderBook>> GetOrderBooksByInstrumentAsync(string instrument);
-
-        /// <summary>
         /// Returns a collection of OrderBook entities by exchange and instrument.
         /// </summary>
-        /// <param name="exchange">A name of an exchange.</param>
-        /// <param name="instrument">A name of an instrument</param>
+        /// <param name="exchange">Name of an exchange.</param>
+        /// <param name="instrument">Name of an instrument</param>
         /// <returns>A collection of OrderBook entities.</returns>
-        Task<IReadOnlyList<OrderBook>> GetOrderBooksAsync(string exchange, string instrument);
+        Task<IReadOnlyList<OrderBook>> OrderBooksAsync(string exchange, string instrument);
 
         /// <summary>
         /// Returns a collection of CrossRate entities.
         /// </summary>
         /// <returns>A collection of CrossRate entities.</returns>
-        Task<IReadOnlyList<CrossRate>> GetCrossRatesAsync();
+        Task<IReadOnlyList<CrossRate>> CrossRatesAsync();
 
         /// <summary> 
         /// Returns a collection of Arbitrage entities.
         /// </summary>
         /// <returns>A collection of Arbitrage entities.</returns>
-        Task<IReadOnlyList<Arbitrage>> GetArbitragesAsync();
+        Task<IReadOnlyList<Arbitrage>> ArbitragesAsync();
+
+
+        /// <summary>
+        /// Returns a collection of ArbitrageHistory entities.
+        /// </summary>
+        /// <param name="since"></param>
+        /// <returns>A collection of Arbitrage entities.</returns>
+        Task<IReadOnlyList<ArbitrageHistory>> ArbitrageHistoryAsync(DateTime since);
     }
 }
