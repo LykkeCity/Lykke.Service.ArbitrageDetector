@@ -1,17 +1,38 @@
 ﻿namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
+    /// <summary>
+    /// represents a record af arbitrage situation evvent.
+    /// </summary>
     public sealed class ArbitrageLine
     {
-        public decimal Bid { get; set; }
+        /// <summary>
+        /// BidPrice price.
+        /// </summary>
+        public decimal BidPrice { get; set; }
 
-        public decimal Ask { get; set; }
+        /// <summary>
+        /// AskPrice price.
+        /// </summary>
+        public decimal AskPrice { get; set; }
 
-        public decimal Price => Ask > Bid ? Ask : Bid;  // Ask or Bid can be is equal to 0
+        /// <summary>
+        /// AskPrice or BidPrice can be equal to 0.
+        /// </summary>
+        public decimal Price => AskPrice > BidPrice ? AskPrice : BidPrice;
 
+        /// <summary>
+        /// Volume of ask or bid.
+        /// </summary>
         public decimal Volume { get; set; }
 
+        /// <summary>
+        /// Volume and price of ask or bid.
+        /// </summary>
         public VolumePrice VolumePrice => new VolumePrice(Price, Volume);
 
-        public CrossRate CrossRate { get; set; }    //  Ask or Bid cross rate
+        /// <summary>
+        /// AskPrice or BidPrice cross rate.
+        /// </summary>
+        public CrossRate CrossRate { get; set; }
     }
 }

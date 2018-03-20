@@ -78,19 +78,19 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair = new AssetPair(@base, quoting);
             var equalAssetPair = new AssetPair(@base, quoting);
 
-            Assert.True(assetPair.IsEqual(equalAssetPair));
-            Assert.True(equalAssetPair.IsEqual(assetPair));
+            Assert.True(assetPair.Equals(equalAssetPair));
+            Assert.True(equalAssetPair.Equals(assetPair));
 
-            void IsEqual1() => assetPair.IsEqual(new AssetPair(null, quoting));
+            void IsEqual1() => assetPair.Equals(new AssetPair(null, quoting));
             Assert.Throws<ArgumentException>((Action)IsEqual1);
 
-            void IsEqual2() => assetPair.IsEqual(new AssetPair("", quoting));
+            void IsEqual2() => assetPair.Equals(new AssetPair("", quoting));
             Assert.Throws<ArgumentException>((Action)IsEqual2);
 
-            void IsEqual3() => assetPair.IsEqual(new AssetPair(@base, null));
+            void IsEqual3() => assetPair.Equals(new AssetPair(@base, null));
             Assert.Throws<ArgumentException>((Action)IsEqual3);
 
-            void IsEqual4() => assetPair.IsEqual(new AssetPair(@base, ""));
+            void IsEqual4() => assetPair.Equals(new AssetPair(@base, ""));
             Assert.Throws<ArgumentException>((Action)IsEqual4);
         }
 
@@ -181,7 +181,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair = AssetPair.FromString(btcusd, btc);
             var assetPair2 = AssetPair.FromString(btcusd, usd);
 
-            Assert.True(assetPair.IsEqual(assetPair2));
+            Assert.True(assetPair.Equals(assetPair2));
 
             void FromString1() => AssetPair.FromString(null, usd);
             Assert.Throws<ArgumentException>((Action)FromString1);

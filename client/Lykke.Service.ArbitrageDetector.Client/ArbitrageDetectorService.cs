@@ -18,6 +18,10 @@ namespace Lykke.Service.ArbitrageDetector.Client
         private readonly IArbitrageDetectorApi _arbitrageDetectorApi;
         private readonly ApiRunner _runner;
 
+        public ArbitrageDetectorService(string url) : this(new ArbitrageDetectorServiceClientSettings(url))
+        {
+        }
+
         public ArbitrageDetectorService(ArbitrageDetectorServiceClientSettings settings)
         {
             if (settings == null)

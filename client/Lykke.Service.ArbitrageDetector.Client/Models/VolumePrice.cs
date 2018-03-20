@@ -2,12 +2,26 @@
 
 namespace Lykke.Service.ArbitrageDetector.Client.Models
 {
+    /// <summary>
+    /// Represents a pair of price and volume.
+    /// </summary>
     public struct VolumePrice
     {
+        /// <summary>
+        /// Price.
+        /// </summary>
         public decimal Price { get; }
 
+        /// <summary>
+        /// Volume.
+        /// </summary>
         public decimal Volume { get; }
 
+        /// <summary>
+        /// Contructor.
+        /// </summary>
+        /// <param name="price"></param>
+        /// <param name="volume"></param>
         public VolumePrice(decimal price, decimal volume)
         {
             Price = price;

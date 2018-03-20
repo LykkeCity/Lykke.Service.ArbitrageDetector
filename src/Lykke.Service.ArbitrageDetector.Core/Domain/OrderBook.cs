@@ -6,19 +6,40 @@ using Newtonsoft.Json;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
+    /// <summary>
+    /// Represents an order book or depth of market.
+    /// </summary>
     public class OrderBook
     {
+        /// <summary>
+        /// Exchange name.
+        /// </summary>
         public string Source { get; }
 
+        /// <summary>
+        /// String of an asset pair.
+        /// </summary>
         [JsonProperty("asset")]
         public string AssetPairStr { get; }
 
+        /// <summary>
+        /// Asset pair.
+        /// </summary>
         public AssetPair AssetPair { get; set; }
 
+        /// <summary>
+        /// Timestamp.
+        /// </summary>
         public DateTime Timestamp { get; protected set; }
 
+        /// <summary>
+        /// Asking prices and volumes.
+        /// </summary>
         public IReadOnlyCollection<VolumePrice> Asks { get; }
 
+        /// <summary>
+        /// Bidding prices and volumes.
+        /// </summary>
         public IReadOnlyCollection<VolumePrice> Bids { get; }
 
         public decimal BestBidPrice => Bids.MaxBy(x => x.Price).Price;
@@ -26,6 +47,14 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public decimal BestAskPrice => Asks.MinBy(x => x.Price).Price;
         public decimal BestAskVolume => Asks.MinBy(x => x.Price).Volume;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="asset"></param>
+        /// <param name="asks"></param>
+        /// <param name="bids"></param>
+        /// <param name="timestamp"></param>
         public OrderBook(string source, string asset, IReadOnlyCollection<VolumePrice> asks, IReadOnlyCollection<VolumePrice> bids, DateTime timestamp)
         {
             Source = string.IsNullOrEmpty(source) ? throw new ArgumentException(nameof(source)) : source;
@@ -35,6 +64,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             Timestamp = timestamp;
         }
 
+        /// <summary>
+        /// Set asset pair to AssetPair from string by providing onw of the asset.
+        /// </summary>
+        /// <param name="oneOfTheAssets"></param>
         public void SetAssetPair(string oneOfTheAssets)
         {
             if (string.IsNullOrWhiteSpace(oneOfTheAssets))
@@ -43,6 +76,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             AssetPair = AssetPair.FromString(AssetPairStr, oneOfTheAssets);
         }
 
+        /// <summary>
+        /// Returns new reversed order book.
+        /// </summary>
+        /// <returns></returns>
         public OrderBook Reverse()
         {
             var inversedAssetPair = AssetPair.Quoting + AssetPair.Base;

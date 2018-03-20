@@ -3,12 +3,31 @@ using System.Collections.Generic;
 
 namespace Lykke.Service.ArbitrageDetector.Client.Models
 {
+    /// <summary>
+    /// Represents a cross rate.
+    /// </summary>
     public class CrossRate : OrderBook
     {
+        /// <summary>
+        /// Conversion path.
+        /// </summary>
         public string ConversionPath { get; }
 
+        /// <summary>
+        /// Original order books.
+        /// </summary>
         public IList<OrderBook> OriginalOrderBooks { get; }
 
+        /// <summary>
+        /// Contructor.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="assetPair"></param>
+        /// <param name="asks"></param>
+        /// <param name="bids"></param>
+        /// <param name="conversionPath"></param>
+        /// <param name="originalOrderBooks"></param>
+        /// <param name="timestamp"></param>
         public CrossRate(string source, AssetPair assetPair, IReadOnlyCollection<VolumePrice> asks, IReadOnlyCollection<VolumePrice> bids,
             string conversionPath, IList<OrderBook> originalOrderBooks, DateTime timestamp)
             : base(source, assetPair.Base + assetPair.Quoting, asks, bids, DateTime.MinValue)
@@ -26,6 +45,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             Timestamp = timestamp;
         }
 
+        /// <summary>
+        /// From one order book if equal or reversed.
+        /// </summary>
+        /// <param name="orderBook"></param>
+        /// <param name="targetAssetPair"></param>
+        /// <returns></returns>
         public static CrossRate FromOrderBook(OrderBook orderBook, AssetPair targetAssetPair)
         {
             if (orderBook == null)
@@ -66,8 +91,17 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             return result;
         }
 
+        /// <summary>
+        /// From two order books.
+        /// </summary>
+        /// <param name="one"></param>
+        /// <param name="another"></param>
+        /// <param name="targetAssetPair"></param>
+        /// <returns></returns>
         public static CrossRate FromOrderBooks(OrderBook one, OrderBook another, AssetPair targetAssetPair)
         {
+            #region Checking arguments 
+
             if (one == null)
                 throw new ArgumentNullException(nameof(one));
 
@@ -92,7 +126,9 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             if (!one.AssetPair.HasCommonAsset(another.AssetPair))
                 throw new ArgumentOutOfRangeException($"{nameof(one)} and {nameof(another)} don't have common asset.");
 
-            // Find left and right order book
+            #endregion
+
+            // Prepare left and right order books for calculating targetAssetPair
             OrderBook left = null;
             OrderBook right = null;
 
@@ -120,39 +156,47 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             if (targetAssetPair.Quoting == another.AssetPair.Quoting)
                 right = another;
 
+            #region Checking left and right
+
             if (left == null)
-                throw new ArgumentNullException(nameof(left));
+                throw new InvalidOperationException($"{nameof(left)}: {nameof(left)}");
 
             if (right == null)
-                throw new ArgumentNullException(nameof(right));
+                throw new InvalidOperationException($"{nameof(right)}: {nameof(right)}");
 
             if (left.AssetPair.Base != targetAssetPair.Base
                 || right.AssetPair.Quoting != targetAssetPair.Quoting
                 || left.AssetPair.Quoting != right.AssetPair.Base)
                 throw new InvalidOperationException($"{nameof(left)} and {nameof(right)} don't correspond to {nameof(targetAssetPair)}");
 
+            #endregion
+
             var asks = new List<VolumePrice>();
             var bids = new List<VolumePrice>();
 
+            // Calculating new asks
             foreach (var leftAsk in left.Asks)
             {
                 foreach (var rightAsk in right.Asks)
                 {
-                    var newVolumePrice = new VolumePrice(leftAsk.Price * rightAsk.Price,
-                        Math.Min(leftAsk.Volume, rightAsk.Volume));
+                    var newAskPrice = leftAsk.Price * rightAsk.Price;
+                    var newAskVolume = Math.Min(leftAsk.Volume, rightAsk.Volume);
+                    var newAskVolumePrice = new VolumePrice(newAskPrice, newAskVolume);
 
-                    asks.Add(newVolumePrice);
+                    asks.Add(newAskVolumePrice);
                 }
             }
 
+            // Calculating new bids
             foreach (var leftBid in left.Bids)
             {
                 foreach (var rightBid in right.Bids)
                 {
-                    var newVolumePrice = new VolumePrice(leftBid.Price * rightBid.Price,
-                        Math.Min(leftBid.Volume, rightBid.Volume));
+                    var newBidPrice = leftBid.Price * rightBid.Price;
+                    var newBidVolume = Math.Min(leftBid.Volume, rightBid.Volume);
+                    var newBidVolumePrice = new VolumePrice(newBidPrice, newBidVolume);
 
-                    bids.Add(newVolumePrice);
+                    bids.Add(newBidVolumePrice);
                 }
             }
 

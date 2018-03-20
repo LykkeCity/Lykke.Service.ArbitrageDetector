@@ -2,20 +2,41 @@
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
+    /// <summary>
+    /// represents an asset pair aka instrument.
+    /// </summary>
     public struct AssetPair
     {
+        /// <summary>
+        /// Base asset.
+        /// </summary>
         public string Base { get; }
 
+        /// <summary>
+        /// Quoting asset.
+        /// </summary>
         public string Quoting { get; }
 
+        /// <summary>
+        /// Name of the asset pair.
+        /// </summary>
         public string Name => Base + Quoting;
 
+        /// <summary>
+        /// Contructor.
+        /// </summary>
+        /// <param name="base"></param>
+        /// <param name="quoting"></param>
         public AssetPair(string @base, string quoting)
         {
             Base = string.IsNullOrWhiteSpace(@base) ? throw new ArgumentException(nameof(@base)) : @base;
             Quoting = string.IsNullOrWhiteSpace(quoting) ? throw new ArgumentException(nameof(quoting)) : quoting;
         }
 
+        /// <summary>
+        /// Returns reversed asset pair.
+        /// </summary>
+        /// <returns></returns>
         public AssetPair Reverse()
         {
             Validate();
@@ -23,6 +44,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return new AssetPair(Quoting, Base);
         }
 
+        /// <summary>
+        /// Checks if assset pair is revered.
+        /// </summary>
+        /// <param name="assetPair"></param>
+        /// <returns></returns>
         public bool IsReversed(AssetPair assetPair)
         {
             Validate();
@@ -33,36 +59,56 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return Base == assetPair.Quoting && Quoting == assetPair.Base;
         }
 
-        public bool IsEqual(AssetPair assetPair)
+        /// <summary>
+        /// Checks if asset pairs are equal.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(AssetPair other)
         {
             Validate();
 
-            if (assetPair.IsEmpty())
-                throw new ArgumentException($"{nameof(assetPair)} is not filled properly.");
+            if (other.IsEmpty())
+                throw new ArgumentException($"{nameof(other)} is not filled properly.");
 
-            return Base == assetPair.Base && Quoting == assetPair.Quoting;
+            return Base == other.Base && Quoting == other.Quoting;
         }
 
-        public bool IsEqualOrReversed(AssetPair assetPair)
+        /// <summary>
+        /// Checks if equal or reversed.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool IsEqualOrReversed(AssetPair other)
         {
             Validate();
 
-            if (assetPair.IsEmpty())
-                throw new ArgumentException($"{nameof(assetPair)} is not filled properly.");
+            if (other.IsEmpty())
+                throw new ArgumentException($"{nameof(other)} is not filled properly.");
 
-            return IsEqual(assetPair) || IsReversed(assetPair);
+            return Equals(other) || IsReversed(other);
         }
 
-        public bool HasCommonAsset(AssetPair assetPair)
+        /// <summary>
+        /// Check if has common asset.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool HasCommonAsset(AssetPair other)
         {
             Validate();
 
-            if (assetPair.IsEmpty())
-                throw new ArgumentException($"{nameof(assetPair)} is not filled properly.");
+            if (other.IsEmpty())
+                throw new ArgumentException($"{nameof(other)} is not filled properly.");
 
-            return Base == assetPair.Base || Base == assetPair.Quoting || Quoting == assetPair.Base || Quoting == assetPair.Quoting;
+            return Base == other.Base || Base == other.Quoting || Quoting == other.Base || Quoting == other.Quoting;
         }
 
+        /// <summary>
+        /// Checks if contains asset.
+        /// </summary>
+        /// <param name="asset"></param>
+        /// <returns></returns>
         public bool ContainsAsset(string asset)
         {
             Validate();
@@ -97,6 +143,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return result;
         }
 
+        /// <summary>
+        /// Checks if not initialized.
+        /// </summary>
+        /// <returns></returns>
         public bool IsEmpty()
         {
             return string.IsNullOrWhiteSpace(Base) || string.IsNullOrWhiteSpace(Quoting);
@@ -109,6 +159,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return Name;
         }
 
+        /// <summary>
+        /// Throw ArgumentException if not initialized.
+        /// </summary>
         private void Validate()
         {
             if (string.IsNullOrWhiteSpace(Base))

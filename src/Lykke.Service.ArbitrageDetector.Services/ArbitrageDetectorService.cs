@@ -76,7 +76,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             var actualCrossRates = GetActualCrossRates();
 
-            // For each asset - for each cross rate make two lines, order that lines and find intersection
+            // For each asset - for each cross rate make two lines for ask and bid, order that lines and find intersection
             var uniqueAssetPairs = actualCrossRates.Select(x => x.AssetPairStr).Distinct().ToList();            
             foreach (var asset in uniqueAssetPairs)
             {
@@ -89,30 +89,30 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     lines.Add(new ArbitrageLine
                     {
                         CrossRate = crossRate,
-                        Bid = Math.Round(crossRate.BestBidPrice, 8),
+                        BidPrice = Math.Round(crossRate.BestBidPrice, 8),
                         Volume = crossRate.BestAskVolume < crossRate.BestBidVolume ? crossRate.BestAskVolume : crossRate.BestBidVolume
                     });
 
                     lines.Add(new ArbitrageLine
                     {
                         CrossRate = crossRate,
-                        Ask = Math.Round(crossRate.BestAskPrice, 8),
+                        AskPrice = Math.Round(crossRate.BestAskPrice, 8),
                         Volume = crossRate.BestAskVolume < crossRate.BestBidVolume ? crossRate.BestAskVolume : crossRate.BestBidVolume
                     });
                 }
 
                 // Order by Price
-                lines = lines.OrderBy(x => x.Price).ThenBy(x => x.Ask).ToList();
+                lines = lines.OrderBy(x => x.Price).ThenBy(x => x.AskPrice).ToList();
 
                 // Calculate arbitrage for every ask and every higher bid
                 for (var a = 0; a < lines.Count; a++)
                 {
                     var askLine = lines[a];
-                    if (askLine.Ask != 0)
+                    if (askLine.AskPrice != 0)
                         for (var b = a + 1; b < lines.Count; b++)
                         {
                             var bidLine = lines[b];
-                            if (bidLine.Bid != 0)
+                            if (bidLine.BidPrice != 0)
                             {
                                 var arbitrage = new Arbitrage(askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
                                 result.Add(arbitrage);
@@ -233,7 +233,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     _arbitrages.Remove(oldArbitrage.Key);
 
                     // Write to history and log
-                    _arbitrageHistory.Add(DateTime.UtcNow, new ArbitrageHistory(oldArbitrage.Value, ArbitrageHistoryType.Ended));
+                    _arbitrageHistory.Add(DateTime.UtcNow, new ArbitrageHistory(oldArbitrage.Value, ArbitrageHistoryStatus.Ended));
                     if (_log != null)
                         await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Ended: {oldArbitrage.Value}, was available for {(DateTime.UtcNow - oldArbitrage.Value.StartedTimestamp).Seconds} seconds");
                 }
@@ -247,7 +247,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     _arbitrages.Add(newArbitrage.Key, newArbitrage.Value);
 
                     // Write to history and log
-                    _arbitrageHistory.Add(DateTime.UtcNow, new ArbitrageHistory(newArbitrage.Value, ArbitrageHistoryType.Started));
+                    _arbitrageHistory.Add(DateTime.UtcNow, new ArbitrageHistory(newArbitrage.Value, ArbitrageHistoryStatus.Started));
                     if (_log != null)
                         await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Started: {newArbitrage.Value}");
                 }
