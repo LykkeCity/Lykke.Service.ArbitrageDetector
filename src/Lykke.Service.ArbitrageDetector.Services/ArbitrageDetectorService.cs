@@ -235,23 +235,22 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     oldArbitrage.Value.EndedAt = DateTime.UtcNow;
                     _arbitrages.Remove(oldArbitrage.Key);
 
-                    RemoveFromHistoryIfItsTooLong();
+                    // History
                     _arbitrageHistory.Add(DateTime.UtcNow, oldArbitrage.Value);
                 }
             }
 
-            // Update or Add new
+            // Add new
             foreach (var newArbitrage in newArbitrages)
             {
                 if (!_arbitrages.Keys.Contains(newArbitrage.Key))
                 {
-                    _arbitrages.Add(newArbitrage.Key, newArbitrage.Value);
-
                     RemoveFromHistoryIfItsTooLong();
-                    _arbitrageHistory.Add(DateTime.UtcNow, newArbitrage.Value);
+                    _arbitrages.Add(newArbitrage.Key, newArbitrage.Value);
                 }
             }
         }
+
 
         private void RemoveFromHistoryIfItsTooLong()
         {
