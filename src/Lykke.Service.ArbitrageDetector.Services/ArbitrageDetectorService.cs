@@ -86,19 +86,21 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 // Add one cross rate as two lines (bid and ask)
                 foreach (var crossRate in assetCrossRates)
                 {
-                    lines.Add(new ArbitrageLine
-                    {
-                        CrossRate = crossRate,
-                        BidPrice = Math.Round(crossRate.BestBidPrice, 8),
-                        Volume = crossRate.BestAskVolume < crossRate.BestBidVolume ? crossRate.BestAskVolume : crossRate.BestBidVolume
-                    });
+                    if (crossRate.Asks.Any())
+                        lines.Add(new ArbitrageLine
+                        {
+                            CrossRate = crossRate,
+                            AskPrice = Math.Round(crossRate.BestAskPrice, 8),
+                            Volume = crossRate.BestAskVolume < crossRate.BestBidVolume ? crossRate.BestAskVolume : crossRate.BestBidVolume
+                        });
 
-                    lines.Add(new ArbitrageLine
-                    {
-                        CrossRate = crossRate,
-                        AskPrice = Math.Round(crossRate.BestAskPrice, 8),
-                        Volume = crossRate.BestAskVolume < crossRate.BestBidVolume ? crossRate.BestAskVolume : crossRate.BestBidVolume
-                    });
+                    if (crossRate.Bids.Any())
+                        lines.Add(new ArbitrageLine
+                        {
+                            CrossRate = crossRate,
+                            BidPrice = Math.Round(crossRate.BestBidPrice, 8),
+                            Volume = crossRate.BestAskVolume < crossRate.BestBidVolume ? crossRate.BestAskVolume : crossRate.BestBidVolume
+                        });
                 }
 
                 // Order by Price
