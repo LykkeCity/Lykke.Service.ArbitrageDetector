@@ -318,9 +318,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(3, arbitrageHistory.Count());
             Assert.Equal(3, arbitrageHistory.Count(x => x.Status == ArbitrageHistoryStatus.Started));
             Assert.Equal(3, arbitrageHistory.Count(x => DateTime.UtcNow - x.Timestamp < new TimeSpan(0, 0, 0, 1)));
-            Assert.Equal(1, arbitrageHistory.Count(x => x.Arbitrage.ToString() == "BTCUSD, spread: -1.0548740225225225225225225200, volume: 10, path: (Quoine-BTCEUR & Binance-EURUSD) * (Bitfinex-BTCUSD)"));
-            Assert.Equal(1, arbitrageHistory.Count(x => x.Arbitrage.ToString() == "BTCUSD, spread: -0.4504504504504504504504504500, volume: 10, path: (GDAX-BTCUSD) * (Bitfinex-BTCUSD)"));
-            Assert.Equal(1, arbitrageHistory.Count(x => x.Arbitrage.ToString() == "BTCUSD, spread: -0.1553728772727272727272727300, volume: 10, path: (Quoine-BTCEUR & Binance-EURUSD) * (GDAX-BTCUSD)"));
+            Assert.Equal(1, arbitrageHistory.Count(x => x.Arbitrage.ToString() == "BTCUSD, pnl: -1.55, spread: -0.16, volume: 10, path: (Quoine-BTCEUR & Binance-EURUSD) * (GDAX-BTCUSD)"));
+            Assert.Equal(1, arbitrageHistory.Count(x => x.Arbitrage.ToString() == "BTCUSD, pnl: -4.50, spread: -0.45, volume: 10, path: (GDAX-BTCUSD) * (Bitfinex-BTCUSD)"));
+            Assert.Equal(1, arbitrageHistory.Count(x => x.Arbitrage.ToString() == "BTCUSD, pnl: -10.55, spread: -1.05, volume: 10, path: (Quoine-BTCEUR & Binance-EURUSD) * (Bitfinex-BTCUSD)"));
         }
     }
 }
