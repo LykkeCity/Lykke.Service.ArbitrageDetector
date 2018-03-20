@@ -17,10 +17,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
 {
     public class ArbitrageDetectorService : TimerPeriod, IArbitrageDetectorService
     {
-        private readonly SortedDictionary<ExchangeAssetPair, OrderBook> _orderBooks;
-        private readonly SortedDictionary<ExchangeAssetPair, CrossRate> _crossRates;
-        private readonly SortedDictionary<string, Arbitrage> _arbitrages;
-        private readonly SortedDictionary<DateTime, ArbitrageHistory> _arbitrageHistory;
+        private readonly ConcurrentDictionary<ExchangeAssetPair, OrderBook> _orderBooks;
+        private readonly ConcurrentDictionary<ExchangeAssetPair, CrossRate> _crossRates;
+        private readonly ConcurrentDictionary<string, Arbitrage> _arbitrages;
+        private readonly ConcurrentDictionary<DateTime, ArbitrageHistory> _arbitrageHistory;
         private readonly IReadOnlyCollection<string> _wantedCurrencies;
         private readonly string _baseCurrency;
         private readonly int _expirationTimeInSeconds;
@@ -31,10 +31,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
             : base((int) TimeSpan.FromSeconds(executionDelay).TotalMilliseconds, log)
         {
             _log = log;
-            _orderBooks = new SortedDictionary<ExchangeAssetPair, OrderBook>();
-            _crossRates = new SortedDictionary<ExchangeAssetPair, CrossRate>();
-            _arbitrages = new SortedDictionary<string, Arbitrage>();
-            _arbitrageHistory = new SortedDictionary<DateTime, ArbitrageHistory>();
+            _orderBooks = new ConcurrentDictionary<ExchangeAssetPair, OrderBook>();
+            _crossRates = new ConcurrentDictionary<ExchangeAssetPair, CrossRate>();
+            _arbitrages = new ConcurrentDictionary<string, Arbitrage>();
+            _arbitrageHistory = new ConcurrentDictionary<DateTime, ArbitrageHistory>();
             _wantedCurrencies = wantedCurrencies;
             _baseCurrency = baseCurrency;
             _expirationTimeInSeconds = expirationTimeInSeconds;
@@ -218,7 +218,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         public async Task ProcessArbitrages()
         {
             var newArbitragesList = GetArbitrages();
-            var newArbitrages = new SortedDictionary<string, Arbitrage>();
+            var newArbitrages = new ConcurrentDictionary<string, Arbitrage>();
             foreach (var newArbitrage in newArbitragesList)
             {
                 var key = newArbitrage.ToString();
@@ -266,9 +266,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _orderBooks.AddOrUpdate(key, orderBook);
         }
 
-        private Dictionary<ExchangeAssetPair, OrderBook> GetActualOrderBooks()
+        private ConcurrentDictionary<ExchangeAssetPair, OrderBook> GetActualOrderBooks()
         {
-            var result = new Dictionary<ExchangeAssetPair, OrderBook>();
+            var result = new ConcurrentDictionary<ExchangeAssetPair, OrderBook>();
 
             foreach (var keyValue in _orderBooks)
             {
