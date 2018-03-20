@@ -14,7 +14,8 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         public ClientFixture()
         {
             // Must be started
-            var settings = new ArbitrageDetectorServiceClientSettings("http://localhost:5000");
+            //var settings = new ArbitrageDetectorServiceClientSettings("http://localhost:5000");
+            var settings = new ArbitrageDetectorServiceClientSettings("http://arbitragedetector.lykke-alphaengine.svc.cluster.local");
             Client = new ArbitrageDetectorService(settings);
         }
 

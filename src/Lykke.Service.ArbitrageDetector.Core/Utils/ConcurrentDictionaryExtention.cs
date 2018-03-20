@@ -19,6 +19,28 @@ namespace Lykke.Service.ArbitrageDetector.Core.Utils
             dictionary.AddOrUpdate(key, value);
         }
 
+        public static void AddRange<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dictionary, ConcurrentDictionary<TKey, TValue> other)
+        {
+            if (other == null)
+                throw new ArgumentNullException(nameof(other));
+
+            foreach (var keyValue in other)
+            {
+                dictionary.Add(keyValue.Key, keyValue.Value);
+            }
+        }
+
+        public static void AddOrUpdateRange<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dictionary, ConcurrentDictionary<TKey, TValue> other)
+        {
+            if (other == null)
+                throw new ArgumentNullException(nameof(other));
+
+            foreach (var keyValue in other)
+            {
+                dictionary.AddOrUpdate(keyValue.Key, keyValue.Value);
+            }
+        }
+
         public static void Remove<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dictionary, TKey key)
         {
             TValue oldValue;

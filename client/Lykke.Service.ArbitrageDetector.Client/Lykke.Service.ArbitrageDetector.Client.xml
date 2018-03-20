@@ -27,6 +27,388 @@
             Contains methods for work with arbitrage detector service.
             </summary>
         </member>
+        <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage">
+            <summary>
+            Represents an arbitrage situation.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.AskCrossRate">
+            <summary>
+            Cross rete with low ask.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.Ask">
+            <summary>
+            Price and volume of low ask.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.BidCrossRate">
+            <summary>
+            Cross rete with high bid.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.Bid">
+            <summary>
+            Price and volume of high bid.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.Spread">
+            <summary>
+            Spread between ask and bid.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.Volume">
+            <summary>
+            The smallest volume of ask or bid.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.PnL">
+            <summary>
+            Potential profit or loss.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.StartedTimestamp">
+            <summary>
+            The time when it first appeared.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.#ctor(Lykke.Service.ArbitrageDetector.Client.Models.CrossRate,Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice,Lykke.Service.ArbitrageDetector.Client.Models.CrossRate,Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="askCrossRate"></param>
+            <param name="ask"></param>
+            <param name="bidCrossRate"></param>
+            <param name="bid"></param>
+        </member>
+        <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageHistory">
+            <summary>
+            Represents a history record of arbitrage situation.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageHistory.Arbitrage">
+            <summary>
+            Arbitrage.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageHistory.Status">
+            <summary>
+            Status - started or ended.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageHistory.Timestamp">
+            <summary>
+            Timestamp.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageHistory.#ctor(Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage,Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageHistoryStatus)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="arbitrage"></param>
+            <param name="status"></param>
+        </member>
+        <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageHistoryStatus">
+            <summary>
+            Status of arbitrage situation record.
+            </summary>
+        </member>
+        <member name="F:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageHistoryStatus.None">
+            <summary>
+            None.
+            </summary>
+        </member>
+        <member name="F:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageHistoryStatus.Started">
+            <summary>
+            Started.
+            </summary>
+        </member>
+        <member name="F:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageHistoryStatus.Ended">
+            <summary>
+            Ended.
+            </summary>
+        </member>
+        <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageLine">
+            <summary>
+            represents a record af arbitrage situation evvent.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageLine.BidPrice">
+            <summary>
+            BidPrice price.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageLine.AskPrice">
+            <summary>
+            AskPrice price.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageLine.Price">
+            <summary>
+            AskPrice or BidPrice can be equal to 0.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageLine.Volume">
+            <summary>
+            Volume of ask or bid.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageLine.VolumePrice">
+            <summary>
+            Volume and price of ask or bid.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageLine.CrossRate">
+            <summary>
+            AskPrice or BidPrice cross rate.
+            </summary>
+        </member>
+        <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair">
+            <summary>
+            represents an asset pair aka instrument.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.Base">
+            <summary>
+            Base asset.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.Quoting">
+            <summary>
+            Quoting asset.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.Name">
+            <summary>
+            Name of the asset pair.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.#ctor(System.String,System.String)">
+            <summary>
+            Contructor.
+            </summary>
+            <param name="base"></param>
+            <param name="quoting"></param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.Reverse">
+            <summary>
+            Returns reversed asset pair.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.IsReversed(Lykke.Service.ArbitrageDetector.Client.Models.AssetPair)">
+            <summary>
+            Checks if assset pair is revered.
+            </summary>
+            <param name="assetPair"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.Equals(Lykke.Service.ArbitrageDetector.Client.Models.AssetPair)">
+            <summary>
+            Checks if asset pairs are equal.
+            </summary>
+            <param name="other"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.IsEqualOrReversed(Lykke.Service.ArbitrageDetector.Client.Models.AssetPair)">
+            <summary>
+            Checks if equal or reversed.
+            </summary>
+            <param name="other"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.HasCommonAsset(Lykke.Service.ArbitrageDetector.Client.Models.AssetPair)">
+            <summary>
+            Check if has common asset.
+            </summary>
+            <param name="other"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.ContainsAsset(System.String)">
+            <summary>
+            Checks if contains asset.
+            </summary>
+            <param name="asset"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.IsEmpty">
+            <summary>
+            Checks if not initialized.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.Validate">
+            <summary>
+            Throw ArgumentException if not initialized.
+            </summary>
+        </member>
+        <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.BidAsk">
+            <summary>
+            Represents ask and bid prices.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.BidAsk.Ask">
+            <summary>
+            Ask.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.BidAsk.Bid">
+            <summary>
+            Bid.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.BidAsk.#ctor(System.Decimal,System.Decimal)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="bid"></param>
+            <param name="ask"></param>
+        </member>
+        <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate">
+            <summary>
+            Represents a cross rate.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.ConversionPath">
+            <summary>
+            Conversion path.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.OriginalOrderBooks">
+            <summary>
+            Original order books.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.#ctor(System.String,Lykke.Service.ArbitrageDetector.Client.Models.AssetPair,System.Collections.Generic.IReadOnlyCollection{Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice},System.Collections.Generic.IReadOnlyCollection{Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice},System.String,System.Collections.Generic.IList{Lykke.Service.ArbitrageDetector.Client.Models.OrderBook},System.DateTime)">
+            <summary>
+            Contructor.
+            </summary>
+            <param name="source"></param>
+            <param name="assetPair"></param>
+            <param name="asks"></param>
+            <param name="bids"></param>
+            <param name="conversionPath"></param>
+            <param name="originalOrderBooks"></param>
+            <param name="timestamp"></param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.FromOrderBook(Lykke.Service.ArbitrageDetector.Client.Models.OrderBook,Lykke.Service.ArbitrageDetector.Client.Models.AssetPair)">
+            <summary>
+            From one order book if equal or reversed.
+            </summary>
+            <param name="orderBook"></param>
+            <param name="targetAssetPair"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.FromOrderBooks(Lykke.Service.ArbitrageDetector.Client.Models.OrderBook,Lykke.Service.ArbitrageDetector.Client.Models.OrderBook,Lykke.Service.ArbitrageDetector.Client.Models.AssetPair)">
+            <summary>
+            From two order books.
+            </summary>
+            <param name="one"></param>
+            <param name="another"></param>
+            <param name="targetAssetPair"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.ExchangeAssetPair">
+            <summary>
+            Represents a pair of an exchange and an asset pair.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.ExchangeAssetPair.Exchange">
+            <summary>
+            Exchange.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.ExchangeAssetPair.AssetPair">
+            <summary>
+            Asset pair.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.ExchangeAssetPair.#ctor(System.String,Lykke.Service.ArbitrageDetector.Client.Models.AssetPair)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="exchange"></param>
+            <param name="assetPair"></param>
+        </member>
+        <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook">
+            <summary>
+            Represents an order book or depth of market.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.Source">
+            <summary>
+            Exchange name.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.AssetPairStr">
+            <summary>
+            String of an asset pair.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.AssetPair">
+            <summary>
+            Asset pair.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.Timestamp">
+            <summary>
+            Timestamp.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.Asks">
+            <summary>
+            Asking prices and volumes.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.Bids">
+            <summary>
+            Bidding prices and volumes.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.#ctor(System.String,System.String,System.Collections.Generic.IReadOnlyCollection{Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice},System.Collections.Generic.IReadOnlyCollection{Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice},System.DateTime)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="source"></param>
+            <param name="asset"></param>
+            <param name="asks"></param>
+            <param name="bids"></param>
+            <param name="timestamp"></param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.SetAssetPair(System.String)">
+            <summary>
+            Set asset pair to AssetPair from string by providing onw of the asset.
+            </summary>
+            <param name="oneOfTheAssets"></param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.Reverse">
+            <summary>
+            Returns new reversed order book.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice">
+            <summary>
+            Represents a pair of price and volume.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice.Price">
+            <summary>
+            Price.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice.Volume">
+            <summary>
+            Volume.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice.#ctor(System.Decimal,System.Decimal)">
+            <summary>
+            Contructor.
+            </summary>
+            <param name="price"></param>
+            <param name="volume"></param>
+        </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.ErrorResponseException">
             <summary>
             Represents error response from the Asset Disclaimers API service

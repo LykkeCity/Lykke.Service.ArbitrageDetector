@@ -154,6 +154,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public async Task<IEnumerable<CrossRate>> CalculateCrossRates()
         {
+            var newActualCrossRates = new ConcurrentDictionary<ExchangeAssetPair, CrossRate>();
             var actualOrderBooks = GetActualOrderBooks();
 
             foreach (var wantedCurrency in _wantedCurrencies)
@@ -187,7 +188,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var intermediateWantedCrossRate = CrossRate.FromOrderBook(wantedOrderBook, new AssetPair(wantedCurrency, _baseCurrency));
 
                         var key = new ExchangeAssetPair(intermediateWantedCrossRate.ConversionPath, intermediateWantedCrossRate.AssetPair);
-                        _crossRates.AddOrUpdate(key, intermediateWantedCrossRate);
+                        newActualCrossRates.AddOrUpdate(key, intermediateWantedCrossRate);
 
                         continue;
                     }
@@ -207,12 +208,15 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var crossRate = CrossRate.FromOrderBooks(wantedIntermediateOrderBook, intermediateBaseOrderBook, targetBaseAssetPair);
 
                         var key = new ExchangeAssetPair(crossRate.ConversionPath, crossRate.AssetPair);
-                        _crossRates.AddOrUpdate(key, crossRate);
+                        newActualCrossRates.AddOrUpdate(key, crossRate);
                     }
                 }
             }
 
-            return _crossRates.Values.ToList().AsReadOnly();
+            _crossRates.Clear();
+            _crossRates.AddRange(newActualCrossRates);
+
+            return newActualCrossRates.Values.ToList().AsReadOnly();
         }
 
         public async Task ProcessArbitrages()
