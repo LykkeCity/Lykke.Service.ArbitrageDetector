@@ -52,8 +52,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
             Assert.Equal("Lykke-BTCEUR & Lykke-EURUSD", crossRate.ConversionPath);
             Assert.Equal(btcusd, crossRate.AssetPairStr);
-            Assert.Equal(10769.1475m, crossRate.BestBidPrice, 8);
-            Assert.Equal(10982.9089835m, crossRate.BestAskPrice, 8);
+            Assert.Equal(10769.1475m, crossRate.Bids.Max(x => x.Price), 8);
+            Assert.Equal(10982.9089835m, crossRate.Asks.Min(x => x.Price), 8);
             Assert.Equal(9, crossRate.Asks.Count);
             Assert.Equal(4, crossRate.Bids.Count);
             Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
@@ -106,8 +106,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
             Assert.Equal("Lykke-BTCEUR & Lykke-USDEUR", crossRate.ConversionPath);
             Assert.Equal(btcusd, crossRate.AssetPairStr);
-            Assert.Equal(10769.1475m, crossRate.BestBidPrice, 8);
-            Assert.Equal(10982.9089835m, crossRate.BestAskPrice, 8);
+            Assert.Equal(10769.1475m, crossRate.Bids.Max(x => x.Price), 8);
+            Assert.Equal(10982.9089835m, crossRate.Asks.Min(x => x.Price), 8);
             Assert.Equal(6, crossRate.Asks.Count);
             Assert.Equal(4, crossRate.Bids.Count);
             Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
@@ -160,8 +160,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
             Assert.Equal("Lykke-EURBTC & Lykke-EURUSD", crossRate.ConversionPath);
             Assert.Equal(btcusd, crossRate.AssetPairStr);
-            Assert.Equal(10769.1475m, crossRate.BestBidPrice, 8);
-            Assert.Equal(10982.9089835m, crossRate.BestAskPrice, 8);
+            Assert.Equal(10769.1475m, crossRate.Bids.Max(x => x.Price), 8);
+            Assert.Equal(10982.9089835m, crossRate.Asks.Min(x => x.Price), 8);
             Assert.Equal(4, crossRate.Asks.Count);
             Assert.Equal(6, crossRate.Bids.Count);
             Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
@@ -214,8 +214,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
             Assert.Equal("Lykke-EURBTC & Lykke-USDEUR", crossRate.ConversionPath);
             Assert.Equal(btcusd, crossRate.AssetPairStr);
-            Assert.Equal(10769.1475m, crossRate.BestBidPrice, 8);
-            Assert.Equal(10982.9089835m, crossRate.BestAskPrice, 8);
+            Assert.Equal(10769.1475m, crossRate.Bids.Max(x => x.Price), 8);
+            Assert.Equal(10982.9089835m, crossRate.Asks.Min(x => x.Price), 8);
             Assert.Equal(4, crossRate.Asks.Count);
             Assert.Equal(6, crossRate.Bids.Count);
             Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
@@ -263,18 +263,18 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(3, arbitrages.Count());
 
             var arbitrage1 = arbitrages.First(x => x.BidCrossRate.Source == "GDAX" && x.AskCrossRate.Source == "Quoine-Binance");
-            Assert.Equal(11000, arbitrage1.BidCrossRate.BestBidPrice);
-            Assert.Equal(10982.9089835m, arbitrage1.AskCrossRate.BestAskPrice, 8);
+            Assert.Equal(11000, arbitrage1.BidCrossRate.Bids.Max(x => x.Price));
+            Assert.Equal(10982.9089835m, arbitrage1.AskCrossRate.Asks.Max(x => x.Price), 8);
             Assert.Equal(arbitrage1.PnL, arbitrage1.Volume * arbitrage1.Spread);
 
             var arbitrage2 = arbitrages.First(x => x.BidCrossRate.Source == "Bitfinex" && x.AskCrossRate.Source == "Quoine-Binance");
-            Assert.Equal(11100, arbitrage2.BidCrossRate.BestBidPrice);
-            Assert.Equal(10982.9089835m, arbitrage2.AskCrossRate.BestAskPrice, 8);
+            Assert.Equal(11100, arbitrage2.BidCrossRate.Bids.Max(x => x.Price));
+            Assert.Equal(10982.9089835m, arbitrage2.AskCrossRate.Asks.Max(x => x.Price), 8);
             Assert.Equal(arbitrage2.PnL, arbitrage2.Volume * arbitrage2.Spread);
 
             var arbitrage3 = arbitrages.First(x => x.BidCrossRate.Source == "Bitfinex" && x.AskCrossRate.Source == "GDAX");
-            Assert.Equal(11100, arbitrage3.BidCrossRate.BestBidPrice);
-            Assert.Equal(11050m, arbitrage3.AskCrossRate.BestAskPrice);
+            Assert.Equal(11100, arbitrage3.BidCrossRate.Bids.Max(x => x.Price));
+            Assert.Equal(11050m, arbitrage3.AskCrossRate.Asks.Max(x => x.Price));
             Assert.Equal(arbitrage3.PnL, arbitrage3.Volume * arbitrage3.Spread);
         }
 

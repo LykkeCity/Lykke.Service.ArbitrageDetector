@@ -42,11 +42,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// </summary>
         public IReadOnlyCollection<VolumePrice> Bids { get; }
 
-        public decimal BestBidPrice => Bids.MaxBy(x => x.Price).Price;
-        public decimal BestBidVolume => Bids.MaxBy(x => x.Price).Volume;
-        public decimal BestAskPrice => Asks.MinBy(x => x.Price).Price;
-        public decimal BestAskVolume => Asks.MinBy(x => x.Price).Volume;
-
         /// <summary>
         /// Constructor.
         /// </summary>

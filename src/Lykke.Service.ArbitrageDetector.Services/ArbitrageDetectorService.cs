@@ -76,31 +76,35 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             var actualCrossRates = GetActualCrossRates();
 
-            // For each asset - for each cross rate make two lines for ask and bid, order that lines and find intersection
+            // For each asset - for each cross rate make one line for every ask and bid, order that lines and find intersection
             var uniqueAssetPairs = actualCrossRates.Select(x => x.AssetPairStr).Distinct().ToList();            
             foreach (var asset in uniqueAssetPairs)
             {
                 var lines = new List<ArbitrageLine>();
                 var assetCrossRates = actualCrossRates.Where(x => x.AssetPairStr == asset).ToList();
 
-                // Add one cross rate as two lines (bid and ask)
+                // Add all asks and bids
                 foreach (var crossRate in assetCrossRates)
                 {
-                    if (crossRate.Asks.Any())
+                    foreach (var crossRateAsk in crossRate.Asks)
+                    {
                         lines.Add(new ArbitrageLine
                         {
                             CrossRate = crossRate,
-                            AskPrice = Math.Round(crossRate.BestAskPrice, 8),
-                            Volume = crossRate.BestAskVolume < crossRate.BestBidVolume ? crossRate.BestAskVolume : crossRate.BestBidVolume
+                            AskPrice = crossRateAsk.Price,
+                            Volume = crossRateAsk.Volume
                         });
+                    }
 
-                    if (crossRate.Bids.Any())
+                    foreach (var crossRateBid in crossRate.Bids)
+                    {
                         lines.Add(new ArbitrageLine
                         {
                             CrossRate = crossRate,
-                            BidPrice = Math.Round(crossRate.BestBidPrice, 8),
-                            Volume = crossRate.BestAskVolume < crossRate.BestBidVolume ? crossRate.BestAskVolume : crossRate.BestBidVolume
+                            BidPrice = crossRateBid.Price,
+                            Volume = crossRateBid.Volume
                         });
+                    }
                 }
 
                 // Order by Price
@@ -165,19 +169,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 foreach (var wantedCurrencykey in wantedCurrencyKeys)
                 {
                     var wantedOrderBook = actualOrderBooks[wantedCurrencykey];
-                    var currentExchange = wantedOrderBook.Source;
 
                     // Trying to find wanted asset in current orderBook's asset pair
                     var wantedIntermediateAssetPair = AssetPair.FromString(wantedOrderBook.AssetPairStr, wantedCurrency);
-
-                    // If something wrong with orderBook then continue
-                    if (!wantedOrderBook.Asks.Any() || wantedOrderBook.BestAskPrice == 0 ||
-                        !wantedOrderBook.Bids.Any() || wantedOrderBook.BestBidPrice == 0)
-                    {
-                        await _log?.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name,
-                            $"Skip {currentExchange}, {wantedOrderBook.AssetPairStr}, bids.Count: {wantedOrderBook.Bids.Count}, asks.Count: {wantedOrderBook.Asks.Count}");
-                        continue;
-                    }
 
                     // Get intermediate currency
                     var intermediateCurrency = wantedIntermediateAssetPair.Base == wantedCurrency
