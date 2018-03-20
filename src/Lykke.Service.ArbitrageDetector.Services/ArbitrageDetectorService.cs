@@ -20,13 +20,14 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ConcurrentDictionary<ExchangeAssetPair, OrderBook> _orderBooks;
         private readonly ConcurrentDictionary<ExchangeAssetPair, CrossRate> _crossRates;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrages;
-        private readonly ConcurrentDictionary<DateTime, ArbitrageHistory> _arbitrageHistory;
+        private readonly ConcurrentDictionary<DateTime, Arbitrage> _arbitrageHistory;
         private readonly IReadOnlyCollection<string> _wantedCurrencies;
         private readonly string _baseCurrency;
         private readonly int _expirationTimeInSeconds;
+        private readonly int _historyMaxSize;
         private readonly ILog _log;
 
-        public ArbitrageDetectorService(IReadOnlyCollection<string> wantedCurrencies, string baseCurrency, int executionDelay, int expirationTimeInSeconds,
+        public ArbitrageDetectorService(IReadOnlyCollection<string> wantedCurrencies, string baseCurrency, int executionDelay, int expirationTimeInSeconds, int historyMaxSize,
             ILog log, IShutdownManager shutdownManager)
             : base((int) TimeSpan.FromSeconds(executionDelay).TotalMilliseconds, log)
         {
@@ -34,10 +35,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _orderBooks = new ConcurrentDictionary<ExchangeAssetPair, OrderBook>();
             _crossRates = new ConcurrentDictionary<ExchangeAssetPair, CrossRate>();
             _arbitrages = new ConcurrentDictionary<string, Arbitrage>();
-            _arbitrageHistory = new ConcurrentDictionary<DateTime, ArbitrageHistory>();
+            _arbitrageHistory = new ConcurrentDictionary<DateTime, Arbitrage>();
             _wantedCurrencies = wantedCurrencies;
             _baseCurrency = baseCurrency;
             _expirationTimeInSeconds = expirationTimeInSeconds;
+            _historyMaxSize = historyMaxSize;
             shutdownManager?.Register(this);
         }
 
@@ -130,12 +132,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return result;
         }
 
-        public IEnumerable<ArbitrageHistory> GetArbitrageHistory(DateTime since)
+        public IEnumerable<Arbitrage> GetArbitrageHistory(DateTime since)
         {
             return _arbitrageHistory
                 .Where(x => x.Key > since)
                 .Select(x => x.Value)
-                .OrderByDescending(x => x.Timestamp)
+                .OrderByDescending(x => x.EndedAt)
                 .ToList();
         }
 
@@ -155,7 +157,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         public override async Task Execute()
         {
             await CalculateCrossRates();
-            await ProcessArbitrages();
+            await CalculateArbitrages();
         }
 
         public async Task<IEnumerable<CrossRate>> CalculateCrossRates()
@@ -215,7 +217,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return newActualCrossRates.Values.ToList().AsReadOnly();
         }
 
-        public async Task ProcessArbitrages()
+        public async Task CalculateArbitrages()
         {
             var newArbitragesList = GetArbitrages();
             var newArbitrages = new ConcurrentDictionary<string, Arbitrage>();
@@ -230,12 +232,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
             {
                 if (!newArbitrages.Keys.Contains(oldArbitrage.Key))
                 {
+                    oldArbitrage.Value.EndedAt = DateTime.UtcNow;
                     _arbitrages.Remove(oldArbitrage.Key);
 
-                    // Write to history and log
-                    _arbitrageHistory.Add(DateTime.UtcNow, new ArbitrageHistory(oldArbitrage.Value, ArbitrageHistoryStatus.Ended));
-                    if (_log != null)
-                        await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Ended: {oldArbitrage.Value}, was available for {(DateTime.UtcNow - oldArbitrage.Value.StartedTimestamp).Seconds} seconds");
+                    RemoveFromHistoryIfItsTooLong();
+                    _arbitrageHistory.Add(DateTime.UtcNow, oldArbitrage.Value);
                 }
             }
 
@@ -246,14 +247,24 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 {
                     _arbitrages.Add(newArbitrage.Key, newArbitrage.Value);
 
-                    // Write to history and log
-                    _arbitrageHistory.Add(DateTime.UtcNow, new ArbitrageHistory(newArbitrage.Value, ArbitrageHistoryStatus.Started));
-                    if (_log != null)
-                        await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Started: {newArbitrage.Value}");
+                    RemoveFromHistoryIfItsTooLong();
+                    _arbitrageHistory.Add(DateTime.UtcNow, newArbitrage.Value);
                 }
             }
         }
 
+        private void RemoveFromHistoryIfItsTooLong()
+        {
+            var extraCount = _arbitrageHistory.Count - _historyMaxSize;
+            if (extraCount > 0)
+            {
+                var keys = _arbitrageHistory.Keys.Take(extraCount).ToList();
+                foreach (var key in keys)
+                {
+                    _arbitrageHistory.Remove(key);
+                }
+            }
+        }
 
         private void CheckForCurrencyAndUpdateOrderBooks(string currency, OrderBook orderBook)
         {

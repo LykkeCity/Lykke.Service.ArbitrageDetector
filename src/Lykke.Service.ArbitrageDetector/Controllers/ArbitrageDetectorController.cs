@@ -95,11 +95,11 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [HttpGet]
         [Route("arbitrageHistory")]
         [SwaggerOperation("ArbitrageHistory")]
-        [ProducesResponseType(typeof(IEnumerable<ArbitrageHistory>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<Arbitrage>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> ArbitrageHistory(DateTime since)
         {
-            IEnumerable<ArbitrageHistory> result;
+            IEnumerable<Arbitrage> result;
 
             try
             {

@@ -11,6 +11,8 @@ namespace Lykke.Service.ArbitrageDetector.Settings.ServiceSettings
 
         public int ExpirationTimeInSeconds { get; set; }
 
+        public int HistoryMaxSize { get; set; }
+
         public string BaseCurrency { get; set; }
 
         public IReadOnlyCollection<string> WantedCurrencies { get; set; }

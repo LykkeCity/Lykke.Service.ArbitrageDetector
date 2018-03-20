@@ -45,7 +45,17 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// The time when it first appeared.
         /// </summary>
-        public DateTime StartedTimestamp { get; }
+        public DateTime StartedAt { get; }
+
+        /// <summary>
+        /// The time when it disappeared.
+        /// </summary>
+        public DateTime EndedAt { get; set; }
+
+        /// <summary>
+        /// How log the arbitrage lasted.
+        /// </summary>
+        public TimeSpan Lasted => EndedAt - StartedAt;
 
         /// <summary>
         /// Constructor.
@@ -63,12 +73,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             Spread = (Ask.Price - Bid.Price) / Bid.Price * 100;
             Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
             PnL = Spread * Volume;
-            StartedTimestamp = DateTime.UtcNow;
+            StartedAt = DateTime.UtcNow;
         }
 
         public override string ToString()
         {
-            return $"{AskCrossRate.AssetPair}, pnl: {Math.Round(PnL, 2)}, spread: {Math.Round(Spread, 2)}, volume: {Math.Round(Volume, 2)}, path: ({AskCrossRate.ConversionPath}) * ({BidCrossRate.ConversionPath})";
+            return $"{AskCrossRate.AssetPair}, PnL: {Math.Round(PnL, 2)}, Spread: {Math.Round(Spread, 2)}%, Volume: {Math.Round(Volume, 2)}, Path: ({AskCrossRate.ConversionPath}) * ({BidCrossRate.ConversionPath})";
         }
     }
 }

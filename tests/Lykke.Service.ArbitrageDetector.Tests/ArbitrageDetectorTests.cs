@@ -19,7 +19,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var arbitrageCalculator = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 10, 10, null, null);
+            var arbitrageCalculator = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 10, 10, 1000, null, null);
 
             var btcEurOrderBook = new OrderBook(exchange, "BTCEUR",
                 new List<VolumePrice> // asks
@@ -68,7 +68,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var arbitrageCalculator = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 10, 10, null, null);
+            var arbitrageCalculator = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 10, 10, 1000, null, null);
 
             var btcEurOrderBook = new OrderBook(exchange, "BTCEUR",
                 new List<VolumePrice> // asks
@@ -122,7 +122,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var arbitrageCalculator = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 10, 10, null, null);
+            var arbitrageCalculator = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 10, 10, 1000, null, null);
 
             var btcEurOrderBook = new OrderBook(exchange, "EURBTC",
                 new List<VolumePrice> // bids
@@ -176,7 +176,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var arbitrageCalculator = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 10, 10, null, null);
+            var arbitrageCalculator = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 10, 10, 1000, null, null);
 
             var eurBtcOrderBook = new OrderBook(exchange, "EURBTC",
                 new List<VolumePrice> // asks
@@ -227,7 +227,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var wantedCurrencies = new List<string> { "BTC" };
             const string baseCurrency = "USD";
 
-            var arbitrageDetector = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 10, 10, null, null);
+            var arbitrageDetector = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 10, 10, 1000, null, null);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
                 new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
@@ -284,7 +284,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var wantedCurrencies = new List<string> { "BTC" };
             const string baseCurrency = "USD";
 
-            var arbitrageDetector = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 10, 10, null, null);
+            var arbitrageDetector = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 10, 10, 1000, null, null);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
                 new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
@@ -316,11 +316,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var arbitrageHistory = arbitrageDetector.GetArbitrageHistory(DateTime.MinValue);
 
             Assert.Equal(3, arbitrageHistory.Count());
-            Assert.Equal(3, arbitrageHistory.Count(x => x.Status == ArbitrageHistoryStatus.Started));
-            Assert.Equal(3, arbitrageHistory.Count(x => DateTime.UtcNow - x.Timestamp < new TimeSpan(0, 0, 0, 1)));
-            Assert.Equal(1, arbitrageHistory.Count(x => x.Arbitrage.ToString() == "BTCUSD, pnl: -1.55, spread: -0.16, volume: 10, path: (Quoine-BTCEUR & Binance-EURUSD) * (GDAX-BTCUSD)"));
-            Assert.Equal(1, arbitrageHistory.Count(x => x.Arbitrage.ToString() == "BTCUSD, pnl: -4.50, spread: -0.45, volume: 10, path: (GDAX-BTCUSD) * (Bitfinex-BTCUSD)"));
-            Assert.Equal(1, arbitrageHistory.Count(x => x.Arbitrage.ToString() == "BTCUSD, pnl: -10.55, spread: -1.05, volume: 10, path: (Quoine-BTCEUR & Binance-EURUSD) * (Bitfinex-BTCUSD)"));
         }
     }
 }
