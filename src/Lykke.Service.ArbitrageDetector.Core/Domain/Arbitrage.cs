@@ -68,7 +68,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public override string ToString()
         {
-            return $"{AskCrossRate.AssetPair}, spread: {Spread}, volume: {Volume}, path: ({AskCrossRate.ConversionPath}) * ({BidCrossRate.ConversionPath})";
+            return $"{AskCrossRate.AssetPair}, spread: {Math.Round(Spread, 2)}, volume: {Math.Round(Volume, 2)}, path: ({AskCrossRate.ConversionPath}) * ({BidCrossRate.ConversionPath})";
         }
     }
 }
