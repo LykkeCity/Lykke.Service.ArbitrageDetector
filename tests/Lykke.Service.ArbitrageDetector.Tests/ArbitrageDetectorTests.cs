@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Services;
@@ -284,7 +285,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var wantedCurrencies = new List<string> { "BTC" };
             const string baseCurrency = "USD";
 
-            var arbitrageDetector = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 10, 10, 1000, null, null);
+            var arbitrageDetector = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 1, 1, 1000, null, null);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
                 new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
@@ -311,6 +312,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             arbitrageDetector.Process(btcEurOrderBook);
             arbitrageDetector.Process(eurUsdOrderBook);
 
+            await arbitrageDetector.Execute();
+            Thread.Sleep(1000);
             await arbitrageDetector.Execute();
 
             var arbitrageHistory = arbitrageDetector.GetArbitrageHistory(DateTime.MinValue);
