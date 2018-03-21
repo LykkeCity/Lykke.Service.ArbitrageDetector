@@ -1,6 +1,7 @@
 ﻿using System;
+using DomainArbitrage = Lykke.Service.ArbitrageDetector.Core.Domain.Arbitrage;
 
-namespace Lykke.Service.ArbitrageDetector.Client.Models
+namespace Lykke.Service.ArbitrageDetector.Core.DataModel
 {
     /// <summary>
     /// Represents an arbitrage situation.
@@ -66,6 +67,21 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             PnL = pnL;
             StartedAt = startedAt;
             EndedAt = endedAt;
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="domain"></param>
+        public Arbitrage(DomainArbitrage domain)
+        {
+            Ask = new VolumePrice(domain.Ask);
+            Bid = new VolumePrice(domain.Bid);
+            Spread = domain.Spread;
+            Volume = domain.Volume;
+            PnL = domain.PnL;
+            StartedAt = domain.StartedAt;
+            EndedAt = domain.EndedAt;
         }
     }
 }

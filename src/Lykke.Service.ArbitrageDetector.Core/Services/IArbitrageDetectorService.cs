@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
+using DataCrossRate = Lykke.Service.ArbitrageDetector.Core.DataModel.CrossRate;
+using DataArbitrage = Lykke.Service.ArbitrageDetector.Core.DataModel.Arbitrage;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Services
 {
@@ -9,11 +11,15 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
         void Process(OrderBook orderBook);
 
         IEnumerable<OrderBook> GetOrderBooks();
+
         IEnumerable<OrderBook> GetOrderBooks(string exchange, string instrument);
 
-        IEnumerable<CrossRate> GetCrossRates();
+        IEnumerable<DataCrossRate> GetCrossRates();
 
         IEnumerable<Arbitrage> GetArbitrages();
-        IEnumerable<Arbitrage> GetArbitrageHistory(DateTime since);
+
+        IEnumerable<DataArbitrage> GetArbitragesData();
+
+        IEnumerable<DataArbitrage> GetArbitrageHistory(DateTime since, int take);
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
+using DomainCrossRate = Lykke.Service.ArbitrageDetector.Core.Domain.CrossRate;
 
-namespace Lykke.Service.ArbitrageDetector.Client.Models
+namespace Lykke.Service.ArbitrageDetector.Core.DataModel
 {
     /// <summary>
     /// Represents a cross rate.
@@ -32,7 +34,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Timestamp.
         /// </summary>
-        public DateTime Timestamp { get; }
+        public DateTime Timestamp{ get; }
 
         /// <summary>
         /// Constructor.
@@ -51,6 +53,20 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             BestBid = bestBid;
             ConversionPath = string.IsNullOrWhiteSpace(conversionPath) ? throw new ArgumentNullException(nameof(conversionPath)) : conversionPath;
             Timestamp = timestamp;
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="domain"></param>
+        public CrossRate(DomainCrossRate domain)
+        {
+            Source = domain.Source;
+            AssetPair = new AssetPair(domain.AssetPair);
+            BestAsk = new VolumePrice(domain.Asks.Min());
+            BestBid = new VolumePrice(domain.Bids.Max());
+            ConversionPath = domain.ConversionPath;
+            Timestamp = domain.Timestamp;
         }
     }
 }

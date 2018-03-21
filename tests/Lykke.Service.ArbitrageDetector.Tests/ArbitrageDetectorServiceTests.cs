@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Lykke.Service.ArbitrageDetector.Tests
 {
-    public class ArbitrageDetectorTests
+    public class ArbitrageDetectorServiceTests
     {
         [Fact]
         public async Task StraightConversionTest()
@@ -316,7 +316,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Thread.Sleep(1000); // Wait until cross rate expire and arbitrage appears in history
             await arbitrageDetector.Execute();
 
-            var arbitrageHistory = arbitrageDetector.GetArbitrageHistory(DateTime.MinValue);
+            var arbitrageHistory = arbitrageDetector.GetArbitrageHistory(DateTime.MinValue, short.MaxValue);
 
             Assert.Equal(3, arbitrageHistory.Count());
         }

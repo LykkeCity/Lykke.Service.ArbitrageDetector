@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Utils;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Services;
-using MoreLinq;
 using AssetPair = Lykke.Service.ArbitrageDetector.Core.Domain.AssetPair;
+using DataCrossRate = Lykke.Service.ArbitrageDetector.Core.DataModel.CrossRate;
+using DataArbitrage = Lykke.Service.ArbitrageDetector.Core.DataModel.Arbitrage;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
@@ -64,10 +63,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return result.OrderByDescending(x => x.Timestamp).ToList();
         }
 
-        public IEnumerable<CrossRate> GetCrossRates()
+        public IEnumerable<DataCrossRate> GetCrossRates()
         {
             return _crossRates.Values
                 .OrderByDescending(x => x.Timestamp)
+                .Select(x => new DataCrossRate(x))
                 .ToList()
                 .AsReadOnly();
         }
@@ -132,12 +132,22 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return result;
         }
 
-        public IEnumerable<Arbitrage> GetArbitrageHistory(DateTime since)
+        public IEnumerable<DataArbitrage> GetArbitragesData()
+        {
+            return GetArbitrages()
+                .OrderByDescending(x => x.EndedAt)
+                .Select(x => new DataArbitrage(x))
+                .ToList()
+                .AsReadOnly();
+        }
+
+        public IEnumerable<DataArbitrage> GetArbitrageHistory(DateTime since, int take)
         {
             return _arbitrageHistory
                 .Where(x => x.Key > since)
-                .Select(x => x.Value)
+                .Select(x => new DataArbitrage(x.Value))
                 .OrderByDescending(x => x.EndedAt)
+                .Take(take)
                 .ToList();
         }
 

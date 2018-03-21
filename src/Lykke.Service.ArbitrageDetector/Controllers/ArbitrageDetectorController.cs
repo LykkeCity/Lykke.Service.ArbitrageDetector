@@ -8,6 +8,8 @@ using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using DataCrossRate = Lykke.Service.ArbitrageDetector.Core.DataModel.CrossRate;
+using DataArbitrage = Lykke.Service.ArbitrageDetector.Core.DataModel.Arbitrage;
 
 namespace Lykke.Service.ArbitrageDetector.Controllers
 {
@@ -49,11 +51,11 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [HttpGet]
         [Route("crossRates")]
         [SwaggerOperation("CrossRates")]
-        [ProducesResponseType(typeof(IEnumerable<CrossRate>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<DataCrossRate>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> CrossRates()
         {
-            IEnumerable<CrossRate> result;
+            IEnumerable<DataCrossRate> result;
 
             try
             {
@@ -72,15 +74,15 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [HttpGet]
         [Route("arbitrages")]
         [SwaggerOperation("Arbitrages")]
-        [ProducesResponseType(typeof(IEnumerable<Arbitrage>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<DataArbitrage>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> Arbitrages()
         {
-            IEnumerable<Arbitrage> result;
+            IEnumerable<DataArbitrage> result;
 
             try
             {
-                result = _arbitrageDetectorService.GetArbitrages();
+                result = _arbitrageDetectorService.GetArbitragesData();
             }
             catch (Exception exception)
             {
@@ -95,15 +97,15 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [HttpGet]
         [Route("arbitrageHistory")]
         [SwaggerOperation("ArbitrageHistory")]
-        [ProducesResponseType(typeof(IEnumerable<Arbitrage>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<DataArbitrage>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ArbitrageHistory(DateTime since)
+        public async Task<IActionResult> ArbitrageHistory(DateTime since, int take)
         {
-            IEnumerable<Arbitrage> result;
+            IEnumerable<DataArbitrage> result;
 
             try
             {
-                result = _arbitrageDetectorService.GetArbitrageHistory(since);
+                result = _arbitrageDetectorService.GetArbitrageHistory(since, take);
             }
             catch (Exception exception)
             {
