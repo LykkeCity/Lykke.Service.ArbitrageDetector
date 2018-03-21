@@ -83,7 +83,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 
             try
             {
-                result = _arbitrageDetectorService.GetArbitragesData().Select(x => new DataArbitrage(x)).ToList();
+                result = _arbitrageDetectorService.GetArbitrages().Select(x => new DataArbitrage(x)).ToList();
             }
             catch (Exception exception)
             {

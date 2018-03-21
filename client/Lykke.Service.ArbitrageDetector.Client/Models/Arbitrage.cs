@@ -73,6 +73,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public TimeSpan Lasted => EndedAt - StartedAt;
 
         /// <summary>
+        /// Conversion path.
+        /// </summary>
+        public string ConversionPath => $"({AskConversionPath}) * ({BidConversionPath})";
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="assetPair"></param>
@@ -90,18 +95,10 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             decimal spread, decimal volume, decimal pnL, DateTime startedAt, DateTime endedAt)
         {
             AssetPair = assetPair;
-            AskSource = string.IsNullOrWhiteSpace(askSource)
-                ? throw new ArgumentNullException(nameof(askSource))
-                : askSource;
-            BidSource = string.IsNullOrWhiteSpace(bidSource)
-                ? throw new ArgumentNullException(nameof(bidSource))
-                : bidSource;
-            AskConversionPath = string.IsNullOrWhiteSpace(askPath)
-                ? throw new ArgumentNullException(nameof(askPath))
-                : askPath;
-            BidConversionPath = string.IsNullOrWhiteSpace(bidPath)
-                ? throw new ArgumentNullException(nameof(bidPath))
-                : bidPath;
+            AskSource = string.IsNullOrWhiteSpace(askSource) ? throw new ArgumentNullException(nameof(askSource)) : askSource;
+            BidSource = string.IsNullOrWhiteSpace(bidSource) ? throw new ArgumentNullException(nameof(bidSource)) : bidSource;
+            AskConversionPath = string.IsNullOrWhiteSpace(askPath) ? throw new ArgumentNullException(nameof(askPath)) : askPath;
+            BidConversionPath = string.IsNullOrWhiteSpace(bidPath) ? throw new ArgumentNullException(nameof(bidPath)) : bidPath;
             Ask = ask;
             Bid = bid;
             Spread = spread;
@@ -109,7 +106,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             PnL = pnL;
             StartedAt = startedAt;
             EndedAt = endedAt;
-
         }
     }
 }

@@ -63,6 +63,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public TimeSpan Lasted => EndedAt - StartedAt;
 
         /// <summary>
+        /// Conversion path.
+        /// </summary>
+        public string ConversionPath => $"({AskCrossRate.ConversionPath}) * ({BidCrossRate.ConversionPath})";
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="assetPair"></param>
@@ -85,7 +90,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public override string ToString()
         {
-            return $"{AskCrossRate.AssetPair}, PnL: {Math.Round(PnL, 2)}, Spread: {Math.Round(Spread, 2)}%, Volume: {Math.Round(Volume, 2)}, Path: ({AskCrossRate.ConversionPath}) * ({BidCrossRate.ConversionPath})";
+            return $"{AssetPair}, PnL: {Math.Round(PnL, 2)}, Spread: {Math.Round(Spread, 2)}%, Volume: {Math.Round(Volume, 2)}, Path: ({AskCrossRate.ConversionPath}) * ({BidCrossRate.ConversionPath})";
         }
     }
 }

@@ -47,7 +47,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             arbitrageCalculator.Process(btcEurOrderBook);
             arbitrageCalculator.Process(eurUsdOrderBook);
 
-            var crossRates = await arbitrageCalculator.CalculateCrossRates();
+            var crossRates = arbitrageCalculator.CalculateCrossRates();
             Assert.Single(crossRates);
             var crossRate = crossRates.First();
             Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
@@ -101,7 +101,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             arbitrageCalculator.Process(btcEurOrderBook);
             arbitrageCalculator.Process(usdEurOrderBook);
 
-            var crossRates = await arbitrageCalculator.CalculateCrossRates();
+            var crossRates = arbitrageCalculator.CalculateCrossRates();
             Assert.Single(crossRates);
             var crossRate = crossRates.First();
             Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
@@ -155,7 +155,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             arbitrageCalculator.Process(btcEurOrderBook);
             arbitrageCalculator.Process(eurUsdOrderBook);
 
-            var crossRates = await arbitrageCalculator.CalculateCrossRates();
+            var crossRates = arbitrageCalculator.CalculateCrossRates();
             Assert.Single(crossRates);
             var crossRate = crossRates.First();
             Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
@@ -209,7 +209,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             arbitrageCalculator.Process(eurBtcOrderBook);
             arbitrageCalculator.Process(usdEurOrderBook);
 
-            var crossRates = await arbitrageCalculator.CalculateCrossRates();
+            var crossRates = arbitrageCalculator.CalculateCrossRates();
             Assert.Single(crossRates);
             var crossRate = crossRates.First();
             Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
@@ -255,7 +255,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             arbitrageDetector.Process(btcEurOrderBook);
             arbitrageDetector.Process(eurUsdOrderBook);
 
-            await arbitrageDetector.CalculateCrossRates();
+            await arbitrageDetector.Execute();
 
             var crossRates = arbitrageDetector.GetCrossRates();
             var arbitrages = arbitrageDetector.GetArbitrages();

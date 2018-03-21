@@ -16,8 +16,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
 
         IEnumerable<Arbitrage> GetArbitrages();
 
-        IEnumerable<Arbitrage> GetArbitragesData();
-
         IEnumerable<Arbitrage> GetArbitrageHistory(DateTime since, int take);
     }
 }

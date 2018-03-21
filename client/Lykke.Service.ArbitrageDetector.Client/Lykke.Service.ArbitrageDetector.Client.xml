@@ -97,6 +97,11 @@
             How log the arbitrage lasted.
             </summary>
         </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.ConversionPath">
+            <summary>
+            Conversion path.
+            </summary>
+        </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.#ctor(Lykke.Service.ArbitrageDetector.Client.Models.AssetPair,System.String,System.String,System.String,System.String,Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice,Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice,System.Decimal,System.Decimal,System.Decimal,System.DateTime,System.DateTime)">
             <summary>
             Constructor.

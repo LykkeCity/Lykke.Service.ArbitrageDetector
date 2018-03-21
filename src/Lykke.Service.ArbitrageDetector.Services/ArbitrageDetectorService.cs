@@ -16,7 +16,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ConcurrentDictionary<ExchangeAssetPair, OrderBook> _orderBooks;
         private readonly ConcurrentDictionary<ExchangeAssetPair, CrossRate> _crossRates;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrages;
-        private readonly ConcurrentDictionary<DateTime, Arbitrage> _arbitrageHistory;
+        private readonly List<Arbitrage> _arbitrageHistory;
         private readonly IReadOnlyCollection<string> _wantedCurrencies;
         private readonly string _baseCurrency;
         private readonly int _expirationTimeInSeconds;
@@ -31,7 +31,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _orderBooks = new ConcurrentDictionary<ExchangeAssetPair, OrderBook>();
             _crossRates = new ConcurrentDictionary<ExchangeAssetPair, CrossRate>();
             _arbitrages = new ConcurrentDictionary<string, Arbitrage>();
-            _arbitrageHistory = new ConcurrentDictionary<DateTime, Arbitrage>();
+            _arbitrageHistory = new List<Arbitrage>();
             _wantedCurrencies = wantedCurrencies;
             _baseCurrency = baseCurrency;
             _expirationTimeInSeconds = expirationTimeInSeconds;
@@ -72,67 +72,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public IEnumerable<Arbitrage> GetArbitrages()
         {
-            var result = new List<Arbitrage>();
-
-            var actualCrossRates = GetActualCrossRates();
-
-            // For each asset - for each cross rate make one line for every ask and bid, order that lines and find intersection
-            var uniqueAssetPairs = actualCrossRates.Select(x => x.AssetPair).Distinct().ToList();            
-            foreach (var assetPair in uniqueAssetPairs)
-            {
-                var lines = new List<ArbitrageLine>();
-                var assetPairCrossRates = actualCrossRates.Where(x => x.AssetPair.Equals(assetPair)).ToList();
-
-                // Add all asks and bids
-                foreach (var crossRate in assetPairCrossRates)
-                {
-                    foreach (var crossRateAsk in crossRate.Asks)
-                    {
-                        lines.Add(new ArbitrageLine
-                        {
-                            CrossRate = crossRate,
-                            AskPrice = crossRateAsk.Price,
-                            Volume = crossRateAsk.Volume
-                        });
-                    }
-
-                    foreach (var crossRateBid in crossRate.Bids)
-                    {
-                        lines.Add(new ArbitrageLine
-                        {
-                            CrossRate = crossRate,
-                            BidPrice = crossRateBid.Price,
-                            Volume = crossRateBid.Volume
-                        });
-                    }
-                }
-
-                // Order by Price
-                lines = lines.OrderBy(x => x.Price).ThenBy(x => x.AskPrice).ToList();
-
-                // Calculate arbitrage for every ask and every higher bid
-                for (var a = 0; a < lines.Count; a++)
-                {
-                    var askLine = lines[a];
-                    if (askLine.AskPrice != 0)
-                        for (var b = a + 1; b < lines.Count; b++)
-                        {
-                            var bidLine = lines[b];
-                            if (bidLine.BidPrice != 0)
-                            {
-                                var arbitrage = new Arbitrage(assetPair, askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
-                                result.Add(arbitrage);
-                            }
-                        }
-                }
-            }
-
-            return result;
-        }
-
-        public IEnumerable<Arbitrage> GetArbitragesData()
-        {
-            return GetArbitrages()
+            return CalculateArbitrages()
                 .OrderByDescending(x => x.EndedAt)
                 .ToList()
                 .AsReadOnly();
@@ -141,8 +81,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         public IEnumerable<Arbitrage> GetArbitrageHistory(DateTime since, int take)
         {
             return _arbitrageHistory
-                .Where(x => x.Key > since)
-                .Select(x => x.Value)
+                .Where(x => x.EndedAt > since)
                 .OrderByDescending(x => x.EndedAt)
                 .Take(take)
                 .ToList();
@@ -163,11 +102,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public override async Task Execute()
         {
-            await CalculateCrossRates();
-            await RefreshArbitrages();
+            CalculateCrossRates();
+            RefreshArbitrages();
         }
 
-        public async Task<IEnumerable<CrossRate>> CalculateCrossRates()
+        public IEnumerable<CrossRate> CalculateCrossRates()
         {
             var newActualCrossRates = new ConcurrentDictionary<ExchangeAssetPair, CrossRate>();
             var actualOrderBooks = GetActualOrderBooks();
@@ -223,9 +162,68 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return _crossRates.Values.ToList().AsReadOnly();
         }
 
-        public async Task RefreshArbitrages()
+        public IEnumerable<Arbitrage> CalculateArbitrages()
         {
-            var newArbitragesList = GetArbitrages();
+            var newArbitrages = new List<Arbitrage>();
+            var actualCrossRates = GetActualCrossRates();
+
+            // For each asset - for each cross rate make one line for every ask and bid, order that lines and find intersection
+            var uniqueAssetPairs = actualCrossRates.Select(x => x.AssetPair).Distinct().ToList();
+            foreach (var assetPair in uniqueAssetPairs)
+            {
+                var lines = new List<ArbitrageLine>();
+                var assetPairCrossRates = actualCrossRates.Where(x => x.AssetPair.Equals(assetPair)).ToList();
+
+                // Add all asks and bids
+                foreach (var crossRate in assetPairCrossRates)
+                {
+                    foreach (var crossRateAsk in crossRate.Asks)
+                    {
+                        lines.Add(new ArbitrageLine
+                        {
+                            CrossRate = crossRate,
+                            AskPrice = crossRateAsk.Price,
+                            Volume = crossRateAsk.Volume
+                        });
+                    }
+
+                    foreach (var crossRateBid in crossRate.Bids)
+                    {
+                        lines.Add(new ArbitrageLine
+                        {
+                            CrossRate = crossRate,
+                            BidPrice = crossRateBid.Price,
+                            Volume = crossRateBid.Volume
+                        });
+                    }
+                }
+
+                // Order by Price
+                lines = lines.OrderBy(x => x.Price).ThenBy(x => x.AskPrice).ToList();
+
+                // Calculate arbitrage for every ask and every higher bid
+                for (var a = 0; a < lines.Count; a++)
+                {
+                    var askLine = lines[a];
+                    if (askLine.AskPrice != 0)
+                        for (var b = a + 1; b < lines.Count; b++)
+                        {
+                            var bidLine = lines[b];
+                            if (bidLine.BidPrice != 0)
+                            {
+                                var arbitrage = new Arbitrage(assetPair, askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
+                                newArbitrages.Add(arbitrage);
+                            }
+                        }
+                }
+            }
+
+            return newArbitrages;
+        }
+
+        public void RefreshArbitrages()
+        {
+            var newArbitragesList = CalculateArbitrages();
             var newArbitrages = new ConcurrentDictionary<string, Arbitrage>();
             foreach (var newArbitrage in newArbitragesList)
             {
@@ -242,7 +240,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     _arbitrages.Remove(oldArbitrage.Key);
 
                     // History
-                    _arbitrageHistory.Add(DateTime.UtcNow, oldArbitrage.Value);
+                    _arbitrageHistory.Add(oldArbitrage.Value);
                 }
             }
 
@@ -251,22 +249,24 @@ namespace Lykke.Service.ArbitrageDetector.Services
             {
                 if (!_arbitrages.Keys.Contains(newArbitrage.Key))
                 {
-                    RemoveFromHistoryIfItsTooLong();
                     _arbitrages.Add(newArbitrage.Key, newArbitrage.Value);
                 }
             }
+
+            // If there are too many items
+            CleanHistory();
         }
 
 
-        private void RemoveFromHistoryIfItsTooLong()
+        private void CleanHistory()
         {
             var extraCount = _arbitrageHistory.Count - _historyMaxSize;
             if (extraCount > 0)
             {
-                var keys = _arbitrageHistory.Keys.Take(extraCount).ToList();
-                foreach (var key in keys)
+                var arbitrages = _arbitrageHistory.Take(extraCount).ToList();
+                foreach (var arbitrage in arbitrages)
                 {
-                    _arbitrageHistory.Remove(key);
+                    _arbitrageHistory.Remove(arbitrage);
                 }
             }
         }
