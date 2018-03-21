@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DomainOrderBook = Lykke.Service.ArbitrageDetector.Core.Domain.OrderBook;
 
-namespace Lykke.Service.ArbitrageDetector.Models.Data
+namespace Lykke.Service.ArbitrageDetector.Models
 {
     /// <summary>
     /// Represents an order book or depth of market.

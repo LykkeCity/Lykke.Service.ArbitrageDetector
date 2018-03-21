@@ -8,9 +8,9 @@ using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using DataOrderBook = Lykke.Service.ArbitrageDetector.Models.Data.OrderBook;
-using DataCrossRate = Lykke.Service.ArbitrageDetector.Models.Data.CrossRate;
-using DataArbitrage = Lykke.Service.ArbitrageDetector.Models.Data.Arbitrage;
+using DataOrderBook = Lykke.Service.ArbitrageDetector.Models.OrderBook;
+using DataCrossRate = Lykke.Service.ArbitrageDetector.Models.CrossRate;
+using DataArbitrage = Lykke.Service.ArbitrageDetector.Models.Arbitrage;
 
 namespace Lykke.Service.ArbitrageDetector.Controllers
 {

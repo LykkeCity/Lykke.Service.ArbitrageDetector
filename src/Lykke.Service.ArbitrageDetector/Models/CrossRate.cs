@@ -3,13 +3,16 @@ using System.Linq;
 using MoreLinq;
 using DomainCrossRate = Lykke.Service.ArbitrageDetector.Core.Domain.CrossRate;
 
-namespace Lykke.Service.ArbitrageDetector.Models.Data
+namespace Lykke.Service.ArbitrageDetector.Models
 {
     /// <summary>
     /// Represents a cross rate.
     /// </summary>
     public class CrossRate
     {
+        /// <summary>
+        /// Exchange name.
+        /// </summary>
         public string Source { get; }
 
         /// <summary>
