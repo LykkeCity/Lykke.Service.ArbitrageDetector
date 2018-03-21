@@ -32,6 +32,21 @@
             Represents an arbitrage situation.
             </summary>
         </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.AssetPair">
+            <summary>
+            AssetPair.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.AskSource">
+            <summary>
+            Ask exchange name.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.BidSource">
+            <summary>
+            Bid exchange name.
+            </summary>
+        </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.Ask">
             <summary>
             Price and volume of low ask.
@@ -72,10 +87,13 @@
             How log the arbitrage lasted.
             </summary>
         </member>
-        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.#ctor(Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice,Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice,System.Decimal,System.Decimal,System.Decimal,System.DateTime,System.DateTime)">
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.#ctor(Lykke.Service.ArbitrageDetector.Client.Models.AssetPair,System.String,System.String,Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice,Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice,System.Decimal,System.Decimal,System.Decimal,System.DateTime,System.DateTime)">
             <summary>
             Constructor.
             </summary>
+            <param name="assetPair"></param>
+            <param name="askSource"></param>
+            <param name="bidSource"></param>
             <param name="ask"></param>
             <param name="bid"></param>
             <param name="spread"></param>

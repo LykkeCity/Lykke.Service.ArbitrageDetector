@@ -7,6 +7,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
     /// </summary>
     public sealed class Arbitrage
     {
+        public AssetPair AssetPair { get; }
+
         /// <summary>
         /// Cross rete with low ask.
         /// </summary>
@@ -60,12 +62,14 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Constructor.
         /// </summary>
+        /// <param name="assetPair"></param>
         /// <param name="askCrossRate"></param>
         /// <param name="ask"></param>
         /// <param name="bidCrossRate"></param>
         /// <param name="bid"></param>
-        public Arbitrage(CrossRate askCrossRate, VolumePrice ask, CrossRate bidCrossRate, VolumePrice bid)
+        public Arbitrage(AssetPair assetPair, CrossRate askCrossRate, VolumePrice ask, CrossRate bidCrossRate, VolumePrice bid)
         {
+            AssetPair = assetPair;
             AskCrossRate = askCrossRate ?? throw new ArgumentNullException(nameof(askCrossRate));
             BidCrossRate = bidCrossRate ?? throw new ArgumentNullException(nameof(bidCrossRate));
             Ask = ask;

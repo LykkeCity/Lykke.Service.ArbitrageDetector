@@ -79,14 +79,14 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var actualCrossRates = GetActualCrossRates();
 
             // For each asset - for each cross rate make one line for every ask and bid, order that lines and find intersection
-            var uniqueAssetPairs = actualCrossRates.Select(x => x.AssetPairStr).Distinct().ToList();            
-            foreach (var asset in uniqueAssetPairs)
+            var uniqueAssetPairs = actualCrossRates.Select(x => x.AssetPair).Distinct().ToList();            
+            foreach (var assetPair in uniqueAssetPairs)
             {
                 var lines = new List<ArbitrageLine>();
-                var assetCrossRates = actualCrossRates.Where(x => x.AssetPairStr == asset).ToList();
+                var assetPairCrossRates = actualCrossRates.Where(x => x.AssetPair.Equals(assetPair)).ToList();
 
                 // Add all asks and bids
-                foreach (var crossRate in assetCrossRates)
+                foreach (var crossRate in assetPairCrossRates)
                 {
                     foreach (var crossRateAsk in crossRate.Asks)
                     {
@@ -122,7 +122,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             var bidLine = lines[b];
                             if (bidLine.BidPrice != 0)
                             {
-                                var arbitrage = new Arbitrage(askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
+                                var arbitrage = new Arbitrage(assetPair, askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
                                 result.Add(arbitrage);
                             }
                         }
@@ -167,7 +167,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         public override async Task Execute()
         {
             await CalculateCrossRates();
-            await CalculateArbitrages();
+            await RefreshArbitrages();
         }
 
         public async Task<IEnumerable<CrossRate>> CalculateCrossRates()
@@ -226,7 +226,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return _crossRates.Values.ToList().AsReadOnly();
         }
 
-        public async Task CalculateArbitrages()
+        public async Task RefreshArbitrages()
         {
             var newArbitragesList = GetArbitrages();
             var newArbitrages = new ConcurrentDictionary<string, Arbitrage>();

@@ -9,6 +9,21 @@ namespace Lykke.Service.ArbitrageDetector.Core.DataModel
     public sealed class Arbitrage
     {
         /// <summary>
+        /// AssetPair.
+        /// </summary>
+        public AssetPair AssetPair { get; }
+
+        /// <summary>
+        /// Ask exchange name.
+        /// </summary>
+        public string AskSource { get; }
+
+        /// <summary>
+        /// Bid exchange name.
+        /// </summary>
+        public string BidSource { get; }
+
+        /// <summary>
         /// Price and volume of low ask.
         /// </summary>
         public VolumePrice Ask { get; }
@@ -51,6 +66,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.DataModel
         /// <summary>
         /// Constructor.
         /// </summary>
+        /// <param name="assetPair"></param>
+        /// <param name="askSource"></param>
+        /// <param name="bidSource"></param>
         /// <param name="ask"></param>
         /// <param name="bid"></param>
         /// <param name="spread"></param>
@@ -58,8 +76,12 @@ namespace Lykke.Service.ArbitrageDetector.Core.DataModel
         /// <param name="pnL"></param>
         /// <param name="startedAt"></param>
         /// <param name="endedAt"></param>
-        public Arbitrage(VolumePrice ask, VolumePrice bid, decimal spread, decimal volume, decimal pnL, DateTime startedAt, DateTime endedAt)
+        public Arbitrage(AssetPair assetPair, string askSource, string bidSource, VolumePrice ask, VolumePrice bid,
+            decimal spread, decimal volume, decimal pnL, DateTime startedAt, DateTime endedAt)
         {
+            AssetPair = assetPair;
+            AskSource = string.IsNullOrWhiteSpace(askSource) ? throw new ArgumentNullException(nameof(askSource)) : askSource;
+            BidSource = string.IsNullOrWhiteSpace(bidSource) ? throw new ArgumentNullException(nameof(bidSource)) : bidSource;
             Ask = ask;
             Bid = bid;
             Spread = spread;
@@ -75,6 +97,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.DataModel
         /// <param name="domain"></param>
         public Arbitrage(DomainArbitrage domain)
         {
+            AssetPair = new AssetPair(domain.AssetPair);
+            AskSource = domain.AskCrossRate.Source;
+            BidSource = domain.BidCrossRate.Source;
             Ask = new VolumePrice(domain.Ask);
             Bid = new VolumePrice(domain.Bid);
             Spread = domain.Spread;
