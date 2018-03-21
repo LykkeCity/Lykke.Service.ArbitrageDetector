@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using DomainOrderBook = Lykke.Service.ArbitrageDetector.Core.Domain.OrderBook;
 
 namespace Lykke.Service.ArbitrageDetector.Models.Data
 {
@@ -48,6 +50,19 @@ namespace Lykke.Service.ArbitrageDetector.Models.Data
             Timestamp = timestamp;
             Asks = asks ?? throw new ArgumentNullException(nameof(asks));
             Bids = bids ?? throw new ArgumentNullException(nameof(bids));
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="domain"></param>
+        public OrderBook(DomainOrderBook domain)
+        {
+            Source = domain.Source;
+            AssetPair = new AssetPair(domain.AssetPair);
+            Timestamp = domain.Timestamp;
+            Asks = domain.Asks.Select(x => new VolumePrice(x)).ToList();
+            Bids = domain.Bids.Select(x => new VolumePrice(x)).ToList();
         }
     }
 }

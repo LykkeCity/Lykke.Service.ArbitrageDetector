@@ -62,10 +62,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public IEnumerable<CrossRate> GetCrossRates()
         {
-            return _crossRates.Values
+            var result = _crossRates.Values
                 .OrderByDescending(x => x.Timestamp)
                 .ToList()
                 .AsReadOnly();
+
+            return result;
         }
 
         public IEnumerable<Arbitrage> GetArbitrages()

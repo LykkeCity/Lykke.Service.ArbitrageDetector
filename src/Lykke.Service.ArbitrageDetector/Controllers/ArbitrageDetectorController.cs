@@ -4,11 +4,11 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Common.Log;
-using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using DataOrderBook = Lykke.Service.ArbitrageDetector.Models.Data.OrderBook;
 using DataCrossRate = Lykke.Service.ArbitrageDetector.Models.Data.CrossRate;
 using DataArbitrage = Lykke.Service.ArbitrageDetector.Models.Data.Arbitrage;
 
@@ -29,15 +29,15 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [HttpGet]
         [Route("orderBooks")]
         [SwaggerOperation("OrderBooks")]
-        [ProducesResponseType(typeof(IEnumerable<CrossRate>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<DataOrderBook>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> OrderBooks(string exchange, string instrument)
         {
-            IEnumerable<OrderBook> result;
+            IEnumerable<DataOrderBook> result;
 
             try
             {
-                result = _arbitrageDetectorService.GetOrderBooks(exchange, instrument);
+                result = _arbitrageDetectorService.GetOrderBooks(exchange, instrument).Select(x => new DataOrderBook(x)).ToList();
             }
             catch (Exception exception)
             {
@@ -60,7 +60,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 
             try
             {
-                result = _arbitrageDetectorService.GetCrossRates().Select(x => new DataCrossRate(x));
+                result = _arbitrageDetectorService.GetCrossRates().Select(x => new DataCrossRate(x)).ToList();
             }
             catch (Exception exception)
             {
@@ -83,7 +83,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 
             try
             {
-                result = _arbitrageDetectorService.GetArbitragesData().Select(x => new DataArbitrage(x));
+                result = _arbitrageDetectorService.GetArbitragesData().Select(x => new DataArbitrage(x)).ToList();
             }
             catch (Exception exception)
             {
@@ -106,11 +106,11 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 
             try
             {
-                result = _arbitrageDetectorService.GetArbitrageHistory(since, take).Select(x => new DataArbitrage(x));
+                result = _arbitrageDetectorService.GetArbitrageHistory(since, take).Select(x => new DataArbitrage(x)).ToList();
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(Arbitrages), "", exception);
+                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(ArbitrageHistory), "", exception);
 
                 return BadRequest(ErrorResponse.Create(exception.Message));
             }

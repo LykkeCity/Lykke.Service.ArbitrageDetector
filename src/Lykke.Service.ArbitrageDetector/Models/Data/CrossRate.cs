@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using MoreLinq;
 using DomainCrossRate = Lykke.Service.ArbitrageDetector.Core.Domain.CrossRate;
 
 namespace Lykke.Service.ArbitrageDetector.Models.Data
@@ -63,8 +64,10 @@ namespace Lykke.Service.ArbitrageDetector.Models.Data
         {
             Source = domain.Source;
             AssetPair = new AssetPair(domain.AssetPair);
-            BestAsk = new VolumePrice(domain.Asks.Min());
-            BestBid = new VolumePrice(domain.Bids.Max());
+            var bestAsk = domain.Asks.MinBy(x => x.Price);
+            var bestBid = domain.Bids.MinBy(x => x.Price);
+            BestAsk = new VolumePrice(bestAsk.Price, bestAsk.Volume);
+            BestBid = new VolumePrice(bestBid.Price, bestBid.Volume);
             ConversionPath = domain.ConversionPath;
             Timestamp = domain.Timestamp;
         }
