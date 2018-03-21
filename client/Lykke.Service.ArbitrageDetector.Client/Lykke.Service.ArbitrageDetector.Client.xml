@@ -47,6 +47,16 @@
             Bid exchange name.
             </summary>
         </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.AskConversionPath">
+            <summary>
+            Conversion path from ask.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.BidConversionPath">
+            <summary>
+            Conversion path from bid.
+            </summary>
+        </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.Ask">
             <summary>
             Price and volume of low ask.
@@ -87,7 +97,7 @@
             How log the arbitrage lasted.
             </summary>
         </member>
-        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.#ctor(Lykke.Service.ArbitrageDetector.Client.Models.AssetPair,System.String,System.String,Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice,Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice,System.Decimal,System.Decimal,System.Decimal,System.DateTime,System.DateTime)">
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.#ctor(Lykke.Service.ArbitrageDetector.Client.Models.AssetPair,System.String,System.String,System.String,System.String,Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice,Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice,System.Decimal,System.Decimal,System.Decimal,System.DateTime,System.DateTime)">
             <summary>
             Constructor.
             </summary>

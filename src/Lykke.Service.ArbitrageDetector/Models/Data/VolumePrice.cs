@@ -1,7 +1,7 @@
 ﻿using System;
 using DomainVolumePrice = Lykke.Service.ArbitrageDetector.Core.Domain.VolumePrice;
 
-namespace Lykke.Service.ArbitrageDetector.Core.DataModel
+namespace Lykke.Service.ArbitrageDetector.Models.Data
 {
     /// <summary>
     /// Represents a pair of price and volume.

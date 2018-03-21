@@ -1,7 +1,7 @@
 ﻿using System;
 using DomainArbitrage = Lykke.Service.ArbitrageDetector.Core.Domain.Arbitrage;
 
-namespace Lykke.Service.ArbitrageDetector.Core.DataModel
+namespace Lykke.Service.ArbitrageDetector.Models.Data
 {
     /// <summary>
     /// Represents an arbitrage situation.

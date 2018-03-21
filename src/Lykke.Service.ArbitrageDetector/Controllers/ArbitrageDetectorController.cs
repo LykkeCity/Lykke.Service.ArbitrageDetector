@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Common.Log;
@@ -8,8 +9,8 @@ using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using DataCrossRate = Lykke.Service.ArbitrageDetector.Core.DataModel.CrossRate;
-using DataArbitrage = Lykke.Service.ArbitrageDetector.Core.DataModel.Arbitrage;
+using DataCrossRate = Lykke.Service.ArbitrageDetector.Models.Data.CrossRate;
+using DataArbitrage = Lykke.Service.ArbitrageDetector.Models.Data.Arbitrage;
 
 namespace Lykke.Service.ArbitrageDetector.Controllers
 {
@@ -59,7 +60,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 
             try
             {
-                result = _arbitrageDetectorService.GetCrossRates();
+                result = _arbitrageDetectorService.GetCrossRates().Select(x => new DataCrossRate(x));
             }
             catch (Exception exception)
             {
@@ -82,7 +83,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 
             try
             {
-                result = _arbitrageDetectorService.GetArbitragesData();
+                result = _arbitrageDetectorService.GetArbitragesData().Select(x => new DataArbitrage(x));
             }
             catch (Exception exception)
             {
@@ -105,7 +106,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 
             try
             {
-                result = _arbitrageDetectorService.GetArbitrageHistory(since, take);
+                result = _arbitrageDetectorService.GetArbitrageHistory(since, take).Select(x => new DataArbitrage(x));
             }
             catch (Exception exception)
             {

@@ -1,7 +1,7 @@
 ﻿using System;
 using DomainAssetPair = Lykke.Service.ArbitrageDetector.Core.Domain.AssetPair;
 
-namespace Lykke.Service.ArbitrageDetector.Core.DataModel
+namespace Lykke.Service.ArbitrageDetector.Models.Data
 {
     /// <summary>
     /// represents an asset pair aka instrument.

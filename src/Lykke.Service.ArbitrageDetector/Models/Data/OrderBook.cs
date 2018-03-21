@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Lykke.Service.ArbitrageDetector.Core.DataModel
+namespace Lykke.Service.ArbitrageDetector.Models.Data
 {
     /// <summary>
     /// Represents an order book or depth of market.

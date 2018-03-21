@@ -2,7 +2,7 @@
 using System.Linq;
 using DomainCrossRate = Lykke.Service.ArbitrageDetector.Core.Domain.CrossRate;
 
-namespace Lykke.Service.ArbitrageDetector.Core.DataModel
+namespace Lykke.Service.ArbitrageDetector.Models.Data
 {
     /// <summary>
     /// Represents a cross rate.
