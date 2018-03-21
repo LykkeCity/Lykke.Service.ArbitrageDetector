@@ -7,6 +7,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
     /// </summary>
     public sealed class Arbitrage
     {
+        /// <summary>
+        /// Asset pair.
+        /// </summary>
         public AssetPair AssetPair { get; }
 
         /// <summary>

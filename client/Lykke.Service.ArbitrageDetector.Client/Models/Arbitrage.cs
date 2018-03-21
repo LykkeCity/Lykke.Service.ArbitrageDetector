@@ -23,6 +23,16 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public string BidSource { get; }
 
         /// <summary>
+        /// Conversion path from ask.
+        /// </summary>
+        public string AskConversionPath { get; }
+
+        /// <summary>
+        /// Conversion path from bid.
+        /// </summary>
+        public string BidConversionPath { get; }
+
+        /// <summary>
         /// Price and volume of low ask.
         /// </summary>
         public VolumePrice Ask { get; }
@@ -75,12 +85,23 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <param name="pnL"></param>
         /// <param name="startedAt"></param>
         /// <param name="endedAt"></param>
-        public Arbitrage(AssetPair assetPair, string askSource, string bidSource, VolumePrice ask, VolumePrice bid,
+        public Arbitrage(AssetPair assetPair, string askSource, string bidSource, string askPath, string bidPath,
+            VolumePrice ask, VolumePrice bid,
             decimal spread, decimal volume, decimal pnL, DateTime startedAt, DateTime endedAt)
         {
             AssetPair = assetPair;
-            AskSource = string.IsNullOrWhiteSpace(askSource) ? throw new ArgumentNullException(nameof(askSource)) : askSource;
-            BidSource = string.IsNullOrWhiteSpace(bidSource) ? throw new ArgumentNullException(nameof(bidSource)) : bidSource;
+            AskSource = string.IsNullOrWhiteSpace(askSource)
+                ? throw new ArgumentNullException(nameof(askSource))
+                : askSource;
+            BidSource = string.IsNullOrWhiteSpace(bidSource)
+                ? throw new ArgumentNullException(nameof(bidSource))
+                : bidSource;
+            AskConversionPath = string.IsNullOrWhiteSpace(askPath)
+                ? throw new ArgumentNullException(nameof(askPath))
+                : askPath;
+            BidConversionPath = string.IsNullOrWhiteSpace(bidPath)
+                ? throw new ArgumentNullException(nameof(bidPath))
+                : bidPath;
             Ask = ask;
             Bid = bid;
             Spread = spread;
@@ -88,6 +109,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             PnL = pnL;
             StartedAt = startedAt;
             EndedAt = endedAt;
+
         }
     }
 }
