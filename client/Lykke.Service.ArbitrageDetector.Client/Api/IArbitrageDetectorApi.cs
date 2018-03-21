@@ -18,6 +18,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
         Task<IReadOnlyList<Arbitrage>> ArbitragesAsync();
 
         [Get("/arbitrageHistory")]
-        Task<IReadOnlyList<Arbitrage>> ArbitrageHistory(DateTime since);
+        Task<IReadOnlyList<Arbitrage>> ArbitrageHistory(DateTime since, int take);
     }
 }

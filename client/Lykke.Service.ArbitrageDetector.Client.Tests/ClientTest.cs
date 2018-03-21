@@ -81,7 +81,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         [Fact]
         public async Task ArbitrageHistoryTest()
         {
-            var arbitrageHistory = await Client.ArbitrageHistoryAsync(DateTime.UtcNow);
+            var arbitrageHistory = await Client.ArbitrageHistoryAsync(DateTime.UtcNow, short.MaxValue);
         }
     }
 }
