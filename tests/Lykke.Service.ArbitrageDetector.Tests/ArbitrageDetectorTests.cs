@@ -313,7 +313,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             arbitrageDetector.Process(eurUsdOrderBook);
 
             await arbitrageDetector.Execute();
-            Thread.Sleep(1000);
+            Thread.Sleep(1000); // Wait until cross rate expire and arbitrage appears in history
             await arbitrageDetector.Execute();
 
             var arbitrageHistory = arbitrageDetector.GetArbitrageHistory(DateTime.MinValue);

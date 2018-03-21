@@ -211,10 +211,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 }
             }
 
-            _crossRates.Clear();
-            _crossRates.AddRange(newActualCrossRates);
+            _crossRates.AddOrUpdateRange(newActualCrossRates);
 
-            return newActualCrossRates.Values.ToList().AsReadOnly();
+            return _crossRates.Values.ToList().AsReadOnly();
         }
 
         public async Task CalculateArbitrages()
