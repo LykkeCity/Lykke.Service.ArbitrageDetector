@@ -23,9 +23,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly int _historyMaxSize;
         private readonly ILog _log;
 
-        public ArbitrageDetectorService(IReadOnlyCollection<string> wantedCurrencies, string baseCurrency, int executionDelay, int expirationTimeInSeconds, int historyMaxSize,
+        public ArbitrageDetectorService(IReadOnlyCollection<string> wantedCurrencies, string baseCurrency, int executionDelayInMilliseconds, int expirationTimeInSeconds, int historyMaxSize,
             ILog log, IShutdownManager shutdownManager)
-            : base((int) TimeSpan.FromSeconds(executionDelay).TotalMilliseconds, log)
+            : base((int) TimeSpan.FromMilliseconds(executionDelayInMilliseconds).TotalMilliseconds, log)
         {
             _log = log;
             _orderBooks = new ConcurrentDictionary<ExchangeAssetPair, OrderBook>();

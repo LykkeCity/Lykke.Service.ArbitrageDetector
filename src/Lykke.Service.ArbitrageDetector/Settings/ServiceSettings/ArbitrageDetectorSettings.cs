@@ -7,7 +7,7 @@ namespace Lykke.Service.ArbitrageDetector.Settings.ServiceSettings
     {
         public DbSettings Db { get; set; }
 
-        public int ArbitrageDetectorExecutionDelayInSeconds { get; set; }
+        public int ExecutionDelayInMilliseconds { get; set; }
 
         public int ExpirationTimeInSeconds { get; set; }
 
