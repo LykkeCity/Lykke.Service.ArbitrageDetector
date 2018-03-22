@@ -16,7 +16,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ConcurrentDictionary<ExchangeAssetPair, OrderBook> _orderBooks;
         private readonly ConcurrentDictionary<ExchangeAssetPair, CrossRate> _crossRates;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrages;
-        private readonly List<Arbitrage> _arbitrageHistory;
+        private readonly ConcurrentDictionary<string, Arbitrage> _arbitrageHistory;
         private readonly IReadOnlyCollection<string> _wantedCurrencies;
         private readonly string _baseCurrency;
         private readonly int _expirationTimeInSeconds;
@@ -31,7 +31,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _orderBooks = new ConcurrentDictionary<ExchangeAssetPair, OrderBook>();
             _crossRates = new ConcurrentDictionary<ExchangeAssetPair, CrossRate>();
             _arbitrages = new ConcurrentDictionary<string, Arbitrage>();
-            _arbitrageHistory = new List<Arbitrage>();
+            _arbitrageHistory = new ConcurrentDictionary<string, Arbitrage>();
             _wantedCurrencies = wantedCurrencies;
             _baseCurrency = baseCurrency;
             _expirationTimeInSeconds = expirationTimeInSeconds;
@@ -82,7 +82,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             var result = new List<Arbitrage>();
 
-            var arbitrages = _arbitrageHistory;
+            var arbitrages = _arbitrageHistory.Values;
             var uniqueConversionPaths = arbitrages.Select(x => x.ConversionPath).Distinct().ToList();
 
             // Find only best arbitrage for path
@@ -254,7 +254,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     _arbitrages.Remove(oldArbitrage.Key);
 
                     // Add it to the history
-                    _arbitrageHistory.Add(oldArbitrage.Value);
+                    _arbitrageHistory.AddOrUpdate(oldArbitrage.Key, oldArbitrage.Value);
                 }
             }
 
@@ -274,25 +274,26 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         private void CleanHistory()
         {
+            var arbitrageHistory = _arbitrageHistory.Values;
             var extraCount = _arbitrageHistory.Count - _historyMaxSize;
             if (extraCount > 0)
             {
                 // First try to delete extra arbitrages with the same conversion path
-                var uniqueConversionPaths = _arbitrageHistory.Select(x => x.ConversionPath).Distinct().ToList();
+                var uniqueConversionPaths = arbitrageHistory.Select(x => x.ConversionPath).Distinct().ToList();
                 foreach (var conversionPath in uniqueConversionPaths)
                 {
-                    var pathArbitrages = _arbitrageHistory.OrderByDescending(x => x.PnL)
+                    var pathArbitrages = arbitrageHistory.OrderByDescending(x => x.PnL)
                         .Where(x => x.ConversionPath == conversionPath)
                         .Skip(1); // Leave 1 best for path
                     foreach (var arbitrage in pathArbitrages)
-                        _arbitrageHistory.Remove(arbitrage);
+                        _arbitrageHistory.Remove(arbitrage.ToString());
                 }
 
                 // If didn't help then delete extra oldest
-                var arbitrages = _arbitrageHistory.Take(extraCount).ToList();
+                var arbitrages = arbitrageHistory.Take(extraCount).ToList();
                 foreach (var arbitrage in arbitrages)
                 {
-                    _arbitrageHistory.Remove(arbitrage);
+                    _arbitrageHistory.Remove(arbitrage.ToString());
                 }
             }
         }
