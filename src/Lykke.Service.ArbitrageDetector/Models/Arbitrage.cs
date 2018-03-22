@@ -74,6 +74,11 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public TimeSpan Lasted => EndedAt - StartedAt;
 
         /// <summary>
+        /// Conversion path.
+        /// </summary>
+        public string ConversionPath => $"({AskConversionPath}) * ({BidConversionPath})";
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="assetPair"></param>
@@ -124,5 +129,43 @@ namespace Lykke.Service.ArbitrageDetector.Models
             StartedAt = domain.StartedAt;
             EndedAt = domain.EndedAt;
         }
+
+        /// <summary>
+        /// ToString() implementation.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return $"{AssetPair}-{ConversionPath}-{Ask.Price}-{Ask.Volume}-{Bid.Price}-{Bid.Volume}";
+        }
+
+        #region Equals and GetHashCode
+
+        private bool Equals(Arbitrage other)
+        {
+            return ConversionPath.Equals(other.ConversionPath) &&
+                   Ask.Equals(other.Ask) &&
+                   Bid.Equals(other.Bid);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            return obj is Arbitrage && Equals((Arbitrage)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = ConversionPath.GetHashCode();
+                hashCode = (hashCode * 397) ^ Ask.GetHashCode();
+                hashCode = (hashCode * 397) ^ Bid.GetHashCode();
+                return hashCode;
+            }
+        }
+
+        #endregion
     }
 }

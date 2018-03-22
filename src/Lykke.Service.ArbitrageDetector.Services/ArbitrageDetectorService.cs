@@ -72,17 +72,29 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public IEnumerable<Arbitrage> GetArbitrages()
         {
-            return CalculateArbitrages()
-                .OrderByDescending(x => x.EndedAt)
+            return _arbitrages.Values
+                .OrderByDescending(x => x.PnL)
                 .ToList()
                 .AsReadOnly();
         }
 
         public IEnumerable<Arbitrage> GetArbitrageHistory(DateTime since, int take)
         {
-            return _arbitrageHistory
+            var result = new List<Arbitrage>();
+
+            var arbitrages = _arbitrageHistory;
+            var uniqueConversionPaths = arbitrages.Select(x => x.ConversionPath).Distinct().ToList();
+
+            // Find only best arbitrage for path
+            foreach (var conversionPath in uniqueConversionPaths)
+            {
+                var pathBestArbitrage = arbitrages.OrderByDescending(x => x.PnL).First(x => x.ConversionPath == conversionPath);
+                result.Add(pathBestArbitrage);
+            }
+
+            return result
                 .Where(x => x.EndedAt > since)
-                .OrderByDescending(x => x.EndedAt)
+                .OrderByDescending(x => x.PnL)
                 .Take(take)
                 .ToList();
         }
@@ -227,24 +239,26 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var newArbitrages = new ConcurrentDictionary<string, Arbitrage>();
             foreach (var newArbitrage in newArbitragesList)
             {
+                // Key must be unique for arbitrage in order to find when it started
                 var key = newArbitrage.ToString();
                 newArbitrages.AddOrUpdate(key, newArbitrage);
             }
 
-            // Remove old
+            // Remove every ended arbitrage and move it to the history
             foreach (var oldArbitrage in _arbitrages)
             {
                 if (!newArbitrages.Keys.Contains(oldArbitrage.Key))
                 {
+                    // Remove from actual arbitrages
                     oldArbitrage.Value.EndedAt = DateTime.UtcNow;
                     _arbitrages.Remove(oldArbitrage.Key);
 
-                    // History
+                    // Add it to the history
                     _arbitrageHistory.Add(oldArbitrage.Value);
                 }
             }
 
-            // Add new
+            // Add only new arbitrages, don't update existed to not change the StartedAt
             foreach (var newArbitrage in newArbitrages)
             {
                 if (!_arbitrages.Keys.Contains(newArbitrage.Key))
