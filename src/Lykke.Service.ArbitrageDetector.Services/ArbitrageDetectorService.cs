@@ -277,6 +277,18 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var extraCount = _arbitrageHistory.Count - _historyMaxSize;
             if (extraCount > 0)
             {
+                // First try to delete extra arbitrages with the same conversion path
+                var uniqueConversionPaths = _arbitrageHistory.Select(x => x.ConversionPath).Distinct().ToList();
+                foreach (var conversionPath in uniqueConversionPaths)
+                {
+                    var pathArbitrages = _arbitrageHistory.OrderByDescending(x => x.PnL)
+                        .Where(x => x.ConversionPath == conversionPath)
+                        .Skip(1); // Leave 1 best for path
+                    foreach (var arbitrage in pathArbitrages)
+                        _arbitrageHistory.Remove(arbitrage);
+                }
+
+                // If didn't help then delete extra oldest
                 var arbitrages = _arbitrageHistory.Take(extraCount).ToList();
                 foreach (var arbitrage in arbitrages)
                 {
