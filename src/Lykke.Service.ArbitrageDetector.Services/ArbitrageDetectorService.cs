@@ -289,6 +289,17 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         _arbitrageHistory.Remove(arbitrage.ToString());
                 }
             }
+
+            extraCount = _arbitrageHistory.Count - _historyMaxSize;
+            if (extraCount > 0)
+            {
+                // If didn't help then delete extra oldest
+                var arbitrages = arbitrageHistory.Take(extraCount).ToList();
+                foreach (var arbitrage in arbitrages)
+                {
+                    _arbitrageHistory.Remove(arbitrage.ToString());
+                }
+            }
         }
 
         private void CheckForCurrencyAndUpdateOrderBooks(string currency, OrderBook orderBook)
