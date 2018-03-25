@@ -119,6 +119,12 @@
             <param name="startedAt"></param>
             <param name="endedAt"></param>
         </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.ToString">
+            <summary>
+            ToString() implementation.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair">
             <summary>
             represents an asset pair aka instrument.

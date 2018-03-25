@@ -62,7 +62,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public IEnumerable<CrossRate> GetCrossRates()
         {
-            var result = _crossRates.Values
+            var result = _crossRates.Select(x => x.Value)
                 .OrderByDescending(x => x.Timestamp)
                 .ToList()
                 .AsReadOnly();
@@ -72,7 +72,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public IEnumerable<Arbitrage> GetArbitrages()
         {
-            return _arbitrages.Values
+            return _arbitrages.Select(x => x.Value)
                 .OrderByDescending(x => x.PnL)
                 .ToList()
                 .AsReadOnly();
@@ -82,7 +82,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             var result = new List<Arbitrage>();
 
-            var arbitrages = _arbitrageHistory.Values;
+            var arbitrages = _arbitrageHistory.Select(x => x.Value).ToList();
             var uniqueConversionPaths = arbitrages.Select(x => x.ConversionPath).Distinct().ToList();
 
             // Find only best arbitrage for path
