@@ -41,6 +41,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public IEnumerable<OrderBook> GetOrderBooks()
         {
+            if (!_orderBooks.Any())
+                return new List<OrderBook>();
+
             return _orderBooks.Select(x => x.Value)
                 .OrderByDescending(x => x.Timestamp)
                 .ToList()
@@ -49,6 +52,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public IEnumerable<OrderBook> GetOrderBooks(string exchange, string instrument)
         {
+            if (!_orderBooks.Any())
+                return new List<OrderBook>();
+
             var result = _orderBooks.Select(x => x.Value).ToList();
 
             if (!string.IsNullOrWhiteSpace(exchange))
@@ -62,6 +68,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public IEnumerable<CrossRate> GetCrossRates()
         {
+            if (!_crossRates.Any())
+                return new List<CrossRate>();
+
             var result = _crossRates.Select(x => x.Value)
                 .OrderByDescending(x => x.Timestamp)
                 .ToList()
@@ -72,6 +81,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public IEnumerable<Arbitrage> GetArbitrages()
         {
+            if (!_arbitrages.Any())
+                return new List<Arbitrage>();
+
             return _arbitrages.Select(x => x.Value)
                 .OrderByDescending(x => x.PnL)
                 .ToList()
@@ -80,6 +92,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public IEnumerable<Arbitrage> GetArbitrageHistory(DateTime since, int take)
         {
+            if (!_arbitrageHistory.Any())
+                return new List<Arbitrage>();
+
             var result = new List<Arbitrage>();
 
             var arbitrages = _arbitrageHistory.Select(x => x.Value).ToList();
