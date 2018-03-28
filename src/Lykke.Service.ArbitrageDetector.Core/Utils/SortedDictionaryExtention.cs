@@ -7,7 +7,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Utils
     {
         public static void AddOrUpdate<TKey, TValue>(this SortedDictionary<TKey, TValue> dictionary, TKey key, TValue value)
         {
-            dictionary.AddOrUpdate(key, value);
+            dictionary[key] = value;
         }
 
         public static void Add<TKey, TValue>(this SortedDictionary<TKey, TValue> dictionary, TKey key, TValue value)
