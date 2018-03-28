@@ -250,7 +250,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var newArbitrages = new SortedDictionary<string, Arbitrage>();
             var actualCrossRates = GetActualCrossRates();
 
-            // For each asset - for each cross rate make one line for every ask and bid, order that lines and find intersection
+            // For each asset pair - for each cross rate make one line for every ask and bid, order that lines and find intersections
             var uniqueAssetPairs = actualCrossRates.Select(x => x.AssetPair).Distinct().ToList();
             foreach (var assetPair in uniqueAssetPairs)
             {
@@ -294,18 +294,23 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             var bidLine = lines[b];
                             if (bidLine.BidPrice != 0)
                             {
-                                var arbitrage = new Arbitrage(assetPair, askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
-                                var key = arbitrage.ConversionPath;
+                                var key = "(" + askLine.CrossRate.ConversionPath + ") * (" + bidLine.CrossRate.ConversionPath + ")";
 
                                 if (newArbitrages.TryGetValue(key, out var existed))
                                 {
-                                    if (arbitrage.PnL > existed.PnL)
+                                    var spread = (askLine.Price - bidLine.Price) / bidLine.Price * 100;
+                                    var volume = askLine.Volume < bidLine.Volume ? askLine.Volume : bidLine.Volume;
+                                    var pnL = Math.Abs(spread * volume);
+
+                                    if (pnL > existed.PnL)
                                     {
+                                        var arbitrage = new Arbitrage(assetPair, askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
                                         newArbitrages[key] = arbitrage;
                                     }
                                 }
                                 else
                                 {
+                                    var arbitrage = new Arbitrage(assetPair, askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
                                     newArbitrages.Add(key, arbitrage);
                                 }
                             }
