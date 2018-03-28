@@ -35,7 +35,19 @@ namespace Lykke.Service.ArbitrageDetector.Client
         /// Returns a collection of ArbitrageHistory entities.
         /// </summary>
         /// <param name="since"></param>
+        /// <param name="take"></param>
         /// <returns>A collection of Arbitrage entities.</returns>
         Task<IReadOnlyList<Arbitrage>> ArbitrageHistoryAsync(DateTime since, int take);
+
+        /// <summary>
+        /// Get settings.
+        /// </summary>
+        Task<Settings> GetSettingsAsync();
+
+        /// <summary>
+        /// Set new settings.
+        /// </summary>
+        /// <param name="settings"></param>
+        Task SetSettingsAsync(Settings settings);
     }
 }

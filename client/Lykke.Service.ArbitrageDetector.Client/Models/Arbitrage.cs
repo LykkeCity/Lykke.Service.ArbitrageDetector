@@ -8,6 +8,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
     public sealed class Arbitrage
     {
         /// <summary>
+        /// Identifier.
+        /// </summary>
+        public Guid Id { get; }
+
+        /// <summary>
         /// AssetPair.
         /// </summary>
         public AssetPair AssetPair { get; }
@@ -80,6 +85,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Constructor.
         /// </summary>
+        /// <param name="id"></param>
         /// <param name="assetPair"></param>
         /// <param name="askSource"></param>
         /// <param name="bidSource"></param>
@@ -92,9 +98,10 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <param name="pnL"></param>
         /// <param name="startedAt"></param>
         /// <param name="endedAt"></param>
-        public Arbitrage(AssetPair assetPair, string askSource, string bidSource, string askConversionPath, string bidConversionPath, VolumePrice ask, VolumePrice bid,
+        public Arbitrage(Guid id, AssetPair assetPair, string askSource, string bidSource, string askConversionPath, string bidConversionPath, VolumePrice ask, VolumePrice bid,
             decimal spread, decimal volume, decimal pnL, DateTime startedAt, DateTime endedAt)
         {
+            Id = id;
             AssetPair = assetPair;
             AskSource = string.IsNullOrWhiteSpace(askSource) ? throw new ArgumentNullException(nameof(askSource)) : askSource;
             BidSource = string.IsNullOrWhiteSpace(bidSource) ? throw new ArgumentNullException(nameof(bidSource)) : bidSource;

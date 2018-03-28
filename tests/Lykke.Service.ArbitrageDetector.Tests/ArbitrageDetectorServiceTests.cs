@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Lykke.Service.ArbitrageDetector.Core;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Services;
 using Xunit;
@@ -15,12 +16,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         public async Task StraightConversionTest()
         {
             // BTCEUR * EURUSD
-            var wantedCurrencies = new List<string> { "BTC" };
-            const string baseCurrency = "USD";
+            var baseAssets = new List<string> { "BTC" };
+            const string quoteAsset = "USD";
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var arbitrageCalculator = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 10, 10, 1000, null, null);
+            var settings = new Settings(10, 10, 1000, baseAssets, quoteAsset);
+            var arbitrageCalculator = new ArbitrageDetectorService(settings, null, null);
 
             var btcEurOrderBook = new OrderBook(exchange, "BTCEUR",
                 new List<VolumePrice> // asks
@@ -64,12 +66,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         public async Task ReverseConversionFirstPairTest()
         {
             // BTCEUR * USDEUR
-            var wantedCurrencies = new List<string> { "BTC" };
-            const string baseCurrency = "USD";
+            var baseAssets = new List<string> { "BTC" };
+            const string quoteAsset = "USD";
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var arbitrageCalculator = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 10, 10, 1000, null, null);
+            var settings = new Settings(10, 10, 1000, baseAssets, quoteAsset);
+            var arbitrageCalculator = new ArbitrageDetectorService(settings, null, null);
 
             var btcEurOrderBook = new OrderBook(exchange, "BTCEUR",
                 new List<VolumePrice> // asks
@@ -118,12 +121,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         public async Task ReverseConversionSecondPairTest()
         {
             // EURBTC * EURUSD
-            var wantedCurrencies = new List<string> { "BTC" };
-            const string baseCurrency = "USD";
+            var baseAssets = new List<string> { "BTC" };
+            const string quoteAsset = "USD";
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var arbitrageCalculator = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 10, 10, 1000, null, null);
+            var settings = new Settings(10, 10, 1000, baseAssets, quoteAsset);
+            var arbitrageCalculator = new ArbitrageDetectorService(settings, null, null);
 
             var btcEurOrderBook = new OrderBook(exchange, "EURBTC",
                 new List<VolumePrice> // bids
@@ -172,12 +176,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         public async Task ReverseConversionBothPairsTest()
         {
             // EURBTC * USDEUR
-            var wantedCurrencies = new List<string> { "BTC" };
-            const string baseCurrency = "USD";
+            var baseAssets = new List<string> { "BTC" };
+            const string quoteAsset = "USD";
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var arbitrageCalculator = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 10, 10, 1000, null, null);
+            var settings = new Settings(10, 10, 1000, baseAssets, quoteAsset);
+            var arbitrageCalculator = new ArbitrageDetectorService(settings, null, null);
 
             var eurBtcOrderBook = new OrderBook(exchange, "EURBTC",
                 new List<VolumePrice> // asks
@@ -225,10 +230,11 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public async Task ArbitrageTest()
         {
-            var wantedCurrencies = new List<string> { "BTC" };
-            const string baseCurrency = "USD";
+            var baseAssets = new List<string> { "BTC" };
+            const string quoteAsset = "USD";
 
-            var arbitrageDetector = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 10, 10, 1000, null, null);
+            var settings = new Settings(10, 10, 1000, baseAssets, quoteAsset);
+            var arbitrageDetector = new ArbitrageDetectorService(settings, null, null);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
                 new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
@@ -282,10 +288,11 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public async Task ArbitrageHistoryTest()
         {
-            var wantedCurrencies = new List<string> { "BTC" };
-            const string baseCurrency = "USD";
+            var baseAssets = new List<string> { "BTC" };
+            const string quoteAsset = "USD";
 
-            var arbitrageDetector = new ArbitrageDetectorService(wantedCurrencies, baseCurrency, 1, 1, 1000, null, null);
+            var settings = new Settings(1, 1, 1000, baseAssets, quoteAsset);
+            var arbitrageDetector = new ArbitrageDetectorService(settings, null, null);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
                 new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks

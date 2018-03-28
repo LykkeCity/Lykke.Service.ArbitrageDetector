@@ -1,9 +1,11 @@
-﻿namespace Lykke.Service.ArbitrageDetector.Core.Domain
+﻿using Lykke.Service.ArbitrageDetector.Core.Domain;
+
+namespace Lykke.Service.ArbitrageDetector.Services.Model
 {
     /// <summary>
     /// represents a record af arbitrage situation evvent.
     /// </summary>
-    public sealed class ArbitrageLine
+    internal sealed class ArbitrageLine
     {
         /// <summary>
         /// BidPrice price.

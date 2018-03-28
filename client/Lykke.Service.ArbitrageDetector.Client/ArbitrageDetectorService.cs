@@ -67,6 +67,16 @@ namespace Lykke.Service.ArbitrageDetector.Client
             return await _runner.RunAsync(() => _arbitrageDetectorApi.ArbitrageHistory(since, take));
         }
 
+        public async Task<Settings> GetSettingsAsync()
+        {
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.GetSettings());
+        }
+
+        public async Task SetSettingsAsync(Settings settings)
+        {
+            await _runner.RunAsync(() => _arbitrageDetectorApi.SetSettings(settings));
+        }
+
         public void Dispose()
         {
             _httpClient?.Dispose();

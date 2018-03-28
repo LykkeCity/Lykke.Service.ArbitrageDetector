@@ -19,5 +19,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
 
         [Get("/arbitrageHistory")]
         Task<IReadOnlyList<Arbitrage>> ArbitrageHistory(DateTime since, int take);
+
+        [Get("/getSettings")]
+        Task<Settings> GetSettings();
+
+        [Post("/setSettings")]
+        Task SetSettings(Settings settings);
     }
 }

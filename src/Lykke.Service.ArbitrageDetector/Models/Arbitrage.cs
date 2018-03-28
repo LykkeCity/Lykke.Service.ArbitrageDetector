@@ -9,6 +9,11 @@ namespace Lykke.Service.ArbitrageDetector.Models
     public sealed class Arbitrage
     {
         /// <summary>
+        /// Identifier.
+        /// </summary>
+        public Guid Id { get; }
+
+        /// <summary>
         /// AssetPair.
         /// </summary>
         public AssetPair AssetPair { get; }
@@ -81,6 +86,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Constructor.
         /// </summary>
+        /// <param name="id"></param>
         /// <param name="assetPair"></param>
         /// <param name="askSource"></param>
         /// <param name="bidSource"></param>
@@ -93,7 +99,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <param name="pnL"></param>
         /// <param name="startedAt"></param>
         /// <param name="endedAt"></param>
-        public Arbitrage(AssetPair assetPair, string askSource, string bidSource, string askConversionPath, string bidConversionPath, VolumePrice ask, VolumePrice bid,
+        public Arbitrage(Guid id, AssetPair assetPair, string askSource, string bidSource, string askConversionPath, string bidConversionPath, VolumePrice ask, VolumePrice bid,
             decimal spread, decimal volume, decimal pnL, DateTime startedAt, DateTime endedAt)
         {
             AssetPair = assetPair;
@@ -116,6 +122,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <param name="domain"></param>
         public Arbitrage(DomainArbitrage domain)
         {
+            Id = domain.Id;
             AssetPair = new AssetPair(domain.AssetPair);
             AskSource = domain.AskCrossRate.Source;
             BidSource = domain.BidCrossRate.Source;

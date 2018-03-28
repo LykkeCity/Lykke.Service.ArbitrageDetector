@@ -41,7 +41,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(OrderBooks), "", exception);
+                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(OrderBooks), nameof(OrderBooks), exception);
 
                 return BadRequest(ErrorResponse.Create(exception.Message));
             }
@@ -64,7 +64,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(CrossRates), "", exception);
+                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(CrossRates), nameof(CrossRates), exception);
 
                 return BadRequest(ErrorResponse.Create(exception.Message));
             }
@@ -87,7 +87,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(Arbitrages), "", exception);
+                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(Arbitrages), nameof(Arbitrages), exception);
 
                 return BadRequest(ErrorResponse.Create(exception.Message));
             }
@@ -110,12 +110,57 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(ArbitrageHistory), "", exception);
+                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(ArbitrageHistory), nameof(ArbitrageHistory), exception);
 
                 return BadRequest(ErrorResponse.Create(exception.Message));
             }
 
             return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("getSettings")]
+        [SwaggerOperation("GetSettings")]
+        [ProducesResponseType(typeof(Models.Settings), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetSettings()
+        {
+            Models.Settings result;
+
+            try
+            {
+                var settings = _arbitrageDetectorService.GetSettings();
+                result = new Models.Settings(settings);
+            }
+            catch (Exception exception)
+            {
+                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(ArbitrageHistory), nameof(SetSettings), exception);
+
+                return BadRequest(ErrorResponse.Create(exception.Message));
+            }
+
+            return Ok(result);
+        }
+
+        [HttpPost]
+        [Route("setSettings")]
+        [SwaggerOperation("SetSettings")]
+        [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> SetSettings(Models.Settings settings)
+        {
+            try
+            {
+                _arbitrageDetectorService.SetSettings(settings.ToModel());
+            }
+            catch (Exception exception)
+            {
+                await _log.WriteErrorAsync(nameof(ArbitrageDetectorController), nameof(ArbitrageHistory), nameof(SetSettings), exception);
+
+                return BadRequest(ErrorResponse.Create(exception.Message));
+            }
+
+            return Ok();
         }
     }
 }

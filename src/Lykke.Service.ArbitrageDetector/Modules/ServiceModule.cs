@@ -41,11 +41,7 @@ namespace Lykke.Service.ArbitrageDetector.Modules
 
             builder.RegisterType<ArbitrageDetectorService>()
                 .As<IArbitrageDetectorService>()
-                .WithParameter("wantedCurrencies", _settings.CurrentValue.WantedCurrencies)
-                .WithParameter("baseCurrency", _settings.CurrentValue.BaseCurrency)
-                .WithParameter("executionDelayInMilliseconds", _settings.CurrentValue.ExecutionDelayInMilliseconds)
-                .WithParameter("expirationTimeInSeconds", _settings.CurrentValue.ExpirationTimeInSeconds)
-                .WithParameter("historyMaxSize", _settings.CurrentValue.HistoryMaxSize)
+                .WithParameter("settings", _settings.CurrentValue.Main)
                 .As<IStartable>()
                 .AutoActivate()
                 .SingleInstance();

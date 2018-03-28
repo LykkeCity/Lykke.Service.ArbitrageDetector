@@ -5,9 +5,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
+using Lykke.Service.ArbitrageDetector.Core;
 using Lykke.Service.ArbitrageDetector.Core.Utils;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Services;
+using Lykke.Service.ArbitrageDetector.Services.Model;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
@@ -17,26 +19,34 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ConcurrentDictionary<ExchangeAssetPair, CrossRate> _crossRates;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrages;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrageHistory;
-        private readonly IReadOnlyCollection<string> _wantedCurrencies;
-        private readonly string _baseCurrency;
+        private IEnumerable<string> _baseAssets;
+        private string _quoteAsset;
         private readonly int _expirationTimeInSeconds;
         private readonly int _historyMaxSize;
+        private bool _restartNeeded;
+
+        private readonly int _executionDelayInMilliseconds;
         private readonly ILog _log;
 
-        public ArbitrageDetectorService(IReadOnlyCollection<string> wantedCurrencies, string baseCurrency, int executionDelayInMilliseconds, int expirationTimeInSeconds, int historyMaxSize,
-            ILog log, IShutdownManager shutdownManager)
-            : base((int) TimeSpan.FromMilliseconds(executionDelayInMilliseconds).TotalMilliseconds, log)
+        public ArbitrageDetectorService(Settings settings, ILog log, IShutdownManager shutdownManager)
+            : base((int) TimeSpan.FromMilliseconds(settings.ExecutionDelayInMilliseconds).TotalMilliseconds, log)
         {
+            if (settings == null)
+                throw new ArgumentNullException(nameof(settings));
+
+            _baseAssets = settings.BaseAssets;
+            _quoteAsset = settings.QuoteAsset;
+            _expirationTimeInSeconds = settings.ExpirationTimeInSeconds;
+            _historyMaxSize = settings.HistoryMaxSize;
+            _executionDelayInMilliseconds = settings.ExecutionDelayInMilliseconds;
+
             _log = log;
+            shutdownManager?.Register(this);
+
             _orderBooks = new ConcurrentDictionary<ExchangeAssetPair, OrderBook>();
             _crossRates = new ConcurrentDictionary<ExchangeAssetPair, CrossRate>();
             _arbitrages = new ConcurrentDictionary<string, Arbitrage>();
             _arbitrageHistory = new ConcurrentDictionary<string, Arbitrage>();
-            _wantedCurrencies = wantedCurrencies;
-            _baseCurrency = baseCurrency;
-            _expirationTimeInSeconds = expirationTimeInSeconds;
-            _historyMaxSize = historyMaxSize;
-            shutdownManager?.Register(this);
         }
 
         public IEnumerable<OrderBook> GetOrderBooks()
@@ -90,6 +100,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 .AsReadOnly();
         }
 
+        public Arbitrage GetArbitrage(Guid id)
+        {
+            return _arbitrageHistory.FirstOrDefault(x => x.Value.Id == id).Value;
+        }
+
         public IEnumerable<Arbitrage> GetArbitrageHistory(DateTime since, int take)
         {
             if (!_arbitrageHistory.Any())
@@ -114,14 +129,46 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 .ToList();
         }
 
+        public Settings GetSettings()
+        {
+            return new Settings(_executionDelayInMilliseconds,
+                                _expirationTimeInSeconds,
+                                _historyMaxSize,
+                                _baseAssets.ToList().AsReadOnly(),
+                                _quoteAsset);
+        }
+
+        public void SetSettings(Settings settings)
+        {
+            if (settings == null)
+                throw new ArgumentNullException(nameof(settings));
+
+            var restartNeeded = false;
+
+            if (settings.BaseAssets != null && settings.BaseAssets.Any())
+            {
+                _baseAssets = settings.BaseAssets;
+                restartNeeded = true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(settings.QuoteAsset))
+            {
+                _quoteAsset = settings.QuoteAsset;
+                restartNeeded = true;
+            }
+
+            _restartNeeded = restartNeeded;
+        }
+
+
 
         public void Process(OrderBook orderBook)
         {
             // Update if contains base currency
-            CheckForCurrencyAndUpdateOrderBooks(_baseCurrency, orderBook);
+            CheckForCurrencyAndUpdateOrderBooks(_quoteAsset, orderBook);
 
             // Update if contains wanted currency
-            foreach (var wantedCurrency in _wantedCurrencies)
+            foreach (var wantedCurrency in _baseAssets)
             {
                 CheckForCurrencyAndUpdateOrderBooks(wantedCurrency, orderBook);
             }
@@ -131,6 +178,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             CalculateCrossRates();
             RefreshArbitrages();
+
+            RestartIfNeeded();
         }
 
         public IEnumerable<CrossRate> CalculateCrossRates()
@@ -138,7 +187,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var newActualCrossRates = new ConcurrentDictionary<ExchangeAssetPair, CrossRate>();
             var actualOrderBooks = GetActualOrderBooks();
 
-            foreach (var wantedCurrency in _wantedCurrencies)
+            foreach (var wantedCurrency in _baseAssets)
             {
                 var wantedCurrencyKeys = actualOrderBooks.Keys.Where(x => x.AssetPair.ContainsAsset(wantedCurrency)).ToList();
                 foreach (var wantedCurrencykey in wantedCurrencyKeys)
@@ -154,9 +203,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         : wantedIntermediateAssetPair.Base;
 
                     // If original wanted/base or base/wanted rate then just save it
-                    if (intermediateCurrency == _baseCurrency)
+                    if (intermediateCurrency == _quoteAsset)
                     {
-                        var intermediateWantedCrossRate = CrossRate.FromOrderBook(wantedOrderBook, new AssetPair(wantedCurrency, _baseCurrency));
+                        var intermediateWantedCrossRate = CrossRate.FromOrderBook(wantedOrderBook, new AssetPair(wantedCurrency, _quoteAsset));
 
                         var key = new ExchangeAssetPair(intermediateWantedCrossRate.ConversionPath, intermediateWantedCrossRate.AssetPair);
                         newActualCrossRates.AddOrUpdate(key, intermediateWantedCrossRate);
@@ -166,7 +215,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                     // Trying to find intermediate/base or base/intermediate pair from any exchange
                     var intermediateBaseCurrencyKeys = actualOrderBooks.Keys
-                        .Where(x => x.AssetPair.ContainsAsset(intermediateCurrency) && x.AssetPair.ContainsAsset(_baseCurrency))
+                        .Where(x => x.AssetPair.ContainsAsset(intermediateCurrency) && x.AssetPair.ContainsAsset(_quoteAsset))
                         .ToList();
 
                     foreach (var intermediateBaseCurrencyKey in intermediateBaseCurrencyKeys)
@@ -175,7 +224,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var wantedIntermediateOrderBook = wantedOrderBook;
                         var intermediateBaseOrderBook = actualOrderBooks[intermediateBaseCurrencyKey];
 
-                        var targetBaseAssetPair = new AssetPair(wantedCurrency, _baseCurrency);
+                        var targetBaseAssetPair = new AssetPair(wantedCurrency, _quoteAsset);
                         var crossRate = CrossRate.FromOrderBooks(wantedIntermediateOrderBook, intermediateBaseOrderBook, targetBaseAssetPair);
 
                         var key = new ExchangeAssetPair(crossRate.ConversionPath, crossRate.AssetPair);
@@ -356,6 +405,19 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
 
             return result;
+        }
+
+        private void RestartIfNeeded()
+        {
+            if (_restartNeeded)
+            {
+                _restartNeeded = false;
+
+                _orderBooks.Clear();
+                _crossRates.Clear();
+                _arbitrages.Clear();
+                _arbitrageHistory.Clear();
+            }
         }
     }
 }

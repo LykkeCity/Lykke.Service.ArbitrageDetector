@@ -8,6 +8,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
     public sealed class Arbitrage
     {
         /// <summary>
+        /// Identifier.
+        /// </summary>
+        public Guid Id { get; }
+
+        /// <summary>
         /// Asset pair.
         /// </summary>
         public AssetPair AssetPair { get; }
@@ -86,6 +91,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
             PnL = Math.Abs(Spread * Volume);
             StartedAt = DateTime.UtcNow;
+            Id = Guid.NewGuid();
         }
 
         public override string ToString()
