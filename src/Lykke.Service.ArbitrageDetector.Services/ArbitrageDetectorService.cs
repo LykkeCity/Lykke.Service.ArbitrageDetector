@@ -178,6 +178,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
 
+            if (_arbitrageHistory.Any())
+            { }
+
             IEnumerable<CrossRate> crossRates = null;
             try
             {
@@ -334,7 +337,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             var newArbitragesList = CalculateArbitrages();
             var newArbitrages = new ConcurrentDictionary<string, Arbitrage>();
-
+            
             foreach (var newArbitrage in newArbitragesList)
             {
                 // Key must be unique for arbitrage in order to find when it started
