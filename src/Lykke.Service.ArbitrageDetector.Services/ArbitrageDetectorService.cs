@@ -176,9 +176,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public override async Task Execute()
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+
+            IEnumerable<CrossRate> crossRates = null;
             try
             {
-                CalculateCrossRates();
+                crossRates = CalculateCrossRates();
                 RefreshArbitrages();
 
                 RestartIfNeeded();
@@ -186,6 +189,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
             catch (Exception ex)
             {
                 await _log.WriteErrorAsync(nameof(ArbitrageDetectorService), nameof(Execute), ex);
+            }
+
+            watch.Stop();
+            if (watch.ElapsedMilliseconds > 1000)
+            {
+                await _log.WriteInfoAsync(nameof(ArbitrageDetectorService), nameof(Execute), $"Execute() took {watch.ElapsedMilliseconds} ms to execute for {crossRates?.Count()} cross rates.");
             }
         }
 
