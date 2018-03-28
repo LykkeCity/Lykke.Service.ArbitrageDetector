@@ -29,7 +29,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ILog _log;
 
         public ArbitrageDetectorService(Settings settings, ILog log, IShutdownManager shutdownManager)
-            : base((int) TimeSpan.FromMilliseconds(settings.ExecutionDelayInMilliseconds).TotalMilliseconds, log)
+            : base(settings.ExecutionDelayInMilliseconds, log)
         {
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
@@ -176,15 +176,22 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public override async Task Execute()
         {
-            CalculateCrossRates();
-            RefreshArbitrages();
+            try
+            {
+                CalculateCrossRates();
+                RefreshArbitrages();
 
-            RestartIfNeeded();
+                RestartIfNeeded();
+            }
+            catch (Exception ex)
+            {
+                await _log.WriteErrorAsync(nameof(ArbitrageDetectorService), nameof(Execute), ex);
+            }
         }
 
         public IEnumerable<CrossRate> CalculateCrossRates()
         {
-            var newActualCrossRates = new ConcurrentDictionary<ExchangeAssetPair, CrossRate>();
+            var newActualCrossRates = new SortedDictionary<ExchangeAssetPair, CrossRate>();
             var actualOrderBooks = GetActualOrderBooks();
 
             foreach (var wantedCurrency in _baseAssets)
@@ -240,7 +247,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public IEnumerable<Arbitrage> CalculateArbitrages()
         {
-            var newArbitrages = new List<Arbitrage>();
+            var newArbitrages = new SortedDictionary<string, Arbitrage>();
             var actualCrossRates = GetActualCrossRates();
 
             // For each asset - for each cross rate make one line for every ask and bid, order that lines and find intersection
@@ -288,19 +295,32 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             if (bidLine.BidPrice != 0)
                             {
                                 var arbitrage = new Arbitrage(assetPair, askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
-                                newArbitrages.Add(arbitrage);
+                                var key = arbitrage.ConversionPath;
+
+                                if (newArbitrages.TryGetValue(key, out var existed))
+                                {
+                                    if (arbitrage.PnL > existed.PnL)
+                                    {
+                                        newArbitrages[key] = arbitrage;
+                                    }
+                                }
+                                else
+                                {
+                                    newArbitrages.Add(key, arbitrage);
+                                }
                             }
                         }
                 }
             }
 
-            return newArbitrages;
+            return newArbitrages.Values;
         }
 
         public void RefreshArbitrages()
         {
             var newArbitragesList = CalculateArbitrages();
             var newArbitrages = new ConcurrentDictionary<string, Arbitrage>();
+
             foreach (var newArbitrage in newArbitragesList)
             {
                 // Key must be unique for arbitrage in order to find when it started
