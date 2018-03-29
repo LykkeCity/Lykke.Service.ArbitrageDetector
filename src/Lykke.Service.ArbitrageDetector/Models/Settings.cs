@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Lykke.Service.ArbitrageDetector.Models
 {
@@ -7,6 +8,11 @@ namespace Lykke.Service.ArbitrageDetector.Models
     /// </summary>
     public class Settings
     {
+        /// <summary>
+        /// Expiration time in milliseconds for order books and cross rates.
+        /// </summary>
+        public int ExpirationTimeInSeconds { get; set; }
+
         /// <summary>
         /// Wanted base assets.
         /// </summary>
@@ -22,6 +28,19 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// </summary>
         public Settings()
         {
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="expirationTimeInSeconds"></param>
+        /// <param name="baseAssets"></param>
+        /// <param name="quoteAsset"></param>
+        public Settings(int expirationTimeInSeconds, IEnumerable<string> baseAssets, string quoteAsset)
+        {
+            ExpirationTimeInSeconds = expirationTimeInSeconds;
+            BaseAssets = baseAssets ?? throw new ArgumentNullException(nameof(baseAssets));
+            QuoteAsset = quoteAsset ?? throw new ArgumentNullException(nameof(quoteAsset));
         }
 
         /// <summary>
