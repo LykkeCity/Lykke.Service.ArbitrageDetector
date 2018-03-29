@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Lykke.Service.ArbitrageDetector.Client.Models;
 using Xunit;
@@ -102,11 +103,14 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             var oldSettings = await Client.GetSettingsAsync();
 
             var settings = new Settings { BaseAssets = new List<string> { "AUD", "CHF" }, QuoteAsset = "BTC" };
+
             await Client.SetSettingsAsync(settings);
 
             var newSettings = await Client.GetSettingsAsync();
             Assert.Equal(settings.BaseAssets, newSettings.BaseAssets);
             Assert.Equal(settings.QuoteAsset, newSettings.QuoteAsset);
+
+            await Client.SetSettingsAsync(oldSettings);
 
             newSettings = await Client.GetSettingsAsync();
             Assert.Equal(oldSettings.BaseAssets, newSettings.BaseAssets);

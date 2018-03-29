@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Lykke.Service.ArbitrageDetector.Client.Models
 {
@@ -10,11 +11,21 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Wanted base assets.
         /// </summary>
-        public IReadOnlyCollection<string> BaseAssets { get; set; }
+        public IEnumerable<string> BaseAssets { get; set; }
 
         /// <summary>
         /// Quote asset for wanted assets.
         /// </summary>
         public string QuoteAsset { get; set; }
+
+        public Settings()
+        {
+        }
+
+        public Settings(IEnumerable<string> baseAssets, string quoteAsset)
+        {
+            BaseAssets = baseAssets ?? throw new ArgumentNullException(nameof(baseAssets));
+            QuoteAsset = quoteAsset ?? throw new ArgumentNullException(nameof(quoteAsset));
+        }
     }
 }

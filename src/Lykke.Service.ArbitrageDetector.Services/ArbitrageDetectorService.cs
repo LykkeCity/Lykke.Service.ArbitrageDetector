@@ -24,11 +24,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly int _expirationTimeInSeconds;
         private readonly int _historyMaxSize;
         private bool _restartNeeded;
-
-        private readonly int _executionDelayInMilliseconds;
+        
         private readonly ILog _log;
 
-        public ArbitrageDetectorService(Settings settings, ILog log, IShutdownManager shutdownManager)
+        public ArbitrageDetectorService(StartupSettings settings, ILog log, IShutdownManager shutdownManager)
             : base(settings.ExecutionDelayInMilliseconds, log)
         {
             if (settings == null)
@@ -38,7 +37,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _quoteAsset = settings.QuoteAsset;
             _expirationTimeInSeconds = settings.ExpirationTimeInSeconds;
             _historyMaxSize = settings.HistoryMaxSize;
-            _executionDelayInMilliseconds = settings.ExecutionDelayInMilliseconds;
 
             _log = log;
             shutdownManager?.Register(this);
@@ -131,11 +129,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public Settings GetSettings()
         {
-            return new Settings(_executionDelayInMilliseconds,
-                                _expirationTimeInSeconds,
-                                _historyMaxSize,
-                                _baseAssets.ToList().AsReadOnly(),
-                                _quoteAsset);
+            return new Settings(_baseAssets, _quoteAsset);
         }
 
         public void SetSettings(Settings settings)

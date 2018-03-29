@@ -147,7 +147,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("SetSettings")]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> SetSettings(Models.Settings settings)
+        public async Task<IActionResult> SetSettings([FromBody]Models.Settings settings)
         {
             try
             {

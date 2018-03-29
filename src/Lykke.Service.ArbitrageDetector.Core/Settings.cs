@@ -6,7 +6,8 @@ namespace Lykke.Service.ArbitrageDetector.Core
     /// <summary>
     /// Represents settings of Arbitrage Detector Service.
     /// </summary>
-    public class Settings
+    /// <inheritdoc />
+    public class StartupSettings : Settings
     {
         /// <summary>
         /// Arbitrage calculating execution delay in milliseconds.
@@ -23,6 +24,36 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// </summary>
         public int HistoryMaxSize { get; set; }
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        public StartupSettings()
+        {
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="executionDelayInMilliseconds"></param>
+        /// <param name="expirationTimeInSeconds"></param>
+        /// <param name="historyMaxSize"></param>
+        /// <param name="baseAssets"></param>
+        /// <param name="quoteAsset"></param>
+        public StartupSettings(int executionDelayInMilliseconds, int expirationTimeInSeconds, int historyMaxSize,
+            IEnumerable<string> baseAssets, string quoteAsset)
+            : base(baseAssets, quoteAsset)
+        {
+            ExecutionDelayInMilliseconds = executionDelayInMilliseconds;
+            ExpirationTimeInSeconds = expirationTimeInSeconds;
+            HistoryMaxSize = historyMaxSize;
+        }
+    }
+
+    /// <summary>
+    /// Represents settings that can be changed during service execution.
+    /// </summary>
+    public class Settings
+    {
         /// <summary>
         /// Wanted base assets.
         /// </summary>
@@ -43,17 +74,10 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="executionDelayInMilliseconds"></param>
-        /// <param name="expirationTimeInSeconds"></param>
-        /// <param name="historyMaxSize"></param>
         /// <param name="baseAssets"></param>
         /// <param name="quoteAsset"></param>
-        public Settings(int executionDelayInMilliseconds, int expirationTimeInSeconds, int historyMaxSize,
-            IEnumerable<string> baseAssets, string quoteAsset)
+        public Settings(IEnumerable<string> baseAssets, string quoteAsset)
         {
-            ExecutionDelayInMilliseconds = executionDelayInMilliseconds;
-            ExpirationTimeInSeconds = expirationTimeInSeconds;
-            HistoryMaxSize = historyMaxSize;
             BaseAssets = baseAssets ?? throw new ArgumentNullException(nameof(baseAssets));
             QuoteAsset = string.IsNullOrWhiteSpace(quoteAsset) ? throw new ArgumentNullException(nameof(quoteAsset)) : quoteAsset;
         }
