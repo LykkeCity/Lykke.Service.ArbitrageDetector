@@ -76,7 +76,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// How log the arbitrage lasted.
         /// </summary>
-        public TimeSpan Lasted => EndedAt - StartedAt;
+        public TimeSpan Lasted => EndedAt == default ? DateTime.UtcNow - StartedAt : EndedAt - StartedAt;
 
         /// <summary>
         /// Conversion path.

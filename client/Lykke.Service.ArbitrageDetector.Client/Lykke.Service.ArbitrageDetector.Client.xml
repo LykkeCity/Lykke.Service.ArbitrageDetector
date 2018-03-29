@@ -302,6 +302,11 @@
             Represents settings of Arbitrage Detector Service.
             </summary>
         </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.ExpirationTimeInSeconds">
+            <summary>
+            Expiration time in milliseconds for order books and cross rates.
+            </summary>
+        </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.BaseAssets">
             <summary>
             Wanted base assets.
@@ -311,6 +316,19 @@
             <summary>
             Quote asset for wanted assets.
             </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor">
+            <summary>
+            Constructor.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor(System.Int32,System.Collections.Generic.IEnumerable{System.String},System.String)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="expirationTimeInSeconds"></param>
+            <param name="baseAssets"></param>
+            <param name="quoteAsset"></param>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice">
             <summary>

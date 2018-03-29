@@ -178,9 +178,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
 
-            if (_arbitrageHistory.Any())
-            { }
-
             IEnumerable<CrossRate> crossRates = null;
             try
             {
@@ -195,7 +192,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
 
             watch.Stop();
-            if (watch.ElapsedMilliseconds > 1000)
+            if (watch.ElapsedMilliseconds > 3000)
             {
                 await _log.WriteInfoAsync(nameof(ArbitrageDetectorService), nameof(Execute), $"Execute() took {watch.ElapsedMilliseconds} ms to execute for {crossRates?.Count()} cross rates.");
             }
