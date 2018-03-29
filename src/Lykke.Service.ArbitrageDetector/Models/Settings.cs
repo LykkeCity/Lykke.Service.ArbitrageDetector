@@ -49,6 +49,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <param name="settings">Domain model</param>
         public Settings(Core.Settings settings)
         {
+            ExpirationTimeInSeconds = settings.ExpirationTimeInSeconds;
             BaseAssets = settings.BaseAssets;
             QuoteAsset = settings.QuoteAsset;
         }
@@ -61,6 +62,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         {
             var domain = new Core.Settings
             {
+                ExpirationTimeInSeconds = ExpirationTimeInSeconds,
                 BaseAssets = BaseAssets,
                 QuoteAsset = QuoteAsset,
             };
