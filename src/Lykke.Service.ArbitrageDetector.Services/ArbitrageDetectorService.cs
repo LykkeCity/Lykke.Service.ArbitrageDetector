@@ -21,7 +21,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrageHistory;
         private IEnumerable<string> _baseAssets;
         private string _quoteAsset;
-        private readonly int _expirationTimeInSeconds;
+        private int _expirationTimeInSeconds;
         private readonly int _historyMaxSize;
         private bool _restartNeeded;
         
@@ -129,7 +129,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public Settings GetSettings()
         {
-            return new Settings(_baseAssets, _quoteAsset);
+            return new Settings(_expirationTimeInSeconds, _baseAssets, _quoteAsset);
         }
 
         public void SetSettings(Settings settings)
@@ -138,6 +138,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 throw new ArgumentNullException(nameof(settings));
 
             var restartNeeded = false;
+
+            if (settings.ExpirationTimeInSeconds > 0)
+            {
+                _expirationTimeInSeconds = settings.ExpirationTimeInSeconds;
+                restartNeeded = true;
+            }
 
             if (settings.BaseAssets != null && settings.BaseAssets.Any())
             {

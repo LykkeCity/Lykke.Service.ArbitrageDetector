@@ -15,11 +15,6 @@ namespace Lykke.Service.ArbitrageDetector.Core
         public int ExecutionDelayInMilliseconds { get; set; }
 
         /// <summary>
-        /// Expiration time in milliseconds for order books and cross rates.
-        /// </summary>
-        public int ExpirationTimeInSeconds { get; set; }
-
-        /// <summary>
         /// Maximum length of the history of arbitrages.
         /// </summary>
         public int HistoryMaxSize { get; set; }
@@ -41,7 +36,7 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// <param name="quoteAsset"></param>
         public StartupSettings(int executionDelayInMilliseconds, int expirationTimeInSeconds, int historyMaxSize,
             IEnumerable<string> baseAssets, string quoteAsset)
-            : base(baseAssets, quoteAsset)
+            : base(expirationTimeInSeconds, baseAssets, quoteAsset)
         {
             ExecutionDelayInMilliseconds = executionDelayInMilliseconds;
             ExpirationTimeInSeconds = expirationTimeInSeconds;
@@ -54,6 +49,11 @@ namespace Lykke.Service.ArbitrageDetector.Core
     /// </summary>
     public class Settings
     {
+        /// <summary>
+        /// Expiration time in milliseconds for order books and cross rates.
+        /// </summary>
+        public int ExpirationTimeInSeconds { get; set; }
+
         /// <summary>
         /// Wanted base assets.
         /// </summary>
@@ -74,10 +74,12 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// <summary>
         /// Constructor.
         /// </summary>
+        /// <param name="expirationTimeInSeconds"></param>
         /// <param name="baseAssets"></param>
         /// <param name="quoteAsset"></param>
-        public Settings(IEnumerable<string> baseAssets, string quoteAsset)
+        public Settings(int expirationTimeInSeconds, IEnumerable<string> baseAssets, string quoteAsset)
         {
+            ExpirationTimeInSeconds = expirationTimeInSeconds;
             BaseAssets = baseAssets ?? throw new ArgumentNullException(nameof(baseAssets));
             QuoteAsset = string.IsNullOrWhiteSpace(quoteAsset) ? throw new ArgumentNullException(nameof(quoteAsset)) : quoteAsset;
         }
