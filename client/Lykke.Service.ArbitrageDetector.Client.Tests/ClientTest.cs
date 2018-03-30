@@ -20,11 +20,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             Assert.NotEmpty(orderBooks);
             Assert.NotEmpty(orderBooks.First().Source);
             Assert.True(!orderBooks.First().AssetPair.IsEmpty());
-            Assert.NotEqual(default(DateTime), orderBooks.First().Timestamp);
+            Assert.NotEqual(default, orderBooks.First().Timestamp);
             Assert.NotEmpty(orderBooks.First().Asks);
             Assert.NotEmpty(orderBooks.First().Bids);
-            Assert.NotEqual(default(decimal), orderBooks.First().Asks.First().Price);
-            Assert.NotEqual(default(decimal), orderBooks.First().Asks.First().Volume);
+            Assert.NotEqual(default, orderBooks.First().Asks.First().Price);
+            Assert.NotEqual(default, orderBooks.First().Asks.First().Volume);
         }
 
         [Fact]
@@ -36,11 +36,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             Assert.NotEmpty(orderBooks);
             Assert.NotEmpty(orderBooks.First().Source);
             Assert.True(!orderBooks.First().AssetPair.IsEmpty());
-            Assert.NotEqual(default(DateTime), orderBooks.First().Timestamp);
+            Assert.NotEqual(default, orderBooks.First().Timestamp);
             Assert.NotEmpty(orderBooks.First().Asks);
             Assert.NotEmpty(orderBooks.First().Bids);
-            Assert.NotEqual(default(decimal), orderBooks.First().Asks.First().Price);
-            Assert.NotEqual(default(decimal), orderBooks.First().Asks.First().Volume);
+            Assert.NotEqual(default, orderBooks.First().Asks.First().Price);
+            Assert.NotEqual(default, orderBooks.First().Asks.First().Volume);
         }
 
         [Fact]
@@ -52,11 +52,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             Assert.NotEmpty(orderBooks);
             Assert.NotEmpty(orderBooks.First().Source);
             Assert.True(!orderBooks.First().AssetPair.IsEmpty());
-            Assert.NotEqual(default(DateTime), orderBooks.First().Timestamp);
+            Assert.NotEqual(default, orderBooks.First().Timestamp);
             Assert.NotEmpty(orderBooks.First().Asks);
             Assert.NotEmpty(orderBooks.First().Bids);
-            Assert.NotEqual(default(decimal), orderBooks.First().Asks.First().Price);
-            Assert.NotEqual(default(decimal), orderBooks.First().Asks.First().Volume);
+            Assert.NotEqual(default, orderBooks.First().Asks.First().Price);
+            Assert.NotEqual(default, orderBooks.First().Asks.First().Volume);
         }
 
         [Fact]
@@ -68,11 +68,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             Assert.NotEmpty(crossRates);
             Assert.NotEmpty(crossRates.First().Source);
             Assert.True(!crossRates.First().AssetPair.IsEmpty());
-            Assert.NotEqual(default(DateTime), crossRates.First().Timestamp);
-            Assert.NotEqual(default(decimal), crossRates.First().BestAsk.Price);
-            Assert.NotEqual(default(decimal), crossRates.First().BestAsk.Volume);
-            Assert.NotEqual(default(decimal), crossRates.First().BestBid.Price);
-            Assert.NotEqual(default(decimal), crossRates.First().BestBid.Volume);
+            Assert.NotEqual(default, crossRates.First().Timestamp);
+            Assert.NotEqual(default, crossRates.First().BestAsk.Price);
+            Assert.NotEqual(default, crossRates.First().BestAsk.Volume);
+            Assert.NotEqual(default, crossRates.First().BestBid.Price);
+            Assert.NotEqual(default, crossRates.First().BestBid.Volume);
         }
 
         [Fact]

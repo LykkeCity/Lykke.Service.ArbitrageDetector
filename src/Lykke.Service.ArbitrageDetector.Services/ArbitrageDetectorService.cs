@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
@@ -15,8 +16,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
 {
     public class ArbitrageDetectorService : TimerPeriod, IArbitrageDetectorService
     {
-        private readonly ConcurrentDictionary<ExchangeAssetPair, OrderBook> _orderBooks;
-        private readonly ConcurrentDictionary<ExchangeAssetPair, CrossRate> _crossRates;
+        private readonly ConcurrentDictionary<AssetPairSource, OrderBook> _orderBooks;
+        private readonly ConcurrentDictionary<AssetPairSource, CrossRate> _crossRates;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrages;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrageHistory;
         private IEnumerable<string> _baseAssets;
@@ -41,8 +42,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _log = log;
             shutdownManager?.Register(this);
 
-            _orderBooks = new ConcurrentDictionary<ExchangeAssetPair, OrderBook>();
-            _crossRates = new ConcurrentDictionary<ExchangeAssetPair, CrossRate>();
+            _orderBooks = new ConcurrentDictionary<AssetPairSource, OrderBook>();
+            _crossRates = new ConcurrentDictionary<AssetPairSource, CrossRate>();
             _arbitrages = new ConcurrentDictionary<string, Arbitrage>();
             _arbitrageHistory = new ConcurrentDictionary<string, Arbitrage>();
         }
@@ -54,8 +55,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             return _orderBooks.Select(x => x.Value)
                 .OrderByDescending(x => x.Timestamp)
-                .ToList()
-                .AsReadOnly();
+                .ToList();
         }
 
         public IEnumerable<OrderBook> GetOrderBooks(string exchange, string instrument)
@@ -81,8 +81,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             var result = _crossRates.Select(x => x.Value)
                 .OrderByDescending(x => x.Timestamp)
-                .ToList()
-                .AsReadOnly();
+                .ToList();
 
             return result;
         }
@@ -94,8 +93,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             return _arbitrages.Select(x => x.Value)
                 .OrderByDescending(x => x.PnL)
-                .ToList()
-                .AsReadOnly();
+                .ToList();
         }
 
         public Arbitrage GetArbitrage(Guid id)
@@ -188,19 +186,19 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
             catch (Exception ex)
             {
-                await _log.WriteErrorAsync(nameof(ArbitrageDetectorService), nameof(Execute), ex);
+                await _log.WriteErrorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, ex);
             }
 
             watch.Stop();
             if (watch.ElapsedMilliseconds > 3000)
             {
-                await _log.WriteInfoAsync(nameof(ArbitrageDetectorService), nameof(Execute), $"Execute() took {watch.ElapsedMilliseconds} ms to execute for {crossRates?.Count()} cross rates.");
+                await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Execute() took {watch.ElapsedMilliseconds} ms to execute for {crossRates?.Count()} cross rates.");
             }
         }
 
         public IEnumerable<CrossRate> CalculateCrossRates()
         {
-            var newActualCrossRates = new SortedDictionary<ExchangeAssetPair, CrossRate>();
+            var newActualCrossRates = new SortedDictionary<AssetPairSource, CrossRate>();
             var actualOrderBooks = GetActualOrderBooks();
 
             foreach (var wantedCurrency in _baseAssets)
@@ -218,12 +216,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         ? wantedIntermediateAssetPair.Quoting
                         : wantedIntermediateAssetPair.Base;
 
-                    // If original wanted/base or base/wanted rate then just save it
+                    // If original wanted/base or base/wanted pair then just save it
                     if (intermediateCurrency == _quoteAsset)
                     {
                         var intermediateWantedCrossRate = CrossRate.FromOrderBook(wantedOrderBook, new AssetPair(wantedCurrency, _quoteAsset));
 
-                        var key = new ExchangeAssetPair(intermediateWantedCrossRate.ConversionPath, intermediateWantedCrossRate.AssetPair);
+                        var key = new AssetPairSource(intermediateWantedCrossRate.ConversionPath, intermediateWantedCrossRate.AssetPair);
                         newActualCrossRates.AddOrUpdate(key, intermediateWantedCrossRate);
 
                         continue;
@@ -243,7 +241,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var targetBaseAssetPair = new AssetPair(wantedCurrency, _quoteAsset);
                         var crossRate = CrossRate.FromOrderBooks(wantedIntermediateOrderBook, intermediateBaseOrderBook, targetBaseAssetPair);
 
-                        var key = new ExchangeAssetPair(crossRate.ConversionPath, crossRate.AssetPair);
+                        var key = new AssetPairSource(crossRate.ConversionPath, crossRate.AssetPair);
                         newActualCrossRates.AddOrUpdate(key, crossRate);
                     }
                 }
@@ -388,10 +386,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 }
             }
 
+            // If didn't help then delete extra with the oldest conversion path
             extraCount = _arbitrageHistory.Count - _historyMaxSize;
             if (extraCount > 0)
             {
-                // If didn't help then delete extra oldest
                 var arbitrages = arbitrageHistory.Take(extraCount).ToList();
                 foreach (var arbitrage in arbitrages)
                 {
@@ -407,13 +405,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             orderBook.SetAssetPair(currency);
 
-            var key = new ExchangeAssetPair(orderBook.Source, orderBook.AssetPair);
+            var key = new AssetPairSource(orderBook.Source, orderBook.AssetPair);
             _orderBooks.AddOrUpdate(key, orderBook);
         }
 
-        private ConcurrentDictionary<ExchangeAssetPair, OrderBook> GetActualOrderBooks()
+        private ConcurrentDictionary<AssetPairSource, OrderBook> GetActualOrderBooks()
         {
-            var result = new ConcurrentDictionary<ExchangeAssetPair, OrderBook>();
+            var result = new ConcurrentDictionary<AssetPairSource, OrderBook>();
 
             foreach (var keyValue in _orderBooks)
             {

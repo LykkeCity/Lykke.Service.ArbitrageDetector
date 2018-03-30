@@ -16,19 +16,19 @@ namespace Lykke.Service.ArbitrageDetector.Client
         /// <param name="exchange">Name of an exchange.</param>
         /// <param name="instrument">Name of an instrument</param>
         /// <returns>A collection of OrderBook entities.</returns>
-        Task<IReadOnlyList<OrderBook>> OrderBooksAsync(string exchange, string instrument);
+        Task<IEnumerable<OrderBook>> OrderBooksAsync(string exchange, string instrument);
 
         /// <summary>
         /// Returns a collection of CrossRate entities.
         /// </summary>
         /// <returns>A collection of CrossRate entities.</returns>
-        Task<IReadOnlyList<CrossRate>> CrossRatesAsync();
+        Task<IEnumerable<CrossRate>> CrossRatesAsync();
 
         /// <summary> 
         /// Returns a collection of Arbitrage entities.
         /// </summary>
         /// <returns>A collection of Arbitrage entities.</returns>
-        Task<IReadOnlyList<Arbitrage>> ArbitragesAsync();
+        Task<IEnumerable<Arbitrage>> ArbitragesAsync();
 
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace Lykke.Service.ArbitrageDetector.Client
         /// <param name="since"></param>
         /// <param name="take"></param>
         /// <returns>A collection of Arbitrage entities.</returns>
-        Task<IReadOnlyList<Arbitrage>> ArbitrageHistoryAsync(DateTime since, int take);
+        Task<IEnumerable<Arbitrage>> ArbitrageHistoryAsync(DateTime since, int take);
 
         /// <summary>
         /// Get settings.

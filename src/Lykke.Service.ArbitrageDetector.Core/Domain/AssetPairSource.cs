@@ -5,7 +5,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
     /// <summary>
     /// Represents a pair of an exchange and an asset pair.
     /// </summary>
-    public struct ExchangeAssetPair : IComparable
+    public struct AssetPairSource : IComparable
     {
         /// <summary>
         /// Exchange.
@@ -22,7 +22,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// </summary>
         /// <param name="exchange"></param>
         /// <param name="assetPair"></param>
-        public ExchangeAssetPair(string exchange, AssetPair assetPair)
+        public AssetPairSource(string exchange, AssetPair assetPair)
         {
             Exchange = string.IsNullOrEmpty(exchange) ? throw new ArgumentNullException(nameof(exchange)) : exchange;
             AssetPair = string.IsNullOrEmpty(assetPair.Base) || string.IsNullOrEmpty(assetPair.Quoting) ? throw new ArgumentNullException(nameof(assetPair)) : assetPair;
@@ -35,10 +35,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public int CompareTo(object obj)
         {
-            if (obj == null || !(obj is ExchangeAssetPair))
+            if (obj == null || !(obj is AssetPairSource))
                 throw new ArgumentException(nameof(obj));
 
-            return string.Compare(ToString(), ((ExchangeAssetPair)obj).ToString(), StringComparison.Ordinal);
+            return string.Compare(ToString(), ((AssetPairSource)obj).ToString(), StringComparison.Ordinal);
         }
     }
 }

@@ -47,22 +47,22 @@ namespace Lykke.Service.ArbitrageDetector.Client
             _runner = new ApiRunner();
         }
 
-        public async Task<IReadOnlyList<OrderBook>> OrderBooksAsync(string exchange, string instrument)
+        public async Task<IEnumerable<OrderBook>> OrderBooksAsync(string exchange, string instrument)
         {
             return await _runner.RunAsync(() => _arbitrageDetectorApi.OrderBooksAsync(exchange, instrument));
         }
 
-        public async Task<IReadOnlyList<CrossRate>> CrossRatesAsync()
+        public async Task<IEnumerable<CrossRate>> CrossRatesAsync()
         {
             return await _runner.RunAsync(() => _arbitrageDetectorApi.CrossRatesAsync());
         }
 
-        public async Task<IReadOnlyList<Arbitrage>> ArbitragesAsync()
+        public async Task<IEnumerable<Arbitrage>> ArbitragesAsync()
         {
             return await _runner.RunAsync(() => _arbitrageDetectorApi.ArbitragesAsync());
         }
 
-        public async Task<IReadOnlyList<Arbitrage>> ArbitrageHistoryAsync(DateTime since, int take)
+        public async Task<IEnumerable<Arbitrage>> ArbitrageHistoryAsync(DateTime since, int take)
         {
             return await _runner.RunAsync(() => _arbitrageDetectorApi.ArbitrageHistory(since, take));
         }

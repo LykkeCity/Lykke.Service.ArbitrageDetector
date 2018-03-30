@@ -9,16 +9,16 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
     internal interface IArbitrageDetectorApi
     {
         [Get("/orderBooks")]
-        Task<IReadOnlyList<OrderBook>> OrderBooksAsync(string exchange, string instrument);
+        Task<IEnumerable<OrderBook>> OrderBooksAsync(string exchange, string instrument);
 
         [Get("/crossRates")]
-        Task<IReadOnlyList<CrossRate>> CrossRatesAsync();
+        Task<IEnumerable<CrossRate>> CrossRatesAsync();
 
         [Get("/arbitrages")]
-        Task<IReadOnlyList<Arbitrage>> ArbitragesAsync();
+        Task<IEnumerable<Arbitrage>> ArbitragesAsync();
 
         [Get("/arbitrageHistory")]
-        Task<IReadOnlyList<Arbitrage>> ArbitrageHistory(DateTime since, int take);
+        Task<IEnumerable<Arbitrage>> ArbitrageHistory(DateTime since, int take);
 
         [Get("/getSettings")]
         Task<Settings> GetSettings();
