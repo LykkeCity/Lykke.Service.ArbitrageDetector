@@ -90,7 +90,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(3, crossRate.Asks.Count);
             Assert.Equal(2, crossRate.Bids.Count);
             Assert.Equal(timestamp, crossRate.Timestamp);
-            Assert.Equal(0, crossRate.OriginalOrderBooks.Count);
+            Assert.Equal(1, crossRate.OriginalOrderBooks.Count);
         }
 
         [Fact]

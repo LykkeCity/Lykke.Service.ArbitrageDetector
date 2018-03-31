@@ -272,17 +272,17 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var arbitrage1 = arbitrages.First(x => x.BidCrossRate.Source == "GDAX" && x.AskCrossRate.Source == "Quoine-Binance");
             Assert.Equal(11000, arbitrage1.BidCrossRate.Bids.Max(x => x.Price));
             Assert.Equal(10982.9089835m, arbitrage1.AskCrossRate.Asks.Max(x => x.Price), 8);
-            Assert.Equal(arbitrage1.PnL, Math.Abs(arbitrage1.Volume * arbitrage1.Spread));
+            Assert.Equal(arbitrage1.PnL, Math.Abs((arbitrage1.Ask.Price - arbitrage1.Bid.Price) * arbitrage1.Spread));
 
             var arbitrage2 = arbitrages.First(x => x.BidCrossRate.Source == "Bitfinex" && x.AskCrossRate.Source == "Quoine-Binance");
             Assert.Equal(11100, arbitrage2.BidCrossRate.Bids.Max(x => x.Price));
             Assert.Equal(10982.9089835m, arbitrage2.AskCrossRate.Asks.Max(x => x.Price), 8);
-            Assert.Equal(arbitrage2.PnL, Math.Abs(arbitrage2.Volume * arbitrage2.Spread));
+            Assert.Equal(arbitrage2.PnL, Math.Abs((arbitrage2.Ask.Price - arbitrage2.Bid.Price) * arbitrage2.Spread));
 
             var arbitrage3 = arbitrages.First(x => x.BidCrossRate.Source == "Bitfinex" && x.AskCrossRate.Source == "GDAX");
             Assert.Equal(11100, arbitrage3.BidCrossRate.Bids.Max(x => x.Price));
             Assert.Equal(11050m, arbitrage3.AskCrossRate.Asks.Max(x => x.Price));
-            Assert.Equal(arbitrage3.PnL, Math.Abs(arbitrage3.Volume * arbitrage3.Spread));
+            Assert.Equal(arbitrage3.PnL, Math.Abs((arbitrage3.Ask.Price - arbitrage3.Bid.Price) * arbitrage3.Spread));
         }
 
         [Fact]
