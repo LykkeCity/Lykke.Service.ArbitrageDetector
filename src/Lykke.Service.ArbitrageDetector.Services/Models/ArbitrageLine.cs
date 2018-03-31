@@ -1,6 +1,6 @@
 ﻿using Lykke.Service.ArbitrageDetector.Core.Domain;
 
-namespace Lykke.Service.ArbitrageDetector.Services.Model
+namespace Lykke.Service.ArbitrageDetector.Services.Models
 {
     /// <summary>
     /// represents a record af arbitrage situation evvent.

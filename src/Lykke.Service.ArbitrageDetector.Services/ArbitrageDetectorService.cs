@@ -10,7 +10,7 @@ using Lykke.Service.ArbitrageDetector.Core;
 using Lykke.Service.ArbitrageDetector.Core.Utils;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Services;
-using Lykke.Service.ArbitrageDetector.Services.Model;
+using Lykke.Service.ArbitrageDetector.Services.Models;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
@@ -25,6 +25,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private int _expirationTimeInSeconds;
         private readonly int _historyMaxSize;
         private bool _restartNeeded;
+        private int _minSpread;
         
         private readonly ILog _log;
 
@@ -38,6 +39,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _quoteAsset = settings.QuoteAsset;
             _expirationTimeInSeconds = settings.ExpirationTimeInSeconds;
             _historyMaxSize = settings.HistoryMaxSize;
+            _minSpread = settings.MinSpread;
 
             _log = log;
             shutdownManager?.Register(this);
@@ -132,7 +134,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public Settings GetSettings()
         {
-            return new Settings(_expirationTimeInSeconds, _baseAssets, _quoteAsset);
+            return new Settings(_expirationTimeInSeconds, _baseAssets, _quoteAsset, _minSpread);
         }
 
         public void SetSettings(Settings settings)
@@ -262,6 +264,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var newArbitrages = new SortedDictionary<string, Arbitrage>();
             var actualCrossRates = GetActualCrossRates();
 
+            var totalPossibleArbitrages = 0;
             // For each asset pair - for each cross rate make one line for every ask and bid, order that lines and find intersections
             var uniqueAssetPairs = actualCrossRates.Select(x => x.AssetPair).Distinct().ToList();
             foreach (var assetPair in uniqueAssetPairs)
@@ -301,6 +304,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 {
                     var askLine = lines[a];
                     if (askLine.AskPrice != 0)
+                    {
                         for (var b = a + 1; b < lines.Count; b++)
                         {
                             var bidLine = lines[b];
@@ -309,10 +313,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
                                 var key = "(" + askLine.CrossRate.ConversionPath + ") * (" + bidLine.CrossRate.ConversionPath + ")";
                                 if (newArbitrages.TryGetValue(key, out var existed))
                                 {
-                                    var spread = (askLine.Price - bidLine.Price) / bidLine.Price * 100;
                                     var volume = askLine.Volume < bidLine.Volume ? askLine.Volume : bidLine.Volume;
-                                    var pnL = Math.Abs(spread * volume);
-
+                                    var pnL = (bidLine.Price - askLine.Price) * volume;
                                     if (pnL > existed.PnL)
                                     {
                                         var arbitrage = new Arbitrage(assetPair, askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
@@ -326,6 +328,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                                 }
                             }
                         }
+                    }
                 }
             }
 
@@ -334,13 +337,15 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public void RefreshArbitrages()
         {
-            var newArbitragesList = CalculateArbitrages();
+            var newArbitragesList = CalculateArbitrages(); // One per conversion path (with best PnL)
             var newArbitrages = new ConcurrentDictionary<string, Arbitrage>();
             
+            // Form dictionary with new arbitrages
             foreach (var newArbitrage in newArbitragesList)
             {
                 // Key must be unique for arbitrage in order to find when it started
-                var key = newArbitrage.ToString();
+                //var key = newArbitrage.ToString();
+                var key = newArbitrage.ConversionPath;
                 newArbitrages.AddOrUpdate(key, newArbitrage);
             }
 

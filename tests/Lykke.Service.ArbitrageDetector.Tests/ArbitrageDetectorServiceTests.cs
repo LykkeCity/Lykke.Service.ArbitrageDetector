@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Castle.Core.Logging;
 using Lykke.Service.ArbitrageDetector.Core;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Services;
+using MoreLinq;
 using Xunit;
 
 namespace Lykke.Service.ArbitrageDetector.Tests
@@ -21,7 +23,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var settings = new StartupSettings(10, 10, 1000, baseAssets, quoteAsset);
+            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
             var arbitrageCalculator = new ArbitrageDetectorService(settings, null, null);
 
             var btcEurOrderBook = new OrderBook(exchange, "BTCEUR",
@@ -71,7 +73,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var settings = new StartupSettings(10, 10, 1000, baseAssets, quoteAsset);
+            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
             var arbitrageCalculator = new ArbitrageDetectorService(settings, null, null);
 
             var btcEurOrderBook = new OrderBook(exchange, "BTCEUR",
@@ -126,7 +128,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var settings = new StartupSettings(10, 10, 1000, baseAssets, quoteAsset);
+            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
             var arbitrageCalculator = new ArbitrageDetectorService(settings, null, null);
 
             var btcEurOrderBook = new OrderBook(exchange, "EURBTC",
@@ -181,7 +183,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var settings = new StartupSettings(10, 10, 1000, baseAssets, quoteAsset);
+            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
             var arbitrageCalculator = new ArbitrageDetectorService(settings, null, null);
 
             var eurBtcOrderBook = new OrderBook(exchange, "EURBTC",
@@ -233,7 +235,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
 
-            var settings = new StartupSettings(10, 10, 1000, baseAssets, quoteAsset);
+            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
             var arbitrageDetector = new ArbitrageDetectorService(settings, null, null);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
@@ -286,12 +288,42 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         }
 
         [Fact]
+        public async Task ArbitragePerformanceTest()
+        {
+            var baseAssets = new List<string> { "BTC" };
+            const string quoteAsset = "USD";
+
+            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
+            var arbitrageDetector = new ArbitrageDetectorService(settings, null, null);
+
+            var orderBooks = new List<OrderBook>();
+            orderBooks.AddRange(GenerateOrderBooks(7, "GDAX", new AssetPair("BTC", "USD"), 10, 11500, 11000, 10, 11000, 10000));
+            orderBooks.AddRange(GenerateOrderBooks(7, "Bitfinex", new AssetPair("BTC", "USD"), 10, 11600, 10900, 10, 10900, 10200));
+            orderBooks.AddRange(GenerateOrderBooks(7, "Quoine", new AssetPair("BTC", "EUR"), 10, 9000, 8980.95m, 10, 8980.95m, 8825));
+            orderBooks.AddRange(GenerateOrderBooks(7, "Binance", new AssetPair("EUR", "USD"), 10, 1.2205m, 1.2200m, 10, 1.2200m, 1.2190m));
+
+            foreach (var orderBook in orderBooks)
+                arbitrageDetector.Process(orderBook);
+
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            await arbitrageDetector.Execute();
+            watch.Stop();
+            Assert.True(watch.ElapsedMilliseconds < 1000);
+
+            var crossRates = arbitrageDetector.GetCrossRates().ToList();
+            var arbitrages = arbitrageDetector.GetArbitrages().ToList();
+
+            Assert.Equal(63, crossRates.Count);
+            Assert.Equal(343, arbitrages.Count);
+        }
+
+        [Fact]
         public async Task ArbitrageHistoryTest()
         {
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
 
-            var settings = new StartupSettings(1, 1, 1000, baseAssets, quoteAsset);
+            var settings = new StartupSettings(1, 1, 1000, -20, baseAssets, quoteAsset);
             var arbitrageDetector = new ArbitrageDetectorService(settings, null, null);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
@@ -326,6 +358,51 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var arbitrageHistory = arbitrageDetector.GetArbitrageHistory(DateTime.MinValue, short.MaxValue);
 
             Assert.Equal(3, arbitrageHistory.Count());
+        }
+
+        private IEnumerable<OrderBook> GenerateOrderBooks(int count, string source, AssetPair assetPair, int askCount, decimal maxAsk, decimal minAsk, int bidCount, decimal maxBid, decimal minBid)
+        {
+            if (minAsk > maxAsk)
+                throw new Exception("minAsk > maxAsk");
+
+            if (minBid > maxBid)
+                throw new Exception("minBid > maxBid");
+
+            var result = new List<OrderBook>();
+
+            for (var i = 0; i < count; i++)
+            {
+                var asks = GenerateVolumePrices(askCount, minAsk, maxAsk);
+                var bids = GenerateVolumePrices(bidCount, minBid, maxBid);
+
+                var orderBook = new OrderBook(source + i, assetPair.Name, asks, bids, DateTime.UtcNow);
+                orderBook.SetAssetPair(assetPair.Base);
+
+                result.Add(orderBook);
+            }
+
+            Assert.Equal(result.Count, count);
+            Assert.True(result.TrueForAll(x => x.Source.Contains(source)));
+            Assert.True(result.TrueForAll(x => x.AssetPair.Equals(assetPair)));
+
+            return result;
+        }
+
+        private IReadOnlyCollection<VolumePrice> GenerateVolumePrices(int count, decimal min, decimal max)
+        {
+            var result = new List<VolumePrice>();
+
+            var askStep = (max - min) / count;
+            for (var i = 0; i < count; i++)
+            {
+                var ask = new VolumePrice(min + i * askStep, new Random().Next(1, 10));
+                result.Add(ask);
+            }
+
+            Assert.Equal(result.Count, count);
+            Assert.True(result.TrueForAll(x => min <= x.Price && x.Price <= max));
+
+            return result;
         }
     }
 }

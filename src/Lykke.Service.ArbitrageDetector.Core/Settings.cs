@@ -32,11 +32,12 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// <param name="executionDelayInMilliseconds"></param>
         /// <param name="expirationTimeInSeconds"></param>
         /// <param name="historyMaxSize"></param>
+        /// <param name="minSpread"></param>
         /// <param name="baseAssets"></param>
         /// <param name="quoteAsset"></param>
-        public StartupSettings(int executionDelayInMilliseconds, int expirationTimeInSeconds, int historyMaxSize,
+        public StartupSettings(int executionDelayInMilliseconds, int expirationTimeInSeconds, int historyMaxSize, int minSpread,
             IEnumerable<string> baseAssets, string quoteAsset)
-            : base(expirationTimeInSeconds, baseAssets, quoteAsset)
+            : base(expirationTimeInSeconds, baseAssets, quoteAsset, minSpread)
         {
             ExecutionDelayInMilliseconds = executionDelayInMilliseconds;
             ExpirationTimeInSeconds = expirationTimeInSeconds;
@@ -65,6 +66,11 @@ namespace Lykke.Service.ArbitrageDetector.Core
         public string QuoteAsset { get; set; }
 
         /// <summary>
+        /// Minimum spread.
+        /// </summary>
+        public int MinSpread { get; set; }
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         public Settings()
@@ -77,11 +83,13 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// <param name="expirationTimeInSeconds"></param>
         /// <param name="baseAssets"></param>
         /// <param name="quoteAsset"></param>
-        public Settings(int expirationTimeInSeconds, IEnumerable<string> baseAssets, string quoteAsset)
+        /// <param name="minSpread"></param>
+        public Settings(int expirationTimeInSeconds, IEnumerable<string> baseAssets, string quoteAsset, int minSpread)
         {
             ExpirationTimeInSeconds = expirationTimeInSeconds;
             BaseAssets = baseAssets ?? throw new ArgumentNullException(nameof(baseAssets));
             QuoteAsset = string.IsNullOrWhiteSpace(quoteAsset) ? throw new ArgumentNullException(nameof(quoteAsset)) : quoteAsset;
+            MinSpread = minSpread;
         }
     }
 }
