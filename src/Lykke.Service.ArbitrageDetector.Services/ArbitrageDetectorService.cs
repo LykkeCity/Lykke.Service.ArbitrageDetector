@@ -443,16 +443,17 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return result;
         }
 
-        private void RestartIfNeeded()
+        private async void RestartIfNeeded()
         {
             if (_restartNeeded)
             {
                 _restartNeeded = false;
 
-                _orderBooks.Clear();
                 _crossRates.Clear();
                 _arbitrages.Clear();
                 _arbitrageHistory.Clear();
+
+                await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Restarted");
             }
         }
     }

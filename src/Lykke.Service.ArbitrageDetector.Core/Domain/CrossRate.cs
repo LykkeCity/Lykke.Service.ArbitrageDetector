@@ -76,6 +76,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             {
                 conversionPath = $"{orderBook.Source}-{orderBook.AssetPairStr}";
                 orderBookResult = orderBook;
+                originalOrderBooks.Add(orderBook);
             }
 
             // Reversed

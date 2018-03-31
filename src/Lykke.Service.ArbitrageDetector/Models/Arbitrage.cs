@@ -76,7 +76,9 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <param name="ask"></param>
         /// <param name="bidCrossRate"></param>
         /// <param name="bid"></param>
-        public Arbitrage(AssetPair assetPair, CrossRate askCrossRate, VolumePrice ask, CrossRate bidCrossRate, VolumePrice bid)
+        /// <param name="startedAt"></param>
+        /// <param name="endedAt"></param>
+        public Arbitrage(AssetPair assetPair, CrossRate askCrossRate, VolumePrice ask, CrossRate bidCrossRate, VolumePrice bid, DateTime startedAt, DateTime endedAt)
         {
             AssetPair = assetPair;
             AskCrossRate = askCrossRate ?? throw new ArgumentNullException(nameof(askCrossRate));
@@ -85,30 +87,21 @@ namespace Lykke.Service.ArbitrageDetector.Models
             Bid = bid;
             Spread = (Ask.Price - Bid.Price) / Bid.Price * 100;
             Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
-            PnL = Math.Abs(Spread * Volume);
-            StartedAt = DateTime.UtcNow;
+            PnL = (Bid.Price - Ask.Price) * Volume;
+            StartedAt = startedAt;
+            EndedAt = endedAt;
         }
 
+        /// <summary>
+        /// Constructor from domain model.
+        /// </summary>
+        /// <param name="domain"></param>
         public Arbitrage(DomainArbitrage domain)
+        : this(new AssetPair(domain.AssetPair), new CrossRate(domain.AskCrossRate), new VolumePrice(domain.Ask),
+            new CrossRate(domain.BidCrossRate), new VolumePrice(domain.Bid), domain.StartedAt, domain.EndedAt)
         {
             if (domain == null)
                 throw new ArgumentNullException(nameof(domain));
-
-            if (domain.AskCrossRate == null)
-                throw new ArgumentNullException(nameof(domain.AskCrossRate));
-
-            if (domain.BidCrossRate == null)
-                throw new ArgumentNullException(nameof(domain.BidCrossRate));
-
-            AssetPair = new AssetPair(domain.AssetPair);
-            AskCrossRate = new CrossRate(domain.AskCrossRate); 
-            BidCrossRate = new CrossRate(domain.BidCrossRate);
-            Ask = new VolumePrice(domain.Ask);
-            Bid = new VolumePrice(domain.Bid);
-            Spread = (Ask.Price - Bid.Price) / Bid.Price * 100;
-            Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
-            PnL = Math.Abs(Spread * Volume);
-            StartedAt = DateTime.UtcNow;
         }
 
         /// <summary>

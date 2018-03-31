@@ -28,11 +28,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public AssetPair AssetPair { get; set; }
 
         /// <summary>
-        /// Timestamp.
-        /// </summary>
-        public DateTime Timestamp { get; protected set; }
-
-        /// <summary>
         /// Asking prices and volumes.
         /// </summary>
         public IReadOnlyCollection<VolumePrice> Asks { get; }
@@ -51,6 +46,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// Best bid.
         /// </summary>
         public VolumePrice? BestBid { get; }
+
+        /// <summary>
+        /// Timestamp.
+        /// </summary>
+        public DateTime Timestamp { get; protected set; }
 
         /// <summary>
         /// Constructor.
@@ -89,8 +89,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <returns></returns>
         public OrderBook Reverse()
         {
-            var inversedAssetPair = AssetPair.Quote + AssetPair.Base;
-            var result = new OrderBook(Source, inversedAssetPair,
+            var result = new OrderBook(Source, AssetPair.Quote + AssetPair.Base,
                 Bids.Select(x => new VolumePrice(1 / x.Price, x.Volume)).OrderByDescending(x => x.Price).ToList(),
                 Asks.Select(x => new VolumePrice(1 / x.Price, x.Volume)).OrderByDescending(x => x.Price).ToList(),
                 Timestamp);

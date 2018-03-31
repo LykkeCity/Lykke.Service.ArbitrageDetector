@@ -84,7 +84,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             Bid = bid;
             Spread = (Ask.Price - Bid.Price) / Bid.Price * 100;
             Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
-            PnL = Math.Abs(Spread * Volume);
+            PnL = (Bid.Price - Ask.Price) * Volume;
             StartedAt = DateTime.UtcNow;
         }
 

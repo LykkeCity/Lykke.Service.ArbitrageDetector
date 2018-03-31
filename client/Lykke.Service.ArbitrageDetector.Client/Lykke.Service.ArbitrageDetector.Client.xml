@@ -101,7 +101,7 @@
             Conversion path.
             </summary>
         </member>
-        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.#ctor(Lykke.Service.ArbitrageDetector.Client.Models.AssetPair,Lykke.Service.ArbitrageDetector.Client.Models.CrossRate,Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice,Lykke.Service.ArbitrageDetector.Client.Models.CrossRate,Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice)">
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.#ctor(Lykke.Service.ArbitrageDetector.Client.Models.AssetPair,Lykke.Service.ArbitrageDetector.Client.Models.CrossRate,Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice,Lykke.Service.ArbitrageDetector.Client.Models.CrossRate,Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice,System.DateTime,System.DateTime)">
             <summary>
             Constructor.
             </summary>
@@ -382,11 +382,6 @@
             Asset pair.
             </summary>
         </member>
-        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.Timestamp">
-            <summary>
-            Timestamp.
-            </summary>
-        </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.Asks">
             <summary>
             Asking prices and volumes.
@@ -395,6 +390,21 @@
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.Bids">
             <summary>
             Bidding prices and volumes.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.BestAsk">
+            <summary>
+            Best ask.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.BestBid">
+            <summary>
+            Best bid.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.Timestamp">
+            <summary>
+            Timestamp.
             </summary>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.#ctor(System.String,Lykke.Service.ArbitrageDetector.Client.Models.AssetPair,System.Collections.Generic.IReadOnlyCollection{Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice},System.Collections.Generic.IReadOnlyCollection{Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice},System.DateTime)">

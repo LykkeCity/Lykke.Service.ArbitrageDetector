@@ -75,7 +75,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <param name="ask"></param>
         /// <param name="bidCrossRate"></param>
         /// <param name="bid"></param>
-        public Arbitrage(AssetPair assetPair, CrossRate askCrossRate, VolumePrice ask, CrossRate bidCrossRate, VolumePrice bid)
+        public Arbitrage(AssetPair assetPair, CrossRate askCrossRate, VolumePrice ask, CrossRate bidCrossRate, VolumePrice bid, DateTime startedAt, DateTime endedAt)
         {
             AssetPair = assetPair;
             AskCrossRate = askCrossRate ?? throw new ArgumentNullException(nameof(askCrossRate));
@@ -84,8 +84,9 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             Bid = bid;
             Spread = (Ask.Price - Bid.Price) / Bid.Price * 100;
             Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
-            PnL = Math.Abs(Spread * Volume);
-            StartedAt = DateTime.UtcNow;
+            PnL = (Bid.Price - Ask.Price) * Volume;
+            StartedAt = startedAt;
+            EndedAt = endedAt;
         }
 
         /// <summary>

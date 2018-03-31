@@ -22,11 +22,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public AssetPair AssetPair { get; set; }
 
         /// <summary>
-        /// Timestamp.
-        /// </summary>
-        public DateTime Timestamp { get; protected set; }
-
-        /// <summary>
         /// Asking prices and volumes.
         /// </summary>
         public IReadOnlyCollection<VolumePrice> Asks { get; }
@@ -45,6 +40,11 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// Best bid.
         /// </summary>
         public VolumePrice? BestBid { get; }
+
+        /// <summary>
+        /// Timestamp.
+        /// </summary>
+        public DateTime Timestamp { get; protected set; }
 
         /// <summary>
         /// Constructor.
