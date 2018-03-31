@@ -13,24 +13,24 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public string Base { get; }
 
         /// <summary>
-        /// Quoting asset.
+        /// Quote asset.
         /// </summary>
-        public string Quoting { get; }
+        public string Quote { get; }
 
         /// <summary>
         /// Name of the asset pair.
         /// </summary>
-        public string Name => Base + Quoting;
+        public string Name => Base + Quote;
 
         /// <summary>
         /// Contructor.
         /// </summary>
         /// <param name="base"></param>
-        /// <param name="quoting"></param>
-        public AssetPair(string @base, string quoting)
+        /// <param name="quote"></param>
+        public AssetPair(string @base, string quote)
         {
             Base = string.IsNullOrWhiteSpace(@base) ? throw new ArgumentException(nameof(@base)) : @base;
-            Quoting = string.IsNullOrWhiteSpace(quoting) ? throw new ArgumentException(nameof(quoting)) : quoting;
+            Quote = string.IsNullOrWhiteSpace(quote) ? throw new ArgumentException(nameof(quote)) : quote;
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         {
             Validate();
 
-            return new AssetPair(Quoting, Base);
+            return new AssetPair(Quote, Base);
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             if (assetPair.IsEmpty())
                 throw new ArgumentException($"{nameof(assetPair)} is not filled properly.");
 
-            return Base == assetPair.Quoting && Quoting == assetPair.Base;
+            return Base == assetPair.Quote && Quote == assetPair.Base;
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             if (other.IsEmpty())
                 throw new ArgumentException($"{nameof(other)} is not filled properly.");
 
-            return Base == other.Base && Quoting == other.Quoting;
+            return Base == other.Base && Quote == other.Quote;
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             if (other.IsEmpty())
                 throw new ArgumentException($"{nameof(other)} is not filled properly.");
 
-            return Base == other.Base || Base == other.Quoting || Quoting == other.Base || Quoting == other.Quoting;
+            return Base == other.Base || Base == other.Quote || Quote == other.Base || Quote == other.Quote;
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             if (string.IsNullOrWhiteSpace(asset))
                 throw new ArgumentException(nameof(asset));
 
-            return Base == asset || Quoting == asset;
+            return Base == asset || Quote == asset;
         }
 
         public static AssetPair FromString(string assetPair, string oneOfTheAssets)
@@ -136,9 +136,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             var otherAsset = assetPair.ToUpper().Trim().Replace(oneOfTheAssets, string.Empty);
 
             var baseAsset = assetPair.StartsWith(oneOfTheAssets) ? oneOfTheAssets : otherAsset;
-            var quotingAsset = assetPair.Replace(baseAsset, string.Empty);
+            var quoteAsset = assetPair.Replace(baseAsset, string.Empty);
 
-            var result = new AssetPair(baseAsset, quotingAsset);
+            var result = new AssetPair(baseAsset, quoteAsset);
 
             return result;
         }
@@ -149,7 +149,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <returns></returns>
         public bool IsEmpty()
         {
-            return string.IsNullOrWhiteSpace(Base) || string.IsNullOrWhiteSpace(Quoting);
+            return string.IsNullOrWhiteSpace(Base) || string.IsNullOrWhiteSpace(Quote);
         }
 
         public override string ToString()
@@ -167,8 +167,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             if (string.IsNullOrWhiteSpace(Base))
                 throw new ArgumentException(nameof(Base));
 
-            if (string.IsNullOrWhiteSpace(Quoting))
-                throw new ArgumentException(nameof(Quoting));
+            if (string.IsNullOrWhiteSpace(Quote))
+                throw new ArgumentException(nameof(Quote));
         }
     }
 }

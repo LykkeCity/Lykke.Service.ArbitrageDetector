@@ -9,39 +9,24 @@ namespace Lykke.Service.ArbitrageDetector.Models
     public sealed class Arbitrage
     {
         /// <summary>
-        /// Identifier.
-        /// </summary>
-        public Guid Id { get; }
-
-        /// <summary>
-        /// AssetPair.
+        /// Asset pair.
         /// </summary>
         public AssetPair AssetPair { get; }
 
         /// <summary>
-        /// Ask exchange name.
+        /// Cross rete with low ask.
         /// </summary>
-        public string AskSource { get; }
-
-        /// <summary>
-        /// Bid exchange name.
-        /// </summary>
-        public string BidSource { get; }
-
-        /// <summary>
-        /// Conversion path from ask.
-        /// </summary>
-        public string AskConversionPath { get; }
-
-        /// <summary>
-        /// Conversion path from bid.
-        /// </summary>
-        public string BidConversionPath { get; }
+        public CrossRate AskCrossRate { get; }
 
         /// <summary>
         /// Price and volume of low ask.
         /// </summary>
         public VolumePrice Ask { get; }
+
+        /// <summary>
+        /// Cross rete with high bid.
+        /// </summary>
+        public CrossRate BidCrossRate { get; }
 
         /// <summary>
         /// Price and volume of high bid.
@@ -81,60 +66,49 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Conversion path.
         /// </summary>
-        public string ConversionPath => $"({AskConversionPath}) * ({BidConversionPath})";
+        public string ConversionPath => $"({AskCrossRate.ConversionPath}) * ({BidCrossRate.ConversionPath})";
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="id"></param>
         /// <param name="assetPair"></param>
-        /// <param name="askSource"></param>
-        /// <param name="bidSource"></param>
-        /// <param name="askConversionPath"></param>
-        /// <param name="bidConversionPath"></param>
+        /// <param name="askCrossRate"></param>
         /// <param name="ask"></param>
+        /// <param name="bidCrossRate"></param>
         /// <param name="bid"></param>
-        /// <param name="spread"></param>
-        /// <param name="volume"></param>
-        /// <param name="pnL"></param>
-        /// <param name="startedAt"></param>
-        /// <param name="endedAt"></param>
-        public Arbitrage(Guid id, AssetPair assetPair, string askSource, string bidSource, string askConversionPath, string bidConversionPath, VolumePrice ask, VolumePrice bid,
-            decimal spread, decimal volume, decimal pnL, DateTime startedAt, DateTime endedAt)
+        public Arbitrage(AssetPair assetPair, CrossRate askCrossRate, VolumePrice ask, CrossRate bidCrossRate, VolumePrice bid)
         {
             AssetPair = assetPair;
-            AskSource = string.IsNullOrWhiteSpace(askSource) ? throw new ArgumentNullException(nameof(askSource)) : askSource;
-            BidSource = string.IsNullOrWhiteSpace(bidSource) ? throw new ArgumentNullException(nameof(bidSource)) : bidSource;
-            AskConversionPath = string.IsNullOrWhiteSpace(askConversionPath) ? throw new ArgumentNullException(nameof(askConversionPath)) : askConversionPath;
-            BidConversionPath = string.IsNullOrWhiteSpace(bidConversionPath) ? throw new ArgumentNullException(nameof(bidConversionPath)) : bidConversionPath;
+            AskCrossRate = askCrossRate ?? throw new ArgumentNullException(nameof(askCrossRate));
+            BidCrossRate = bidCrossRate ?? throw new ArgumentNullException(nameof(bidCrossRate));
             Ask = ask;
             Bid = bid;
-            Spread = spread;
-            Volume = volume;
-            PnL = pnL;
-            StartedAt = startedAt;
-            EndedAt = endedAt;
+            Spread = (Ask.Price - Bid.Price) / Bid.Price * 100;
+            Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
+            PnL = Math.Abs(Spread * Volume);
+            StartedAt = DateTime.UtcNow;
         }
 
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="domain"></param>
         public Arbitrage(DomainArbitrage domain)
         {
-            Id = domain.Id;
+            if (domain == null)
+                throw new ArgumentNullException(nameof(domain));
+
+            if (domain.AskCrossRate == null)
+                throw new ArgumentNullException(nameof(domain.AskCrossRate));
+
+            if (domain.BidCrossRate == null)
+                throw new ArgumentNullException(nameof(domain.BidCrossRate));
+
             AssetPair = new AssetPair(domain.AssetPair);
-            AskSource = domain.AskCrossRate.Source;
-            BidSource = domain.BidCrossRate.Source;
-            AskConversionPath = domain.AskCrossRate.ConversionPath;
-            BidConversionPath = domain.BidCrossRate.ConversionPath;
+            AskCrossRate = new CrossRate(domain.AskCrossRate); 
+            BidCrossRate = new CrossRate(domain.BidCrossRate);
             Ask = new VolumePrice(domain.Ask);
             Bid = new VolumePrice(domain.Bid);
-            Spread = domain.Spread;
-            Volume = domain.Volume;
-            PnL = domain.PnL;
-            StartedAt = domain.StartedAt;
-            EndedAt = domain.EndedAt;
+            Spread = (Ask.Price - Bid.Price) / Bid.Price * 100;
+            Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
+            PnL = Math.Abs(Spread * Volume);
+            StartedAt = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -145,34 +119,5 @@ namespace Lykke.Service.ArbitrageDetector.Models
         {
             return $"{AssetPair}-{ConversionPath}-{Ask.Price}-{Ask.Volume}-{Bid.Price}-{Bid.Volume}";
         }
-
-        #region Equals and GetHashCode
-
-        private bool Equals(Arbitrage other)
-        {
-            return ConversionPath.Equals(other.ConversionPath) &&
-                   Ask.Equals(other.Ask) &&
-                   Bid.Equals(other.Bid);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            return obj is Arbitrage && Equals((Arbitrage)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hashCode = ConversionPath.GetHashCode();
-                hashCode = (hashCode * 397) ^ Ask.GetHashCode();
-                hashCode = (hashCode * 397) ^ Bid.GetHashCode();
-                return hashCode;
-            }
-        }
-
-        #endregion
     }
 }

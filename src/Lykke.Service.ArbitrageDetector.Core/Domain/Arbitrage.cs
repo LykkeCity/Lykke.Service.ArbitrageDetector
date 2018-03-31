@@ -8,11 +8,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
     public sealed class Arbitrage
     {
         /// <summary>
-        /// Identifier.
-        /// </summary>
-        public Guid Id { get; }
-
-        /// <summary>
         /// Asset pair.
         /// </summary>
         public AssetPair AssetPair { get; }
@@ -91,41 +86,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
             PnL = Math.Abs(Spread * Volume);
             StartedAt = DateTime.UtcNow;
-            Id = Guid.NewGuid();
         }
 
         public override string ToString()
         {
             return $"{AssetPair}-{ConversionPath}-{Ask.Price}-{Ask.Volume}-{Bid.Price}-{Bid.Volume}";
         }
-
-        #region Equals and GetHashCode
-
-        private bool Equals(Arbitrage other)
-        {
-            return ConversionPath.Equals(other.ConversionPath) &&
-                   Ask.Equals(other.Ask) &&
-                   Bid.Equals(other.Bid);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            return obj is Arbitrage && Equals((Arbitrage)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hashCode = ConversionPath.GetHashCode();
-                hashCode = (hashCode * 397) ^ Ask.GetHashCode();
-                hashCode = (hashCode * 397) ^ Bid.GetHashCode();
-                return hashCode;
-            }
-        }
-
-        #endregion
     }
 }

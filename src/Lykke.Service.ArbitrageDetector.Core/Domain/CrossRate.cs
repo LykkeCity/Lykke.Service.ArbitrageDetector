@@ -28,21 +28,21 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <param name="conversionPath"></param>
         /// <param name="originalOrderBooks"></param>
         /// <param name="timestamp"></param>
-        public CrossRate(string source, AssetPair assetPair, IReadOnlyCollection<VolumePrice> asks, IReadOnlyCollection<VolumePrice> bids,
+        public CrossRate(string source, AssetPair assetPair,
+            IReadOnlyCollection<VolumePrice> asks, IReadOnlyCollection<VolumePrice> bids,
             string conversionPath, IList<OrderBook> originalOrderBooks, DateTime timestamp)
-            : base(source, assetPair.Base + assetPair.Quoting, asks, bids, DateTime.MinValue)
+            : base(source, assetPair.Name, asks, bids, timestamp)
         {
             if (assetPair.IsEmpty())
-                throw new ArgumentOutOfRangeException($"{nameof(assetPair)}. Base: {assetPair.Base}, Quoting: {assetPair.Quoting}.");
+                throw new ArgumentOutOfRangeException($"{nameof(assetPair)}. Base: {assetPair.Base}, Quote: {assetPair.Quote}.");
 
             AssetPair = assetPair;
 
             ConversionPath = string.IsNullOrEmpty(conversionPath)
                 ? throw new ArgumentException(nameof(conversionPath))
                 : conversionPath;
-            OriginalOrderBooks = originalOrderBooks ?? throw new ArgumentNullException(nameof(originalOrderBooks));
 
-            Timestamp = timestamp;
+            OriginalOrderBooks = originalOrderBooks ?? throw new ArgumentNullException(nameof(originalOrderBooks));
         }
 
         /// <summary>
@@ -59,8 +59,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             if (string.IsNullOrWhiteSpace(targetAssetPair.Base))
                 throw new ArgumentException(nameof(targetAssetPair.Base));
 
-            if (string.IsNullOrWhiteSpace(targetAssetPair.Quoting))
-                throw new ArgumentException(nameof(targetAssetPair.Quoting));
+            if (string.IsNullOrWhiteSpace(targetAssetPair.Quote))
+                throw new ArgumentException(nameof(targetAssetPair.Quote));
 
             if (orderBook.AssetPair.IsEmpty())
                 throw new ArgumentException(nameof(orderBook.AssetPair));
@@ -72,20 +72,23 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             OrderBook orderBookResult = null;
             string conversionPath = null;
             // Streight
-            if (orderBook.AssetPair.Base == targetAssetPair.Base && orderBook.AssetPair.Quoting == targetAssetPair.Quoting)
+            if (orderBook.AssetPair.Base == targetAssetPair.Base && orderBook.AssetPair.Quote == targetAssetPair.Quote)
             {
                 conversionPath = $"{orderBook.Source}-{orderBook.AssetPairStr}";
                 orderBookResult = orderBook;
             }
 
             // Reversed
-            if (orderBook.AssetPair.Base == targetAssetPair.Quoting && orderBook.AssetPair.Quoting == targetAssetPair.Base)
+            if (orderBook.AssetPair.Base == targetAssetPair.Quote && orderBook.AssetPair.Quote == targetAssetPair.Base)
             {
                 conversionPath = $"{orderBook.Source}-{orderBook.AssetPairStr}";
                 orderBookResult = orderBook.Reverse();
                 originalOrderBooks.Add(orderBook);
             }
             
+            if (orderBookResult == null)
+                throw new InvalidOperationException("AssetPairs must be the same or reversed)");
+
             var result = new CrossRate(orderBookResult.Source, targetAssetPair, orderBookResult.Asks, orderBookResult.Bids, conversionPath, originalOrderBooks, orderBook.Timestamp);
 
             return result;
@@ -111,8 +114,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             if (string.IsNullOrWhiteSpace(targetAssetPair.Base))
                 throw new ArgumentException(nameof(targetAssetPair.Base));
 
-            if (string.IsNullOrWhiteSpace(targetAssetPair.Quoting))
-                throw new ArgumentException(nameof(targetAssetPair.Quoting));
+            if (string.IsNullOrWhiteSpace(targetAssetPair.Quote))
+                throw new ArgumentException(nameof(targetAssetPair.Quote));
 
             if (!targetAssetPair.HasCommonAsset(one.AssetPair))
                 throw new ArgumentOutOfRangeException($"{nameof(one)} and {nameof(targetAssetPair)} don't have common asset pair.");
@@ -135,25 +138,25 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             if (targetAssetPair.Base == one.AssetPair.Base)
                 left = one;
 
-            if (targetAssetPair.Base == one.AssetPair.Quoting)
+            if (targetAssetPair.Base == one.AssetPair.Quote)
                 left = one.Reverse();
 
             if (targetAssetPair.Base == another.AssetPair.Base)
                 left = another;
 
-            if (targetAssetPair.Base == another.AssetPair.Quoting)
+            if (targetAssetPair.Base == another.AssetPair.Quote)
                 left = another.Reverse();
 
-            if (targetAssetPair.Quoting == one.AssetPair.Base)
+            if (targetAssetPair.Quote == one.AssetPair.Base)
                 right = one.Reverse();
 
-            if (targetAssetPair.Quoting == one.AssetPair.Quoting)
+            if (targetAssetPair.Quote == one.AssetPair.Quote)
                 right = one;
 
-            if (targetAssetPair.Quoting == another.AssetPair.Base)
+            if (targetAssetPair.Quote == another.AssetPair.Base)
                 right = another.Reverse();
 
-            if (targetAssetPair.Quoting == another.AssetPair.Quoting)
+            if (targetAssetPair.Quote == another.AssetPair.Quote)
                 right = another;
 
             #region Checking left and right
@@ -165,8 +168,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 throw new InvalidOperationException($"{nameof(right)}: {nameof(right)}");
 
             if (left.AssetPair.Base != targetAssetPair.Base
-                || right.AssetPair.Quoting != targetAssetPair.Quoting
-                || left.AssetPair.Quoting != right.AssetPair.Base)
+                || right.AssetPair.Quote != targetAssetPair.Quote
+                || left.AssetPair.Quote != right.AssetPair.Base)
                 throw new InvalidOperationException($"{nameof(left)} and {nameof(right)} don't correspond to {nameof(targetAssetPair)}");
 
             #endregion

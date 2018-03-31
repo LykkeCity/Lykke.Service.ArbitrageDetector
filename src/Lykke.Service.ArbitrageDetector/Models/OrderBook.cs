@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MoreLinq;
 using DomainOrderBook = Lykke.Service.ArbitrageDetector.Core.Domain.OrderBook;
 
 namespace Lykke.Service.ArbitrageDetector.Models
@@ -36,6 +37,16 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public IReadOnlyCollection<VolumePrice> Bids { get; }
 
         /// <summary>
+        /// Best ask.
+        /// </summary>
+        public VolumePrice? BestAsk { get; }
+
+        /// <summary>
+        /// Best bid.
+        /// </summary>
+        public VolumePrice? BestBid { get; }
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="source"></param>
@@ -43,13 +54,15 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <param name="timestamp"></param>
         /// <param name="asks"></param>
         /// <param name="bids"></param>
-        public OrderBook(string source, AssetPair assetPair, DateTime timestamp, IReadOnlyCollection<VolumePrice> asks, IReadOnlyCollection<VolumePrice> bids)
+        public OrderBook(string source, AssetPair assetPair, IReadOnlyCollection<VolumePrice> asks, IReadOnlyCollection<VolumePrice> bids, DateTime timestamp)
         {
             Source = string.IsNullOrWhiteSpace(source) ? throw new ArgumentNullException(nameof(source)) : source;
             AssetPair = assetPair;
-            Timestamp = timestamp;
             Asks = asks ?? throw new ArgumentNullException(nameof(asks));
             Bids = bids ?? throw new ArgumentNullException(nameof(bids));
+            BestAsk = Asks.Any() ? Asks.MinBy(x => x.Price) : (VolumePrice?)null;
+            BestBid = Bids.Any() ? Bids.MaxBy(x => x.Price) : (VolumePrice?)null;
+            Timestamp = timestamp;
         }
 
         /// <summary>
@@ -57,12 +70,9 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// </summary>
         /// <param name="domain"></param>
         public OrderBook(DomainOrderBook domain)
+            : this(domain.Source, new AssetPair(domain.AssetPair),
+                domain.Asks.Select(x => new VolumePrice(x)).ToList(), domain.Bids.Select(x => new VolumePrice(x)).ToList(), domain.Timestamp)
         {
-            Source = domain.Source;
-            AssetPair = new AssetPair(domain.AssetPair);
-            Timestamp = domain.Timestamp;
-            Asks = domain.Asks.Select(x => new VolumePrice(x)).ToList();
-            Bids = domain.Bids.Select(x => new VolumePrice(x)).ToList();
         }
     }
 }

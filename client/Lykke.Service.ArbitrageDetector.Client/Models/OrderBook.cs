@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using MoreLinq;
 
 namespace Lykke.Service.ArbitrageDetector.Client.Models
 {
@@ -34,20 +36,32 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public IReadOnlyCollection<VolumePrice> Bids { get; }
 
         /// <summary>
+        /// Best ask.
+        /// </summary>
+        public VolumePrice? BestAsk { get; }
+
+        /// <summary>
+        /// Best bid.
+        /// </summary>
+        public VolumePrice? BestBid { get; }
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="source"></param>
         /// <param name="assetPair"></param>
-        /// <param name="timestamp"></param>
         /// <param name="asks"></param>
         /// <param name="bids"></param>
-        public OrderBook(string source, AssetPair assetPair, DateTime timestamp, IReadOnlyCollection<VolumePrice> asks, IReadOnlyCollection<VolumePrice> bids)
+        /// <param name="timestamp"></param>
+        public OrderBook(string source, AssetPair assetPair, IReadOnlyCollection<VolumePrice> asks, IReadOnlyCollection<VolumePrice> bids, DateTime timestamp)
         {
             Source = string.IsNullOrWhiteSpace(source) ? throw new ArgumentNullException(nameof(source)) : source;
             AssetPair = assetPair;
-            Timestamp = timestamp;
             Asks = asks ?? throw new ArgumentNullException(nameof(asks));
             Bids = bids ?? throw new ArgumentNullException(nameof(bids));
+            BestAsk = Asks.Any() ? Asks.MinBy(x => x.Price) : (VolumePrice?)null;
+            BestBid = Bids.Any() ? Bids.MaxBy(x => x.Price) : (VolumePrice?)null;
+            Timestamp = timestamp;
         }
     }
 }

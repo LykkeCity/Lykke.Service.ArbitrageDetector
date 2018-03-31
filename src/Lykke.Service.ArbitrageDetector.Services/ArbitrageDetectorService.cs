@@ -96,9 +96,14 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 .ToList();
         }
 
-        public Arbitrage GetArbitrage(Guid id)
+        public Arbitrage GetArbitrage(string conversionPath)
         {
-            return _arbitrageHistory.FirstOrDefault(x => x.Value.Id == id).Value;
+            if (string.IsNullOrWhiteSpace(conversionPath))
+                throw new ArgumentNullException(nameof(conversionPath));
+
+            var bestArbitrage = _arbitrageHistory.FirstOrDefault(x => string.Equals(x.Value.ConversionPath, conversionPath, StringComparison.CurrentCultureIgnoreCase));
+
+            return bestArbitrage.Value;
         }
 
         public IEnumerable<Arbitrage> GetArbitrageHistory(DateTime since, int take)
@@ -213,7 +218,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                     // Get intermediate currency
                     var intermediateCurrency = wantedIntermediateAssetPair.Base == wantedCurrency
-                        ? wantedIntermediateAssetPair.Quoting
+                        ? wantedIntermediateAssetPair.Quote
                         : wantedIntermediateAssetPair.Base;
 
                     // If original wanted/base or base/wanted pair then just save it
@@ -302,7 +307,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             if (bidLine.BidPrice != 0)
                             {
                                 var key = "(" + askLine.CrossRate.ConversionPath + ") * (" + bidLine.CrossRate.ConversionPath + ")";
-
                                 if (newArbitrages.TryGetValue(key, out var existed))
                                 {
                                     var spread = (askLine.Price - bidLine.Price) / bidLine.Price * 100;

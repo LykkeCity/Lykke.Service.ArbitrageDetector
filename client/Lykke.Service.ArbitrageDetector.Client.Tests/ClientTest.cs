@@ -14,7 +14,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         [Fact]
         public async Task OrderBooksTest()
         {
-            var orderBooks = await Client.OrderBooksAsync(string.Empty, string.Empty);
+            var orderBooks = (await Client.OrderBooksAsync(string.Empty, string.Empty)).ToList();
 
             Assert.NotNull(orderBooks);
             Assert.NotEmpty(orderBooks);
@@ -30,7 +30,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         [Fact]
         public async Task OrderBooksFilterExchangeTest()
         {
-            var orderBooks = await Client.OrderBooksAsync("lykke", string.Empty);
+            var orderBooks = (await Client.OrderBooksAsync("lykke", string.Empty)).ToList();
 
             Assert.NotNull(orderBooks);
             Assert.NotEmpty(orderBooks);
@@ -46,7 +46,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         [Fact]
         public async Task OrderBooksFilterInstrumentTest()
         {
-            var orderBooks = await Client.OrderBooksAsync(string.Empty, "USD");
+            var orderBooks = (await Client.OrderBooksAsync(string.Empty, "USD")).ToList();
 
             Assert.NotNull(orderBooks);
             Assert.NotEmpty(orderBooks);
@@ -62,7 +62,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         [Fact]
         public async Task CrossRatesTest()
         {
-            var crossRates = await Client.CrossRatesAsync();
+            var crossRates = (await Client.CrossRatesAsync()).ToList();
 
             Assert.NotNull(crossRates);
             Assert.NotEmpty(crossRates);
@@ -80,6 +80,18 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         {
             var arbitrages = await Client.ArbitragesAsync();
             Assert.NotNull(arbitrages);
+        }
+
+        [Fact]
+        public async Task ArbitrageTest()
+        {
+            var arbitrages = (await Client.ArbitrageHistoryAsync(DateTime.MinValue, 100)).ToList();
+            Assert.NotEmpty(arbitrages);
+
+            var conversionPath = arbitrages.First().ConversionPath;
+            var arbitrage = await Client.ArbitrageAsync(conversionPath);
+            Assert.NotNull(arbitrage);
+            Assert.Equal(conversionPath, arbitrage.ConversionPath);
         }
 
         [Fact]

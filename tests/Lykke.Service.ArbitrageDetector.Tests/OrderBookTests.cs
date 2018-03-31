@@ -59,10 +59,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 timestamp);
 
             Assert.Null(orderBook.AssetPair.Base);
-            Assert.Null(orderBook.AssetPair.Quoting);
+            Assert.Null(orderBook.AssetPair.Quote);
             orderBook.SetAssetPair("USD");
             Assert.Equal("BTC", orderBook.AssetPair.Base);
-            Assert.Equal("USD", orderBook.AssetPair.Quoting);
+            Assert.Equal("USD", orderBook.AssetPair.Quote);
             Assert.Equal(assetPair, orderBook.AssetPair.Name);
         }
 
