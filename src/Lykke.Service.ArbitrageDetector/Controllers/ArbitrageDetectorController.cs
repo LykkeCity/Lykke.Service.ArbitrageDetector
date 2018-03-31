@@ -41,7 +41,6 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             catch (Exception exception)
             {
                 await _log.WriteErrorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, exception);
-
                 return BadRequest(ErrorResponse.Create(exception.Message));
             }
 
