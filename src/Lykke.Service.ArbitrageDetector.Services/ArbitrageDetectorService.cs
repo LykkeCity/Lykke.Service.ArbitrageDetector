@@ -312,7 +312,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             watch.Stop();
             if (watch.ElapsedMilliseconds > 2000)
-                await _log.WriteInfoAsync(GetType().Name, nameof(CalculateArbitrages), $"{watch.ElapsedMilliseconds} ms for {newArbitrages.Count} arbitrages, {totalLines} lines, {totalItareations} possible arbitrages.");
+                await _log.WriteInfoAsync(GetType().Name, nameof(CalculateArbitrages), $"{watch.ElapsedMilliseconds} ms for {newArbitrages.Count} arbitrages, {actualCrossRates} actual cross rates, {totalLines} lines, {totalItareations} iterations.");
 
             return newArbitrages;
         }
