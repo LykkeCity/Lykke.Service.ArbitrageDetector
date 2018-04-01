@@ -322,7 +322,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var watch = Stopwatch.StartNew();
 
             var newArbitrages = await CalculateArbitrages(); // One per conversion path (with best PnL)
-            
+            var calculateArbitragesMs = watch.ElapsedMilliseconds;
+
             var removed = 0;
             // Remove every ended arbitrage and move it to the history
             foreach (var oldArbitrage in _arbitrages)
@@ -362,7 +363,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             CleanHistory();
 
             watch.Stop();
-            if (watch.ElapsedMilliseconds > 2000)
+            if (watch.ElapsedMilliseconds - calculateArbitragesMs > 100)
                 await _log.WriteInfoAsync(GetType().Name, nameof(RefreshArbitrages), $"{watch.ElapsedMilliseconds} ms for new {newArbitrages.Count} arbitrages, {removed} removed, {added} added, {beforeCleaning - _arbitrageHistory.Count} cleaned, {_arbitrages.Count} active, {_arbitrageHistory.Count} in history.");
         }
 
