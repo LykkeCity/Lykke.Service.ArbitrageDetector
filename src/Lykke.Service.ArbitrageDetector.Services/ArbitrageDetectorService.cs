@@ -362,7 +362,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             CleanHistory();
 
             watch.Stop();
-            if (watch.ElapsedMilliseconds > 1000)
+            if (watch.ElapsedMilliseconds > 2000)
                 await _log.WriteInfoAsync(GetType().Name, nameof(RefreshArbitrages), $"{watch.ElapsedMilliseconds} ms for new {newArbitrages.Count} arbitrages, {removed} removed, {added} added, {beforeCleaning - _arbitrageHistory.Count} cleaned, {_arbitrages.Count} active, {_arbitrageHistory.Count} in history.");
         }
 
