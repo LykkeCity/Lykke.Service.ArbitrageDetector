@@ -294,7 +294,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var key = arbitrage.ToString();
                         if (newArbitrages.TryGetValue(key, out var existed))
                         {
-                            if (_minSpread < 0 && arbitrage.Spread < _minSpread)
+                            if (_minSpread >= 0 || arbitrage.Spread < _minSpread)
                                 continue;
 
                             if (arbitrage.PnL <= existed.PnL)
