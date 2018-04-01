@@ -252,7 +252,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             watch.Stop();
             if (watch.ElapsedMilliseconds > 1000)
-                await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{watch.ElapsedMilliseconds} ms for {_crossRates.Count} cross rates, {actualOrderBooks.Count} order books.");
+                await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{MethodBase.GetCurrentMethod().Name} : {watch.ElapsedMilliseconds} ms for {_crossRates.Count} cross rates, {actualOrderBooks.Count} order books.");
 
             return _crossRates.Select(x => x.Value).ToList().AsReadOnly();
         }
@@ -351,7 +351,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             watch.Stop();
             if (watch.ElapsedMilliseconds > 2000)
-                await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{watch.ElapsedMilliseconds} ms for {newArbitrages.Count} arbitrages, {totalLines} lines, {totalItareations} possible arbitrages.");
+                await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{MethodBase.GetCurrentMethod().Name} : {watch.ElapsedMilliseconds} ms for {newArbitrages.Count} arbitrages, {totalLines} lines, {totalItareations} possible arbitrages.");
 
             return newArbitrages;
         }
@@ -402,7 +402,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             watch.Stop();
             if (watch.ElapsedMilliseconds > 1000)
-                await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{watch.ElapsedMilliseconds} ms for new {newArbitrages.Count} arbitrages, {removed} removed, {added} added, {beforeCleaning - _arbitrageHistory.Count} cleaned, {_arbitrages.Count} active, {_arbitrageHistory.Count} in history.");
+                await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{MethodBase.GetCurrentMethod().Name} : {watch.ElapsedMilliseconds} ms for new {newArbitrages.Count} arbitrages, {removed} removed, {added} added, {beforeCleaning - _arbitrageHistory.Count} cleaned, {_arbitrages.Count} active, {_arbitrageHistory.Count} in history.");
         }
 
         
