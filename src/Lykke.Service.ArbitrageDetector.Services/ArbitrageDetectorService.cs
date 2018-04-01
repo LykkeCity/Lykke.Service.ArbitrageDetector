@@ -370,6 +370,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         private void CleanHistory()
         {
+            // TODO: can be improved.
             var remained = new ConcurrentDictionary<string, Arbitrage>();
 
             // Get distinct paths and for each path remain only %_historyMaxSize% of the best
@@ -389,6 +390,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             // TODO: can be improved.
             var lines = new List<ArbitrageLine>();
+
+            // If no asks or bids then return empty list
+            if (!crossRates.SelectMany(x => x.Asks).Any() || !crossRates.SelectMany(x => x.Bids).Any())
+                return lines;
 
             // 1. Calculate minAsk and maxBid
             var minAsk = crossRates.SelectMany(x => x.Asks).Min(x => x.Price);
