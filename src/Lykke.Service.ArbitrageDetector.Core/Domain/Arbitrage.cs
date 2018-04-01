@@ -65,7 +65,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Conversion path.
         /// </summary>
-        public string ConversionPath => $"({AskCrossRate.ConversionPath}) * ({BidCrossRate.ConversionPath})";
+        public string ConversionPath { get; }
 
         /// <summary>
         /// Constructor.
@@ -85,12 +85,13 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             Spread = (Ask.Price - Bid.Price) / Bid.Price * 100;
             Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
             PnL = (Bid.Price - Ask.Price) * Volume;
+            ConversionPath = "(" + AskCrossRate.ConversionPath + ") * (" + BidCrossRate.ConversionPath + ")";
             StartedAt = DateTime.UtcNow;
         }
 
         public override string ToString()
         {
-            return $"{AssetPair}-{ConversionPath}-{Ask.Price}-{Ask.Volume}-{Bid.Price}-{Bid.Volume}";
+            return ConversionPath;
         }
     }
 }

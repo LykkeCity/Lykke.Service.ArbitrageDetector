@@ -21,7 +21,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ConcurrentDictionary<AssetPairSource, OrderBook> _orderBooks;
         private readonly ConcurrentDictionary<AssetPairSource, CrossRate> _crossRates;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrages;
-        private readonly ConcurrentDictionary<string, Arbitrage> _arbitrageHistory;
+        private ConcurrentDictionary<string, Arbitrage> _arbitrageHistory;
         private IEnumerable<string> _baseAssets;
         private string _quoteAsset;
         private int _expirationTimeInSeconds;
@@ -296,11 +296,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return lines;
         }
 
-        public async Task<IEnumerable<Arbitrage>> CalculateArbitrages()
+        public async Task<ConcurrentDictionary<string, Arbitrage>> CalculateArbitrages()
         {
             var watch = Stopwatch.StartNew();
 
-            var newArbitrages = new SortedDictionary<string, Arbitrage>();
+            var newArbitrages = new ConcurrentDictionary<string, Arbitrage>();
             var actualCrossRates = GetActualCrossRates();
 
             var totalItareations = 0;
@@ -329,8 +329,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         if (bidLine.BidPrice == 0)
                             continue;
 
-                        var key = "(" + askLine.CrossRate.ConversionPath + ") * (" + bidLine.CrossRate.ConversionPath + ")";
                         var arbitrage = new Arbitrage(assetPair, askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
+                        var key = arbitrage.ToString();
                         if (newArbitrages.TryGetValue(key, out var existed))
                         {
                             if (_minSpread < 0 && arbitrage.Spread < _minSpread)
@@ -353,90 +353,87 @@ namespace Lykke.Service.ArbitrageDetector.Services
             if (watch.ElapsedMilliseconds > 2000)
                 await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{watch.ElapsedMilliseconds} ms for {newArbitrages.Count} arbitrages, {totalLines} lines, {totalItareations} possible arbitrages.");
 
-            return newArbitrages.Values;
+            return newArbitrages;
         }
 
         public async Task RefreshArbitrages()
         {
             var watch = Stopwatch.StartNew();
 
-            var newArbitragesList = await CalculateArbitrages(); // One per conversion path (with best PnL)
-            var newArbitrages = new ConcurrentDictionary<string, Arbitrage>();
-
-            // Form dictionary with new arbitrages
-            foreach (var newArbitrage in newArbitragesList)
-            {
-                // Key must be unique for arbitrage in order to find when it started
-                var key = newArbitrage.ConversionPath + newArbitrage.PnL;
-                newArbitrages.AddOrUpdate(key, newArbitrage); // May be two arbitrages with the same path and the same PnL
-            }
-
-            // Remove every ended arbitrage and move it to the history
+            var newArbitrages = await CalculateArbitrages(); // One per conversion path (with best PnL)
+            
             var removed = 0;
+            // Remove every ended arbitrage and move it to the history
             foreach (var oldArbitrage in _arbitrages)
             {
-                if (!newArbitrages.Keys.Contains(oldArbitrage.Key))
-                {
-                    removed++;
-                    // Remove from actual arbitrages
-                    oldArbitrage.Value.EndedAt = DateTime.UtcNow;
-                    _arbitrages.Remove(oldArbitrage.Key);
+                // If still present then do nothing
+                if (newArbitrages.Keys.Contains(oldArbitrage.Key))
+                    continue;
 
-                    // Add it to the history
-                    _arbitrageHistory.AddOrUpdate(oldArbitrage.Key, oldArbitrage.Value);
-                }
+                removed++;
+                MoveFromActualToHistory(oldArbitrage.Value);
             }
 
-            // Add only new arbitrages, don't update existed to not change the StartedAt
+            // Add new arbitrages, and replace existed if new PnL is better
             var added = 0;
             foreach (var newArbitrage in newArbitrages)
             {
-                if (!_arbitrages.Keys.Contains(newArbitrage.Key))
+                // New
+                if (!_arbitrages.TryGetValue(newArbitrage.Key, out var oldArbitrage))
                 {
                     added++;
                     _arbitrages.Add(newArbitrage.Key, newArbitrage.Value);
                 }
+                // Already existed
+                else
+                {
+                    if (newArbitrage.Value.PnL > oldArbitrage.PnL)
+                    {
+                        removed++;
+                        MoveFromActualToHistory(oldArbitrage);
+
+                        _arbitrages.Add(newArbitrage.Key, newArbitrage.Value);
+                    }
+                }
             }
 
-            // If there are too many items
             var beforeCleaning = _arbitrageHistory.Count;
             CleanHistory();
-            var afterCleaning = _arbitrageHistory.Count;
 
             watch.Stop();
             if (watch.ElapsedMilliseconds > 1000)
-                await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{watch.ElapsedMilliseconds} ms for new {newArbitrages.Count} arbitrages, {removed} removed, {added} added, {beforeCleaning-afterCleaning} cleaned, {_arbitrages.Count} active, {_arbitrageHistory.Count} in history.");
+                await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{watch.ElapsedMilliseconds} ms for new {newArbitrages.Count} arbitrages, {removed} removed, {added} added, {beforeCleaning - _arbitrageHistory.Count} cleaned, {_arbitrages.Count} active, {_arbitrageHistory.Count} in history.");
         }
 
+        
 
         private void CleanHistory()
         {
-            var arbitrageHistory = _arbitrageHistory.Values;
-            var extraCount = _arbitrageHistory.Count - _historyMaxSize;
-            if (extraCount > 0)
+            var remained = new ConcurrentDictionary<string, Arbitrage>();
+
+            // Get distinct paths and for each path remain only %_historyMaxSize% of the best
+            var uniqueAssetPairs = _arbitrageHistory.Values.Select(x => x.AssetPair).Distinct().ToList();
+            foreach (var assetPair in uniqueAssetPairs)
             {
-                // First try to delete extra arbitrages with the same conversion path
-                var uniqueConversionPaths = arbitrageHistory.Select(x => x.ConversionPath).Distinct().ToList();
-                foreach (var conversionPath in uniqueConversionPaths)
-                {
-                    var pathArbitrages = arbitrageHistory.OrderByDescending(x => x.PnL)
-                        .Where(x => x.ConversionPath == conversionPath)
-                        .Skip(1); // Leave 1 best for path
-                    foreach (var arbitrage in pathArbitrages)
-                        _arbitrageHistory.Remove(arbitrage.ToString());
-                }
+                _arbitrageHistory.Where(x => x.Value.AssetPair.Equals(assetPair))
+                    .OrderByDescending(x => x.Value.PnL)
+                    .Take(_historyMaxSize)
+                    .ForEach(x => remained.Add(x.Key, x.Value));
             }
 
-            // If didn't help then delete extra with the oldest conversion path
-            extraCount = _arbitrageHistory.Count - _historyMaxSize;
-            if (extraCount > 0)
-            {
-                var arbitrages = arbitrageHistory.Take(extraCount).ToList();
-                foreach (var arbitrage in arbitrages)
-                {
-                    _arbitrageHistory.Remove(arbitrage.ToString());
-                }
-            }
+            _arbitrageHistory = remained;
+        }
+
+        private void MoveFromActualToHistory(Arbitrage arbitrage)
+        {
+            var key = arbitrage.ToString();
+
+            // Remove from actual arbitrages
+            arbitrage.EndedAt = DateTime.UtcNow;
+            _arbitrages.Remove(key);
+
+            // Add it to the history
+            _arbitrageHistory.AddOrUpdate(key, arbitrage);
         }
 
         private void CheckForCurrencyAndUpdateOrderBooks(string currency, OrderBook orderBook)
