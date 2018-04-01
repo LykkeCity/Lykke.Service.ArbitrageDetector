@@ -5,7 +5,7 @@ namespace Lykke.Service.ArbitrageDetector.Services.Models
     /// <summary>
     /// represents a record af arbitrage situation evvent.
     /// </summary>
-    internal sealed class ArbitrageLine
+    public sealed class ArbitrageLine
     {
         /// <summary>
         /// BidPrice price.
