@@ -319,7 +319,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(0, arbitrages.Count);
         }
 
-        [Fact]
+        //[Fact]
         public async Task ManyArbitragesPerformanceTest()
         {
             var baseAssets = new List<string> { "BTC" };
@@ -349,7 +349,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(735, arbitrages.Count());
         }
 
-        [Fact]
+        //[Fact]
         public async Task ManyArbitragesHistoryPerformanceTest()
         {
             var baseAssets = new List<string> { "BTC" };
