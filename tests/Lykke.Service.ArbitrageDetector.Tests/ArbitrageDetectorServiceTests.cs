@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
+using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Services;
@@ -26,7 +27,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string btcusd = "BTCUSD";
 
             var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
-            var arbitrageCalculator = new ArbitrageDetectorService(settings, null, null);
+            var arbitrageCalculator = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var btcEurOrderBook = new OrderBook(exchange, "BTCEUR",
                 new List<VolumePrice> // asks
@@ -76,7 +77,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string btcusd = "BTCUSD";
 
             var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
-            var arbitrageCalculator = new ArbitrageDetectorService(settings, null, null);
+            var arbitrageCalculator = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var btcEurOrderBook = new OrderBook(exchange, "BTCEUR",
                 new List<VolumePrice> // asks
@@ -131,7 +132,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string btcusd = "BTCUSD";
 
             var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
-            var arbitrageCalculator = new ArbitrageDetectorService(settings, null, null);
+            var arbitrageCalculator = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var btcEurOrderBook = new OrderBook(exchange, "EURBTC",
                 new List<VolumePrice> // bids
@@ -186,7 +187,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string btcusd = "BTCUSD";
 
             var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
-            var arbitrageCalculator = new ArbitrageDetectorService(settings, null, null);
+            var arbitrageCalculator = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var eurBtcOrderBook = new OrderBook(exchange, "EURBTC",
                 new List<VolumePrice> // asks
@@ -238,7 +239,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string quoteAsset = "USD";
 
             var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
-            var arbitrageDetector = new ArbitrageDetectorService(settings, null, null);
+            var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
                 new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
@@ -296,7 +297,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string quoteAsset = "USD";
 
             var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
-            var arbitrageDetector = new ArbitrageDetectorService(settings, null, null);
+            var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var orderBooks = new List<OrderBook>();
             orderBooks.AddRange(GenerateX2OrderBooksForCrossRates(500, "GDAX", new AssetPair("BTC", "USD"), 10, 11500, 11000, 10, 11000, 10000));
@@ -325,7 +326,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string quoteAsset = "USD";
 
             var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
-            var arbitrageDetector = new ArbitrageDetectorService(settings, null, null);
+            var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var orderBooks = new List<OrderBook>();
             orderBooks.AddRange(GenerateOrderBooks(7, "GDAX", new AssetPair("BTC", "USD"), 10, 11500, 11000, 10, 11000, 10000));
@@ -355,7 +356,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string quoteAsset = "USD";
 
             var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
-            var arbitrageDetector = new ArbitrageDetectorService(settings, null, null);
+            var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var orderBooks = new List<OrderBook>();
             orderBooks.AddRange(GenerateOrderBooks(7, "GDAX", new AssetPair("BTC", "USD"), 10, 11500, 11000, 10, 11000, 10000));
@@ -406,7 +407,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string quoteAsset = "USD";
 
             var settings = new StartupSettings(1, 1, 1000, -20, baseAssets, quoteAsset);
-            var arbitrageDetector = new ArbitrageDetectorService(settings, null, null);
+            var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
                 new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks

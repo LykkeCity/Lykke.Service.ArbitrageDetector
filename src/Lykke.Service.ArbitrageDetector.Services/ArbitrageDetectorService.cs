@@ -164,6 +164,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 restartNeeded = true;
             }
 
+            if (_minSpread != settings.MinSpread)
+            {
+                _minSpread = settings.MinSpread;
+                restartNeeded = true;
+            }
+
             _restartNeeded = restartNeeded;
         }
 
@@ -324,23 +330,19 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             continue;
 
                         var key = "(" + askLine.CrossRate.ConversionPath + ") * (" + bidLine.CrossRate.ConversionPath + ")";
+                        var arbitrage = new Arbitrage(assetPair, askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
                         if (newArbitrages.TryGetValue(key, out var existed))
                         {
-                            var spread = (askLine.Price - bidLine.Price) / bidLine.Price * 100;
-                            if (spread < _minSpread)
+                            if (_minSpread < 0 && arbitrage.Spread < _minSpread)
                                 continue;
 
-                            var volume = askLine.Volume < bidLine.Volume ? askLine.Volume : bidLine.Volume;
-                            var pnL = (bidLine.Price - askLine.Price) * volume;
-                            if (pnL <= existed.PnL)
+                            if (arbitrage.PnL <= existed.PnL)
                                 continue;
 
-                            var arbitrage = new Arbitrage(assetPair, askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
                             newArbitrages.AddOrUpdate(key, arbitrage);
                         }
                         else
                         {
-                            var arbitrage = new Arbitrage(assetPair, askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
                             newArbitrages.Add(key, arbitrage);
                         }
                     }
@@ -348,7 +350,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
 
             watch.Stop();
-            if (watch.ElapsedMilliseconds > 1000)
+            if (watch.ElapsedMilliseconds > 2000)
                 await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{watch.ElapsedMilliseconds} ms for {newArbitrages.Count} arbitrages, {totalLines} lines, {totalItareations} possible arbitrages.");
 
             return newArbitrages.Values;
