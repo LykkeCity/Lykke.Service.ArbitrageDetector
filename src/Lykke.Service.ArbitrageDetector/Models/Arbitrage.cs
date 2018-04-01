@@ -66,7 +66,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Conversion path.
         /// </summary>
-        public string ConversionPath => "(" + AskCrossRate.ConversionPath + ") * (" + BidCrossRate.ConversionPath + ")"
+        public string ConversionPath => "(" + AskCrossRate.ConversionPath + ") * (" + BidCrossRate.ConversionPath + ")";
 
         /// <summary>
         /// Constructor.
