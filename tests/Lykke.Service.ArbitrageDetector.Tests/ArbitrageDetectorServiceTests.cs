@@ -17,6 +17,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 {
     public class ArbitrageDetectorServiceTests
     {
+        private const bool performance = false;
+
         [Fact]
         public async Task StraightConversionTest()
         {
@@ -310,7 +312,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var watch = Stopwatch.StartNew();
             await arbitrageDetector.CalculateCrossRates();
             watch.Stop();
-            Assert.True(watch.ElapsedMilliseconds < 1000);
+            if (performance)
+                Assert.True(watch.ElapsedMilliseconds < 1000);
 
             var crossRates = arbitrageDetector.GetCrossRates().ToList();
             var arbitrages = arbitrageDetector.GetArbitrages().ToList();
@@ -319,7 +322,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(0, arbitrages.Count);
         }
 
-        //[Fact]
+        [Fact]
         public async Task ManyArbitragesPerformanceTest()
         {
             var baseAssets = new List<string> { "BTC" };
@@ -343,13 +346,14 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.True(watch.ElapsedMilliseconds < 80);
             var arbitrages = await arbitrageDetector.CalculateArbitrages();
             watch.Stop();
-            Assert.True(watch.ElapsedMilliseconds < 700);
+            if (performance)
+                Assert.True(watch.ElapsedMilliseconds < 700);
             
             Assert.Equal(63, crossRates.Count());
             Assert.Equal(735, arbitrages.Count());
         }
 
-        //[Fact]
+        [Fact]
         public async Task ManyArbitragesHistoryPerformanceTest()
         {
             var baseAssets = new List<string> { "BTC" };
@@ -370,7 +374,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var watch = Stopwatch.StartNew();
             await arbitrageDetector.Execute();
             watch.Stop();
-            Assert.True(watch.ElapsedMilliseconds < 1000);
+            if (performance)
+                Assert.True(watch.ElapsedMilliseconds < 1000);
 
             var crossRates = arbitrageDetector.GetCrossRates();
             var arbitrages = arbitrageDetector.GetArbitrages();
@@ -391,7 +396,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             watch = Stopwatch.StartNew();
             await arbitrageDetector.Execute();
             watch.Stop();
-            Assert.True(watch.ElapsedMilliseconds < 800); // Second time faster
+            if (performance)
+                Assert.True(watch.ElapsedMilliseconds < 800); // Second time faster
 
             crossRates = arbitrageDetector.GetCrossRates();
             arbitrages = arbitrageDetector.GetArbitrages();
