@@ -252,50 +252,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             watch.Stop();
             if (watch.ElapsedMilliseconds > 1000)
-                await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{MethodBase.GetCurrentMethod().Name} : {watch.ElapsedMilliseconds} ms for {_crossRates.Count} cross rates, {actualOrderBooks.Count} order books.");
+                await _log.WriteInfoAsync(GetType().Name, nameof(CalculateCrossRates), $"{watch.ElapsedMilliseconds} ms for {_crossRates.Count} cross rates, {actualOrderBooks.Count} order books.");
 
             return _crossRates.Select(x => x.Value).ToList().AsReadOnly();
         }
         
-        private IList<ArbitrageLine> CalculateArbitragesLines(IList<CrossRate> crossRates)
-        {
-            // TODO: can be improved.
-            var lines = new List<ArbitrageLine>();
-
-            // 1. Calculate minAsk and maxBid
-            var minAsk = crossRates.SelectMany(x => x.Asks).Min(x => x.Price);
-            var maxBid = crossRates.SelectMany(x => x.Bids).Max(x => x.Price);
-
-            // No arbitrages
-            if (minAsk >= maxBid)
-                return lines;
-
-            // 2. Collect only arbitrages lines
-            foreach (var crossRate in crossRates)
-            {
-                crossRate.Asks.Where(x => x.Price < maxBid)
-                    .ForEach(x => lines.Add(new ArbitrageLine
-                    {
-                        CrossRate = crossRate,
-                        AskPrice = x.Price,
-                        Volume = x.Volume
-                    }));
-
-                crossRate.Bids.Where(x => x.Price > minAsk)
-                    .ForEach(x => lines.Add(new ArbitrageLine
-                    {
-                        CrossRate = crossRate,
-                        BidPrice = x.Price,
-                        Volume = x.Volume
-                    }));
-            }
-
-            // 3. Order by Price
-            lines = lines.OrderBy(x => x.Price).ThenBy(x => x.AskPrice).ToList();
-
-            return lines;
-        }
-
         public async Task<ConcurrentDictionary<string, Arbitrage>> CalculateArbitrages()
         {
             var watch = Stopwatch.StartNew();
@@ -351,7 +312,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             watch.Stop();
             if (watch.ElapsedMilliseconds > 2000)
-                await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{MethodBase.GetCurrentMethod().Name} : {watch.ElapsedMilliseconds} ms for {newArbitrages.Count} arbitrages, {totalLines} lines, {totalItareations} possible arbitrages.");
+                await _log.WriteInfoAsync(GetType().Name, nameof(CalculateArbitrages), $"{watch.ElapsedMilliseconds} ms for {newArbitrages.Count} arbitrages, {totalLines} lines, {totalItareations} possible arbitrages.");
 
             return newArbitrages;
         }
@@ -402,7 +363,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             watch.Stop();
             if (watch.ElapsedMilliseconds > 1000)
-                await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"{MethodBase.GetCurrentMethod().Name} : {watch.ElapsedMilliseconds} ms for new {newArbitrages.Count} arbitrages, {removed} removed, {added} added, {beforeCleaning - _arbitrageHistory.Count} cleaned, {_arbitrages.Count} active, {_arbitrageHistory.Count} in history.");
+                await _log.WriteInfoAsync(GetType().Name, nameof(RefreshArbitrages), $"{watch.ElapsedMilliseconds} ms for new {newArbitrages.Count} arbitrages, {removed} removed, {added} added, {beforeCleaning - _arbitrageHistory.Count} cleaned, {_arbitrages.Count} active, {_arbitrageHistory.Count} in history.");
         }
 
         
@@ -422,6 +383,45 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
 
             _arbitrageHistory = remained;
+        }
+
+        private IList<ArbitrageLine> CalculateArbitragesLines(IList<CrossRate> crossRates)
+        {
+            // TODO: can be improved.
+            var lines = new List<ArbitrageLine>();
+
+            // 1. Calculate minAsk and maxBid
+            var minAsk = crossRates.SelectMany(x => x.Asks).Min(x => x.Price);
+            var maxBid = crossRates.SelectMany(x => x.Bids).Max(x => x.Price);
+
+            // No arbitrages
+            if (minAsk >= maxBid)
+                return lines;
+
+            // 2. Collect only arbitrages lines
+            foreach (var crossRate in crossRates)
+            {
+                crossRate.Asks.Where(x => x.Price < maxBid)
+                    .ForEach(x => lines.Add(new ArbitrageLine
+                    {
+                        CrossRate = crossRate,
+                        AskPrice = x.Price,
+                        Volume = x.Volume
+                    }));
+
+                crossRate.Bids.Where(x => x.Price > minAsk)
+                    .ForEach(x => lines.Add(new ArbitrageLine
+                    {
+                        CrossRate = crossRate,
+                        BidPrice = x.Price,
+                        Volume = x.Volume
+                    }));
+            }
+
+            // 3. Order by Price
+            lines = lines.OrderBy(x => x.Price).ThenBy(x => x.AskPrice).ToList();
+
+            return lines;
         }
 
         private void MoveFromActualToHistory(Arbitrage arbitrage)
