@@ -290,13 +290,14 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         if (bidLine.BidPrice == 0)
                             continue;
 
+                        var spread = (askLine.Price - bidLine.Price) / bidLine.Price * 100;
+                        if (_minSpread >= 0 || spread < _minSpread)
+                            continue;
+
                         var arbitrage = new Arbitrage(assetPair, askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
                         var key = arbitrage.ToString();
                         if (newArbitrages.TryGetValue(key, out var existed))
                         {
-                            if (_minSpread >= 0 || arbitrage.Spread < _minSpread)
-                                continue;
-
                             if (arbitrage.PnL <= existed.PnL)
                                 continue;
 
