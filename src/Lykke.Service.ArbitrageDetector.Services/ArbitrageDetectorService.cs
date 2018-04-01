@@ -274,15 +274,15 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 var lines = CalculateArbitragesLines(assetPairCrossRates);
 
-                totalLines = lines.Count;
+                totalLines += lines.Count;
                 // Calculate arbitrage for every ask and every higher bid
-                for (var a = 0; a < totalLines; a++)
+                for (var a = 0; a < lines.Count; a++)
                 {
                     var askLine = lines[a];
                     if (askLine.AskPrice == 0)
                         continue;
 
-                    for (var b = a + 1; b < totalLines; b++)
+                    for (var b = a + 1; b < lines.Count; b++)
                     {
                         totalItareations++;
 
