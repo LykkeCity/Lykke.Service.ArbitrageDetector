@@ -369,7 +369,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var watch = Stopwatch.StartNew();
             await arbitrageDetector.Execute();
             watch.Stop();
-            Assert.True(watch.ElapsedMilliseconds < 700);
+            Assert.True(watch.ElapsedMilliseconds < 1000);
 
             var crossRates = arbitrageDetector.GetCrossRates();
             var arbitrages = arbitrageDetector.GetArbitrages();
@@ -390,7 +390,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             watch = Stopwatch.StartNew();
             await arbitrageDetector.Execute();
             watch.Stop();
-            Assert.True(watch.ElapsedMilliseconds < 700); // Second time faster
+            Assert.True(watch.ElapsedMilliseconds < 800); // Second time faster
 
             crossRates = arbitrageDetector.GetCrossRates();
             arbitrages = arbitrageDetector.GetArbitrages();

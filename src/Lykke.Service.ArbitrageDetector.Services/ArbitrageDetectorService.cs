@@ -326,6 +326,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var key = "(" + askLine.CrossRate.ConversionPath + ") * (" + bidLine.CrossRate.ConversionPath + ")";
                         if (newArbitrages.TryGetValue(key, out var existed))
                         {
+                            var spread = (askLine.Price - bidLine.Price) / bidLine.Price * 100;
+                            if (spread < _minSpread)
+                                continue;
+
                             var volume = askLine.Volume < bidLine.Volume ? askLine.Volume : bidLine.Volume;
                             var pnL = (bidLine.Price - askLine.Price) * volume;
                             if (pnL <= existed.PnL)
@@ -361,7 +365,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
             foreach (var newArbitrage in newArbitragesList)
             {
                 // Key must be unique for arbitrage in order to find when it started
-                //var key = newArbitrage.ToString();
                 var key = newArbitrage.ConversionPath + newArbitrage.PnL;
                 newArbitrages.AddOrUpdate(key, newArbitrage); // May be two arbitrages with the same path and the same PnL
             }
