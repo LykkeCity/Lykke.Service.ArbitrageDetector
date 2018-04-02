@@ -259,32 +259,33 @@ namespace Lykke.Service.ArbitrageDetector.Services
         
         public async Task<ConcurrentDictionary<string, Arbitrage>> CalculateArbitrages()
         {
-            var watch = Stopwatch.StartNew();
-
             var newArbitrages = new ConcurrentDictionary<string, Arbitrage>();
             var actualCrossRates = GetActualCrossRates();
 
-            var totalItareations = 0;
-            var totalLines = 0;
             // For each asset pair - for each cross rate make one line for every ask and bid, order that lines and find intersections
             var uniqueAssetPairs = actualCrossRates.Select(x => x.AssetPair).Distinct().ToList();
             foreach (var assetPair in uniqueAssetPairs)
             {
+                var watch = Stopwatch.StartNew();
+
                 var assetPairCrossRates = actualCrossRates.Where(x => x.AssetPair.Equals(assetPair)).ToList();
 
+                // TODO: try to get just two collection of bids and asks and iterate only each with each without empty iterations (where ask or bid price == 0)
                 var lines = CalculateArbitragesLines(assetPairCrossRates);
 
-                totalLines += lines.Count;
+                var totalItarations = 0;
+                var possibleArbitrages = 0;
+                var totalLines = lines.Count;
                 // Calculate arbitrage for every ask and every higher bid
-                for (var a = 0; a < lines.Count; a++)
+                for (var a = 0; a < totalLines; a++)
                 {
                     var askLine = lines[a];
                     if (askLine.AskPrice == 0)
                         continue;
 
-                    for (var b = a + 1; b < lines.Count; b++)
+                    for (var b = a + 1; b < totalLines; b++)
                     {
-                        totalItareations++;
+                        totalItarations++;
 
                         var bidLine = lines[b];
                         if (bidLine.BidPrice == 0)
@@ -294,26 +295,29 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         if (_minSpread >= 0 || spread < _minSpread)
                             continue;
 
-                        var arbitrage = new Arbitrage(assetPair, askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
-                        var key = arbitrage.ToString();
+                        var key = "(" + askLine.CrossRate.ConversionPath + ") * (" + bidLine.CrossRate.ConversionPath + ")";
                         if (newArbitrages.TryGetValue(key, out var existed))
                         {
-                            if (arbitrage.PnL <= existed.PnL)
+                            var volume = askLine.Volume < bidLine.Volume ? askLine.Volume : bidLine.Volume;
+                            var pnL = (bidLine.Price - askLine.Price) * volume;
+                            if (pnL <= existed.PnL)
                                 continue;
 
+                            var arbitrage = new Arbitrage(assetPair, askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
                             newArbitrages.AddOrUpdate(key, arbitrage);
                         }
                         else
                         {
+                            var arbitrage = new Arbitrage(assetPair, askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
                             newArbitrages.Add(key, arbitrage);
                         }
                     }
                 }
-            }
 
-            watch.Stop();
-            if (watch.ElapsedMilliseconds > 2000)
-                await _log.WriteInfoAsync(GetType().Name, nameof(CalculateArbitrages), $"{watch.ElapsedMilliseconds} ms for {newArbitrages.Count} arbitrages, {actualCrossRates.Count} actual cross rates, {totalLines} lines, {totalItareations} iterations.");
+                watch.Stop();
+                if (watch.ElapsedMilliseconds > 1000)
+                    await _log.WriteInfoAsync(GetType().Name, nameof(CalculateArbitrages), $"{watch.ElapsedMilliseconds} ms for {newArbitrages.Count} arbitrages, {actualCrossRates.Count} actual cross rates, {lines.Count} lines, {totalItarations} iterations, {possibleArbitrages} possible arbitrages.");
+            }
 
             return newArbitrages;
         }

@@ -17,7 +17,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 {
     public class ArbitrageDetectorServiceTests
     {
-        private const bool performance = false;
+        private const bool performance = true;
 
         [Fact]
         public async Task StraightConversionTest()
@@ -347,7 +347,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var arbitrages = await arbitrageDetector.CalculateArbitrages();
             watch.Stop();
             if (performance)
-                Assert.True(watch.ElapsedMilliseconds < 700);
+                Assert.True(watch.ElapsedMilliseconds < 500);
             
             Assert.Equal(63, crossRates.Count());
             Assert.Equal(735, arbitrages.Count());
