@@ -35,9 +35,10 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// <param name="minSpread"></param>
         /// <param name="baseAssets"></param>
         /// <param name="quoteAsset"></param>
+        /// <param name="intermediateAssets"></param>
         public StartupSettings(int executionDelayInMilliseconds, int expirationTimeInSeconds, int historyMaxSize, int minSpread,
-            IEnumerable<string> baseAssets, string quoteAsset)
-            : base(expirationTimeInSeconds, baseAssets, quoteAsset, minSpread)
+            IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset)
+            : base(expirationTimeInSeconds, baseAssets, intermediateAssets, quoteAsset, minSpread)
         {
             ExecutionDelayInMilliseconds = executionDelayInMilliseconds;
             ExpirationTimeInSeconds = expirationTimeInSeconds;
@@ -59,6 +60,11 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// Wanted base assets.
         /// </summary>
         public IEnumerable<string> BaseAssets { get; set; }
+
+        /// <summary>
+        /// Intermediate assets.
+        /// </summary>
+        public IEnumerable<string> IntermediateAssets { get; set; }
 
         /// <summary>
         /// Quote asset for wanted assets.
@@ -84,10 +90,12 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// <param name="baseAssets"></param>
         /// <param name="quoteAsset"></param>
         /// <param name="minSpread"></param>
-        public Settings(int expirationTimeInSeconds, IEnumerable<string> baseAssets, string quoteAsset, int minSpread)
+        /// <param name="intermediateAssets"></param>
+        public Settings(int expirationTimeInSeconds, IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset, int minSpread)
         {
             ExpirationTimeInSeconds = expirationTimeInSeconds;
             BaseAssets = baseAssets ?? throw new ArgumentNullException(nameof(baseAssets));
+            IntermediateAssets = intermediateAssets ?? throw new ArgumentNullException(nameof(intermediateAssets));
             QuoteAsset = string.IsNullOrWhiteSpace(quoteAsset) ? throw new ArgumentNullException(nameof(quoteAsset)) : quoteAsset;
             MinSpread = minSpread;
         }

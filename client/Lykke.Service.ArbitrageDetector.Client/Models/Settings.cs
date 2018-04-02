@@ -19,9 +19,19 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public IEnumerable<string> BaseAssets { get; set; }
 
         /// <summary>
+        /// Intermediate assets.
+        /// </summary>
+        public IEnumerable<string> IntermediateAssets { get; set; }
+
+        /// <summary>
         /// Quote asset for wanted assets.
         /// </summary>
         public string QuoteAsset { get; set; }
+
+        /// <summary>
+        /// Minimum spread.
+        /// </summary>
+        public int MinSpread { get; set; }
 
         /// <summary>
         /// Constructor.
@@ -36,11 +46,15 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <param name="expirationTimeInSeconds"></param>
         /// <param name="baseAssets"></param>
         /// <param name="quoteAsset"></param>
-        public Settings(int expirationTimeInSeconds, IEnumerable<string> baseAssets, string quoteAsset)
+        /// <param name="intermediateAssets"></param>
+        /// <param name="minSpread"></param>
+        public Settings(int expirationTimeInSeconds, IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset, int minSpread)
         {
             ExpirationTimeInSeconds = expirationTimeInSeconds;
             BaseAssets = baseAssets ?? throw new ArgumentNullException(nameof(baseAssets));
+            IntermediateAssets = intermediateAssets ?? throw new ArgumentNullException(nameof(intermediateAssets));
             QuoteAsset = quoteAsset ?? throw new ArgumentNullException(nameof(quoteAsset));
+            MinSpread = minSpread;
         }
     }
 }

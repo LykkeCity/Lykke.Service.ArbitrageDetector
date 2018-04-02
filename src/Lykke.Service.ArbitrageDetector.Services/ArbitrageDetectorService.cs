@@ -23,6 +23,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrages;
         private ConcurrentDictionary<string, Arbitrage> _arbitrageHistory;
         private IEnumerable<string> _baseAssets;
+        private IEnumerable<string> _intermediateAssets;
         private string _quoteAsset;
         private int _expirationTimeInSeconds;
         private readonly int _historyMaxSize;
@@ -38,6 +39,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 throw new ArgumentNullException(nameof(settings));
 
             _baseAssets = settings.BaseAssets;
+            _intermediateAssets = settings.IntermediateAssets;
             _quoteAsset = settings.QuoteAsset;
             _expirationTimeInSeconds = settings.ExpirationTimeInSeconds;
             _historyMaxSize = settings.HistoryMaxSize;
@@ -136,7 +138,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public Settings GetSettings()
         {
-            return new Settings(_expirationTimeInSeconds, _baseAssets, _quoteAsset, _minSpread);
+            return new Settings(_expirationTimeInSeconds, _baseAssets, _intermediateAssets, _quoteAsset, _minSpread);
         }
 
         public void SetSettings(Settings settings)
@@ -149,6 +151,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
             if (settings.ExpirationTimeInSeconds > 0)
             {
                 _expirationTimeInSeconds = settings.ExpirationTimeInSeconds;
+                restartNeeded = true;
+            }
+
+            if (settings.IntermediateAssets != null && settings.IntermediateAssets.Any())
+            {
+                _intermediateAssets = settings.IntermediateAssets;
                 restartNeeded = true;
             }
 
@@ -216,6 +224,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     var intermediateCurrency = wantedIntermediateAssetPair.Base == wantedCurrency
                         ? wantedIntermediateAssetPair.Quote
                         : wantedIntermediateAssetPair.Base;
+
+                    // If settings contains any and current intermediate not in the settings then ignore
+                    if (_intermediateAssets.Any() && !_intermediateAssets.Contains(intermediateCurrency))
+                        continue;
 
                     // If original wanted/base or base/wanted pair then just save it
                     if (intermediateCurrency == _quoteAsset)
