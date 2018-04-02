@@ -51,9 +51,9 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public Settings(int expirationTimeInSeconds, IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset, int minSpread)
         {
             ExpirationTimeInSeconds = expirationTimeInSeconds;
-            BaseAssets = baseAssets ?? throw new ArgumentNullException(nameof(baseAssets));
-            IntermediateAssets = intermediateAssets ?? throw new ArgumentNullException(nameof(intermediateAssets));
-            QuoteAsset = quoteAsset ?? throw new ArgumentNullException(nameof(quoteAsset));
+            BaseAssets = baseAssets ?? new List<string>();
+            IntermediateAssets = intermediateAssets ?? new List<string>();
+            QuoteAsset = quoteAsset;
             MinSpread = minSpread;
         }
     }

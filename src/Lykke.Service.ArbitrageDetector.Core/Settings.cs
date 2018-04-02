@@ -96,7 +96,7 @@ namespace Lykke.Service.ArbitrageDetector.Core
             ExpirationTimeInSeconds = expirationTimeInSeconds;
             BaseAssets = baseAssets ?? throw new ArgumentNullException(nameof(baseAssets));
             IntermediateAssets = intermediateAssets ?? throw new ArgumentNullException(nameof(intermediateAssets));
-            QuoteAsset = string.IsNullOrWhiteSpace(quoteAsset) ? throw new ArgumentNullException(nameof(quoteAsset)) : quoteAsset;
+            QuoteAsset = quoteAsset ?? throw new ArgumentNullException(nameof(quoteAsset));
             MinSpread = minSpread;
         }
     }

@@ -124,6 +124,26 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             Assert.Equal(oldSettings.MinSpread, newSettings.MinSpread);
         }
 
+        [Fact]
+        public async Task SetSettingsMinSpreadTest()
+        {
+            var oldSettings = await Client.GetSettingsAsync();
+
+            var settings = new Settings { MinSpread = -97 };
+
+            await Client.SetSettingsAsync(settings);
+
+            var newSettings = await Client.GetSettingsAsync();
+            Assert.Equal(settings.MinSpread, newSettings.MinSpread);
+
+            await Client.SetSettingsAsync(oldSettings);
+
+            newSettings = await Client.GetSettingsAsync();
+            Assert.Equal(oldSettings.MinSpread, newSettings.MinSpread);
+        }
+
+
+
         private void AssertOrderBook(OrderBook orderBook)
         {
             Assert.NotEmpty(orderBook.Source);
@@ -136,7 +156,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             Assert.NotEqual(default, orderBook.Bids.First().Volume);
             Assert.NotEqual(default, orderBook.Timestamp);
         }
-
 
         private void AssertCrossRate(CrossRate crossRate)
         {

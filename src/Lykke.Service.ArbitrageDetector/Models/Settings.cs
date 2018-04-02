@@ -51,9 +51,9 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public Settings(int expirationTimeInSeconds, IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset, int minSpread)
         {
             ExpirationTimeInSeconds = expirationTimeInSeconds;
-            BaseAssets = baseAssets ?? throw new ArgumentNullException(nameof(baseAssets));
-            IntermediateAssets = intermediateAssets ?? throw new ArgumentNullException(nameof(intermediateAssets));
-            QuoteAsset = quoteAsset ?? throw new ArgumentNullException(nameof(quoteAsset));
+            BaseAssets = baseAssets ?? new List<string>();
+            IntermediateAssets = intermediateAssets ?? new List<string>();
+            QuoteAsset = quoteAsset;
             MinSpread = minSpread;
         }
 
@@ -72,7 +72,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <returns>Domain model</returns>
         public Core.Settings ToModel()
         {
-            var domain = new Core.Settings(ExpirationTimeInSeconds, BaseAssets, IntermediateAssets, QuoteAsset, MinSpread);
+            var domain = new Core.Settings(ExpirationTimeInSeconds, BaseAssets ?? new List<string>(), IntermediateAssets ?? new List<string>(), QuoteAsset ?? string.Empty, MinSpread);
 
             return domain;
         }

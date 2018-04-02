@@ -172,7 +172,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 restartNeeded = true;
             }
 
-            if (_minSpread != settings.MinSpread)
+            if (settings.MinSpread < 0 && settings.MinSpread > -100 && _minSpread != settings.MinSpread)
             {
                 _minSpread = settings.MinSpread;
                 restartNeeded = true;
