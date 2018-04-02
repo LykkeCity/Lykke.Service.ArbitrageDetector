@@ -432,9 +432,19 @@
             Wanted base assets.
             </summary>
         </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.IntermediateAssets">
+            <summary>
+            Intermediate assets.
+            </summary>
+        </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.QuoteAsset">
             <summary>
             Quote asset for wanted assets.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.MinSpread">
+            <summary>
+            Minimum spread.
             </summary>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor">
@@ -442,13 +452,15 @@
             Constructor.
             </summary>
         </member>
-        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor(System.Int32,System.Collections.Generic.IEnumerable{System.String},System.String)">
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor(System.Int32,System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String},System.String,System.Int32)">
             <summary>
             Constructor.
             </summary>
             <param name="expirationTimeInSeconds"></param>
             <param name="baseAssets"></param>
             <param name="quoteAsset"></param>
+            <param name="intermediateAssets"></param>
+            <param name="minSpread"></param>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice">
             <summary>

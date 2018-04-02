@@ -105,19 +105,23 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         {
             var oldSettings = await Client.GetSettingsAsync();
 
-            var settings = new Settings { BaseAssets = new List<string> { "AUD", "CHF" }, QuoteAsset = "BTC" };
+            var settings = new Settings { BaseAssets = new List<string> { "AUD", "CHF" }, IntermediateAssets = new List<string> { "EUR" }, QuoteAsset = "BTC", MinSpread = -97 };
 
             await Client.SetSettingsAsync(settings);
 
             var newSettings = await Client.GetSettingsAsync();
             Assert.Equal(settings.BaseAssets, newSettings.BaseAssets);
+            Assert.Equal(settings.IntermediateAssets, newSettings.IntermediateAssets);
             Assert.Equal(settings.QuoteAsset, newSettings.QuoteAsset);
+            Assert.Equal(settings.MinSpread, newSettings.MinSpread);
 
             await Client.SetSettingsAsync(oldSettings);
 
             newSettings = await Client.GetSettingsAsync();
             Assert.Equal(oldSettings.BaseAssets, newSettings.BaseAssets);
+            Assert.Equal(oldSettings.IntermediateAssets, newSettings.IntermediateAssets);
             Assert.Equal(oldSettings.QuoteAsset, newSettings.QuoteAsset);
+            Assert.Equal(oldSettings.MinSpread, newSettings.MinSpread);
         }
 
         private void AssertOrderBook(OrderBook orderBook)

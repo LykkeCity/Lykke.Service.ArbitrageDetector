@@ -28,7 +28,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
+            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, new List<string>(), quoteAsset);
             var arbitrageCalculator = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var btcEurOrderBook = new OrderBook(exchange, "BTCEUR",
@@ -78,7 +78,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
+            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, new List<string>(), quoteAsset);
             var arbitrageCalculator = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var btcEurOrderBook = new OrderBook(exchange, "BTCEUR",
@@ -133,7 +133,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
+            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, new List<string>(), quoteAsset);
             var arbitrageCalculator = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var btcEurOrderBook = new OrderBook(exchange, "EURBTC",
@@ -188,7 +188,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
 
-            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
+            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, new List<string>(), quoteAsset);
             var arbitrageCalculator = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var eurBtcOrderBook = new OrderBook(exchange, "EURBTC",
@@ -240,7 +240,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
 
-            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
+            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, new List<string>(), quoteAsset);
             var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
@@ -298,7 +298,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
 
-            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
+            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, new List<string>(), quoteAsset);
             var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var orderBooks = new List<OrderBook>();
@@ -328,7 +328,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
 
-            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
+            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, new List<string>(), quoteAsset);
             var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var orderBooks = new List<OrderBook>();
@@ -359,7 +359,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
 
-            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, quoteAsset);
+            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, new List<string>(), quoteAsset);
             var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var orderBooks = new List<OrderBook>();
@@ -412,7 +412,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
 
-            var settings = new StartupSettings(1, 1, 1000, -20, baseAssets, quoteAsset);
+            var settings = new StartupSettings(1, 1, 1000, -20, baseAssets, new List<string>(), quoteAsset);
             var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
