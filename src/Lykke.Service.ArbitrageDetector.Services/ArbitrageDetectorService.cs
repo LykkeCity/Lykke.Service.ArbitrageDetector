@@ -270,7 +270,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 var assetPairCrossRates = actualCrossRates.Where(x => x.AssetPair.Equals(assetPair)).ToList();
 
-                // TODO: try to get just two collection of bids and asks and iterate only each with each without empty iterations (where ask or bid price == 0)
+                // TODO try to get just two collection of bids and asks and iterate only each with each without empty iterations (where ask or bid price == 0)
+                // TODO iterations must be for biggest spread first (in order to reduce updating arbitrages with better PnL )
                 var lines = CalculateArbitragesLines(assetPairCrossRates);
 
                 var totalItarations = 0;
@@ -290,6 +291,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var bidLine = lines[b];
                         if (bidLine.BidPrice == 0)
                             continue;
+
+                        possibleArbitrages++;
 
                         var spread = (askLine.Price - bidLine.Price) / bidLine.Price * 100;
                         if (_minSpread >= 0 || spread < _minSpread)
