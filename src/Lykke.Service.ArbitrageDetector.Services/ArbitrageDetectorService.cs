@@ -513,7 +513,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 _arbitrages.Clear();
                 _arbitrageHistory.Clear();
 
-                await _log.WriteInfoAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, $"Restarted");
+                await _log.WriteInfoAsync(GetType().Name, nameof(RestartIfNeeded), $"Restarted");
             }
         }
     }

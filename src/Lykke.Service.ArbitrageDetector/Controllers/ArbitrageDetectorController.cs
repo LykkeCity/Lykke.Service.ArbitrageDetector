@@ -40,7 +40,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, exception);
+                await _log.WriteErrorAsync(GetType().Name, nameof(OrderBooks), exception);
                 return BadRequest(ErrorResponse.Create(exception.Message));
             }
 
@@ -62,7 +62,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, exception);
+                await _log.WriteErrorAsync(GetType().Name, nameof(CrossRates), exception);
 
                 return BadRequest(ErrorResponse.Create(exception.Message));
             }
@@ -85,7 +85,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, exception);
+                await _log.WriteErrorAsync(GetType().Name, nameof(Arbitrages), exception);
 
                 return BadRequest(ErrorResponse.Create(exception.Message));
             }
@@ -108,7 +108,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, exception);
+                await _log.WriteErrorAsync(GetType().Name, nameof(Arbitrage), exception);
 
                 return BadRequest(ErrorResponse.Create(exception.Message));
             }
@@ -131,7 +131,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, exception);
+                await _log.WriteErrorAsync(GetType().Name, nameof(ArbitrageHistory), exception);
 
                 return BadRequest(ErrorResponse.Create(exception.Message));
             }
@@ -155,7 +155,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, exception);
+                await _log.WriteErrorAsync(GetType().Name, nameof(GetSettings), exception);
 
                 return BadRequest(ErrorResponse.Create(exception.Message));
             }
@@ -176,7 +176,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(GetType().Name, MethodBase.GetCurrentMethod().Name, exception);
+                await _log.WriteErrorAsync(GetType().Name, nameof(SetSettings), exception);
 
                 return BadRequest(ErrorResponse.Create(exception.Message));
             }
