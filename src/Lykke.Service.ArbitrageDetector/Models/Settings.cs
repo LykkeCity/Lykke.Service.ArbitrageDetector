@@ -62,7 +62,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// </summary>
         /// <param name="settings">Domain model</param>
         public Settings(Core.Settings settings)
-            : this(settings.ExpirationTimeInSeconds, settings.IntermediateAssets, settings.BaseAssets, settings.QuoteAsset, settings.MinSpread)
+            : this(settings.ExpirationTimeInSeconds, settings.BaseAssets, settings.IntermediateAssets, settings.QuoteAsset, settings.MinSpread)
         {
         }
 
