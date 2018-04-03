@@ -18,6 +18,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// </summary>
         public IList<OrderBook> OriginalOrderBooks { get; }
 
+        /// <inheritdoc />
         /// <summary>
         /// Contructor.
         /// </summary>
@@ -53,6 +54,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <returns></returns>
         public static CrossRate FromOrderBook(OrderBook orderBook, AssetPair targetAssetPair)
         {
+            #region Checking arguments
+
             if (orderBook == null)
                 throw new ArgumentNullException(nameof(orderBook));
 
@@ -68,13 +71,14 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             if (!targetAssetPair.IsEqualOrReversed(orderBook.AssetPair))
                 throw new ArgumentOutOfRangeException($"{nameof(orderBook.AssetPair)} and {nameof(targetAssetPair)} aren't semantically equal.");
 
+            #endregion
+
             var originalOrderBooks = new List<OrderBook>();
             OrderBook orderBookResult = null;
-            string conversionPath = null;
+            var conversionPath = orderBook.Source + "-" + orderBook.AssetPairStr;
             // Streight
             if (orderBook.AssetPair.Base == targetAssetPair.Base && orderBook.AssetPair.Quote == targetAssetPair.Quote)
             {
-                conversionPath = $"{orderBook.Source}-{orderBook.AssetPairStr}";
                 orderBookResult = orderBook;
                 originalOrderBooks.Add(orderBook);
             }
@@ -82,7 +86,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             // Reversed
             if (orderBook.AssetPair.Base == targetAssetPair.Quote && orderBook.AssetPair.Quote == targetAssetPair.Base)
             {
-                conversionPath = $"{orderBook.Source}-{orderBook.AssetPairStr}";
                 orderBookResult = orderBook.Reverse();
                 originalOrderBooks.Add(orderBook);
             }
@@ -204,8 +207,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 }
             }
 
-            var source = $"{one.Source}-{another.Source}";
-            var conversionPath = $"{one.Source}-{one.AssetPairStr} & {another.Source}-{another.AssetPairStr}";
+            var source = one.Source + "-" + another.Source;
+            var conversionPath = one.Source + "-" + one.AssetPairStr + " & " + another.Source + "-" + another.AssetPairStr;
             var originalOrderBooks = new List<OrderBook> { one, another };
             var timestamp = left.Timestamp < right.Timestamp ? left.Timestamp : right.Timestamp;
 

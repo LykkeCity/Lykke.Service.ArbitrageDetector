@@ -93,7 +93,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 Bids.Select(x => new VolumePrice(1 / x.Price, x.Volume)).OrderByDescending(x => x.Price).ToList(),
                 Asks.Select(x => new VolumePrice(1 / x.Price, x.Volume)).OrderByDescending(x => x.Price).ToList(),
                 Timestamp);
-            result.AssetPair = new AssetPair(AssetPair.Quote, AssetPair.Base);
+            result.AssetPair = AssetPair.Reverse();
 
             return result;
         }

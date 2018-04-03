@@ -319,7 +319,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var arbitrages = arbitrageDetector.GetArbitrages().ToList();
 
             Assert.InRange(crossRates.Count, 1000, 1048); // because of sqrt
-            Assert.Equal(0, arbitrages.Count);
+            Assert.Empty(arbitrages);
         }
 
         [Fact]
@@ -343,11 +343,11 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             var watch = Stopwatch.StartNew();
             var crossRates = await arbitrageDetector.CalculateCrossRates();
-            Assert.True(watch.ElapsedMilliseconds < 80);
+            Assert.True(watch.ElapsedMilliseconds < 50);
             var arbitrages = await arbitrageDetector.CalculateArbitrages();
             watch.Stop();
             if (performance)
-                Assert.InRange(watch.ElapsedMilliseconds, 300, 500);
+                Assert.InRange(watch.ElapsedMilliseconds, 300, 400);
             
             Assert.Equal(63, crossRates.Count());
             Assert.Equal(735, arbitrages.Count());
@@ -375,7 +375,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             await arbitrageDetector.Execute();
             watch.Stop();
             if (performance)
-                Assert.InRange(watch.ElapsedMilliseconds, 300, 500);
+                Assert.InRange(watch.ElapsedMilliseconds, 350, 450);
 
             var crossRates = arbitrageDetector.GetCrossRates();
             var arbitrages = arbitrageDetector.GetArbitrages();
@@ -397,7 +397,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             await arbitrageDetector.Execute();
             watch.Stop();
             if (performance)
-                Assert.InRange(watch.ElapsedMilliseconds, 300, 500); // Second time may be faster
+                Assert.InRange(watch.ElapsedMilliseconds, 300, 400); // Second time may be faster
 
             crossRates = arbitrageDetector.GetCrossRates();
             arbitrages = arbitrageDetector.GetArbitrages();

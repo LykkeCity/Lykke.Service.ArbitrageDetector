@@ -207,7 +207,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             var watch = Stopwatch.StartNew();
 
-            var newActualCrossRates = new SortedDictionary<AssetPairSource, CrossRate>();
+            var newActualCrossRates = new Dictionary<AssetPairSource, CrossRate>();
             var actualOrderBooks = GetActualOrderBooks();
 
             foreach (var wantedCurrency in _baseAssets)
@@ -235,7 +235,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var intermediateWantedCrossRate = CrossRate.FromOrderBook(wantedOrderBook, new AssetPair(wantedCurrency, _quoteAsset));
 
                         var key = new AssetPairSource(intermediateWantedCrossRate.ConversionPath, intermediateWantedCrossRate.AssetPair);
-                        newActualCrossRates.AddOrUpdate(key, intermediateWantedCrossRate);
+                        newActualCrossRates[key] = intermediateWantedCrossRate;
 
                         continue;
                     }
@@ -255,7 +255,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var crossRate = CrossRate.FromOrderBooks(wantedIntermediateOrderBook, intermediateBaseOrderBook, targetBaseAssetPair);
 
                         var key = new AssetPairSource(crossRate.ConversionPath, crossRate.AssetPair);
-                        newActualCrossRates.AddOrUpdate(key, crossRate);
+                        newActualCrossRates[key] = crossRate;
                     }
                 }
             }
@@ -263,8 +263,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _crossRates.AddOrUpdateRange(newActualCrossRates);
 
             watch.Stop();
-            if (watch.ElapsedMilliseconds > 1000)
-                await _log.WriteInfoAsync(GetType().Name, nameof(CalculateCrossRates), $"{watch.ElapsedMilliseconds} ms for {_crossRates.Count} cross rates, {actualOrderBooks.Count} order books.");
+            if (watch.ElapsedMilliseconds > 100)
+                await _log.WriteInfoAsync(GetType().Name, nameof(CalculateCrossRates), $"{watch.ElapsedMilliseconds} ms, {_crossRates.Count} cross rates, {actualOrderBooks.Count} order books.");
 
             return _crossRates.Select(x => x.Value).ToList().AsReadOnly();
         }
@@ -282,48 +282,56 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 var assetPairCrossRates = actualCrossRates.Where(x => x.AssetPair.Equals(assetPair)).ToList();
 
-                // TODO try to get just two collection of bids and asks and iterate only each with each without empty iterations (where ask or bid price == 0)
-                // TODO iterations must be for biggest spread first (in order to reduce updating arbitrages with better PnL )
-                var lines = CalculateArbitragesLines(assetPairCrossRates);
+                var asksAndBids = CalculateArbitragesLines(assetPairCrossRates);
+                var asksAndBidsMs = watch.ElapsedMilliseconds;
+
+                if (!asksAndBids.HasValue)
+                    return newArbitrages;
 
                 var totalItarations = 0;
                 var possibleArbitrages = 0;
-                var totalLines = lines.Count;
+                var asks = asksAndBids.Value.asks;
+                var asksCount = asks.Count;
+                var bids = asksAndBids.Value.bids;
+                var bidsCount = bids.Count;
                 // Calculate arbitrage for every ask and every higher bid
-                for (var a = 0; a < totalLines; a++)
+                for (var a = 0; a < asksCount; a++)
                 {
-                    var askLine = lines[a];
-                    if (askLine.AskPrice == 0)
-                        continue;
+                    var ask = asks[a];
+                    var askPrice = ask.Price;
 
-                    for (var b = a + 1; b < totalLines; b++)
+                    for (var b = 0; b < bidsCount; b++)
                     {
                         totalItarations++;
 
-                        var bidLine = lines[b];
-                        if (bidLine.BidPrice == 0)
+                        var bid = bids[b];
+                        var bidPrice = bid.Price;
+
+                        if (askPrice >= bidPrice)
                             continue;
 
                         possibleArbitrages++;
 
-                        var spread = (askLine.Price - bidLine.Price) / bidLine.Price * 100;
+                        var spread = (askPrice - bidPrice) / bidPrice * 100;
                         if (_minSpread >= 0 || spread < _minSpread)
                             continue;
 
-                        var key = "(" + askLine.CrossRate.ConversionPath + ") * (" + bidLine.CrossRate.ConversionPath + ")";
+                        var key = "(" + ask.CrossRate.ConversionPath + ") * (" + bid.CrossRate.ConversionPath + ")";
                         if (newArbitrages.TryGetValue(key, out var existed))
                         {
-                            var volume = askLine.Volume < bidLine.Volume ? askLine.Volume : bidLine.Volume;
-                            var pnL = (bidLine.Price - askLine.Price) * volume;
+                            var askVolume = ask.Volume;
+                            var bidVolume = bid.Volume;
+                            var volume = askVolume < bidVolume ? askVolume : bidVolume;
+                            var pnL = (bidPrice - askPrice) * volume;
                             if (pnL <= existed.PnL)
                                 continue;
 
-                            var arbitrage = new Arbitrage(assetPair, askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
+                            var arbitrage = new Arbitrage(assetPair, ask.CrossRate, new VolumePrice(ask.Price, ask.Volume), bid.CrossRate, new VolumePrice(bid.Price, bid.Volume));
                             newArbitrages.AddOrUpdate(key, arbitrage);
                         }
                         else
                         {
-                            var arbitrage = new Arbitrage(assetPair, askLine.CrossRate, askLine.VolumePrice, bidLine.CrossRate, bidLine.VolumePrice);
+                            var arbitrage = new Arbitrage(assetPair, ask.CrossRate, new VolumePrice(ask.Price, ask.Volume), bid.CrossRate, new VolumePrice(bid.Price, bid.Volume));
                             newArbitrages.Add(key, arbitrage);
                         }
                     }
@@ -331,7 +339,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 watch.Stop();
                 if (watch.ElapsedMilliseconds > 1000)
-                    await _log.WriteInfoAsync(GetType().Name, nameof(CalculateArbitrages), $"{watch.ElapsedMilliseconds} ms for {newArbitrages.Count} arbitrages, {actualCrossRates.Count} actual cross rates, {lines.Count} lines, {totalItarations} iterations, {possibleArbitrages} possible arbitrages.");
+                    await _log.WriteInfoAsync(GetType().Name, nameof(CalculateArbitrages), $"{watch.ElapsedMilliseconds} ms, {newArbitrages.Count} arbitrages, {actualCrossRates.Count} actual cross rates, {asksAndBidsMs} for asks and bids, {asks.Count} asks, {bids.Count} bids, {totalItarations} iterations, {possibleArbitrages} possible arbitrages.");
             }
 
             return newArbitrages;
@@ -384,7 +392,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             watch.Stop();
             if (watch.ElapsedMilliseconds - calculateArbitragesMs > 100)
-                await _log.WriteInfoAsync(GetType().Name, nameof(RefreshArbitrages), $"{watch.ElapsedMilliseconds} ms for new {newArbitrages.Count} arbitrages, {removed} removed, {added} added, {beforeCleaning - _arbitrageHistory.Count} cleaned, {_arbitrages.Count} active, {_arbitrageHistory.Count} in history.");
+                await _log.WriteInfoAsync(GetType().Name, nameof(RefreshArbitrages), $"{watch.ElapsedMilliseconds} ms, new {newArbitrages.Count} arbitrages, {removed} removed, {added} added, {beforeCleaning - _arbitrageHistory.Count} cleaned, {_arbitrages.Count} active, {_arbitrageHistory.Count} in history.");
         }
 
         
@@ -407,14 +415,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _arbitrageHistory = remained;
         }
 
-        private IList<ArbitrageLine> CalculateArbitragesLines(IList<CrossRate> crossRates)
+        private (IList<ArbitrageLine> asks, IList<ArbitrageLine> bids)? CalculateArbitragesLines(IList<CrossRate> crossRates)
         {
-            // TODO: can be improved.
-            var lines = new List<ArbitrageLine>();
-
             // If no asks or bids then return empty list
             if (!crossRates.SelectMany(x => x.Asks).Any() || !crossRates.SelectMany(x => x.Bids).Any())
-                return lines;
+                return null;
 
             // 1. Calculate minAsk and maxBid
             var minAsk = crossRates.SelectMany(x => x.Asks).Min(x => x.Price);
@@ -422,32 +427,25 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             // No arbitrages
             if (minAsk >= maxBid)
-                return lines;
+                return null;
 
             // 2. Collect only arbitrages lines
+            var asks = new List<ArbitrageLine>();
+            var bids = new List<ArbitrageLine>();
             foreach (var crossRate in crossRates)
             {
                 crossRate.Asks.Where(x => x.Price < maxBid)
-                    .ForEach(x => lines.Add(new ArbitrageLine
-                    {
-                        CrossRate = crossRate,
-                        AskPrice = x.Price,
-                        Volume = x.Volume
-                    }));
+                    .ForEach(x => asks.Add(new ArbitrageLine(crossRate, x)));
 
                 crossRate.Bids.Where(x => x.Price > minAsk)
-                    .ForEach(x => lines.Add(new ArbitrageLine
-                    {
-                        CrossRate = crossRate,
-                        BidPrice = x.Price,
-                        Volume = x.Volume
-                    }));
+                    .ForEach(x => bids.Add(new ArbitrageLine(crossRate, x)));
             }
 
             // 3. Order by Price
-            lines = lines.OrderBy(x => x.Price).ThenBy(x => x.AskPrice).ToList();
+            asks = asks.OrderByDescending(x => x.Price).ToList();
+            bids = bids.OrderByDescending(x => x.Price).ToList();
 
-            return lines;
+            return (asks, bids);
         }
 
         private void MoveFromActualToHistory(Arbitrage arbitrage)

@@ -63,5 +63,20 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             BestBid = Bids.Any() ? Bids.MaxBy(x => x.Price) : (VolumePrice?)null;
             Timestamp = timestamp;
         }
+
+        /// <summary>
+        /// Returns new reversed order book.
+        /// </summary>
+        /// <returns></returns>
+        public OrderBook Reverse()
+        {
+            var result = new OrderBook(Source, AssetPair.Reverse(),
+                Bids.Select(x => new VolumePrice(1 / x.Price, x.Volume)).OrderByDescending(x => x.Price).ToList(),
+                Asks.Select(x => new VolumePrice(1 / x.Price, x.Volume)).OrderByDescending(x => x.Price).ToList(),
+                Timestamp);
+            result.AssetPair = AssetPair.Reverse();
+
+            return result;
+        }
     }
 }
