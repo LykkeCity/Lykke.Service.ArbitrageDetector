@@ -263,7 +263,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _crossRates.AddOrUpdateRange(newActualCrossRates);
 
             watch.Stop();
-            if (watch.ElapsedMilliseconds > 100)
+            if (watch.ElapsedMilliseconds > 200)
                 await _log.WriteInfoAsync(GetType().Name, nameof(CalculateCrossRates), $"{watch.ElapsedMilliseconds} ms, {_crossRates.Count} cross rates, {actualOrderBooks.Count} order books.");
 
             return _crossRates.Select(x => x.Value).ToList().AsReadOnly();
