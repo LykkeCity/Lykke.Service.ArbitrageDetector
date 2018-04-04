@@ -152,6 +152,10 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             return string.IsNullOrWhiteSpace(Base) || string.IsNullOrWhiteSpace(Quote);
         }
 
+        /// <summary>
+        /// ToString implementation.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             Validate();

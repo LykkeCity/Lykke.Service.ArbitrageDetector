@@ -54,18 +54,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <param name="rightAssetPair"></param>
         public static string GetConversionPath(string leftSource, string leftAssetPair, string rightSource, string rightAssetPair)
         {
-            return GetSourceAssetPair(leftSource, leftAssetPair) + " * " + GetSourceAssetPair(rightSource, rightAssetPair);
-        }
-
-        /// <summary>
-        /// Formats source asset pair.
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="assetPair"></param>
-        /// <returns></returns>
-        public static string GetSourceAssetPair(string source, string assetPair)
-        {
-            return source + "-" + assetPair;
+            return leftSource + " * " + rightSource;
         }
 
         /// <summary>
@@ -77,6 +66,15 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public static string GetSourcesPath(string leftSource, string rightSource)
         {
             return leftSource + "-" + rightSource;
+        }
+
+        /// <summary>
+        /// ToString implementation.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return ConversionPath;
         }
     }
 }

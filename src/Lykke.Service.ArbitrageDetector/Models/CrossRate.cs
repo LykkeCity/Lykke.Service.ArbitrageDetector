@@ -57,5 +57,14 @@ namespace Lykke.Service.ArbitrageDetector.Models
                 domain.ConversionPath, domain.OriginalOrderBooks.Select(x => new OrderBook(x)).ToList(), domain.Timestamp)
         {
         }
+
+        /// <summary>
+        /// ToString implementation.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return ConversionPath;
+        }
     }
 }

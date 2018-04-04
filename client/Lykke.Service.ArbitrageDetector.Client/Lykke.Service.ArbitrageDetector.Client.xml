@@ -355,7 +355,7 @@
             <param name="rightSource"></param>
             <param name="rightAssetPair"></param>
         </member>
-        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.GetSourceAssetPair(System.String,System.String)">
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.FormatSourceAssetPair(System.String,System.String)">
             <summary>
             Formats source asset pair.
             </summary>

@@ -27,5 +27,14 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             Price = price;
             Volume = Math.Abs(volume);
         }
+
+        /// <summary>
+        /// Returns reciprocal volume price.
+        /// </summary>
+        /// <returns></returns>
+        public VolumePrice Reciprocal()
+        {
+            return new VolumePrice(1 / Price, Volume);
+        }
     }
 }

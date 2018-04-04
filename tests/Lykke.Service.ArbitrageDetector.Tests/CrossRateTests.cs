@@ -47,10 +47,11 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         public void FromOrderBookExceptionTest()
         {
             const string exchange = "FakeExchange";
+            const string btceur = "BTCEUR";
             var timestamp = DateTime.UtcNow;
             var assetPair = new AssetPair("BTC", "EUR");
 
-            var btcEurOrderBook = new OrderBook(exchange, "BTCEUR", new List<VolumePrice>(), new List<VolumePrice>(), timestamp);
+            var btcEurOrderBook = new OrderBook(exchange, btceur, new List<VolumePrice>(), new List<VolumePrice>(), timestamp);
 
             // AssetPair is not set in order book
             void FromOrderBook() => CrossRate.FromOrderBook(btcEurOrderBook, assetPair);
@@ -70,7 +71,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp = DateTime.UtcNow;
             var assetPair = new AssetPair("BTC", "EUR");
 
-            var btcEurOrderBook = new OrderBook(exchange, "BTCEUR",
+            var btcEurOrderBook = new OrderBook(exchange, btceur,
                 new List<VolumePrice> // asks
                 {
                     new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
@@ -86,7 +87,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(exchange, crossRate.Source);
             Assert.Equal(btceur, crossRate.AssetPairStr);
             Assert.Equal(assetPair, crossRate.AssetPair);
-            Assert.Equal(CrossRate.GetSourceAssetPair(exchange, btceur), crossRate.ConversionPath);
+            Assert.Equal(OrderBook.FormatSourceAssetPair(exchange, btceur), crossRate.ConversionPath);
             Assert.Equal(3, crossRate.Asks.Count);
             Assert.Equal(2, crossRate.Bids.Count);
             Assert.Equal(timestamp, crossRate.Timestamp);
@@ -118,7 +119,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(exchange, crossRate.Source);
             Assert.Equal(reversed.Name, crossRate.AssetPairStr);
             Assert.Equal(reversed, crossRate.AssetPair);
-            Assert.Equal(CrossRate.GetSourceAssetPair(exchange, btcusd), crossRate.ConversionPath);
+            Assert.Equal(OrderBook.FormatSourceAssetPair(exchange, btcusd), crossRate.ConversionPath);
             Assert.Equal(2, crossRate.Asks.Count);
             Assert.Equal(3, crossRate.Bids.Count);
             Assert.Equal(timestamp, crossRate.Timestamp);

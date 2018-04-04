@@ -90,12 +90,32 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public OrderBook Reverse()
         {
             var result = new OrderBook(Source, AssetPair.Quote + AssetPair.Base,
-                Bids.Select(x => new VolumePrice(1 / x.Price, x.Volume)).OrderByDescending(x => x.Price).ToList(),
-                Asks.Select(x => new VolumePrice(1 / x.Price, x.Volume)).OrderByDescending(x => x.Price).ToList(),
+                Bids.Select(x => x.Reciprocal()).OrderByDescending(x => x.Price).ToList(),
+                Asks.Select(x => x.Reciprocal()).OrderByDescending(x => x.Price).ToList(),
                 Timestamp);
             result.AssetPair = AssetPair.Reverse();
 
             return result;
+        }
+
+        /// <summary>
+        /// ToString implementation.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return FormatSourceAssetPair(Source, AssetPair.Name);
+        }
+
+        /// <summary>
+        /// Formats source asset pair.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="assetPair"></param>
+        /// <returns></returns>
+        public static string FormatSourceAssetPair(string source, string assetPair)
+        {
+            return source + "-" + assetPair;
         }
     }
 }

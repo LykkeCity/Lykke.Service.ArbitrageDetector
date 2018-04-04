@@ -321,7 +321,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             await arbitrageDetector.CalculateCrossRates();
             watch.Stop();
             if (performance)
-                Assert.InRange(watch.ElapsedMilliseconds, 700, 800);
+                Assert.InRange(watch.ElapsedMilliseconds, 400, 500);
 
             var crossRates = arbitrageDetector.GetCrossRates().ToList();
             var arbitrages = arbitrageDetector.GetArbitrages().ToList();
@@ -352,11 +352,11 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var watch = Stopwatch.StartNew();
             var crossRates = await arbitrageDetector.CalculateCrossRates();
             if (performance)
-                Assert.InRange(watch.ElapsedMilliseconds, 30, 70);
+                Assert.InRange(watch.ElapsedMilliseconds, 5, 50);
             var arbitrages = await arbitrageDetector.CalculateArbitrages();
             watch.Stop();
             if (performance)
-                Assert.InRange(watch.ElapsedMilliseconds, 600, 800);
+                Assert.InRange(watch.ElapsedMilliseconds, 400, 500);
             
             Assert.Equal(63, crossRates.Count());
             Assert.Equal(735, arbitrages.Count());
@@ -384,7 +384,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             await arbitrageDetector.Execute();
             watch.Stop();
             if (performance)
-                Assert.InRange(watch.ElapsedMilliseconds, 600, 800);
+                Assert.InRange(watch.ElapsedMilliseconds, 350, 450);
 
             var crossRates = arbitrageDetector.GetCrossRates();
             var arbitrages = arbitrageDetector.GetArbitrages();
@@ -406,7 +406,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             await arbitrageDetector.Execute();
             watch.Stop();
             if (performance)
-                Assert.InRange(watch.ElapsedMilliseconds, 400, 600); // Second time may be faster
+                Assert.InRange(watch.ElapsedMilliseconds, 300, 400); // Second time may be faster
 
             crossRates = arbitrageDetector.GetCrossRates();
             arbitrages = arbitrageDetector.GetArbitrages();
