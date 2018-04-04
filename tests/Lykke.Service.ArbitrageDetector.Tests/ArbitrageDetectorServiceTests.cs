@@ -351,7 +351,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             var watch = Stopwatch.StartNew();
             var crossRates = await arbitrageDetector.CalculateCrossRates();
-            Assert.InRange(watch.ElapsedMilliseconds, 30, 70);
+            if (performance)
+                Assert.InRange(watch.ElapsedMilliseconds, 30, 70);
             var arbitrages = await arbitrageDetector.CalculateArbitrages();
             watch.Stop();
             if (performance)
