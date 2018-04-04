@@ -208,7 +208,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             }
 
             var source = GetSourcesPath(one.Source, another.Source);
-            var conversionPath = GetConversionPath(one.Source, one.AssetPairStr, another.Source, another.AssetPairStr);
+            var conversionPath = GetConversionPath(one, another);
             var originalOrderBooks = new List<OrderBook> { one, another };
             var timestamp = left.Timestamp < right.Timestamp ? left.Timestamp : right.Timestamp;
 
@@ -220,13 +220,23 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Formats conversion path.
         /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        public static string GetConversionPath(OrderBook left, OrderBook right)
+        {
+            return left + " * " + right;
+        }
+
+        /// <summary>
+        /// Formats conversion path.
+        /// </summary>
         /// <param name="leftSource"></param>
         /// <param name="leftAssetPair"></param>
         /// <param name="rightSource"></param>
         /// <param name="rightAssetPair"></param>
         public static string GetConversionPath(string leftSource, string leftAssetPair, string rightSource, string rightAssetPair)
         {
-            return leftSource + " * " + rightSource;
+            return leftSource + "-" + leftAssetPair + " * " + rightSource + "-" + rightAssetPair;
         }
 
         /// <summary>

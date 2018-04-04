@@ -48,13 +48,23 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Formats conversion path.
         /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        public static string GetConversionPath(OrderBook left, OrderBook right)
+        {
+            return left + " * " + right;
+        }
+
+        /// <summary>
+        /// Formats conversion path.
+        /// </summary>
         /// <param name="leftSource"></param>
         /// <param name="leftAssetPair"></param>
         /// <param name="rightSource"></param>
         /// <param name="rightAssetPair"></param>
         public static string GetConversionPath(string leftSource, string leftAssetPair, string rightSource, string rightAssetPair)
         {
-            return leftSource + " * " + rightSource;
+            return leftSource + "-" + leftAssetPair + " * " + rightSource + "-" + rightAssetPair;
         }
 
         /// <summary>
