@@ -315,7 +315,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         possibleArbitrages++;
 
                         var spread = Arbitrage.GetSpread(askPrice, bidPrice);
-                        if (_minSpread >= 0 || spread < _minSpread)
+                        if (_minSpread < 0 && spread < _minSpread)
                             continue;
 
                         var key = Arbitrage.FormatConversionPath(ask.CrossRate.ConversionPath, bid.CrossRate.ConversionPath);
