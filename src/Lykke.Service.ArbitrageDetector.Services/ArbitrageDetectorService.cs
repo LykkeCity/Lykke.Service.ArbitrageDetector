@@ -154,13 +154,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 restartNeeded = true;
             }
 
-            if (settings.IntermediateAssets != null)
+            if (settings.IntermediateAssets != null && settings.IntermediateAssets.Any())
             {
                 _intermediateAssets = settings.IntermediateAssets;
                 restartNeeded = true;
             }
 
-            if (settings.BaseAssets != null)
+            if (settings.BaseAssets != null && settings.BaseAssets.Any())
             {
                 _baseAssets = settings.BaseAssets;
                 restartNeeded = true;
