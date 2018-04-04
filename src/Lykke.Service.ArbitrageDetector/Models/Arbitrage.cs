@@ -112,5 +112,39 @@ namespace Lykke.Service.ArbitrageDetector.Models
         {
             return ConversionPath;
         }
+
+        /// <summary>
+        /// Formats conversion path.
+        /// </summary>
+        /// <param name="askCrossRateConversionPath"></param>
+        /// <param name="bidCrossRateConversionPath"></param>
+        /// <returns></returns>
+        public static string FormatConversionPath(string askCrossRateConversionPath, string bidCrossRateConversionPath)
+        {
+            return "(" + askCrossRateConversionPath + ") < (" + bidCrossRateConversionPath + ")";
+        }
+
+        /// <summary>
+        /// Calculates spread.
+        /// </summary>
+        /// <param name="askPrice"></param>
+        /// <param name="bidPrice"></param>
+        /// <returns></returns>
+        public static decimal GetSpread(decimal askPrice, decimal bidPrice)
+        {
+            return (askPrice - bidPrice) / bidPrice * 100;
+        }
+
+        /// <summary>
+        /// Calculates PnL.
+        /// </summary>
+        /// <param name="askPrice"></param>
+        /// <param name="bidPrice"></param>
+        /// <param name="volume"></param>
+        /// <returns></returns>
+        public static decimal GetPnL(decimal askPrice, decimal bidPrice, decimal volume)
+        {
+            return (bidPrice - askPrice) * volume;
+        }
     }
 }

@@ -75,7 +75,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Conversion path.
         /// </summary>
-        public string ConversionPath => $"({AskConversionPath}) * ({BidConversionPath})";
+        public string ConversionPath => Arbitrage.FormatConversionPath(AskConversionPath, BidConversionPath);
 
         /// <summary>
         /// Constructor.
@@ -115,7 +115,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <returns></returns>
         public override string ToString()
         {
-            return $"{AssetPair}-{ConversionPath}-{Ask.Price}-{Ask.Volume}-{Bid.Price}-{Bid.Volume}";
+            return ConversionPath;
         }
     }
 }

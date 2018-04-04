@@ -117,12 +117,29 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.GetConversionPath(System.String,System.String)">
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.FormatConversionPath(System.String,System.String)">
             <summary>
-            Format conversion path.
+            Formats conversion path.
             </summary>
             <param name="askCrossRateConversionPath"></param>
             <param name="bidCrossRateConversionPath"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.GetSpread(System.Decimal,System.Decimal)">
+            <summary>
+            Calculates spread.
+            </summary>
+            <param name="askPrice"></param>
+            <param name="bidPrice"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.GetPnL(System.Decimal,System.Decimal,System.Decimal)">
+            <summary>
+            Calculates PnL.
+            </summary>
+            <param name="askPrice"></param>
+            <param name="bidPrice"></param>
+            <param name="volume"></param>
             <returns></returns>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageRow">
@@ -331,21 +348,28 @@
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.GetConversionPath(System.String,System.String,System.String,System.String)">
             <summary>
-            Format conversion path.
+            Formats conversion path.
             </summary>
             <param name="leftSource"></param>
             <param name="leftAssetPair"></param>
             <param name="rightSource"></param>
             <param name="rightAssetPair"></param>
-            <returns></returns>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.GetSourceAssetPair(System.String,System.String)">
             <summary>
-            Format source asset pair.
+            Formats source asset pair.
             </summary>
             <param name="source"></param>
             <param name="assetPair"></param>
             <returns></returns>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.GetSourcesPath(System.String,System.String)">
+            <summary>
+            Formats source - source path.
+            </summary>
+            <param name="leftSource"></param>
+            <param name="rightSource"></param>
+            <returns></returns>]
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.CrossRateRow">
             <summary>
