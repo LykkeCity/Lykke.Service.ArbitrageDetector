@@ -75,7 +75,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
             var originalOrderBooks = new List<OrderBook>();
             OrderBook orderBookResult = null;
-            var conversionPath = orderBook.Source + "-" + orderBook.AssetPairStr;
+            var conversionPath = GetSourceAssetPair(orderBook.Source, orderBook.AssetPairStr);
             // Streight
             if (orderBook.AssetPair.Base == targetAssetPair.Base && orderBook.AssetPair.Quote == targetAssetPair.Quote)
             {
@@ -207,14 +207,48 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 }
             }
 
-            var source = one.Source + "-" + another.Source;
-            var conversionPath = one.Source + "-" + one.AssetPairStr + " & " + another.Source + "-" + another.AssetPairStr;
+            var source = GetSourcesPath(one.Source, another.Source);
+            var conversionPath = GetConversionPath(one.Source, one.AssetPairStr, another.Source, another.AssetPairStr);
             var originalOrderBooks = new List<OrderBook> { one, another };
             var timestamp = left.Timestamp < right.Timestamp ? left.Timestamp : right.Timestamp;
 
             var result = new CrossRate(source, targetAssetPair, asks, bids, conversionPath, originalOrderBooks, timestamp);
 
             return result;
+        }
+
+        /// <summary>
+        /// Formats conversion path.
+        /// </summary>
+        /// <param name="leftSource"></param>
+        /// <param name="leftAssetPair"></param>
+        /// <param name="rightSource"></param>
+        /// <param name="rightAssetPair"></param>
+        public static string GetConversionPath(string leftSource, string leftAssetPair, string rightSource, string rightAssetPair)
+        {
+            return GetSourceAssetPair(leftSource, leftAssetPair) + " * " + GetSourceAssetPair(rightSource, rightAssetPair);
+        }
+
+        /// <summary>
+        /// Formats source asset pair.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="assetPair"></param>
+        /// <returns></returns>
+        public static string GetSourceAssetPair(string source, string assetPair)
+        {
+            return source + "-" + assetPair;
+        }
+
+        /// <summary>
+        /// Formats source - source path.
+        /// </summary>
+        /// <param name="leftSource"></param>
+        /// <param name="rightSource"></param>
+        /// <returns></returns>]
+        public static string GetSourcesPath(string leftSource, string rightSource)
+        {
+            return leftSource + "-" + rightSource;
         }
     }
 }

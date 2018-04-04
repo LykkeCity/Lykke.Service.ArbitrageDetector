@@ -86,7 +86,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(exchange, crossRate.Source);
             Assert.Equal(btceur, crossRate.AssetPairStr);
             Assert.Equal(assetPair, crossRate.AssetPair);
-            Assert.Equal($"{exchange}-{btceur}", crossRate.ConversionPath);
+            Assert.Equal(CrossRate.GetSourceAssetPair(exchange, btceur), crossRate.ConversionPath);
             Assert.Equal(3, crossRate.Asks.Count);
             Assert.Equal(2, crossRate.Bids.Count);
             Assert.Equal(timestamp, crossRate.Timestamp);
@@ -118,7 +118,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(exchange, crossRate.Source);
             Assert.Equal(reversed.Name, crossRate.AssetPairStr);
             Assert.Equal(reversed, crossRate.AssetPair);
-            Assert.Equal($"{exchange}-{btcusd}", crossRate.ConversionPath);
+            Assert.Equal(CrossRate.GetSourceAssetPair(exchange, btcusd), crossRate.ConversionPath);
             Assert.Equal(2, crossRate.Asks.Count);
             Assert.Equal(3, crossRate.Bids.Count);
             Assert.Equal(timestamp, crossRate.Timestamp);
@@ -191,10 +191,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             eurUsdOrderBook.SetAssetPair("EUR");
 
             var crossRate = CrossRate.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, targetAssetPair);
-            Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
+            Assert.Equal(CrossRate.GetSourcesPath(exchange, exchange), crossRate.Source);
             Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
             Assert.Equal(targetAssetPair, crossRate.AssetPair);
-            Assert.Equal($"{exchange}-{btceur} & {exchange}-{eurusd}", crossRate.ConversionPath);
+            Assert.Equal(CrossRate.GetConversionPath(exchange, btceur, exchange, eurusd), crossRate.ConversionPath);
             Assert.Equal(9, crossRate.Asks.Count);
             Assert.Equal(4, crossRate.Bids.Count);
             Assert.Equal(timestamp1, crossRate.Timestamp);
@@ -236,10 +236,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             eurUsdOrderBook.SetAssetPair("EUR");
 
             var crossRate = CrossRate.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, targetAssetPair);
-            Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
+            Assert.Equal(CrossRate.GetSourcesPath(exchange, exchange), crossRate.Source);
             Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
             Assert.Equal(targetAssetPair, crossRate.AssetPair);
-            Assert.Equal($"{exchange}-{eurbtc} & {exchange}-{eurusd}", crossRate.ConversionPath);
+            Assert.Equal(CrossRate.GetConversionPath(exchange, eurbtc, exchange, eurusd), crossRate.ConversionPath);
             Assert.Equal(6, crossRate.Asks.Count);
             Assert.Equal(6, crossRate.Bids.Count);
             Assert.Equal(timestamp1, crossRate.Timestamp);
@@ -281,10 +281,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             eurUsdOrderBook.SetAssetPair("EUR");
 
             var crossRate = CrossRate.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, targetAssetPair);
-            Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
+            Assert.Equal(CrossRate.GetSourcesPath(exchange,exchange), crossRate.Source);
             Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
             Assert.Equal(targetAssetPair, crossRate.AssetPair);
-            Assert.Equal($"{exchange}-{btceur} & {exchange}-{usdeur}", crossRate.ConversionPath);
+            Assert.Equal(CrossRate.GetConversionPath(exchange, btceur, exchange, usdeur), crossRate.ConversionPath);
             Assert.Equal(6, crossRate.Asks.Count);
             Assert.Equal(6, crossRate.Bids.Count);
             Assert.Equal(timestamp1, crossRate.Timestamp);
@@ -326,10 +326,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             eurUsdOrderBook.SetAssetPair("EUR");
 
             var crossRate = CrossRate.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, targetAssetPair);
-            Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
+            Assert.Equal(CrossRate.GetSourcesPath(exchange, exchange), crossRate.Source);
             Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
             Assert.Equal(targetAssetPair, crossRate.AssetPair);
-            Assert.Equal($"{exchange}-{eurbtc} & {exchange}-{usdeur}", crossRate.ConversionPath);
+            Assert.Equal(CrossRate.GetConversionPath(exchange, eurbtc, exchange, usdeur), crossRate.ConversionPath);
             Assert.Equal(4, crossRate.Asks.Count);
             Assert.Equal(9, crossRate.Bids.Count);
             Assert.Equal(timestamp1, crossRate.Timestamp);

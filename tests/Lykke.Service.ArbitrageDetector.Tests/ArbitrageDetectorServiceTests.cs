@@ -27,11 +27,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string quoteAsset = "USD";
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
+            const string btceur = "BTCEUR";
+            const string eurusd = "EURUSD";
 
             var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, new List<string>(), quoteAsset);
             var arbitrageCalculator = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
-            var btcEurOrderBook = new OrderBook(exchange, "BTCEUR",
+            var btcEurOrderBook = new OrderBook(exchange, btceur,
                 new List<VolumePrice> // asks
                 {
                     new VolumePrice(8999.95m, 10), new VolumePrice(9000, 10), new VolumePrice(9100, 10)
@@ -42,7 +44,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            var eurUsdOrderBook = new OrderBook(exchange, "EURUSD",
+            var eurUsdOrderBook = new OrderBook(exchange, eurusd,
                 new List<VolumePrice> // asks
                 {
                     new VolumePrice(1.22033m, 10), new VolumePrice(1.22035m, 10), new VolumePrice(1.22040m, 10)
@@ -59,8 +61,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var crossRates = (await arbitrageCalculator.CalculateCrossRates()).ToList();
             Assert.Single(crossRates);
             var crossRate = crossRates.First();
-            Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
-            Assert.Equal("Lykke-BTCEUR & Lykke-EURUSD", crossRate.ConversionPath);
+            Assert.Equal(CrossRate.GetSourcesPath(exchange,exchange), crossRate.Source);
+            Assert.Equal(CrossRate.GetConversionPath(exchange, btceur, exchange, eurusd), crossRate.ConversionPath);
             Assert.Equal(btcusd, crossRate.AssetPairStr);
             Assert.Equal(10769.1475m, crossRate.Bids.Max(x => x.Price), 8);
             Assert.Equal(10982.9089835m, crossRate.Asks.Min(x => x.Price), 8);
@@ -77,11 +79,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string quoteAsset = "USD";
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
+            const string btceur = "BTCEUR";
+            const string usdeur = "USDEUR";
 
             var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, new List<string>(), quoteAsset);
             var arbitrageCalculator = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
-            var btcEurOrderBook = new OrderBook(exchange, "BTCEUR",
+            var btcEurOrderBook = new OrderBook(exchange, btceur,
                 new List<VolumePrice> // asks
                 {
                     new VolumePrice(8999.95m, 10),
@@ -95,7 +99,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            var usdEurOrderBook = new OrderBook(exchange, "USDEUR",
+            var usdEurOrderBook = new OrderBook(exchange, usdeur,
                 new List<VolumePrice> // ask
                 {
                     new VolumePrice(1/1.2203m, 10),
@@ -114,8 +118,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var crossRates = (await arbitrageCalculator.CalculateCrossRates()).ToList();
             Assert.Single(crossRates);
             var crossRate = crossRates.First();
-            Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
-            Assert.Equal("Lykke-BTCEUR & Lykke-USDEUR", crossRate.ConversionPath);
+            Assert.Equal(CrossRate.GetSourcesPath(exchange, exchange), crossRate.Source);
+            Assert.Equal(CrossRate.GetConversionPath(exchange, btceur, exchange, usdeur), crossRate.ConversionPath);
             Assert.Equal(btcusd, crossRate.AssetPairStr);
             Assert.Equal(10769.1475m, crossRate.Bids.Max(x => x.Price), 8);
             Assert.Equal(10982.9089835m, crossRate.Asks.Min(x => x.Price), 8);
@@ -132,11 +136,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string quoteAsset = "USD";
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
+            const string eurbtc = "EURBTC";
+            const string eurusd = "EURUSD";
 
             var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, new List<string>(), quoteAsset);
             var arbitrageCalculator = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
-            var btcEurOrderBook = new OrderBook(exchange, "EURBTC",
+            var btcEurOrderBook = new OrderBook(exchange, eurbtc,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/8825m, 10),
@@ -150,7 +156,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            var eurUsdOrderBook = new OrderBook(exchange, "EURUSD",
+            var eurUsdOrderBook = new OrderBook(exchange, eurusd,
                 new List<VolumePrice> // asks
                 {
                     new VolumePrice(1.22033m, 10),
@@ -169,8 +175,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var crossRates = (await arbitrageCalculator.CalculateCrossRates()).ToList();
             Assert.Single(crossRates);
             var crossRate = crossRates.First();
-            Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
-            Assert.Equal("Lykke-EURBTC & Lykke-EURUSD", crossRate.ConversionPath);
+            Assert.Equal(CrossRate.GetSourcesPath(exchange, exchange), crossRate.Source);
+            Assert.Equal(CrossRate.GetConversionPath(exchange, eurbtc, exchange, eurusd), crossRate.ConversionPath);
             Assert.Equal(btcusd, crossRate.AssetPairStr);
             Assert.Equal(10769.1475m, crossRate.Bids.Max(x => x.Price), 8);
             Assert.Equal(10982.9089835m, crossRate.Asks.Min(x => x.Price), 8);
@@ -187,11 +193,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string quoteAsset = "USD";
             const string exchange = "Lykke";
             const string btcusd = "BTCUSD";
+            const string eurbtc = "EURBTC";
+            const string usdeur = "USDEUR";
 
             var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, new List<string>(), quoteAsset);
             var arbitrageCalculator = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
-            var eurBtcOrderBook = new OrderBook(exchange, "EURBTC",
+            var eurBtcOrderBook = new OrderBook(exchange, eurbtc,
                 new List<VolumePrice> // asks
                 {
                     new VolumePrice(1/8825m, 10),
@@ -205,7 +213,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            var usdEurOrderBook = new OrderBook(exchange, "USDEUR",
+            var usdEurOrderBook = new OrderBook(exchange, usdeur,
                 new List<VolumePrice> // ask
                 {
                     new VolumePrice(1/1.2203m, 10),
@@ -224,8 +232,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var crossRates = (await arbitrageCalculator.CalculateCrossRates()).ToList();
             Assert.Single(crossRates);
             var crossRate = crossRates.First();
-            Assert.Equal($"{exchange}-{exchange}", crossRate.Source);
-            Assert.Equal("Lykke-EURBTC & Lykke-USDEUR", crossRate.ConversionPath);
+            Assert.Equal(CrossRate.GetSourcesPath(exchange, exchange), crossRate.Source);
+            Assert.Equal(CrossRate.GetConversionPath(exchange, eurbtc, exchange, usdeur), crossRate.ConversionPath);
             Assert.Equal(btcusd, crossRate.AssetPairStr);
             Assert.Equal(10769.1475m, crossRate.Bids.Max(x => x.Price), 8);
             Assert.Equal(10982.9089835m, crossRate.Asks.Min(x => x.Price), 8);
@@ -313,7 +321,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             await arbitrageDetector.CalculateCrossRates();
             watch.Stop();
             if (performance)
-                Assert.InRange(watch.ElapsedMilliseconds, 400, 600);
+                Assert.InRange(watch.ElapsedMilliseconds, 700, 800);
 
             var crossRates = arbitrageDetector.GetCrossRates().ToList();
             var arbitrages = arbitrageDetector.GetArbitrages().ToList();
@@ -343,11 +351,11 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             var watch = Stopwatch.StartNew();
             var crossRates = await arbitrageDetector.CalculateCrossRates();
-            Assert.True(watch.ElapsedMilliseconds < 50);
+            Assert.InRange(watch.ElapsedMilliseconds, 30, 70);
             var arbitrages = await arbitrageDetector.CalculateArbitrages();
             watch.Stop();
             if (performance)
-                Assert.InRange(watch.ElapsedMilliseconds, 300, 400);
+                Assert.InRange(watch.ElapsedMilliseconds, 600, 800);
             
             Assert.Equal(63, crossRates.Count());
             Assert.Equal(735, arbitrages.Count());
@@ -375,7 +383,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             await arbitrageDetector.Execute();
             watch.Stop();
             if (performance)
-                Assert.InRange(watch.ElapsedMilliseconds, 350, 450);
+                Assert.InRange(watch.ElapsedMilliseconds, 600, 800);
 
             var crossRates = arbitrageDetector.GetCrossRates();
             var arbitrages = arbitrageDetector.GetArbitrages();
@@ -397,7 +405,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             await arbitrageDetector.Execute();
             watch.Stop();
             if (performance)
-                Assert.InRange(watch.ElapsedMilliseconds, 300, 400); // Second time may be faster
+                Assert.InRange(watch.ElapsedMilliseconds, 400, 600); // Second time may be faster
 
             crossRates = arbitrageDetector.GetCrossRates();
             arbitrages = arbitrageDetector.GetArbitrages();

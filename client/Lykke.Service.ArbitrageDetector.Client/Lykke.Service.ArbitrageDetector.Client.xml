@@ -117,6 +117,14 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.GetConversionPath(System.String,System.String)">
+            <summary>
+            Format conversion path.
+            </summary>
+            <param name="askCrossRateConversionPath"></param>
+            <param name="bidCrossRateConversionPath"></param>
+            <returns></returns>
+        </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageRow">
             <summary>
             Represents an arbitrage situation.
@@ -321,6 +329,24 @@
             <param name="originalOrderBooks"></param>
             <param name="timestamp"></param>
         </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.GetConversionPath(System.String,System.String,System.String,System.String)">
+            <summary>
+            Format conversion path.
+            </summary>
+            <param name="leftSource"></param>
+            <param name="leftAssetPair"></param>
+            <param name="rightSource"></param>
+            <param name="rightAssetPair"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.GetSourceAssetPair(System.String,System.String)">
+            <summary>
+            Format source asset pair.
+            </summary>
+            <param name="source"></param>
+            <param name="assetPair"></param>
+            <returns></returns>
+        </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.CrossRateRow">
             <summary>
             Represents a cross rate.
@@ -416,6 +442,12 @@
             <param name="asks"></param>
             <param name="bids"></param>
             <param name="timestamp"></param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.Reverse">
+            <summary>
+            Returns new reversed order book.
+            </summary>
+            <returns></returns>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.Settings">
             <summary>

@@ -44,5 +44,39 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
 
             OriginalOrderBooks = originalOrderBooks ?? throw new ArgumentNullException(nameof(originalOrderBooks));
         }
+
+        /// <summary>
+        /// Formats conversion path.
+        /// </summary>
+        /// <param name="leftSource"></param>
+        /// <param name="leftAssetPair"></param>
+        /// <param name="rightSource"></param>
+        /// <param name="rightAssetPair"></param>
+        public static string GetConversionPath(string leftSource, string leftAssetPair, string rightSource, string rightAssetPair)
+        {
+            return GetSourceAssetPair(leftSource, leftAssetPair) + " * " + GetSourceAssetPair(rightSource, rightAssetPair);
+        }
+
+        /// <summary>
+        /// Formats source asset pair.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="assetPair"></param>
+        /// <returns></returns>
+        public static string GetSourceAssetPair(string source, string assetPair)
+        {
+            return source + "-" + assetPair;
+        }
+
+        /// <summary>
+        /// Formats source - source path.
+        /// </summary>
+        /// <param name="leftSource"></param>
+        /// <param name="rightSource"></param>
+        /// <returns></returns>]
+        public static string GetSourcesPath(string leftSource, string rightSource)
+        {
+            return leftSource + "-" + rightSource;
+        }
     }
 }

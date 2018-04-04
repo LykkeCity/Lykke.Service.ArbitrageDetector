@@ -312,17 +312,17 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                         possibleArbitrages++;
 
-                        var spread = (askPrice - bidPrice) / bidPrice * 100;
+                        var spread = Arbitrage.GetSpread(askPrice, bidPrice);
                         if (_minSpread >= 0 || spread < _minSpread)
                             continue;
 
-                        var key = "(" + ask.CrossRate.ConversionPath + ") * (" + bid.CrossRate.ConversionPath + ")";
+                        var key = Arbitrage.FormatConversionPath(ask.CrossRate.ConversionPath, bid.CrossRate.ConversionPath);
                         if (newArbitrages.TryGetValue(key, out var existed))
                         {
                             var askVolume = ask.Volume;
                             var bidVolume = bid.Volume;
                             var volume = askVolume < bidVolume ? askVolume : bidVolume;
-                            var pnL = (bidPrice - askPrice) * volume;
+                            var pnL = Arbitrage.GetPnL(askPrice, bidPrice, volume);
                             if (pnL <= existed.PnL)
                                 continue;
 

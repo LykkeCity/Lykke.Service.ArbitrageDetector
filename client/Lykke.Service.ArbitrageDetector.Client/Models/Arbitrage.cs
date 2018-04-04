@@ -65,7 +65,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Conversion path.
         /// </summary>
-        public string ConversionPath => "(" + AskCrossRate.ConversionPath + ") * (" + BidCrossRate.ConversionPath + ")";
+        public string ConversionPath => FormatConversionPath(AskCrossRate.ConversionPath, BidCrossRate.ConversionPath);
 
         /// <summary>
         /// Constructor.
@@ -82,9 +82,9 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             BidCrossRate = bidCrossRate ?? throw new ArgumentNullException(nameof(bidCrossRate));
             Ask = ask;
             Bid = bid;
-            Spread = (Ask.Price - Bid.Price) / Bid.Price * 100;
+            Spread = GetSpread(Ask.Price, Bid.Price);
             Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
-            PnL = (Bid.Price - Ask.Price) * Volume;
+            PnL = GetPnL(Ask.Price, Bid.Price, Volume);
             StartedAt = startedAt;
             EndedAt = endedAt;
         }
@@ -96,6 +96,40 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public override string ToString()
         {
             return ConversionPath;
+        }
+
+        /// <summary>
+        /// Formats conversion path.
+        /// </summary>
+        /// <param name="askCrossRateConversionPath"></param>
+        /// <param name="bidCrossRateConversionPath"></param>
+        /// <returns></returns>
+        public static string FormatConversionPath(string askCrossRateConversionPath, string bidCrossRateConversionPath)
+        {
+            return "(" + askCrossRateConversionPath + ") < (" + bidCrossRateConversionPath + ")";
+        }
+
+        /// <summary>
+        /// Calculates spread.
+        /// </summary>
+        /// <param name="askPrice"></param>
+        /// <param name="bidPrice"></param>
+        /// <returns></returns>
+        public static decimal GetSpread(decimal askPrice, decimal bidPrice)
+        {
+            return (askPrice - bidPrice) / bidPrice * 100;
+        }
+
+        /// <summary>
+        /// Calculates PnL.
+        /// </summary>
+        /// <param name="askPrice"></param>
+        /// <param name="bidPrice"></param>
+        /// <param name="volume"></param>
+        /// <returns></returns>
+        public static decimal GetPnL(decimal askPrice, decimal bidPrice, decimal volume)
+        {
+            return (bidPrice - askPrice) * volume;
         }
     }
 }
