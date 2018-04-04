@@ -104,7 +104,8 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 
             try
             {
-                result = new Arbitrage(_arbitrageDetectorService.GetArbitrage(conversionPath));
+                var arbitrage = _arbitrageDetectorService.GetArbitrage(conversionPath);
+                result = arbitrage == null ? null : new Arbitrage(arbitrage);
             }
             catch (Exception exception)
             {
