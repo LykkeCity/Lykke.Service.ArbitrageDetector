@@ -271,9 +271,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return _crossRates.Select(x => x.Value).ToList().AsReadOnly();
         }
         
-        public async Task<ConcurrentDictionary<string, Arbitrage>> CalculateArbitrages()
+        public async Task<Dictionary<string, Arbitrage>> CalculateArbitrages()
         {
-            var newArbitrages = new ConcurrentDictionary<string, Arbitrage>();
+            var newArbitrages = new Dictionary<string, Arbitrage>();
             var actualCrossRates = GetActualCrossRates();
 
             // For each asset pair - for each cross rate make one line for every ask and bid, order that lines and find intersections
@@ -329,7 +329,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                                 continue;
 
                             var arbitrage = new Arbitrage(assetPair, ask.CrossRate, new VolumePrice(ask.Price, ask.Volume), bid.CrossRate, new VolumePrice(bid.Price, bid.Volume));
-                            newArbitrages.AddOrUpdate(key, arbitrage);
+                            newArbitrages[key] = arbitrage;
                         }
                         else
                         {
@@ -473,9 +473,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _orderBooks.AddOrUpdate(key, orderBook);
         }
 
-        private ConcurrentDictionary<AssetPairSource, OrderBook> GetActualOrderBooks()
+        private Dictionary<AssetPairSource, OrderBook> GetActualOrderBooks()
         {
-            var result = new ConcurrentDictionary<AssetPairSource, OrderBook>();
+            var result = new Dictionary<AssetPairSource, OrderBook>();
 
             foreach (var keyValue in _orderBooks)
             {

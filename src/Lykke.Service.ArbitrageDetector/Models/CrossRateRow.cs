@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using MoreLinq;
 using DomainCrossRate = Lykke.Service.ArbitrageDetector.Core.Domain.CrossRate;
 
@@ -22,12 +23,12 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Best ask.
         /// </summary>
-        public VolumePrice BestAsk { get; }
+        public VolumePrice? BestAsk { get; }
 
         /// <summary>
         /// Best bid.
         /// </summary>
-        public VolumePrice BestBid { get; }
+        public VolumePrice? BestBid { get; }
 
         /// <summary>
         /// Conversion path.
@@ -48,7 +49,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <param name="bestBid"></param>
         /// <param name="conversionPath"></param>
         /// <param name="timestamp"></param>
-        public CrossRateRow(string source, AssetPair assetPair, VolumePrice bestAsk, VolumePrice bestBid, string conversionPath, DateTime timestamp)
+        public CrossRateRow(string source, AssetPair assetPair, VolumePrice? bestAsk, VolumePrice? bestBid, string conversionPath, DateTime timestamp)
         {
             Source = string.IsNullOrWhiteSpace(source) ? throw new ArgumentNullException(nameof(source)) : source;
             AssetPair = assetPair;
@@ -66,10 +67,12 @@ namespace Lykke.Service.ArbitrageDetector.Models
         {
             Source = domain.Source;
             AssetPair = new AssetPair(domain.AssetPair);
-            var bestAsk = domain.Asks.MinBy(x => x.Price);
-            var bestBid = domain.Bids.MinBy(x => x.Price);
-            BestAsk = new VolumePrice(bestAsk.Price, bestAsk.Volume);
-            BestBid = new VolumePrice(bestBid.Price, bestBid.Volume);
+
+            var bestAsk = domain.Asks.Any() ? domain.Asks.MinBy(x => x.Price) : (Core.Domain.VolumePrice?)null;
+            var bestBid = domain.Bids.Any() ? domain.Bids.MaxBy(x => x.Price) : (Core.Domain.VolumePrice?)null;
+            BestAsk = bestAsk == null ? (VolumePrice?)null : new VolumePrice(bestAsk.Value.Price, bestAsk.Value.Volume);
+            BestBid = bestBid == null ? (VolumePrice?)null : new VolumePrice(bestBid.Value.Price, bestBid.Value.Volume);
+
             ConversionPath = domain.ConversionPath;
             Timestamp = domain.Timestamp;
         }

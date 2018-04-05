@@ -20,12 +20,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Best ask.
         /// </summary>
-        public VolumePrice BestAsk { get; }
+        public VolumePrice? BestAsk { get; }
 
         /// <summary>
         /// Best bid.
         /// </summary>
-        public VolumePrice BestBid { get; }
+        public VolumePrice? BestBid { get; }
 
         /// <summary>
         /// Conversion path.
@@ -46,7 +46,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <param name="bestBid"></param>
         /// <param name="conversionPath"></param>
         /// <param name="timestamp"></param>
-        public CrossRateRow(string source, AssetPair assetPair, VolumePrice bestAsk, VolumePrice bestBid, string conversionPath, DateTime timestamp)
+        public CrossRateRow(string source, AssetPair assetPair, VolumePrice? bestAsk, VolumePrice? bestBid, string conversionPath, DateTime timestamp)
         {
             Source = string.IsNullOrWhiteSpace(source) ? throw new ArgumentNullException(nameof(source)) : source;
             AssetPair = assetPair;

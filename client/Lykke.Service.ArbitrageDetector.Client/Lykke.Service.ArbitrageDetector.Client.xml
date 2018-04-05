@@ -314,6 +314,12 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.ToString">
+            <summary>
+            ToString implementation.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.Validate">
             <summary>
             Throw ArgumentException if not initialized.
@@ -346,6 +352,13 @@
             <param name="originalOrderBooks"></param>
             <param name="timestamp"></param>
         </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.GetConversionPath(Lykke.Service.ArbitrageDetector.Client.Models.OrderBook,Lykke.Service.ArbitrageDetector.Client.Models.OrderBook)">
+            <summary>
+            Formats conversion path.
+            </summary>
+            <param name="left"></param>
+            <param name="right"></param>
+        </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.GetConversionPath(System.String,System.String,System.String,System.String)">
             <summary>
             Formats conversion path.
@@ -355,14 +368,6 @@
             <param name="rightSource"></param>
             <param name="rightAssetPair"></param>
         </member>
-        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.FormatSourceAssetPair(System.String,System.String)">
-            <summary>
-            Formats source asset pair.
-            </summary>
-            <param name="source"></param>
-            <param name="assetPair"></param>
-            <returns></returns>
-        </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.GetSourcesPath(System.String,System.String)">
             <summary>
             Formats source - source path.
@@ -370,6 +375,12 @@
             <param name="leftSource"></param>
             <param name="rightSource"></param>
             <returns></returns>]
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.ToString">
+            <summary>
+            ToString implementation.
+            </summary>
+            <returns></returns>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.CrossRateRow">
             <summary>
@@ -406,7 +417,7 @@
             Timestamp.
             </summary>
         </member>
-        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRateRow.#ctor(System.String,Lykke.Service.ArbitrageDetector.Client.Models.AssetPair,Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice,Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice,System.String,System.DateTime)">
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRateRow.#ctor(System.String,Lykke.Service.ArbitrageDetector.Client.Models.AssetPair,System.Nullable{Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice},System.Nullable{Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice},System.String,System.DateTime)">
             <summary>
             Constructor.
             </summary>
@@ -471,6 +482,20 @@
             <summary>
             Returns new reversed order book.
             </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.ToString">
+            <summary>
+            ToString implementation.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.FormatSourceAssetPair(System.String,System.String)">
+            <summary>
+            Formats source asset pair.
+            </summary>
+            <param name="source"></param>
+            <param name="assetPair"></param>
             <returns></returns>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.Settings">
@@ -539,6 +564,12 @@
             </summary>
             <param name="price"></param>
             <param name="volume"></param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice.Reciprocal">
+            <summary>
+            Returns reciprocal volume price.
+            </summary>
+            <returns></returns>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.ErrorResponseException">
             <summary>
