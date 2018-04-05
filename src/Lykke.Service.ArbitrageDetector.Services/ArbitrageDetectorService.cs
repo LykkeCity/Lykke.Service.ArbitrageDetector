@@ -37,13 +37,14 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
+            settings.Validate();
 
             _baseAssets = settings.BaseAssets;
             _intermediateAssets = settings.IntermediateAssets;
             _quoteAsset = settings.QuoteAsset;
-            _expirationTimeInSeconds = settings.ExpirationTimeInSeconds;
+            _expirationTimeInSeconds = settings.ExpirationTimeInSeconds.Value;
             _historyMaxSize = settings.HistoryMaxSize;
-            _minSpread = settings.MinSpread;
+            _minSpread = settings.MinSpread.Value;
 
             _log = log;
             shutdownManager?.Register(this);
@@ -148,35 +149,36 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             var restartNeeded = false;
 
-            if (settings.ExpirationTimeInSeconds > 0)
+            if (settings.ExpirationTimeInSeconds != null)
             {
-                _expirationTimeInSeconds = settings.ExpirationTimeInSeconds;
+                _expirationTimeInSeconds = settings.ExpirationTimeInSeconds.Value;
                 restartNeeded = true;
             }
 
-            if (settings.IntermediateAssets != null && settings.IntermediateAssets.Any())
+            if (settings.IntermediateAssets != null)
             {
                 _intermediateAssets = settings.IntermediateAssets;
                 restartNeeded = true;
             }
 
-            if (settings.BaseAssets != null && settings.BaseAssets.Any())
+            if (settings.BaseAssets != null)
             {
                 _baseAssets = settings.BaseAssets;
                 restartNeeded = true;
             }
 
-            if (!string.IsNullOrWhiteSpace(settings.QuoteAsset))
+            if (settings.QuoteAsset != null)
             {
                 _quoteAsset = settings.QuoteAsset;
                 restartNeeded = true;
             }
 
-            settings.MinSpread = settings.MinSpread >= 0 ? 0 : settings.MinSpread;
-            settings.MinSpread = settings.MinSpread < -100 ? -100 : settings.MinSpread;
-            if (_minSpread != settings.MinSpread)
+            if (settings.MinSpread != null)
             {
-                _minSpread = settings.MinSpread;
+                var minSpread = settings.MinSpread.Value >= 0 ? 0 : settings.MinSpread.Value;
+                minSpread = settings.MinSpread.Value < -100 ? -100 : settings.MinSpread.Value;
+
+                _minSpread = minSpread;
                 restartNeeded = true;
             }
 

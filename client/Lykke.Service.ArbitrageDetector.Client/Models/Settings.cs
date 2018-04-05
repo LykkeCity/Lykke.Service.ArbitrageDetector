@@ -11,7 +11,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Expiration time in milliseconds for order books and cross rates.
         /// </summary>
-        public int ExpirationTimeInSeconds { get; set; }
+        public int? ExpirationTimeInSeconds { get; set; }
 
         /// <summary>
         /// Wanted base assets.
@@ -31,7 +31,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Minimum spread.
         /// </summary>
-        public int MinSpread { get; set; }
+        public int? MinSpread { get; set; }
 
         /// <summary>
         /// Constructor.
@@ -48,11 +48,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <param name="quoteAsset"></param>
         /// <param name="intermediateAssets"></param>
         /// <param name="minSpread"></param>
-        public Settings(int expirationTimeInSeconds, IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset, int minSpread)
+        public Settings(int? expirationTimeInSeconds, IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset, int? minSpread)
         {
             ExpirationTimeInSeconds = expirationTimeInSeconds;
-            BaseAssets = baseAssets ?? new List<string>();
-            IntermediateAssets = intermediateAssets ?? new List<string>();
+            BaseAssets = baseAssets;
+            IntermediateAssets = intermediateAssets;
             QuoteAsset = quoteAsset;
             MinSpread = minSpread;
         }

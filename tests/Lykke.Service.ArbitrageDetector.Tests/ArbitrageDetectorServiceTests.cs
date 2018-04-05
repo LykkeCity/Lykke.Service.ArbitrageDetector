@@ -458,6 +458,35 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(3, arbitrageHistory.Count());
         }
 
+        [Fact]
+        public async Task SetAllSettingsTest()
+        {
+            var startupSettings = new StartupSettings(10, 10, 1000, -20, new List<string> { "BTC", "ETH" }, new List<string> { "EUR", "CHF" }, "USD");
+            var arbitrageCalculator = new ArbitrageDetectorService(startupSettings, new LogToConsole(), null);
+
+            var oldSettings = arbitrageCalculator.GetSettings();
+
+            var settings = new Settings { ExpirationTimeInSeconds = 10, BaseAssets = new List<string> { "AUD", "CHF" }, IntermediateAssets = new List<string> { "EUR" }, QuoteAsset = "BTC", MinSpread = -97 };
+
+            arbitrageCalculator.SetSettings(settings);
+
+            var newSettings = arbitrageCalculator.GetSettings();
+            Assert.Equal(settings.ExpirationTimeInSeconds, newSettings.ExpirationTimeInSeconds);
+            Assert.Equal(settings.BaseAssets, newSettings.BaseAssets);
+            Assert.Equal(settings.IntermediateAssets, newSettings.IntermediateAssets);
+            Assert.Equal(settings.QuoteAsset, newSettings.QuoteAsset);
+            Assert.Equal(settings.MinSpread, newSettings.MinSpread);
+
+            arbitrageCalculator.SetSettings(oldSettings);
+
+            newSettings = arbitrageCalculator.GetSettings();
+            Assert.Equal(oldSettings.ExpirationTimeInSeconds, newSettings.ExpirationTimeInSeconds);
+            Assert.Equal(oldSettings.BaseAssets, newSettings.BaseAssets);
+            Assert.Equal(oldSettings.IntermediateAssets, newSettings.IntermediateAssets);
+            Assert.Equal(oldSettings.QuoteAsset, newSettings.QuoteAsset);
+            Assert.Equal(oldSettings.MinSpread, newSettings.MinSpread);
+        }
+
 
         private IEnumerable<OrderBook> GenerateOrderBooks(int count, string source, AssetPair assetPair, int askCount, decimal maxAsk, decimal minAsk, int bidCount, decimal maxBid, decimal minBid)
         {

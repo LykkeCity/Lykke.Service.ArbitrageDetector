@@ -533,7 +533,7 @@
             Constructor.
             </summary>
         </member>
-        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor(System.Int32,System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String},System.String,System.Int32)">
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor(System.Nullable{System.Int32},System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String},System.String,System.Nullable{System.Int32})">
             <summary>
             Constructor.
             </summary>

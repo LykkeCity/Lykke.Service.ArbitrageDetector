@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lykke.Service.ArbitrageDetector.Core
 {
@@ -54,7 +55,7 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// <summary>
         /// Expiration time in milliseconds for order books and cross rates.
         /// </summary>
-        public int ExpirationTimeInSeconds { get; set; }
+        public int? ExpirationTimeInSeconds { get; set; }
 
         /// <summary>
         /// Wanted base assets.
@@ -74,7 +75,7 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// <summary>
         /// Minimum spread.
         /// </summary>
-        public int MinSpread { get; set; }
+        public int? MinSpread { get; set; }
 
         /// <summary>
         /// Constructor.
@@ -91,13 +92,34 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// <param name="quoteAsset"></param>
         /// <param name="minSpread"></param>
         /// <param name="intermediateAssets"></param>
-        public Settings(int expirationTimeInSeconds, IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset, int minSpread)
+        public Settings(int? expirationTimeInSeconds, IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset, int? minSpread)
         {
             ExpirationTimeInSeconds = expirationTimeInSeconds;
-            BaseAssets = baseAssets ?? throw new ArgumentNullException(nameof(baseAssets));
-            IntermediateAssets = intermediateAssets ?? throw new ArgumentNullException(nameof(intermediateAssets));
-            QuoteAsset = quoteAsset ?? throw new ArgumentNullException(nameof(quoteAsset));
+            BaseAssets = baseAssets;
+            IntermediateAssets = intermediateAssets;
+            QuoteAsset = quoteAsset;
             MinSpread = minSpread;
+        }
+
+        /// <summary>
+        /// Validation.
+        /// </summary>
+        public void Validate()
+        {
+            if (ExpirationTimeInSeconds == null)
+                throw new NullReferenceException(nameof(ExpirationTimeInSeconds));
+
+            if (BaseAssets == null || !BaseAssets.Any())
+                throw new ArgumentOutOfRangeException(nameof(BaseAssets));
+
+            if (IntermediateAssets == null)
+                throw new ArgumentOutOfRangeException(nameof(IntermediateAssets));
+
+            if (string.IsNullOrWhiteSpace(QuoteAsset))
+                throw new ArgumentOutOfRangeException(nameof(QuoteAsset));
+
+            if (MinSpread == null)
+                throw new NullReferenceException(nameof(MinSpread));
         }
     }
 }

@@ -101,15 +101,16 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         }
 
         [Fact]
-        public async Task SetSettingsTest()
+        public async Task SetSettingsAllTest()
         {
             var oldSettings = await Client.GetSettingsAsync();
 
-            var settings = new Settings { BaseAssets = new List<string> { "AUD", "CHF" }, IntermediateAssets = new List<string> { "EUR" }, QuoteAsset = "BTC", MinSpread = -97 };
+            var settings = new Settings { ExpirationTimeInSeconds = 0, BaseAssets = new List<string> { "AUD", "CHF" }, IntermediateAssets = new List<string> { "EUR" }, QuoteAsset = "BTC", MinSpread = -97 };
 
             await Client.SetSettingsAsync(settings);
 
             var newSettings = await Client.GetSettingsAsync();
+            Assert.Equal(settings.ExpirationTimeInSeconds, newSettings.ExpirationTimeInSeconds);
             Assert.Equal(settings.BaseAssets, newSettings.BaseAssets);
             Assert.Equal(settings.IntermediateAssets, newSettings.IntermediateAssets);
             Assert.Equal(settings.QuoteAsset, newSettings.QuoteAsset);
@@ -118,6 +119,111 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             await Client.SetSettingsAsync(oldSettings);
 
             newSettings = await Client.GetSettingsAsync();
+            Assert.Equal(oldSettings.ExpirationTimeInSeconds, newSettings.ExpirationTimeInSeconds);
+            Assert.Equal(oldSettings.BaseAssets, newSettings.BaseAssets);
+            Assert.Equal(oldSettings.IntermediateAssets, newSettings.IntermediateAssets);
+            Assert.Equal(oldSettings.QuoteAsset, newSettings.QuoteAsset);
+            Assert.Equal(oldSettings.MinSpread, newSettings.MinSpread);
+        }
+
+        [Fact]
+        public async Task SetSettingsExpirationTimeTest()
+        {
+            var oldSettings = await Client.GetSettingsAsync();
+
+            var settings = new Settings { ExpirationTimeInSeconds = 97 };
+
+            await Client.SetSettingsAsync(settings);
+
+            var newSettings = await Client.GetSettingsAsync();
+            Assert.Equal(oldSettings.MinSpread, newSettings.MinSpread);
+            Assert.Equal(settings.ExpirationTimeInSeconds, newSettings.ExpirationTimeInSeconds);
+            Assert.Equal(oldSettings.BaseAssets, newSettings.BaseAssets);
+            Assert.Equal(oldSettings.IntermediateAssets, newSettings.IntermediateAssets);
+            Assert.Equal(oldSettings.QuoteAsset, newSettings.QuoteAsset);
+
+            await Client.SetSettingsAsync(oldSettings);
+
+            newSettings = await Client.GetSettingsAsync();
+            Assert.Equal(oldSettings.ExpirationTimeInSeconds, newSettings.ExpirationTimeInSeconds);
+            Assert.Equal(oldSettings.BaseAssets, newSettings.BaseAssets);
+            Assert.Equal(oldSettings.IntermediateAssets, newSettings.IntermediateAssets);
+            Assert.Equal(oldSettings.QuoteAsset, newSettings.QuoteAsset);
+            Assert.Equal(oldSettings.MinSpread, newSettings.MinSpread);
+        }
+
+        [Fact]
+        public async Task SetSettingsBaseAssetsTest()
+        {
+            var oldSettings = await Client.GetSettingsAsync();
+
+            var settings = new Settings { BaseAssets = new List<string> { "REP", "DAT" } };
+
+            await Client.SetSettingsAsync(settings);
+
+            var newSettings = await Client.GetSettingsAsync();
+            Assert.Equal(oldSettings.MinSpread, newSettings.MinSpread);
+            Assert.Equal(oldSettings.ExpirationTimeInSeconds, newSettings.ExpirationTimeInSeconds);
+            Assert.Equal(settings.BaseAssets, newSettings.BaseAssets);
+            Assert.Equal(oldSettings.IntermediateAssets, newSettings.IntermediateAssets);
+            Assert.Equal(oldSettings.QuoteAsset, newSettings.QuoteAsset);
+
+            await Client.SetSettingsAsync(oldSettings);
+
+            newSettings = await Client.GetSettingsAsync();
+            Assert.Equal(oldSettings.ExpirationTimeInSeconds, newSettings.ExpirationTimeInSeconds);
+            Assert.Equal(oldSettings.BaseAssets, newSettings.BaseAssets);
+            Assert.Equal(oldSettings.IntermediateAssets, newSettings.IntermediateAssets);
+            Assert.Equal(oldSettings.QuoteAsset, newSettings.QuoteAsset);
+            Assert.Equal(oldSettings.MinSpread, newSettings.MinSpread);
+        }
+
+        [Fact]
+        public async Task SetSettingsQuoteAssetTest()
+        {
+            var oldSettings = await Client.GetSettingsAsync();
+
+            var settings = new Settings { QuoteAsset = "AID" };
+
+            await Client.SetSettingsAsync(settings);
+
+            var newSettings = await Client.GetSettingsAsync();
+            Assert.Equal(oldSettings.MinSpread, newSettings.MinSpread);
+            Assert.Equal(oldSettings.ExpirationTimeInSeconds, newSettings.ExpirationTimeInSeconds);
+            Assert.Equal(oldSettings.BaseAssets, newSettings.BaseAssets);
+            Assert.Equal(oldSettings.IntermediateAssets, newSettings.IntermediateAssets);
+            Assert.Equal(settings.QuoteAsset, newSettings.QuoteAsset);
+
+            await Client.SetSettingsAsync(oldSettings);
+
+            newSettings = await Client.GetSettingsAsync();
+            Assert.Equal(oldSettings.ExpirationTimeInSeconds, newSettings.ExpirationTimeInSeconds);
+            Assert.Equal(oldSettings.BaseAssets, newSettings.BaseAssets);
+            Assert.Equal(oldSettings.IntermediateAssets, newSettings.IntermediateAssets);
+            Assert.Equal(oldSettings.QuoteAsset, newSettings.QuoteAsset);
+            Assert.Equal(oldSettings.MinSpread, newSettings.MinSpread);
+        }
+
+        [Fact]
+        public async Task SetSettingsIntermediateAssetsTest()
+        {
+            var oldSettings = await Client.GetSettingsAsync();
+
+            var settings = new Settings { IntermediateAssets = new List<string> { "LKKY1", "LKKY2" } };
+
+            await Client.SetSettingsAsync(settings);
+
+            var newSettings = await Client.GetSettingsAsync();
+            Assert.Equal(oldSettings.MinSpread, newSettings.MinSpread);
+            Assert.Equal(oldSettings.ExpirationTimeInSeconds, newSettings.ExpirationTimeInSeconds);
+            Assert.Equal(oldSettings.BaseAssets, newSettings.BaseAssets);
+            Assert.Equal(settings.IntermediateAssets, newSettings.IntermediateAssets);
+            Assert.Equal(oldSettings.QuoteAsset, newSettings.QuoteAsset);
+
+            await Client.SetSettingsAsync(oldSettings);
+
+            newSettings = await Client.GetSettingsAsync();
+            Assert.Equal(oldSettings.ExpirationTimeInSeconds, newSettings.ExpirationTimeInSeconds);
             Assert.Equal(oldSettings.BaseAssets, newSettings.BaseAssets);
             Assert.Equal(oldSettings.IntermediateAssets, newSettings.IntermediateAssets);
             Assert.Equal(oldSettings.QuoteAsset, newSettings.QuoteAsset);
@@ -135,13 +241,20 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
 
             var newSettings = await Client.GetSettingsAsync();
             Assert.Equal(settings.MinSpread, newSettings.MinSpread);
+            Assert.Equal(oldSettings.ExpirationTimeInSeconds, newSettings.ExpirationTimeInSeconds);
+            Assert.Equal(oldSettings.BaseAssets, newSettings.BaseAssets);
+            Assert.Equal(oldSettings.IntermediateAssets, newSettings.IntermediateAssets);
+            Assert.Equal(oldSettings.QuoteAsset, newSettings.QuoteAsset);
 
             await Client.SetSettingsAsync(oldSettings);
 
             newSettings = await Client.GetSettingsAsync();
+            Assert.Equal(oldSettings.ExpirationTimeInSeconds, newSettings.ExpirationTimeInSeconds);
+            Assert.Equal(oldSettings.BaseAssets, newSettings.BaseAssets);
+            Assert.Equal(oldSettings.IntermediateAssets, newSettings.IntermediateAssets);
+            Assert.Equal(oldSettings.QuoteAsset, newSettings.QuoteAsset);
             Assert.Equal(oldSettings.MinSpread, newSettings.MinSpread);
         }
-
 
 
         private void AssertOrderBook(OrderBook orderBook)
