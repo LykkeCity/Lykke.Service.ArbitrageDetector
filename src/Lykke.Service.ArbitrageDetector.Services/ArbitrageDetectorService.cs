@@ -403,10 +403,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         private void CleanHistory()
         {
-            // Ignore if not too many
-            if (_arbitrageHistory.Count < _historyMaxSize)
-                return;
-
             var remained = new ConcurrentDictionary<string, Arbitrage>();
 
             // Get distinct paths and for each path remain only %_historyMaxSize% of the best
@@ -464,9 +460,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
             arbitrage.EndedAt = DateTime.UtcNow;
             _arbitrages.Remove(key);
 
-            // Add it to the history if PnL is better
-            if (_arbitrages.TryGetValue(key, out var oldArbitrage) && arbitrage.PnL > oldArbitrage.PnL)
-                _arbitrageHistory.AddOrUpdate(key, arbitrage);
+            // If found in history and old PnL is better then don't replace it
+            var found = _arbitrageHistory.TryGetValue(key, out var oldArbitrage);
+            if (found && arbitrage.PnL < oldArbitrage.PnL)
+                return;
+            
+            // Otherwise add or update
+            _arbitrageHistory.AddOrUpdate(key, arbitrage);
         }
 
         private void CheckForCurrencyAndUpdateOrderBooks(string currency, OrderBook orderBook)

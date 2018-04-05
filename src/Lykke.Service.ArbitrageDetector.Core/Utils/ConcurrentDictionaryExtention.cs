@@ -8,12 +8,20 @@ namespace Lykke.Service.ArbitrageDetector.Core.Utils
     {
         public static void AddOrUpdate<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dictionary, TKey key, TValue value)
         {
-            dictionary.AddOrUpdate(key, value, (_key, oldValue) => value);
+            dictionary[key] = value;
         }
 
         public static void AddOrUpdate<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dictionary, KeyValuePair<TKey, TValue> keyValuePair)
         {
-            dictionary.AddOrUpdate(keyValuePair.Key, keyValuePair.Value, (_key, oldValue) => keyValuePair.Value);
+            dictionary.AddOrUpdate(keyValuePair.Key, keyValuePair.Value);
+        }
+
+        public static void Update<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dictionary, TKey key, TValue value)
+        {
+            if (!dictionary.ContainsKey(key))
+                throw new ArgumentException(nameof(key));
+
+            dictionary.AddOrUpdate(key, value);
         }
 
         public static void Add<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dictionary, TKey key, TValue value)
