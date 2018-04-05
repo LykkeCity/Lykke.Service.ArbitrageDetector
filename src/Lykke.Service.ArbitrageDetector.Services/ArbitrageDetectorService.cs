@@ -368,7 +368,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 MoveFromActualToHistory(oldArbitrage.Value);
             }
 
-            // Add new arbitrages, and replace existed if new PnL is better
+            // Add new arbitrages and replace existed if new PnL is better
             var added = 0;
             foreach (var newArbitrage in newArbitrages)
             {
@@ -378,7 +378,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     added++;
                     _arbitrages.Add(newArbitrage.Key, newArbitrage.Value);
                 }
-                // Already existed
+                // Existed
                 else
                 {
                     if (newArbitrage.Value.PnL > oldArbitrage.PnL)
@@ -403,11 +403,15 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         private void CleanHistory()
         {
-            // TODO: can be improved.
+            // Ignore if not too many
+            if (_arbitrageHistory.Count < _historyMaxSize)
+                return;
+
             var remained = new ConcurrentDictionary<string, Arbitrage>();
 
             // Get distinct paths and for each path remain only %_historyMaxSize% of the best
             var uniqueAssetPairs = _arbitrageHistory.Values.Select(x => x.AssetPair).Distinct().ToList();
+
             foreach (var assetPair in uniqueAssetPairs)
             {
                 _arbitrageHistory.Where(x => x.Value.AssetPair.Equals(assetPair))
@@ -460,8 +464,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
             arbitrage.EndedAt = DateTime.UtcNow;
             _arbitrages.Remove(key);
 
-            // Add it to the history
-            _arbitrageHistory.AddOrUpdate(key, arbitrage);
+            // Add it to the history if PnL is better
+            if (_arbitrages.TryGetValue(key, out var oldArbitrage) && arbitrage.PnL > oldArbitrage.PnL)
+                _arbitrageHistory.AddOrUpdate(key, arbitrage);
         }
 
         private void CheckForCurrencyAndUpdateOrderBooks(string currency, OrderBook orderBook)
