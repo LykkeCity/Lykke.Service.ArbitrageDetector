@@ -93,15 +93,15 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(orderBook.Asks.Count, reversed.Bids.Count);
             Assert.Equal(orderBook.Bids.Count, reversed.Asks.Count);
 
-            var bidVolumePrice1 = reversed.Bids.Single(x => x.Volume == 10);
-            var bidVolumePrice2 = reversed.Bids.Single(x => x.Volume == 7);
-            var bidVolumePrice3 = reversed.Bids.Single(x => x.Volume == 3);
-            Assert.Equal(bidVolumePrice1.Price, 1 / 9000m, 8);
+            var bidVolumePrice1 = reversed.Bids.Single(x => x.Volume == 26700.37037031m);
+            var bidVolumePrice2 = reversed.Bids.Single(x => x.Volume == 62999.65m);
+            var bidVolumePrice3 = reversed.Bids.Single(x => x.Volume == 90000);
+            Assert.Equal(bidVolumePrice1.Price, 1 / 8900.12345677m, 8);
             Assert.Equal(bidVolumePrice2.Price, 1 / 8999.95m, 8);
-            Assert.Equal(bidVolumePrice3.Price, 1 / 8900.12345677m, 8);
+            Assert.Equal(bidVolumePrice3.Price, 1 / 9000m, 8);
 
-            var askVolumePrice1 = reversed.Asks.Single(x => x.Volume == 9);
-            var askVolumePrice2 = reversed.Asks.Single(x => x.Volume == 5);
+            var askVolumePrice1 = reversed.Asks.Single(x => x.Volume == 79425);
+            var askVolumePrice2 = reversed.Asks.Single(x => x.Volume == 44115);
             Assert.Equal(askVolumePrice1.Price, 1 / 8825m, 8);
             Assert.Equal(askVolumePrice2.Price, 1 / 8823m, 8);
 

@@ -34,7 +34,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <returns></returns>
         public VolumePrice Reciprocal()
         {
-            return new VolumePrice(1 / Price, Volume);
+            return new VolumePrice(1 / Price, Volume * Price);
         }
     }
 }

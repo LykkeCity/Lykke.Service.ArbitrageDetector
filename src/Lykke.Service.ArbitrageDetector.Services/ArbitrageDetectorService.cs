@@ -55,137 +55,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _arbitrageHistory = new ConcurrentDictionary<string, Arbitrage>();
         }
 
-        public IEnumerable<OrderBook> GetOrderBooks()
-        {
-            if (!_orderBooks.Any())
-                return new List<OrderBook>();
-
-            return _orderBooks.Select(x => x.Value)
-                .OrderByDescending(x => x.Timestamp)
-                .ToList();
-        }
-
-        public IEnumerable<OrderBook> GetOrderBooks(string exchange, string instrument)
-        {
-            if (!_orderBooks.Any())
-                return new List<OrderBook>();
-
-            var result = _orderBooks.Select(x => x.Value).ToList();
-
-            if (!string.IsNullOrWhiteSpace(exchange))
-                result = result.Where(x => x.Source.ToUpper().Trim().Contains(exchange.ToUpper().Trim())).ToList();
-
-            if (!string.IsNullOrWhiteSpace(instrument))
-                result = result.Where(x => x.AssetPairStr.ToUpper().Trim().Contains(instrument.ToUpper().Trim())).ToList();
-
-            return result.OrderByDescending(x => x.Timestamp).ToList();
-        }
-
-        public IEnumerable<CrossRate> GetCrossRates()
-        {
-            if (!_crossRates.Any())
-                return new List<CrossRate>();
-
-            var result = _crossRates.Select(x => x.Value)
-                .OrderByDescending(x => x.Timestamp)
-                .ToList();
-
-            return result;
-        }
-
-        public IEnumerable<Arbitrage> GetArbitrages()
-        {
-            if (!_arbitrages.Any())
-                return new List<Arbitrage>();
-
-            return _arbitrages.Select(x => x.Value)
-                .OrderByDescending(x => x.PnL)
-                .ToList();
-        }
-
-        public Arbitrage GetArbitrage(string conversionPath)
-        {
-            if (string.IsNullOrWhiteSpace(conversionPath))
-                throw new ArgumentNullException(nameof(conversionPath));
-
-            var bestArbitrage = _arbitrageHistory.FirstOrDefault(x => string.Equals(x.Value.ConversionPath, conversionPath, StringComparison.CurrentCultureIgnoreCase));
-
-            return bestArbitrage.Value;
-        }
-
-        public IEnumerable<Arbitrage> GetArbitrageHistory(DateTime since, int take)
-        {
-            if (!_arbitrageHistory.Any())
-                return new List<Arbitrage>();
-
-            var result = new List<Arbitrage>();
-
-            var arbitrages = _arbitrageHistory.Select(x => x.Value).ToList();
-            var uniqueConversionPaths = arbitrages.Select(x => x.ConversionPath).Distinct().ToList();
-
-            // Find only best arbitrage for path
-            foreach (var conversionPath in uniqueConversionPaths)
-            {
-                var pathBestArbitrage = arbitrages.OrderByDescending(x => x.PnL).First(x => x.ConversionPath == conversionPath);
-                result.Add(pathBestArbitrage);
-            }
-
-            return result
-                .Where(x => x.EndedAt > since)
-                .OrderByDescending(x => x.PnL)
-                .Take(take)
-                .ToList();
-        }
-
-        public Settings GetSettings()
-        {
-            return new Settings(_expirationTimeInSeconds, _baseAssets, _intermediateAssets, _quoteAsset, _minSpread);
-        }
-
-        public void SetSettings(Settings settings)
-        {
-            if (settings == null)
-                throw new ArgumentNullException(nameof(settings));
-
-            var restartNeeded = false;
-
-            if (settings.ExpirationTimeInSeconds != null)
-            {
-                _expirationTimeInSeconds = settings.ExpirationTimeInSeconds.Value;
-                restartNeeded = true;
-            }
-
-            if (settings.IntermediateAssets != null)
-            {
-                _intermediateAssets = settings.IntermediateAssets;
-                restartNeeded = true;
-            }
-
-            if (settings.BaseAssets != null)
-            {
-                _baseAssets = settings.BaseAssets;
-                restartNeeded = true;
-            }
-
-            if (settings.QuoteAsset != null)
-            {
-                _quoteAsset = settings.QuoteAsset;
-                restartNeeded = true;
-            }
-
-            if (settings.MinSpread != null)
-            {
-                var minSpread = settings.MinSpread.Value >= 0 ? 0 : settings.MinSpread.Value;
-                minSpread = settings.MinSpread.Value < -100 ? -100 : settings.MinSpread.Value;
-
-                _minSpread = minSpread;
-                restartNeeded = true;
-            }
-
-            _restartNeeded = restartNeeded;
-        }
-
-
 
         public void Process(OrderBook orderBook)
         {
@@ -399,8 +268,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 await _log.WriteInfoAsync(GetType().Name, nameof(RefreshArbitrages), $"{watch.ElapsedMilliseconds} ms, new {newArbitrages.Count} arbitrages, {removed} removed, {added} added, {beforeCleaning - _arbitrageHistory.Count} cleaned, {_arbitrages.Count} active, {_arbitrageHistory.Count} in history.");
         }
 
-        
-
         private void CleanHistory()
         {
             var remained = new ConcurrentDictionary<string, Arbitrage>();
@@ -523,5 +390,142 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 await _log.WriteInfoAsync(GetType().Name, nameof(RestartIfNeeded), $"Restarted");
             }
         }
+
+
+        #region IArbitrageDetectorService
+
+        public IEnumerable<OrderBook> GetOrderBooks()
+        {
+            if (!_orderBooks.Any())
+                return new List<OrderBook>();
+
+            return _orderBooks.Select(x => x.Value)
+                .OrderByDescending(x => x.Timestamp)
+                .ToList();
+        }
+
+        public IEnumerable<OrderBook> GetOrderBooks(string exchange, string instrument)
+        {
+            if (!_orderBooks.Any())
+                return new List<OrderBook>();
+
+            var result = _orderBooks.Select(x => x.Value).ToList();
+
+            if (!string.IsNullOrWhiteSpace(exchange))
+                result = result.Where(x => x.Source.ToUpper().Trim().Contains(exchange.ToUpper().Trim())).ToList();
+
+            if (!string.IsNullOrWhiteSpace(instrument))
+                result = result.Where(x => x.AssetPairStr.ToUpper().Trim().Contains(instrument.ToUpper().Trim())).ToList();
+
+            return result.OrderByDescending(x => x.Timestamp).ToList();
+        }
+
+        public IEnumerable<CrossRate> GetCrossRates()
+        {
+            if (!_crossRates.Any())
+                return new List<CrossRate>();
+
+            var result = _crossRates.Select(x => x.Value)
+                .OrderByDescending(x => x.Timestamp)
+                .ToList();
+
+            return result;
+        }
+
+        public IEnumerable<Arbitrage> GetArbitrages()
+        {
+            if (!_arbitrages.Any())
+                return new List<Arbitrage>();
+
+            return _arbitrages.Select(x => x.Value)
+                .OrderByDescending(x => x.PnL)
+                .ToList();
+        }
+
+        public Arbitrage GetArbitrage(string conversionPath)
+        {
+            if (string.IsNullOrWhiteSpace(conversionPath))
+                throw new ArgumentNullException(nameof(conversionPath));
+
+            var bestArbitrage = _arbitrageHistory.FirstOrDefault(x => string.Equals(x.Value.ConversionPath, conversionPath, StringComparison.CurrentCultureIgnoreCase));
+
+            return bestArbitrage.Value;
+        }
+
+        public IEnumerable<Arbitrage> GetArbitrageHistory(DateTime since, int take)
+        {
+            if (!_arbitrageHistory.Any())
+                return new List<Arbitrage>();
+
+            var result = new List<Arbitrage>();
+
+            var arbitrages = _arbitrageHistory.Select(x => x.Value).ToList();
+            var uniqueConversionPaths = arbitrages.Select(x => x.ConversionPath).Distinct().ToList();
+
+            // Find only best arbitrage for path
+            foreach (var conversionPath in uniqueConversionPaths)
+            {
+                var pathBestArbitrage = arbitrages.OrderByDescending(x => x.PnL).First(x => x.ConversionPath == conversionPath);
+                result.Add(pathBestArbitrage);
+            }
+
+            return result
+                .Where(x => x.EndedAt > since)
+                .OrderByDescending(x => x.PnL)
+                .Take(take)
+                .ToList();
+        }
+
+        public Settings GetSettings()
+        {
+            return new Settings(_expirationTimeInSeconds, _baseAssets, _intermediateAssets, _quoteAsset, _minSpread);
+        }
+
+        public void SetSettings(Settings settings)
+        {
+            if (settings == null)
+                throw new ArgumentNullException(nameof(settings));
+
+            var restartNeeded = false;
+
+            if (settings.ExpirationTimeInSeconds != null)
+            {
+                _expirationTimeInSeconds = settings.ExpirationTimeInSeconds.Value;
+                restartNeeded = true;
+            }
+
+            if (settings.IntermediateAssets != null)
+            {
+                _intermediateAssets = settings.IntermediateAssets;
+                restartNeeded = true;
+            }
+
+            if (settings.BaseAssets != null)
+            {
+                _baseAssets = settings.BaseAssets;
+                restartNeeded = true;
+            }
+
+            if (settings.QuoteAsset != null)
+            {
+                _quoteAsset = settings.QuoteAsset;
+                restartNeeded = true;
+            }
+
+            if (settings.MinSpread != null)
+            {
+                var minSpread = settings.MinSpread.Value;
+
+                if (minSpread >= 0 || minSpread < -100)
+                    minSpread = 0;
+
+                _minSpread = minSpread;
+                restartNeeded = true;
+            }
+
+            _restartNeeded = restartNeeded;
+        }
+
+        #endregion
     }
 }
