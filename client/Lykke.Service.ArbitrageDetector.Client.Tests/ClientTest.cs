@@ -261,12 +261,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         {
             Assert.NotEmpty(orderBook.Source);
             Assert.False(orderBook.AssetPair.IsEmpty());
-            Assert.NotEmpty(orderBook.Asks);
             Assert.NotEmpty(orderBook.Bids);
-            Assert.NotEqual(default, orderBook.Asks.First().Price);
-            Assert.NotEqual(default, orderBook.Asks.First().Volume);
+            Assert.NotEmpty(orderBook.Asks);
             Assert.NotEqual(default, orderBook.Bids.First().Price);
             Assert.NotEqual(default, orderBook.Bids.First().Volume);
+            Assert.NotEqual(default, orderBook.Asks.First().Price);
+            Assert.NotEqual(default, orderBook.Asks.First().Volume);
             Assert.NotEqual(default, orderBook.Timestamp);
         }
 
@@ -283,10 +283,10 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         {
             Assert.NotEmpty(crossRate.Source);
             Assert.False(crossRate.AssetPair.IsEmpty());
-            Assert.NotEqual(default, crossRate.BestAsk.Value.Price);
-            Assert.NotEqual(default, crossRate.BestAsk.Value.Volume);
             Assert.NotEqual(default, crossRate.BestBid.Value.Price);
             Assert.NotEqual(default, crossRate.BestBid.Value.Volume);
+            Assert.NotEqual(default, crossRate.BestAsk.Value.Price);
+            Assert.NotEqual(default, crossRate.BestAsk.Value.Volume);
             Assert.NotEmpty(crossRate.ConversionPath);
             Assert.NotEqual(default, crossRate.Timestamp);
         }
@@ -296,10 +296,10 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             Assert.False(arbitrage.AssetPair.IsEmpty());
             AssertCrossRate(arbitrage.AskCrossRate);
             AssertCrossRate(arbitrage.BidCrossRate);
-            Assert.NotEqual(default, arbitrage.Ask.Price);
-            Assert.NotEqual(default, arbitrage.Ask.Volume);
             Assert.NotEqual(default, arbitrage.Bid.Price);
             Assert.NotEqual(default, arbitrage.Bid.Volume);
+            Assert.NotEqual(default, arbitrage.Ask.Price);
+            Assert.NotEqual(default, arbitrage.Ask.Volume);
             Assert.NotEqual(default, arbitrage.Spread);
             Assert.NotEqual(default, arbitrage.Volume);
             Assert.NotEqual(default, arbitrage.PnL);
@@ -314,10 +314,10 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             Assert.NotEmpty(arbitrage.BidSource);
             Assert.NotEmpty(arbitrage.AskConversionPath);
             Assert.NotEmpty(arbitrage.BidConversionPath);
-            Assert.NotEqual(default, arbitrage.Ask.Price);
-            Assert.NotEqual(default, arbitrage.Ask.Volume);
             Assert.NotEqual(default, arbitrage.Bid.Price);
             Assert.NotEqual(default, arbitrage.Bid.Volume);
+            Assert.NotEqual(default, arbitrage.Ask.Price);
+            Assert.NotEqual(default, arbitrage.Ask.Volume);
             Assert.NotEqual(default, arbitrage.Spread);
             Assert.NotEqual(default, arbitrage.Volume);
             Assert.NotEqual(default, arbitrage.PnL);

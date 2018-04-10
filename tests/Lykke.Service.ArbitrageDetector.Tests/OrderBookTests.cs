@@ -15,28 +15,29 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string assetPair = "BTCUSD";
             var timestamp = DateTime.UtcNow;
 
+            var bids = new List<VolumePrice>
+            {
+                new VolumePrice(8825, 9),
+                new VolumePrice(8823, 5)
+            };
             var asks = new List<VolumePrice>
             {
                 new VolumePrice(9000, 10),
                 new VolumePrice(8999.95m, 7),
                 new VolumePrice(8900.12345677m, 3)
             };
-            var bids = new List<VolumePrice>
-            {
-                new VolumePrice(8825, 9),
-                new VolumePrice(8823, 5)
-            };
 
-            void Construct1() => new OrderBook("", assetPair, asks, bids, timestamp);
+
+            void Construct1() => new OrderBook("", assetPair, bids, asks, timestamp);
             Assert.Throws<ArgumentException>((Action)Construct1);
 
-            void Construct2() => new OrderBook(null, assetPair, asks, bids, timestamp);
+            void Construct2() => new OrderBook(null, assetPair, bids, asks, timestamp);
             Assert.Throws<ArgumentException>((Action)Construct2);
 
-            void Construct3() => new OrderBook(exchangeName, "", asks, bids, timestamp);
+            void Construct3() => new OrderBook(exchangeName, "", bids, asks, timestamp);
             Assert.Throws<ArgumentException>((Action)Construct3);
 
-            void Construct4() => new OrderBook(exchangeName, null, asks, bids, timestamp);
+            void Construct4() => new OrderBook(exchangeName, null, bids, asks, timestamp);
             Assert.Throws<ArgumentException>((Action)Construct4);
         }
 
@@ -48,13 +49,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp = DateTime.UtcNow;
 
             var orderBook = new OrderBook(exchangeName, assetPair,
-                new List<VolumePrice> // asks
-                {
-                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
-                },
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 9), new VolumePrice(8823, 5)
+                },
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp);
 
@@ -75,13 +76,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp = DateTime.UtcNow;
 
             var orderBook = new OrderBook(exchangeName, assetPair,
-                new List<VolumePrice> // asks
-                {
-                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
-                },
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 9), new VolumePrice(8823, 5)
+                },
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp);
             orderBook.SetAssetPair("USD");
@@ -90,8 +91,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.NotNull(reversed);
             Assert.Equal(exchangeName, reversed.Source);
             Assert.Equal(reversedPair, reversed.AssetPairStr);
-            Assert.Equal(orderBook.Asks.Count, reversed.Bids.Count);
             Assert.Equal(orderBook.Bids.Count, reversed.Asks.Count);
+            Assert.Equal(orderBook.Asks.Count, reversed.Bids.Count);
 
             var bidVolumePrice1 = reversed.Bids.Single(x => x.Volume == 26700.37037031m);
             var bidVolumePrice2 = reversed.Bids.Single(x => x.Volume == 62999.65m);

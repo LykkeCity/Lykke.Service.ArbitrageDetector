@@ -34,24 +34,24 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var arbitrageCalculator = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var btcEurOrderBook = new OrderBook(exchange, btceur,
-                new List<VolumePrice> // asks
-                {
-                    new VolumePrice(8999.95m, 10), new VolumePrice(9000, 10), new VolumePrice(9100, 10)
-                },
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 10), new VolumePrice(8823, 10)
                 },
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(8999.95m, 10), new VolumePrice(9000, 10), new VolumePrice(9100, 10)
+                },
                 DateTime.UtcNow);
 
             var eurUsdOrderBook = new OrderBook(exchange, eurusd,
-                new List<VolumePrice> // asks
-                {
-                    new VolumePrice(1.22033m, 10), new VolumePrice(1.22035m, 10), new VolumePrice(1.22040m, 10)
-                },
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1.2203m, 10), new VolumePrice(1.2201m, 10)
+                },
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(1.22033m, 10), new VolumePrice(1.22035m, 10), new VolumePrice(1.22040m, 10)
                 },
                 DateTime.UtcNow);
 
@@ -66,8 +66,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(btcusd, crossRate.AssetPairStr);
             Assert.Equal(10769.1475m, crossRate.Bids.Max(x => x.Price), 8);
             Assert.Equal(10982.9089835m, crossRate.Asks.Min(x => x.Price), 8);
-            Assert.Equal(9, crossRate.Asks.Count);
             Assert.Equal(4, crossRate.Bids.Count);
+            Assert.Equal(9, crossRate.Asks.Count);
             Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
         }
 
@@ -86,29 +86,29 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var arbitrageCalculator = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var btcEurOrderBook = new OrderBook(exchange, btceur,
+                new List<VolumePrice> // bids
+                {
+                    new VolumePrice(8825, 10),
+                    new VolumePrice(8823, 10)
+                },
                 new List<VolumePrice> // asks
                 {
                     new VolumePrice(8999.95m, 10),
                     new VolumePrice(9000, 10),
                     new VolumePrice(9100, 10)
                 },
-                new List<VolumePrice> // bids
-                {
-                    new VolumePrice(8825, 10),
-                    new VolumePrice(8823, 10)
-                },
                 DateTime.UtcNow);
 
             var usdEurOrderBook = new OrderBook(exchange, usdeur,
-                new List<VolumePrice> // ask
-                {
-                    new VolumePrice(1/1.2203m, 10),
-                    new VolumePrice(1/1.2201m, 10)
-                },
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/1.22033m, 10),
                     new VolumePrice(1/1.22035m, 10)
+                },
+                new List<VolumePrice> // ask
+                {
+                    new VolumePrice(1/1.2203m, 10),
+                    new VolumePrice(1/1.2201m, 10)
                 },
                 DateTime.UtcNow);
 
@@ -123,8 +123,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(btcusd, crossRate.AssetPairStr);
             Assert.Equal(10769.1475m, crossRate.Bids.Max(x => x.Price), 8);
             Assert.Equal(10982.9089835m, crossRate.Asks.Min(x => x.Price), 8);
-            Assert.Equal(6, crossRate.Asks.Count);
             Assert.Equal(4, crossRate.Bids.Count);
+            Assert.Equal(6, crossRate.Asks.Count);
             Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
         }
 
@@ -145,27 +145,27 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var btcEurOrderBook = new OrderBook(exchange, eurbtc,
                 new List<VolumePrice> // bids
                 {
+                    new VolumePrice(1/8999.95m, 10),
+                    new VolumePrice(1/9000m, 10)
+                },
+                new List<VolumePrice> // asks
+                {
                     new VolumePrice(1/8825m, 10),
                     new VolumePrice(1/8823m, 10),
                     new VolumePrice(9100, 10)
                 },
-                new List<VolumePrice> // asks
-                {
-                    new VolumePrice(1/8999.95m, 10),
-                    new VolumePrice(1/9000m, 10)
-                },
                 DateTime.UtcNow);
 
             var eurUsdOrderBook = new OrderBook(exchange, eurusd,
-                new List<VolumePrice> // asks
-                {
-                    new VolumePrice(1.22033m, 10),
-                    new VolumePrice(1.22035m, 10)
-                },
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1.2203m, 10),
                     new VolumePrice(1.2201m, 10)
+                },
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(1.22033m, 10),
+                    new VolumePrice(1.22035m, 10)
                 },
                 DateTime.UtcNow);
 
@@ -180,8 +180,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(btcusd, crossRate.AssetPairStr);
             Assert.Equal(10769.1475m, crossRate.Bids.Max(x => x.Price), 8);
             Assert.Equal(10982.9089835m, crossRate.Asks.Min(x => x.Price), 8);
-            Assert.Equal(4, crossRate.Asks.Count);
             Assert.Equal(6, crossRate.Bids.Count);
+            Assert.Equal(4, crossRate.Asks.Count);
             Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
         }
 
@@ -200,29 +200,29 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var arbitrageCalculator = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var eurBtcOrderBook = new OrderBook(exchange, eurbtc,
+                new List<VolumePrice> // bids
+                {
+                    new VolumePrice(1/8999.95m, 10),
+                    new VolumePrice(1/9000m, 10)
+                },
                 new List<VolumePrice> // asks
                 {
                     new VolumePrice(1/8825m, 10),
                     new VolumePrice(1/8823m, 10),
                     new VolumePrice(9100, 10)
                 },
-                new List<VolumePrice> // bids
-                {
-                    new VolumePrice(1/8999.95m, 10),
-                    new VolumePrice(1/9000m, 10)
-                },
                 DateTime.UtcNow);
 
             var usdEurOrderBook = new OrderBook(exchange, usdeur,
-                new List<VolumePrice> // ask
-                {
-                    new VolumePrice(1/1.2203m, 10),
-                    new VolumePrice(1/1.2201m, 10)
-                },
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/1.22033m, 10),
                     new VolumePrice(1/1.22035m, 10)
+                },
+                new List<VolumePrice> // ask
+                {
+                    new VolumePrice(1/1.2203m, 10),
+                    new VolumePrice(1/1.2201m, 10)
                 },
                 DateTime.UtcNow);
 
@@ -237,8 +237,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(btcusd, crossRate.AssetPairStr);
             Assert.Equal(10769.1475m, crossRate.Bids.Max(x => x.Price), 8);
             Assert.Equal(10982.9089835m, crossRate.Asks.Min(x => x.Price), 8);
-            Assert.Equal(4, crossRate.Asks.Count);
             Assert.Equal(6, crossRate.Bids.Count);
+            Assert.Equal(4, crossRate.Asks.Count);
             Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
         }
 
@@ -252,23 +252,23 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
-                new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
                 new List<VolumePrice> { new VolumePrice(11000, 10) }, // bids
+                new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
                 DateTime.UtcNow);
 
             var btcUsdOrderBook2 = new OrderBook("Bitfinex", "BTCUSD",
-                new List<VolumePrice> { new VolumePrice(11300, 10) }, // asks
                 new List<VolumePrice> { new VolumePrice(11100, 10) }, // bids
+                new List<VolumePrice> { new VolumePrice(11300, 10) }, // asks
                 DateTime.UtcNow);
 
             var btcEurOrderBook = new OrderBook("Quoine", "BTCEUR",
-                new List<VolumePrice> { new VolumePrice(8999.95m, 10) }, // asks
                 new List<VolumePrice> { new VolumePrice(8825, 10) }, // bids
+                new List<VolumePrice> { new VolumePrice(8999.95m, 10) }, // asks
                 DateTime.UtcNow);
 
             var eurUsdOrderBook = new OrderBook("Binance", "EURUSD",
-                new List<VolumePrice> { new VolumePrice(1.22033m, 10) }, // asks
                 new List<VolumePrice> { new VolumePrice(1.2203m, 10) }, // bids
+                new List<VolumePrice> { new VolumePrice(1.22033m, 10) }, // asks
                 DateTime.UtcNow);
 
             arbitrageDetector.Process(btcUsdOrderBook1);
@@ -310,8 +310,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var orderBooks = new List<OrderBook>();
-            orderBooks.AddRange(GenerateX2OrderBooksForCrossRates(500, "GDAX", new AssetPair("BTC", "USD"), 10, 11500, 11000, 10, 11000, 10000));
-            orderBooks.AddRange(GenerateX2OrderBooksForCrossRates(500, "Bitfinex", new AssetPair("BTC", "USD"), 10, 11600, 11000, 10, 11000, 10200));
+            orderBooks.AddRange(GenerateX2OrderBooksForCrossRates(500, "GDAX", new AssetPair("BTC", "USD"), 10, 11000, 10000, 10, 11500, 11000));
+            orderBooks.AddRange(GenerateX2OrderBooksForCrossRates(500, "Bitfinex", new AssetPair("BTC", "USD"), 10, 11000, 10200, 10, 11600, 11000));
             Assert.Equal(2000, orderBooks.Count);
 
             foreach (var orderBook in orderBooks)
@@ -340,10 +340,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var orderBooks = new List<OrderBook>();
-            orderBooks.AddRange(GenerateOrderBooks(7, "GDAX", new AssetPair("BTC", "USD"), 10, 11500, 11000, 10, 11000, 10000));
-            orderBooks.AddRange(GenerateOrderBooks(7, "Bitfinex", new AssetPair("BTC", "USD"), 10, 11600, 10900, 10, 10900, 10200));
-            orderBooks.AddRange(GenerateOrderBooks(7, "Quoine", new AssetPair("BTC", "EUR"), 10, 9000, 8980.95m, 10, 8980.95m, 8825));
-            orderBooks.AddRange(GenerateOrderBooks(7, "Binance", new AssetPair("EUR", "USD"), 10, 1.2205m, 1.2200m, 10, 1.2200m, 1.2190m));
+            orderBooks.AddRange(GenerateOrderBooks(7, "GDAX", new AssetPair("BTC", "USD"), 10, 11000, 10000, 10, 11500, 11000));
+            orderBooks.AddRange(GenerateOrderBooks(7, "Bitfinex", new AssetPair("BTC", "USD"), 10, 10900, 10200, 10, 11600, 10900));
+            orderBooks.AddRange(GenerateOrderBooks(7, "Quoine", new AssetPair("BTC", "EUR"), 10, 8980.95m, 8825, 10, 9000, 8980.95m));
+            orderBooks.AddRange(GenerateOrderBooks(7, "Binance", new AssetPair("EUR", "USD"), 10, 1.2200m, 1.2190m, 10, 1.2205m, 1.2200m));
             Assert.Equal(28, orderBooks.Count);
 
             foreach (var orderBook in orderBooks)
@@ -372,10 +372,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var orderBooks = new List<OrderBook>();
-            orderBooks.AddRange(GenerateOrderBooks(7, "GDAX", new AssetPair("BTC", "USD"), 10, 11500, 11000, 10, 11000, 10000));
-            orderBooks.AddRange(GenerateOrderBooks(7, "Bitfinex", new AssetPair("BTC", "USD"), 10, 11600, 10900, 10, 10900, 10200));
-            orderBooks.AddRange(GenerateOrderBooks(7, "Quoine", new AssetPair("BTC", "EUR"), 10, 9000, 8980.95m, 10, 8980.95m, 8825));
-            orderBooks.AddRange(GenerateOrderBooks(7, "Binance", new AssetPair("EUR", "USD"), 10, 1.2205m, 1.2200m, 10, 1.2200m, 1.2190m));
+            orderBooks.AddRange(GenerateOrderBooks(7, "GDAX", new AssetPair("BTC", "USD"), 10, 11000, 10000, 10, 11500, 11000));
+            orderBooks.AddRange(GenerateOrderBooks(7, "Bitfinex", new AssetPair("BTC", "USD"), 10, 10900, 10200, 10, 11600, 10900));
+            orderBooks.AddRange(GenerateOrderBooks(7, "Quoine", new AssetPair("BTC", "EUR"), 10, 8980.95m, 8825, 10, 9000, 8980.95m));
+            orderBooks.AddRange(GenerateOrderBooks(7, "Binance", new AssetPair("EUR", "USD"), 10, 1.2200m, 1.2190m, 10, 1.2205m, 1.2200m));
             Assert.Equal(28, orderBooks.Count);
             foreach (var orderBook in orderBooks)
                 arbitrageDetector.Process(orderBook);
@@ -394,10 +394,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
 
             orderBooks = new List<OrderBook>();
-            orderBooks.AddRange(GenerateOrderBooks(7, "GDAX", new AssetPair("BTC", "USD"), 10, 11500, 11000, 10, 11000, 10000));
-            orderBooks.AddRange(GenerateOrderBooks(7, "Bitfinex", new AssetPair("BTC", "USD"), 10, 11600, 10900, 10, 10900, 10200));
-            orderBooks.AddRange(GenerateOrderBooks(7, "Quoine", new AssetPair("BTC", "EUR"), 10, 9000, 8980.95m, 10, 8980.95m, 8825));
-            orderBooks.AddRange(GenerateOrderBooks(7, "Binance", new AssetPair("EUR", "USD"), 10, 1.2205m, 1.2200m, 10, 1.2200m, 1.2190m));
+            orderBooks.AddRange(GenerateOrderBooks(7, "GDAX", new AssetPair("BTC", "USD"), 10, 11000, 10000, 10, 11500, 11000));
+            orderBooks.AddRange(GenerateOrderBooks(7, "Bitfinex", new AssetPair("BTC", "USD"), 10, 10900, 10200, 10, 11600, 10900));
+            orderBooks.AddRange(GenerateOrderBooks(7, "Quoine", new AssetPair("BTC", "EUR"), 10, 8980.95m, 8825, 10, 9000, 8980.95m));
+            orderBooks.AddRange(GenerateOrderBooks(7, "Binance", new AssetPair("EUR", "USD"), 10, 1.2200m, 1.2190m, 10, 1.2205m, 1.2200m));
             Assert.Equal(28, orderBooks.Count);
             foreach (var orderBook in orderBooks)
                 arbitrageDetector.Process(orderBook);
@@ -425,23 +425,23 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
-                new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
                 new List<VolumePrice> { new VolumePrice(11000, 10) }, // bids
+                new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
                 DateTime.UtcNow);
 
             var btcUsdOrderBook2 = new OrderBook("Bitfinex", "BTCUSD",
-                new List<VolumePrice> { new VolumePrice(11300, 10) }, // asks
                 new List<VolumePrice> { new VolumePrice(11100, 10) }, // bids
+                new List<VolumePrice> { new VolumePrice(11300, 10) }, // asks
                 DateTime.UtcNow);
 
             var btcEurOrderBook = new OrderBook("Quoine", "BTCEUR",
-                new List<VolumePrice> { new VolumePrice(8999.95m, 10) }, // asks
                 new List<VolumePrice> { new VolumePrice(8825, 10) }, // bids
+                new List<VolumePrice> { new VolumePrice(8999.95m, 10) }, // asks
                 DateTime.UtcNow);
 
             var eurUsdOrderBook = new OrderBook("Binance", "EURUSD",
-                new List<VolumePrice> { new VolumePrice(1.22033m, 10) }, // asks
                 new List<VolumePrice> { new VolumePrice(1.2203m, 10) }, // bids
+                new List<VolumePrice> { new VolumePrice(1.22033m, 10) }, // asks
                 DateTime.UtcNow);
 
             arbitrageDetector.Process(btcUsdOrderBook1);
@@ -488,7 +488,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         }
 
 
-        private IEnumerable<OrderBook> GenerateOrderBooks(int count, string source, AssetPair assetPair, int askCount, decimal maxAsk, decimal minAsk, int bidCount, decimal maxBid, decimal minBid)
+        private IEnumerable<OrderBook> GenerateOrderBooks(int count, string source, AssetPair assetPair, int bidCount, decimal maxBid, decimal minBid, int askCount, decimal maxAsk, decimal minAsk)
         {
             #region Arguments checking
 
@@ -507,7 +507,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 var asks = GenerateVolumePrices(askCount, minAsk, maxAsk);
                 var bids = GenerateVolumePrices(bidCount, minBid, maxBid);
 
-                var orderBook = new OrderBook(source + i, assetPair.Name, asks, bids, DateTime.UtcNow);
+                var orderBook = new OrderBook(source + i, assetPair.Name, bids, asks, DateTime.UtcNow);
                 orderBook.SetAssetPair(assetPair.Base);
 
                 result.Add(orderBook);
@@ -545,15 +545,15 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             return result;
         }
 
-        private IEnumerable<OrderBook> GenerateX2OrderBooksForCrossRates(int count, string source, AssetPair assetPair, int askCount, decimal maxAsk, decimal minAsk, int bidCount, decimal maxBid, decimal minBid)
+        private IEnumerable<OrderBook> GenerateX2OrderBooksForCrossRates(int count, string source, AssetPair assetPair, int bidCount, decimal maxBid, decimal minBid, int askCount, decimal maxAsk, decimal minAsk)
         {
             #region Arguments checking
 
-            if (minAsk > maxAsk)
-                throw new Exception("minAsk > maxAsk");
-
             if (minBid > maxBid)
                 throw new Exception("minBid > maxBid");
+
+            if (minAsk > maxAsk)
+                throw new Exception("minAsk > maxAsk");
 
             #endregion
 
@@ -561,13 +561,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             for (var i = 0; i < count; i++)
             {
-                var asks = GenerateVolumePricesForCrossRates(askCount, minAsk, maxAsk);
                 var bids = GenerateVolumePricesForCrossRates(bidCount, minBid, maxBid);
-
+                var asks = GenerateVolumePricesForCrossRates(askCount, minAsk, maxAsk);
+                
                 var intermediateAsset = RandomString(3);
-                var orderBook1 = new OrderBook(source + i, assetPair.Base + intermediateAsset, asks, bids, DateTime.UtcNow);
+                var orderBook1 = new OrderBook(source + i, assetPair.Base + intermediateAsset, bids, asks, DateTime.UtcNow);
                 orderBook1.SetAssetPair(assetPair.Base);
-                var orderBook2 = new OrderBook(source + i, intermediateAsset + assetPair.Quote, asks, bids, DateTime.UtcNow);
+                var orderBook2 = new OrderBook(source + i, intermediateAsset + assetPair.Quote, bids, asks, DateTime.UtcNow);
                 orderBook2.SetAssetPair(assetPair.Quote);
 
                 result.Add(orderBook1);

@@ -14,16 +14,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public AssetPair AssetPair { get; }
 
         /// <summary>
-        /// Cross rete with low ask.
-        /// </summary>
-        public CrossRate AskCrossRate { get; }
-
-        /// <summary>
-        /// Price and volume of low ask.
-        /// </summary>
-        public VolumePrice Ask { get; }
-
-        /// <summary>
         /// Cross rete with high bid.
         /// </summary>
         public CrossRate BidCrossRate { get; }
@@ -32,6 +22,16 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// Price and volume of high bid.
         /// </summary>
         public VolumePrice Bid { get; }
+
+        /// <summary>
+        /// Cross rete with low ask.
+        /// </summary>
+        public CrossRate AskCrossRate { get; }
+
+        /// <summary>
+        /// Price and volume of low ask.
+        /// </summary>
+        public VolumePrice Ask { get; }
 
         /// <summary>
         /// Spread between ask and bid.
@@ -66,28 +66,28 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Conversion path.
         /// </summary>
-        public string ConversionPath => "(" + AskCrossRate.ConversionPath + ") < (" + BidCrossRate.ConversionPath + ")";
+        public string ConversionPath => FormatConversionPath(BidCrossRate.ConversionPath, AskCrossRate.ConversionPath);
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="assetPair"></param>
-        /// <param name="askCrossRate"></param>
-        /// <param name="ask"></param>
         /// <param name="bidCrossRate"></param>
         /// <param name="bid"></param>
+        /// <param name="askCrossRate"></param>
+        /// <param name="ask"></param>
         /// <param name="startedAt"></param>
         /// <param name="endedAt"></param>
-        public Arbitrage(AssetPair assetPair, CrossRate askCrossRate, VolumePrice ask, CrossRate bidCrossRate, VolumePrice bid, DateTime startedAt, DateTime endedAt)
+        public Arbitrage(AssetPair assetPair, CrossRate bidCrossRate, VolumePrice bid, CrossRate askCrossRate, VolumePrice ask, DateTime startedAt, DateTime endedAt)
         {
             AssetPair = assetPair;
-            AskCrossRate = askCrossRate ?? throw new ArgumentNullException(nameof(askCrossRate));
             BidCrossRate = bidCrossRate ?? throw new ArgumentNullException(nameof(bidCrossRate));
-            Ask = ask;
+            AskCrossRate = askCrossRate ?? throw new ArgumentNullException(nameof(askCrossRate));
             Bid = bid;
-            Spread = (Ask.Price - Bid.Price) / Bid.Price * 100;
+            Ask = ask;
+            Spread = GetSpread(Bid.Price, Ask.Price);
             Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
-            PnL = (Bid.Price - Ask.Price) * Volume;
+            PnL = GetPnL(Bid.Price, Ask.Price, Volume);
             StartedAt = startedAt;
             EndedAt = endedAt;
         }
@@ -97,8 +97,8 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// </summary>
         /// <param name="domain"></param>
         public Arbitrage(DomainArbitrage domain)
-        : this(new AssetPair(domain.AssetPair), new CrossRate(domain.AskCrossRate), new VolumePrice(domain.Ask),
-            new CrossRate(domain.BidCrossRate), new VolumePrice(domain.Bid), domain.StartedAt, domain.EndedAt)
+        : this(new AssetPair(domain.AssetPair), new CrossRate(domain.BidCrossRate), new VolumePrice(domain.Bid),
+            new CrossRate(domain.AskCrossRate), new VolumePrice(domain.Ask), domain.StartedAt, domain.EndedAt)
         {
             if (domain == null)
                 throw new ArgumentNullException(nameof(domain));
@@ -113,21 +113,21 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Formats conversion path.
         /// </summary>
-        /// <param name="askCrossRateConversionPath"></param>
         /// <param name="bidCrossRateConversionPath"></param>
+        /// <param name="askCrossRateConversionPath"></param>
         /// <returns></returns>
-        public static string FormatConversionPath(string askCrossRateConversionPath, string bidCrossRateConversionPath)
+        public static string FormatConversionPath(string bidCrossRateConversionPath, string askCrossRateConversionPath)
         {
-            return "(" + askCrossRateConversionPath + ") < (" + bidCrossRateConversionPath + ")";
+            return "(" + bidCrossRateConversionPath + ") > (" + askCrossRateConversionPath + ")";
         }
 
         /// <summary>
         /// Calculates spread.
         /// </summary>
-        /// <param name="askPrice"></param>
         /// <param name="bidPrice"></param>
+        /// <param name="askPrice"></param>
         /// <returns></returns>
-        public static decimal GetSpread(decimal askPrice, decimal bidPrice)
+        public static decimal GetSpread(decimal bidPrice, decimal askPrice)
         {
             return (askPrice - bidPrice) / bidPrice * 100;
         }
@@ -135,11 +135,11 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Calculates PnL.
         /// </summary>
-        /// <param name="askPrice"></param>
         /// <param name="bidPrice"></param>
+        /// <param name="askPrice"></param>
         /// <param name="volume"></param>
         /// <returns></returns>
-        public static decimal GetPnL(decimal askPrice, decimal bidPrice, decimal volume)
+        public static decimal GetPnL(decimal bidPrice, decimal askPrice, decimal volume)
         {
             return (bidPrice - askPrice) * volume;
         }

@@ -24,15 +24,15 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// </summary>
         /// <param name="source"></param>
         /// <param name="assetPair"></param>
-        /// <param name="asks"></param>
         /// <param name="bids"></param>
+        /// <param name="asks"></param>
         /// <param name="conversionPath"></param>
         /// <param name="originalOrderBooks"></param>
         /// <param name="timestamp"></param>
         public CrossRate(string source, AssetPair assetPair,
-            IReadOnlyCollection<VolumePrice> asks, IReadOnlyCollection<VolumePrice> bids,
+            IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks,
             string conversionPath, IList<OrderBook> originalOrderBooks, DateTime timestamp)
-            : base(source, assetPair.Name, asks, bids, timestamp)
+            : base(source, assetPair.Name, bids, asks, timestamp)
         {
             if (assetPair.IsEmpty())
                 throw new ArgumentOutOfRangeException($"{nameof(assetPair)}. Base: {assetPair.Base}, Quote: {assetPair.Quote}.");
@@ -93,7 +93,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             if (orderBookResult == null)
                 throw new InvalidOperationException("AssetPairs must be the same or reversed)");
 
-            var result = new CrossRate(orderBookResult.Source, targetAssetPair, orderBookResult.Asks, orderBookResult.Bids, conversionPath, originalOrderBooks, orderBook.Timestamp);
+            var result = new CrossRate(orderBookResult.Source, targetAssetPair, orderBookResult.Bids, orderBookResult.Asks, conversionPath, originalOrderBooks, orderBook.Timestamp);
 
             return result;
         }
@@ -178,22 +178,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
             #endregion
 
-            var asks = new List<VolumePrice>();
             var bids = new List<VolumePrice>();
-
-            // Calculating new asks
-            foreach (var leftAsk in left.Asks)
-            {
-                foreach (var rightAsk in right.Asks)
-                {
-                    var newAskPrice = leftAsk.Price * rightAsk.Price;
-                    var rightAskVolumeInBaseCurrency = rightAsk.Volume / leftAsk.Price;
-                    var newAskVolume = Math.Min(leftAsk.Volume, rightAskVolumeInBaseCurrency);
-
-                    var newAskVolumePrice = new VolumePrice(newAskPrice, newAskVolume);
-                    asks.Add(newAskVolumePrice);
-                }
-            }
+            var asks = new List<VolumePrice>();
 
             // Calculating new bids
             foreach (var leftBid in left.Bids)
@@ -209,12 +195,26 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 }
             }
 
+            // Calculating new asks
+            foreach (var leftAsk in left.Asks)
+            {
+                foreach (var rightAsk in right.Asks)
+                {
+                    var newAskPrice = leftAsk.Price * rightAsk.Price;
+                    var rightAskVolumeInBaseCurrency = rightAsk.Volume / leftAsk.Price;
+                    var newAskVolume = Math.Min(leftAsk.Volume, rightAskVolumeInBaseCurrency);
+
+                    var newAskVolumePrice = new VolumePrice(newAskPrice, newAskVolume);
+                    asks.Add(newAskVolumePrice);
+                }
+            }
+
             var source = GetSourcesPath(one.Source, another.Source);
             var conversionPath = GetConversionPath(one, another);
             var originalOrderBooks = new List<OrderBook> { one, another };
             var timestamp = left.Timestamp < right.Timestamp ? left.Timestamp : right.Timestamp;
 
-            var result = new CrossRate(source, targetAssetPair, asks, bids, conversionPath, originalOrderBooks, timestamp);
+            var result = new CrossRate(source, targetAssetPair, bids, asks, conversionPath, originalOrderBooks, timestamp);
 
             return result;
         }

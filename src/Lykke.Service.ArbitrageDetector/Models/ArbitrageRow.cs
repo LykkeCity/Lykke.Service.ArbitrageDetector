@@ -14,19 +14,14 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public AssetPair AssetPair { get; }
 
         /// <summary>
-        /// Ask exchange name.
-        /// </summary>
-        public string AskSource { get; }
-
-        /// <summary>
         /// Bid exchange name.
         /// </summary>
         public string BidSource { get; }
 
         /// <summary>
-        /// Conversion path from ask.
+        /// Ask exchange name.
         /// </summary>
-        public string AskConversionPath { get; }
+        public string AskSource { get; }
 
         /// <summary>
         /// Conversion path from bid.
@@ -34,14 +29,19 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public string BidConversionPath { get; }
 
         /// <summary>
-        /// Price and volume of low ask.
+        /// Conversion path from ask.
         /// </summary>
-        public VolumePrice Ask { get; }
+        public string AskConversionPath { get; }
 
         /// <summary>
         /// Price and volume of high bid.
         /// </summary>
         public VolumePrice Bid { get; }
+
+        /// <summary>
+        /// Price and volume of low ask.
+        /// </summary>
+        public VolumePrice Ask { get; }
 
         /// <summary>
         /// Spread between ask and bid.
@@ -76,33 +76,33 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Conversion path.
         /// </summary>
-        public string ConversionPath => Arbitrage.FormatConversionPath(AskConversionPath, BidConversionPath);
+        public string ConversionPath => Arbitrage.FormatConversionPath(BidConversionPath, AskConversionPath);
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="assetPair"></param>
-        /// <param name="askSource"></param>
         /// <param name="bidSource"></param>
-        /// <param name="askConversionPath"></param>
+        /// <param name="askSource"></param>
         /// <param name="bidConversionPath"></param>
-        /// <param name="ask"></param>
+        /// <param name="askConversionPath"></param>
         /// <param name="bid"></param>
+        /// <param name="ask"></param>
         /// <param name="spread"></param>
         /// <param name="volume"></param>
         /// <param name="pnL"></param>
         /// <param name="startedAt"></param>
         /// <param name="endedAt"></param>
-        public ArbitrageRow(AssetPair assetPair, string askSource, string bidSource, string askConversionPath, string bidConversionPath, VolumePrice ask, VolumePrice bid,
+        public ArbitrageRow(AssetPair assetPair, string bidSource, string askSource, string bidConversionPath, string askConversionPath, VolumePrice bid, VolumePrice ask,
             decimal spread, decimal volume, decimal pnL, DateTime startedAt, DateTime endedAt)
         {
             AssetPair = assetPair;
-            AskSource = string.IsNullOrWhiteSpace(askSource) ? throw new ArgumentNullException(nameof(askSource)) : askSource;
             BidSource = string.IsNullOrWhiteSpace(bidSource) ? throw new ArgumentNullException(nameof(bidSource)) : bidSource;
-            AskConversionPath = string.IsNullOrWhiteSpace(askConversionPath) ? throw new ArgumentNullException(nameof(askConversionPath)) : askConversionPath;
+            AskSource = string.IsNullOrWhiteSpace(askSource) ? throw new ArgumentNullException(nameof(askSource)) : askSource;
             BidConversionPath = string.IsNullOrWhiteSpace(bidConversionPath) ? throw new ArgumentNullException(nameof(bidConversionPath)) : bidConversionPath;
-            Ask = ask;
+            AskConversionPath = string.IsNullOrWhiteSpace(askConversionPath) ? throw new ArgumentNullException(nameof(askConversionPath)) : askConversionPath;
             Bid = bid;
+            Ask = ask;
             Spread = spread;
             Volume = volume;
             PnL = pnL;
@@ -117,12 +117,12 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public ArbitrageRow(DomainArbitrage domain)
         {
             AssetPair = new AssetPair(domain.AssetPair);
-            AskSource = domain.AskCrossRate.Source;
             BidSource = domain.BidCrossRate.Source;
-            AskConversionPath = domain.AskCrossRate.ConversionPath;
+            AskSource = domain.AskCrossRate.Source;
             BidConversionPath = domain.BidCrossRate.ConversionPath;
-            Ask = new VolumePrice(domain.Ask);
+            AskConversionPath = domain.AskCrossRate.ConversionPath;
             Bid = new VolumePrice(domain.Bid);
+            Ask = new VolumePrice(domain.Ask);
             Spread = domain.Spread;
             Volume = domain.Volume;
             PnL = domain.PnL;

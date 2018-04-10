@@ -23,15 +23,15 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// </summary>
         /// <param name="source"></param>
         /// <param name="assetPair"></param>
-        /// <param name="asks"></param>
         /// <param name="bids"></param>
+        /// <param name="asks"></param>
         /// <param name="conversionPath"></param>
         /// <param name="originalOrderBooks"></param>
         /// <param name="timestamp"></param>
         public CrossRate(string source, AssetPair assetPair,
-            IReadOnlyCollection<VolumePrice> asks, IReadOnlyCollection<VolumePrice> bids,
+            IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks,
             string conversionPath, IList<OrderBook> originalOrderBooks, DateTime timestamp)
-            : base(source, new AssetPair(assetPair.Base, assetPair.Quote), asks, bids, timestamp)
+            : base(source, new AssetPair(assetPair.Base, assetPair.Quote), bids, asks, timestamp)
         {
             if (assetPair.IsEmpty())
                 throw new ArgumentOutOfRangeException($"{nameof(assetPair)}. Base: {assetPair.Base}, Quote: {assetPair.Quote}.");

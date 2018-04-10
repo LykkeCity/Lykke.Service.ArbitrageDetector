@@ -21,24 +21,24 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public AssetPair AssetPair { get; set; }
 
         /// <summary>
-        /// Asking prices and volumes.
-        /// </summary>
-        public IReadOnlyCollection<VolumePrice> Asks { get; }
-
-        /// <summary>
         /// Bidding prices and volumes.
         /// </summary>
         public IReadOnlyCollection<VolumePrice> Bids { get; }
 
         /// <summary>
-        /// Best ask.
+        /// Asking prices and volumes.
         /// </summary>
-        public VolumePrice? BestAsk { get; }
+        public IReadOnlyCollection<VolumePrice> Asks { get; }
 
         /// <summary>
         /// Best bid.
         /// </summary>
         public VolumePrice? BestBid { get; }
+
+        /// <summary>
+        /// Best ask.
+        /// </summary>
+        public VolumePrice? BestAsk { get; }
 
         /// <summary>
         /// Timestamp.
@@ -50,17 +50,17 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// </summary>
         /// <param name="source"></param>
         /// <param name="assetPair"></param>
-        /// <param name="asks"></param>
         /// <param name="bids"></param>
+        /// <param name="asks"></param>
         /// <param name="timestamp"></param>
-        public OrderBook(string source, AssetPair assetPair, IReadOnlyCollection<VolumePrice> asks, IReadOnlyCollection<VolumePrice> bids, DateTime timestamp)
+        public OrderBook(string source, AssetPair assetPair, IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks, DateTime timestamp)
         {
             Source = string.IsNullOrWhiteSpace(source) ? throw new ArgumentNullException(nameof(source)) : source;
             AssetPair = assetPair;
-            Asks = asks ?? throw new ArgumentNullException(nameof(asks));
             Bids = bids ?? throw new ArgumentNullException(nameof(bids));
-            BestAsk = Asks.Any() ? Asks.MinBy(x => x.Price) : (VolumePrice?)null;
+            Asks = asks ?? throw new ArgumentNullException(nameof(asks));
             BestBid = Bids.Any() ? Bids.MaxBy(x => x.Price) : (VolumePrice?)null;
+            BestAsk = Asks.Any() ? Asks.MinBy(x => x.Price) : (VolumePrice?)null;
             Timestamp = timestamp;
         }
 
@@ -71,8 +71,8 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public OrderBook Reverse()
         {
             var result = new OrderBook(Source, AssetPair.Reverse(),
-                Bids.Select(x => x.Reciprocal()).OrderByDescending(x => x.Price).ToList(),
                 Asks.Select(x => x.Reciprocal()).OrderByDescending(x => x.Price).ToList(),
+                Bids.Select(x => x.Reciprocal()).OrderByDescending(x => x.Price).ToList(),
                 Timestamp);
             result.AssetPair = AssetPair.Reverse();
 

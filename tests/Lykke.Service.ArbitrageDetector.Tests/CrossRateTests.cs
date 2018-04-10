@@ -15,31 +15,31 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair = new AssetPair("BTC", "USD");
             var timestamp = DateTime.UtcNow;
 
+            var bids = new List<VolumePrice>
+            {
+                new VolumePrice(8825, 9),
+                new VolumePrice(8823, 5)
+            };
             var asks = new List<VolumePrice>
             {
                 new VolumePrice(9000, 10),
                 new VolumePrice(8999.95m, 7),
                 new VolumePrice(8900.12345677m, 3)
             };
-            var bids = new List<VolumePrice>
-            {
-                new VolumePrice(8825, 9),
-                new VolumePrice(8823, 5)
-            };
 
-            void Construct1() => new CrossRate("", assetPair, asks, bids, conversionPath, new List<OrderBook>(), timestamp);
+            void Construct1() => new CrossRate("", assetPair, bids, asks, conversionPath, new List<OrderBook>(), timestamp);
             Assert.Throws<ArgumentException>((Action)Construct1);
 
-            void Construct2() => new CrossRate(null, assetPair, asks, bids, conversionPath, new List<OrderBook>(), timestamp);
+            void Construct2() => new CrossRate(null, assetPair, bids, asks, conversionPath, new List<OrderBook>(), timestamp);
             Assert.Throws<ArgumentException>((Action)Construct2);
 
-            void Construct3() => new CrossRate(exchangeName, assetPair, asks, bids, "", new List<OrderBook>(), timestamp);
+            void Construct3() => new CrossRate(exchangeName, assetPair, bids, asks, "", new List<OrderBook>(), timestamp);
             Assert.Throws<ArgumentException>((Action)Construct3);
 
-            void Construct4() => new CrossRate(exchangeName, assetPair, asks, bids, null, new List<OrderBook>(), timestamp);
+            void Construct4() => new CrossRate(exchangeName, assetPair, bids, asks, null, new List<OrderBook>(), timestamp);
             Assert.Throws<ArgumentException>((Action)Construct4);
 
-            void Construct5() => new CrossRate(exchangeName, assetPair, asks, bids, conversionPath, null, timestamp);
+            void Construct5() => new CrossRate(exchangeName, assetPair, bids, asks, conversionPath, null, timestamp);
             Assert.Throws<ArgumentNullException>((Action)Construct5);
         }
 
@@ -72,13 +72,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair = new AssetPair("BTC", "EUR");
 
             var btcEurOrderBook = new OrderBook(exchange, btceur,
-                new List<VolumePrice> // asks
-                {
-                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
-                },
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 9), new VolumePrice(8823, 5)
+                },
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp);
             btcEurOrderBook.SetAssetPair("EUR");
@@ -88,8 +88,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(btceur, crossRate.AssetPairStr);
             Assert.Equal(assetPair, crossRate.AssetPair);
             Assert.Equal(OrderBook.FormatSourceAssetPair(exchange, btceur), crossRate.ConversionPath);
-            Assert.Equal(3, crossRate.Asks.Count);
             Assert.Equal(2, crossRate.Bids.Count);
+            Assert.Equal(3, crossRate.Asks.Count);
             Assert.Equal(timestamp, crossRate.Timestamp);
             Assert.Equal(1, crossRate.OriginalOrderBooks.Count);
         }
@@ -104,13 +104,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var reversed = assetPair.Reverse();
 
             var btcUsdOrderBook = new OrderBook(exchange, btcusd,
-                new List<VolumePrice> // asks
-                {
-                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
-                },
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 9), new VolumePrice(8823, 5)
+                },
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp);
             btcUsdOrderBook.SetAssetPair("USD");
@@ -120,8 +120,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(reversed.Name, crossRate.AssetPairStr);
             Assert.Equal(reversed, crossRate.AssetPair);
             Assert.Equal(OrderBook.FormatSourceAssetPair(exchange, btcusd), crossRate.ConversionPath);
-            Assert.Equal(2, crossRate.Asks.Count);
             Assert.Equal(3, crossRate.Bids.Count);
+            Assert.Equal(2, crossRate.Asks.Count);
             Assert.Equal(timestamp, crossRate.Timestamp);
             Assert.Equal(1, crossRate.OriginalOrderBooks.Count);
         }
@@ -168,25 +168,25 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var targetAssetPair = new AssetPair("BTC", "USD");
 
             var btcEurOrderBook = new OrderBook(exchange, btceur,
-                new List<VolumePrice> // asks
-                {
-                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
-                },
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 9), new VolumePrice(8823, 5)
+                },
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp1);
             btcEurOrderBook.SetAssetPair("EUR");
 
             var eurUsdOrderBook = new OrderBook(exchange, eurusd,
-                new List<VolumePrice> // asks
-                {
-                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
-                },
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 9), new VolumePrice(8823, 5)
+                },
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp2);
             eurUsdOrderBook.SetAssetPair("EUR");
@@ -196,8 +196,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
             Assert.Equal(targetAssetPair, crossRate.AssetPair);
             Assert.Equal(CrossRate.GetConversionPath(exchange, btceur, exchange, eurusd), crossRate.ConversionPath);
-            Assert.Equal(9, crossRate.Asks.Count);
             Assert.Equal(4, crossRate.Bids.Count);
+            Assert.Equal(9, crossRate.Asks.Count);
             Assert.Equal(timestamp1, crossRate.Timestamp);
             Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
         }
@@ -213,25 +213,25 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var targetAssetPair = new AssetPair("BTC", "USD");
 
             var btcEurOrderBook = new OrderBook(exchange, eurbtc,
-                new List<VolumePrice> // asks
-                {
-                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
-                },
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 9), new VolumePrice(8823, 5)
+                },
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp1);
             btcEurOrderBook.SetAssetPair("EUR");
 
             var eurUsdOrderBook = new OrderBook(exchange, eurusd,
-                new List<VolumePrice> // asks
-                {
-                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
-                },
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 9), new VolumePrice(8823, 5)
+                },
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp2);
             eurUsdOrderBook.SetAssetPair("EUR");
@@ -241,8 +241,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
             Assert.Equal(targetAssetPair, crossRate.AssetPair);
             Assert.Equal(CrossRate.GetConversionPath(exchange, eurbtc, exchange, eurusd), crossRate.ConversionPath);
-            Assert.Equal(6, crossRate.Asks.Count);
             Assert.Equal(6, crossRate.Bids.Count);
+            Assert.Equal(6, crossRate.Asks.Count);
             Assert.Equal(timestamp1, crossRate.Timestamp);
             Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
         }
@@ -258,25 +258,25 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var targetAssetPair = new AssetPair("BTC", "USD");
 
             var btcEurOrderBook = new OrderBook(exchange, btceur,
-                new List<VolumePrice> // asks
-                {
-                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
-                },
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 9), new VolumePrice(8823, 5)
+                },
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp1);
             btcEurOrderBook.SetAssetPair("EUR");
 
             var eurUsdOrderBook = new OrderBook(exchange, usdeur,
-                new List<VolumePrice> // asks
-                {
-                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
-                },
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 9), new VolumePrice(8823, 5)
+                },
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp2);
             eurUsdOrderBook.SetAssetPair("EUR");
@@ -286,8 +286,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
             Assert.Equal(targetAssetPair, crossRate.AssetPair);
             Assert.Equal(CrossRate.GetConversionPath(exchange, btceur, exchange, usdeur), crossRate.ConversionPath);
-            Assert.Equal(6, crossRate.Asks.Count);
             Assert.Equal(6, crossRate.Bids.Count);
+            Assert.Equal(6, crossRate.Asks.Count);
             Assert.Equal(timestamp1, crossRate.Timestamp);
             Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
         }
@@ -303,25 +303,25 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var targetAssetPair = new AssetPair("BTC", "USD");
 
             var btcEurOrderBook = new OrderBook(exchange, eurbtc,
-                new List<VolumePrice> // asks
-                {
-                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
-                },
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 9), new VolumePrice(8823, 5)
+                },
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp1);
             btcEurOrderBook.SetAssetPair("EUR");
 
             var eurUsdOrderBook = new OrderBook(exchange, usdeur,
-                new List<VolumePrice> // asks
-                {
-                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
-                },
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 9), new VolumePrice(8823, 5)
+                },
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp2);
             eurUsdOrderBook.SetAssetPair("EUR");
@@ -331,8 +331,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
             Assert.Equal(targetAssetPair, crossRate.AssetPair);
             Assert.Equal(CrossRate.GetConversionPath(exchange, eurbtc, exchange, usdeur), crossRate.ConversionPath);
-            Assert.Equal(4, crossRate.Asks.Count);
             Assert.Equal(9, crossRate.Bids.Count);
+            Assert.Equal(4, crossRate.Asks.Count);
             Assert.Equal(timestamp1, crossRate.Timestamp);
             Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
         }
