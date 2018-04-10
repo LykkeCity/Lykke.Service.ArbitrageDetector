@@ -58,14 +58,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public void Process(OrderBook orderBook)
         {
-            // Update if contains base currency
-            CheckForCurrencyAndUpdateOrderBooks(_quoteAsset, orderBook);
+            var wantedAssets = new List<string>();
+            wantedAssets.Add(_quoteAsset);
+            wantedAssets.AddRange(_baseAssets);
 
-            // Update if contains wanted currency
-            foreach (var wantedCurrency in _baseAssets)
-            {
-                CheckForCurrencyAndUpdateOrderBooks(wantedCurrency, orderBook);
-            }
+            // Update if contains base currency
+            CheckForAssetAndUpdateOrderBook(wantedAssets, orderBook);
         }
 
         public override async Task Execute()
@@ -336,15 +334,20 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _arbitrageHistory.AddOrUpdate(key, arbitrage);
         }
 
-        private void CheckForCurrencyAndUpdateOrderBooks(string currency, OrderBook orderBook)
+        private void CheckForAssetAndUpdateOrderBook(IEnumerable<string> assets, OrderBook orderBook)
         {
-            if (!orderBook.AssetPairStr.Contains(currency))
+            foreach (var asset in assets)
+            {
+                if (!orderBook.AssetPairStr.Contains(asset))
+                    continue;
+
+                orderBook.SetAssetPair(asset);
+
+                var key = new AssetPairSource(orderBook.Source, orderBook.AssetPair);
+                _orderBooks.AddOrUpdate(key, orderBook);
+
                 return;
-
-            orderBook.SetAssetPair(currency);
-
-            var key = new AssetPairSource(orderBook.Source, orderBook.AssetPair);
-            _orderBooks.AddOrUpdate(key, orderBook);
+            }
         }
 
         private Dictionary<AssetPairSource, OrderBook> GetActualOrderBooks()

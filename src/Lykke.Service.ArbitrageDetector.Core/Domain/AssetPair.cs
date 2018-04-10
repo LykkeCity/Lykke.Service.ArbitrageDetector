@@ -5,7 +5,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
     /// <summary>
     /// represents an asset pair aka instrument.
     /// </summary>
-    public struct AssetPair
+    public struct AssetPair : IComparable
     {
         /// <summary>
         /// Base asset.
@@ -60,21 +60,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         }
 
         /// <summary>
-        /// Checks if asset pairs are equal.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public bool Equals(AssetPair other)
-        {
-            Validate();
-
-            if (other.IsEmpty())
-                throw new ArgumentException($"{nameof(other)} is not filled properly.");
-
-            return Base == other.Base && Quote == other.Quote;
-        }
-
-        /// <summary>
         /// Checks if equal or reversed.
         /// </summary>
         /// <param name="other"></param>
@@ -119,6 +104,12 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return Base == asset || Quote == asset;
         }
 
+        /// <summary>
+        /// Create Asset Pair from string with one of the assets.
+        /// </summary>
+        /// <param name="assetPair"></param>
+        /// <param name="oneOfTheAssets"></param>
+        /// <returns></returns>
         public static AssetPair FromString(string assetPair, string oneOfTheAssets)
         {
             if (string.IsNullOrWhiteSpace(assetPair))
@@ -152,13 +143,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return string.IsNullOrWhiteSpace(Base) || string.IsNullOrWhiteSpace(Quote);
         }
 
-        public override string ToString()
-        {
-            Validate();
-
-            return Name;
-        }
-
         /// <summary>
         /// Throw ArgumentException if not initialized.
         /// </summary>
@@ -170,5 +154,82 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             if (string.IsNullOrWhiteSpace(Quote))
                 throw new ArgumentException(nameof(Quote));
         }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            Validate();
+
+            return Name;
+        }
+
+        #region Equals and GetHashCode
+
+        /// <summary>
+        /// Equals.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(AssetPair other)
+        {
+            return string.Equals(Base, other.Base) && string.Equals(Quote, other.Quote);
+        }
+
+        /// <inheritdoc />
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+                return false;
+
+            if (!(obj is AssetPair other))
+                throw new InvalidCastException(nameof(obj));
+
+            return Equals(other);
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((Base != null ? Base.GetHashCode() : 0) * 397) ^ (Quote != null ? Quote.GetHashCode() : 0);
+            }
+        }
+
+        #endregion
+
+        #region IComparable
+
+        /// <inheritdoc />
+        public int CompareTo(object obj)
+        {
+            if (obj == null)
+                throw new ArgumentNullException(nameof(obj));
+
+            if (!(obj is AssetPair other))
+                throw new InvalidCastException(nameof(obj));
+
+            return CompareTo(other);
+        }
+
+        /// <summary>
+        /// CompareTo.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public int CompareTo(AssetPair other)
+        {
+            if (default(AssetPair).Equals(other) )
+                throw new ArgumentOutOfRangeException(nameof(other));
+
+            var baseComparison = string.Compare(Base, other.Base, StringComparison.Ordinal);
+
+            if (baseComparison != 0)
+                return baseComparison;
+
+            return string.Compare(Quote, other.Quote, StringComparison.Ordinal);
+        }
+
+        #endregion
     }
 }
