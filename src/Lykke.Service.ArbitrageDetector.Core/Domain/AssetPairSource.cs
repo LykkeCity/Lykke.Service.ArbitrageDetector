@@ -28,20 +28,13 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             AssetPair = string.IsNullOrEmpty(assetPair.Base) || string.IsNullOrEmpty(assetPair.Quote) ? throw new ArgumentNullException(nameof(assetPair)) : assetPair;
         }
 
-        /// <summary>
-        /// ToString implementation.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return Exchange + "-" + AssetPair;
         }
 
-        /// <summary>
-        /// CompareTo implementation.
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public int CompareTo(object obj)
         {
             if (obj == null || !(obj is AssetPairSource))

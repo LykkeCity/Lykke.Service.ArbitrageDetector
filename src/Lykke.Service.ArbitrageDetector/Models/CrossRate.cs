@@ -58,10 +58,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         {
         }
 
-        /// <summary>
-        /// ToString implementation.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return ConversionPath;

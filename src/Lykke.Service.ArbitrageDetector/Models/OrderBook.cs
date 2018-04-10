@@ -90,10 +90,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
             return result;
         }
 
-        /// <summary>
-        /// ToString implementation.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return FormatSourceAssetPair(Source, AssetPair.Name);

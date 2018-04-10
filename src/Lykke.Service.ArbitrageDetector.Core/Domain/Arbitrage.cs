@@ -89,10 +89,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             StartedAt = DateTime.UtcNow;
         }
 
-        /// <summary>
-        /// ToString implementation.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return ConversionPath;

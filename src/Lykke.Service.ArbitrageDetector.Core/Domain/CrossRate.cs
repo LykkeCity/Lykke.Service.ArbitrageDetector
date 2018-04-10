@@ -252,10 +252,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return leftSource + "-" + rightSource;
         }
 
-        /// <summary>
-        /// ToString implementation.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return ConversionPath;

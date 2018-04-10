@@ -89,10 +89,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             EndedAt = endedAt;
         }
 
-        /// <summary>
-        /// ToString() implementation.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return ConversionPath;

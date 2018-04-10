@@ -104,10 +104,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
                 throw new ArgumentNullException(nameof(domain));
         }
 
-        /// <summary>
-        /// ToString() implementation.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return ConversionPath;
