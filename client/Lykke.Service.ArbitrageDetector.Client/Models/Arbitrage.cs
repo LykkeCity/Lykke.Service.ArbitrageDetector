@@ -82,9 +82,9 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             AskCrossRate = askCrossRate ?? throw new ArgumentNullException(nameof(askCrossRate));
             Bid = bid;
             Ask = ask;
-            Spread = GetSpread(Ask.Price, Bid.Price);
+            Spread = GetSpread(Bid.Price, Ask.Price);
             Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
-            PnL = GetPnL(Ask.Price, Bid.Price, Volume);
+            PnL = GetPnL(Bid.Price, Ask.Price, Volume);
             StartedAt = startedAt;
             EndedAt = endedAt;
         }
