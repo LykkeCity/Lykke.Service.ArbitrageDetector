@@ -25,11 +25,14 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private IEnumerable<string> _baseAssets;
         private IEnumerable<string> _intermediateAssets;
         private string _quoteAsset;
+        private IEnumerable<string> _exchanges;
         private int _expirationTimeInSeconds;
+        private decimal _minimumPnL;
+        private decimal _minimumVolume;
+        private int _minSpread;
         private readonly int _historyMaxSize;
         private bool _restartNeeded;
-        private int _minSpread;
-        
+
         private readonly ILog _log;
 
         public ArbitrageDetectorService(StartupSettings settings, ILog log, IShutdownManager shutdownManager)
@@ -42,9 +45,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _baseAssets = settings.BaseAssets;
             _intermediateAssets = settings.IntermediateAssets;
             _quoteAsset = settings.QuoteAsset;
+            _exchanges = settings.Exchanges;
             _expirationTimeInSeconds = settings.ExpirationTimeInSeconds.Value;
-            _historyMaxSize = settings.HistoryMaxSize;
+            _minimumPnL = settings.MinimumPnL.Value;
+            _minimumVolume = settings.MinimumVolume.Value;
             _minSpread = settings.MinSpread.Value;
+            _historyMaxSize = settings.HistoryMaxSize;
 
             _log = log;
             shutdownManager?.Register(this);
@@ -58,12 +64,23 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public void Process(OrderBook orderBook)
         {
-            var wantedAssets = new List<string>();
-            wantedAssets.Add(_quoteAsset);
-            wantedAssets.AddRange(_baseAssets);
+            var assets = new List<string>();
+            assets.Add(_quoteAsset);
+            assets.AddRange(_baseAssets);
+            assets.AddRange(_intermediateAssets);
 
-            // Update if contains base currency
-            CheckForAssetAndUpdateOrderBook(wantedAssets, orderBook);
+            foreach (var asset in assets)
+            {
+                if (!orderBook.AssetPairStr.Contains(asset))
+                    continue;
+
+                orderBook.SetAssetPair(asset);
+
+                var key = new AssetPairSource(orderBook.Source, orderBook.AssetPair);
+                _orderBooks.AddOrUpdate(key, orderBook);
+
+                return;
+            }
         }
 
         public override async Task Execute()
@@ -194,7 +211,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             var askVolume = ask.Volume;
                             var volume = askVolume < bidVolume ? askVolume : bidVolume;
                             var pnL = Arbitrage.GetPnL(bidPrice, askPrice, volume);
-                            if (pnL <= existed.PnL)
+                            if ((_minimumPnL > 0 && pnL <= _minimumPnL) || pnL <= existed.PnL)
                                 continue;
 
                             var arbitrage = new Arbitrage(assetPair, bid.CrossRate, new VolumePrice(bid.Price, bid.Volume), ask.CrossRate, new VolumePrice(ask.Price, ask.Volume));
@@ -235,7 +252,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 MoveFromActualToHistory(oldArbitrage.Value);
             }
 
-            // Add new arbitrages and replace existed if new PnL is better
+            // Add new arbitrages or replace existed if new PnL is better
             var added = 0;
             foreach (var newArbitrage in newArbitrages)
             {
@@ -265,6 +282,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             if (watch.ElapsedMilliseconds - calculateArbitragesMs > 100)
                 await _log.WriteInfoAsync(GetType().Name, nameof(RefreshArbitrages), $"{watch.ElapsedMilliseconds} ms, new {newArbitrages.Count} arbitrages, {removed} removed, {added} added, {beforeCleaning - _arbitrageHistory.Count} cleaned, {_arbitrages.Count} active, {_arbitrageHistory.Count} in history.");
         }
+
 
         private void CleanHistory()
         {
@@ -303,10 +321,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var asks = new List<ArbitrageLine>();
             foreach (var crossRate in crossRates)
             {
-                crossRate.Bids.Where(x => x.Price > minAsk)
+                crossRate.Bids.Where(x => x.Price > minAsk && (_minimumVolume == 0 || x.Volume > _minimumVolume))
                     .ForEach(x => bids.Add(new ArbitrageLine(crossRate, x)));
 
-                crossRate.Asks.Where(x => x.Price < maxBid)
+                crossRate.Asks.Where(x => x.Price < maxBid && (_minimumVolume == 0 || x.Volume > _minimumVolume))
                     .ForEach(x => asks.Add(new ArbitrageLine(crossRate, x)));
             }
 
@@ -334,28 +352,15 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _arbitrageHistory.AddOrUpdate(key, arbitrage);
         }
 
-        private void CheckForAssetAndUpdateOrderBook(IEnumerable<string> assets, OrderBook orderBook)
-        {
-            foreach (var asset in assets)
-            {
-                if (!orderBook.AssetPairStr.Contains(asset))
-                    continue;
-
-                orderBook.SetAssetPair(asset);
-
-                var key = new AssetPairSource(orderBook.Source, orderBook.AssetPair);
-                _orderBooks.AddOrUpdate(key, orderBook);
-
-                return;
-            }
-        }
-
         private Dictionary<AssetPairSource, OrderBook> GetActualOrderBooks()
         {
             var result = new Dictionary<AssetPairSource, OrderBook>();
 
             foreach (var keyValue in _orderBooks)
             {
+                if (_exchanges.Any() && !_exchanges.Contains(keyValue.Key.Exchange))
+                    continue;
+
                 if (DateTime.UtcNow - keyValue.Value.Timestamp < new TimeSpan(0, 0, 0, _expirationTimeInSeconds))
                 {
                     result.Add(keyValue.Key, keyValue.Value);
@@ -481,7 +486,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public Settings GetSettings()
         {
-            return new Settings(_expirationTimeInSeconds, _baseAssets, _intermediateAssets, _quoteAsset, _minSpread);
+            return new Settings(_expirationTimeInSeconds, _baseAssets, _intermediateAssets, _quoteAsset, _minSpread, _exchanges, _minimumPnL, _minimumVolume);
         }
 
         public void SetSettings(Settings settings)
@@ -494,6 +499,18 @@ namespace Lykke.Service.ArbitrageDetector.Services
             if (settings.ExpirationTimeInSeconds != null)
             {
                 _expirationTimeInSeconds = settings.ExpirationTimeInSeconds.Value;
+                restartNeeded = true;
+            }
+
+            if (settings.MinimumPnL != null)
+            {
+                _minimumPnL = settings.MinimumPnL.Value;
+                restartNeeded = true;
+            }
+
+            if (settings.MinimumVolume != null)
+            {
+                _minimumVolume = settings.MinimumVolume.Value;
                 restartNeeded = true;
             }
 
@@ -512,6 +529,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
             if (settings.QuoteAsset != null)
             {
                 _quoteAsset = settings.QuoteAsset;
+                restartNeeded = true;
+            }
+
+            if (settings.Exchanges != null)
+            {
+                _exchanges = settings.Exchanges;
                 restartNeeded = true;
             }
 

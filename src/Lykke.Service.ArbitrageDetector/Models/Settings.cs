@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Lykke.Service.ArbitrageDetector.Models
 {
@@ -12,6 +11,21 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// Expiration time in milliseconds for order books and cross rates.
         /// </summary>
         public int? ExpirationTimeInSeconds { get; set; }
+
+        /// <summary>
+        /// Minimum PnL.
+        /// </summary>
+        public decimal? MinimumPnL { get; set; }
+
+        /// <summary>
+        /// Minimum volume.
+        /// </summary>
+        public decimal? MinimumVolume { get; set; }
+
+        /// <summary>
+        /// Minimum spread.
+        /// </summary>
+        public int? MinSpread { get; set; }
 
         /// <summary>
         /// Wanted base assets.
@@ -29,9 +43,9 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public string QuoteAsset { get; set; }
 
         /// <summary>
-        /// Minimum spread.
+        /// Wanted exchanges.
         /// </summary>
-        public int? MinSpread { get; set; }
+        public IEnumerable<string> Exchanges { get; set; }
 
         /// <summary>
         /// Constructor.
@@ -48,13 +62,20 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <param name="quoteAsset"></param>
         /// <param name="intermediateAssets"></param>
         /// <param name="minSpread"></param>
-        public Settings(int? expirationTimeInSeconds, IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset, int? minSpread)
+        /// <param name="exchanges"></param>
+        /// <param name="minimumPnL"></param>
+        /// <param name="minimumVolume"></param>
+        public Settings(int? expirationTimeInSeconds, IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset, int? minSpread,
+            IEnumerable<string> exchanges, decimal? minimumPnL, decimal? minimumVolume)
         {
             ExpirationTimeInSeconds = expirationTimeInSeconds;
             BaseAssets = baseAssets;
             IntermediateAssets = intermediateAssets;
             QuoteAsset = quoteAsset;
             MinSpread = minSpread;
+            Exchanges = exchanges;
+            MinimumPnL = minimumPnL;
+            MinimumVolume = minimumVolume;
         }
 
         /// <summary>
@@ -62,7 +83,8 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// </summary>
         /// <param name="settings">Domain model</param>
         public Settings(Core.Settings settings)
-            : this(settings.ExpirationTimeInSeconds, settings.BaseAssets, settings.IntermediateAssets, settings.QuoteAsset, settings.MinSpread)
+            : this(settings.ExpirationTimeInSeconds, settings.BaseAssets, settings.IntermediateAssets, settings.QuoteAsset, settings.MinSpread,
+                settings.Exchanges, settings.MinimumPnL, settings.MinimumVolume)
         {
         }
 
@@ -72,7 +94,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <returns>Domain model</returns>
         public Core.Settings ToModel()
         {
-            var domain = new Core.Settings(ExpirationTimeInSeconds, BaseAssets, IntermediateAssets, QuoteAsset, MinSpread);
+            var domain = new Core.Settings(ExpirationTimeInSeconds, BaseAssets, IntermediateAssets, QuoteAsset, MinSpread, Exchanges, MinimumPnL, MinimumVolume);
 
             return domain;
         }

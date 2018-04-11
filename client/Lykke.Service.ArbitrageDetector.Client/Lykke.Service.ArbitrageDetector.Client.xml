@@ -517,6 +517,21 @@
             Expiration time in milliseconds for order books and cross rates.
             </summary>
         </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.MinimumPnL">
+            <summary>
+            Minimum PnL.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.MinimumVolume">
+            <summary>
+            Minimum volume.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.MinSpread">
+            <summary>
+            Minimum spread.
+            </summary>
+        </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.BaseAssets">
             <summary>
             Wanted base assets.
@@ -532,9 +547,9 @@
             Quote asset for wanted assets.
             </summary>
         </member>
-        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.MinSpread">
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.Exchanges">
             <summary>
-            Minimum spread.
+            Wanted exchanges.
             </summary>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor">
@@ -542,7 +557,7 @@
             Constructor.
             </summary>
         </member>
-        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor(System.Nullable{System.Int32},System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String},System.String,System.Nullable{System.Int32})">
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor(System.Nullable{System.Int32},System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String},System.String,System.Nullable{System.Int32},System.Collections.Generic.IEnumerable{System.String},System.Nullable{System.Decimal},System.Nullable{System.Decimal})">
             <summary>
             Constructor.
             </summary>
@@ -551,6 +566,9 @@
             <param name="quoteAsset"></param>
             <param name="intermediateAssets"></param>
             <param name="minSpread"></param>
+            <param name="exchanges"></param>
+            <param name="minimumPnL"></param>
+            <param name="minimumVolume"></param>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice">
             <summary>

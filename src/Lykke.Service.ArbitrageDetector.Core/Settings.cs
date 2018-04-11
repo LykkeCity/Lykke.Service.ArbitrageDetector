@@ -37,9 +37,13 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// <param name="baseAssets"></param>
         /// <param name="quoteAsset"></param>
         /// <param name="intermediateAssets"></param>
+        /// <param name="exchanges"></param>
+        /// <param name="minimumPnL"></param>
+        /// <param name="minimumVolume"></param>
         public StartupSettings(int executionDelayInMilliseconds, int expirationTimeInSeconds, int historyMaxSize, int minSpread,
-            IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset)
-            : base(expirationTimeInSeconds, baseAssets, intermediateAssets, quoteAsset, minSpread)
+            IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset,
+            IEnumerable<string> exchanges, decimal? minimumPnL, decimal? minimumVolume)
+            : base(expirationTimeInSeconds, baseAssets, intermediateAssets, quoteAsset, minSpread, exchanges, minimumPnL, minimumVolume)
         {
             ExecutionDelayInMilliseconds = executionDelayInMilliseconds;
             ExpirationTimeInSeconds = expirationTimeInSeconds;
@@ -58,6 +62,21 @@ namespace Lykke.Service.ArbitrageDetector.Core
         public int? ExpirationTimeInSeconds { get; set; }
 
         /// <summary>
+        /// Minimum PnL.
+        /// </summary>
+        public decimal? MinimumPnL { get; set; }
+
+        /// <summary>
+        /// Minimum volume.
+        /// </summary>
+        public decimal? MinimumVolume { get; set; }
+
+        /// <summary>
+        /// Minimum spread.
+        /// </summary>
+        public int? MinSpread { get; set; }
+
+        /// <summary>
         /// Wanted base assets.
         /// </summary>
         public IEnumerable<string> BaseAssets { get; set; }
@@ -73,9 +92,9 @@ namespace Lykke.Service.ArbitrageDetector.Core
         public string QuoteAsset { get; set; }
 
         /// <summary>
-        /// Minimum spread.
+        /// Wanted exchanges.
         /// </summary>
-        public int? MinSpread { get; set; }
+        public IEnumerable<string> Exchanges { get; set; }
 
         /// <summary>
         /// Constructor.
@@ -89,16 +108,23 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// </summary>
         /// <param name="expirationTimeInSeconds"></param>
         /// <param name="baseAssets"></param>
+        /// <param name="intermediateAssets"></param>
         /// <param name="quoteAsset"></param>
         /// <param name="minSpread"></param>
-        /// <param name="intermediateAssets"></param>
-        public Settings(int? expirationTimeInSeconds, IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset, int? minSpread)
+        /// <param name="exchanges"></param>
+        /// <param name="minimumPnL"></param>
+        /// <param name="minimumVolume"></param>
+        public Settings(int? expirationTimeInSeconds, IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset, int? minSpread,
+            IEnumerable<string> exchanges, decimal? minimumPnL, decimal? minimumVolume)
         {
             ExpirationTimeInSeconds = expirationTimeInSeconds;
+            MinimumPnL = minimumPnL;
+            MinimumVolume = minimumVolume;
+            MinSpread = minSpread;
             BaseAssets = baseAssets;
             IntermediateAssets = intermediateAssets;
             QuoteAsset = quoteAsset;
-            MinSpread = minSpread;
+            Exchanges = exchanges;
         }
 
         /// <summary>
@@ -109,6 +135,15 @@ namespace Lykke.Service.ArbitrageDetector.Core
             if (ExpirationTimeInSeconds == null)
                 throw new NullReferenceException(nameof(ExpirationTimeInSeconds));
 
+            if (MinimumPnL == null)
+                throw new NullReferenceException(nameof(MinimumPnL));
+
+            if (MinimumVolume == null)
+                throw new NullReferenceException(nameof(MinimumVolume));
+
+            if (MinSpread == null)
+                throw new NullReferenceException(nameof(MinSpread));
+
             if (BaseAssets == null || !BaseAssets.Any())
                 throw new ArgumentOutOfRangeException(nameof(BaseAssets));
 
@@ -118,8 +153,8 @@ namespace Lykke.Service.ArbitrageDetector.Core
             if (string.IsNullOrWhiteSpace(QuoteAsset))
                 throw new ArgumentOutOfRangeException(nameof(QuoteAsset));
 
-            if (MinSpread == null)
-                throw new NullReferenceException(nameof(MinSpread));
+            if (Exchanges == null)
+                throw new ArgumentOutOfRangeException(nameof(Exchanges));
         }
     }
 }
