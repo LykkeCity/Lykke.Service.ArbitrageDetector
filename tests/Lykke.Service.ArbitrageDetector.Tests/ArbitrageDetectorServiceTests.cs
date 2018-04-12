@@ -4,13 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Castle.Core.Logging;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Services;
-using Lykke.Service.ArbitrageDetector.Services.Models;
-using MoreLinq;
 using Xunit;
 
 namespace Lykke.Service.ArbitrageDetector.Tests
@@ -363,7 +360,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         }
 
         [Fact]
-        public async Task ManyArbitragesHistoryPerformanceTest()
+        public async Task ManyArbitragesInHistoryPerformanceTest()
         {
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
@@ -459,14 +456,12 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         }
 
         [Fact]
-        public async Task SetAllSettingsTest()
+        public async Task SettingsSetAllTest()
         {
             var startupSettings = new StartupSettings(10, 10, 1000, -20, new List<string> { "BTC", "ETH" }, new List<string> { "EUR", "CHF" }, "USD", new List<string>(), 0, 0);
             var arbitrageCalculator = new ArbitrageDetectorService(startupSettings, new LogToConsole(), null);
 
-            var oldSettings = arbitrageCalculator.GetSettings();
-
-            var settings = new Settings { ExpirationTimeInSeconds = 10, BaseAssets = new List<string> { "AUD", "CHF" }, IntermediateAssets = new List<string> { "EUR" }, QuoteAsset = "BTC", MinSpread = -97 };
+            var settings = new Settings(10, new List<string> { "AUD", "CHF" }, new List<string> { "EUR" }, "BTC", -97, new List<string> { "GDAX" }, 5, 7);
 
             arbitrageCalculator.SetSettings(settings);
 
@@ -476,16 +471,104 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(settings.IntermediateAssets, newSettings.IntermediateAssets);
             Assert.Equal(settings.QuoteAsset, newSettings.QuoteAsset);
             Assert.Equal(settings.MinSpread, newSettings.MinSpread);
-
-            arbitrageCalculator.SetSettings(oldSettings);
-
-            newSettings = arbitrageCalculator.GetSettings();
-            Assert.Equal(oldSettings.ExpirationTimeInSeconds, newSettings.ExpirationTimeInSeconds);
-            Assert.Equal(oldSettings.BaseAssets, newSettings.BaseAssets);
-            Assert.Equal(oldSettings.IntermediateAssets, newSettings.IntermediateAssets);
-            Assert.Equal(oldSettings.QuoteAsset, newSettings.QuoteAsset);
-            Assert.Equal(oldSettings.MinSpread, newSettings.MinSpread);
+            Assert.Equal(settings.Exchanges, newSettings.Exchanges);
+            Assert.Equal(settings.MinimumPnL, newSettings.MinimumPnL);
+            Assert.Equal(settings.MinimumVolume, newSettings.MinimumVolume);
         }
+
+        [Fact]
+        public async Task SettingsMinimumPnLTest()
+        {
+            var baseAssets = new List<string> { "BTC" };
+            const string quoteAsset = "USD";
+
+            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, new List<string>(), quoteAsset, new List<string>(), 500.00000001m, 0);
+            var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
+
+            var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
+                new List<VolumePrice> { new VolumePrice(11000, 10) }, // bids
+                new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
+                DateTime.UtcNow);
+
+            var btcUsdOrderBook2 = new OrderBook("Bitfinex", "BTCUSD",
+                new List<VolumePrice> { new VolumePrice(11100, 10) }, // bids
+                new List<VolumePrice> { new VolumePrice(11300, 10) }, // asks
+                DateTime.UtcNow);
+
+            arbitrageDetector.Process(btcUsdOrderBook1);
+            arbitrageDetector.Process(btcUsdOrderBook2);
+
+            await arbitrageDetector.Execute();
+
+            var crossRates = arbitrageDetector.GetCrossRates().ToList();
+            var arbitrages = arbitrageDetector.GetArbitrages().ToList();
+
+            Assert.Equal(2, crossRates.Count);
+            Assert.Equal(0, arbitrages.Count);
+        }
+
+        [Fact]
+        public async Task SettingsMinimumVolumeTest()
+        {
+            var baseAssets = new List<string> { "BTC" };
+            const string quoteAsset = "USD";
+
+            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, new List<string>(), quoteAsset, new List<string>(), 0, 10.00000001m);
+            var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
+
+            var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
+                new List<VolumePrice> { new VolumePrice(11000, 10) }, // bids
+                new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
+                DateTime.UtcNow);
+
+            var btcUsdOrderBook2 = new OrderBook("Bitfinex", "BTCUSD",
+                new List<VolumePrice> { new VolumePrice(11100, 10) }, // bids
+                new List<VolumePrice> { new VolumePrice(11300, 10) }, // asks
+                DateTime.UtcNow);
+
+            arbitrageDetector.Process(btcUsdOrderBook1);
+            arbitrageDetector.Process(btcUsdOrderBook2);
+
+            await arbitrageDetector.Execute();
+
+            var crossRates = arbitrageDetector.GetCrossRates().ToList();
+            var arbitrages = arbitrageDetector.GetArbitrages().ToList();
+
+            Assert.Equal(2, crossRates.Count);
+            Assert.Equal(0, arbitrages.Count);
+        }
+
+        [Fact]
+        public async Task SettingsExchangesTest()
+        {
+            var baseAssets = new List<string> { "BTC" };
+            const string quoteAsset = "USD";
+
+            var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, new List<string>(), quoteAsset, new List<string>{ "GDAX" }, 0, 0);
+            var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
+
+            var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
+                new List<VolumePrice> { new VolumePrice(11000, 10) }, // bids
+                new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
+                DateTime.UtcNow);
+
+            var btcUsdOrderBook2 = new OrderBook("Bitfinex", "BTCUSD",
+                new List<VolumePrice> { new VolumePrice(11100, 10) }, // bids
+                new List<VolumePrice> { new VolumePrice(11300, 10) }, // asks
+                DateTime.UtcNow);
+
+            arbitrageDetector.Process(btcUsdOrderBook1);
+            arbitrageDetector.Process(btcUsdOrderBook2);
+
+            await arbitrageDetector.Execute();
+
+            var crossRates = arbitrageDetector.GetCrossRates().ToList();
+            var arbitrages = arbitrageDetector.GetArbitrages().ToList();
+
+            Assert.Equal(1, crossRates.Count);
+            Assert.Equal(0, arbitrages.Count);
+        }
+
 
 
         private IEnumerable<OrderBook> GenerateOrderBooks(int count, string source, AssetPair assetPair, int bidCount, decimal maxBid, decimal minBid, int askCount, decimal maxAsk, decimal minAsk)
