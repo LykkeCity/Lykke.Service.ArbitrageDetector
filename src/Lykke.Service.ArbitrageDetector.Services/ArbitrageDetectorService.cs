@@ -356,12 +356,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 // Filter by base, quote and intermediate assets
                 var assetPair = keyValue.Key.AssetPair;
-                if ((_baseAssets.Contains(assetPair.Base)
+                var passed = (_baseAssets.Contains(assetPair.Base)
                   || _baseAssets.Contains(assetPair.Quote)
                   || assetPair.ContainsAsset(_quote))
                  && (!_intermediateAssets.Any()
                   || (_intermediateAssets.Contains(assetPair.Base)
-                  ||  _intermediateAssets.Contains(assetPair.Quote))))
+                  ||  _intermediateAssets.Contains(assetPair.Quote)));
+                if (!passed)
                     continue;
 
                 // Filter by expiration time
