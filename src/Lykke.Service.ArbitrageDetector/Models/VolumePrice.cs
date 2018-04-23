@@ -47,5 +47,18 @@ namespace Lykke.Service.ArbitrageDetector.Models
         {
             return new VolumePrice(1 / Price, Volume * Price);
         }
+
+        /// <summary>
+        /// From domain.
+        /// </summary>
+        /// <param name="domain"></param>
+        /// <returns></returns>
+        public static VolumePrice? FromDomain(DomainVolumePrice? domain)
+        {
+            if (domain == null)
+                return null;
+
+            return new VolumePrice(domain.Value);
+        }
     }
 }
