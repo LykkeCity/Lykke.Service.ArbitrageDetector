@@ -67,17 +67,45 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         }
 
         [Fact]
-        public async Task ArbitrageTest()
+        public async Task ArbitrageFromHistoryTest()
         {
             var arbitrages = (await Client.ArbitrageHistoryAsync(DateTime.MinValue, short.MaxValue)).ToList();
             Assert.NotEmpty(arbitrages);
 
             var conversionPath = arbitrages.First().ConversionPath;
-            var arbitrage = await Client.ArbitrageAsync(conversionPath);
+            var arbitrage = await Client.ArbitrageFromHistoryAsync(conversionPath);
             Assert.NotNull(arbitrage);
             Assert.Equal(conversionPath, arbitrage.ConversionPath);
             
-            AssertArbitrage(arbitrage);
+            AssertArbitrage(arbitrage, false);
+        }
+
+        [Fact]
+        public async Task ArbitrageFromActiveOrHistoryTest()
+        {
+            // From active
+
+            var arbitrages = (await Client.ArbitragesAsync()).ToList();
+            Assert.NotEmpty(arbitrages);
+
+            var conversionPath = arbitrages.First().ConversionPath;
+            var arbitrage = await Client.ArbitrageFromActiveOrHistoryAsync(conversionPath);
+            Assert.NotNull(arbitrage);
+            Assert.Equal(conversionPath, arbitrage.ConversionPath);
+
+            AssertArbitrage(arbitrage, true);
+
+            // From history
+
+            arbitrages = (await Client.ArbitrageHistoryAsync(DateTime.MinValue, short.MaxValue)).ToList();
+            Assert.NotEmpty(arbitrages);
+
+            conversionPath = arbitrages.First().ConversionPath;
+            arbitrage = await Client.ArbitrageFromActiveOrHistoryAsync(conversionPath);
+            Assert.NotNull(arbitrage);
+            Assert.Equal(conversionPath, arbitrage.ConversionPath);
+
+            AssertArbitrage(arbitrage, false);
         }
 
         [Fact]
@@ -296,7 +324,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             Assert.NotEqual(default, crossRate.Timestamp);
         }
 
-        private void AssertArbitrage(Arbitrage arbitrage)
+        private void AssertArbitrage(Arbitrage arbitrage, bool isActive)
         {
             Assert.False(arbitrage.AssetPair.IsEmpty());
             AssertCrossRate(arbitrage.AskCrossRate);
@@ -309,7 +337,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             Assert.NotEqual(default, arbitrage.Volume);
             Assert.NotEqual(default, arbitrage.PnL);
             Assert.NotEqual(default, arbitrage.StartedAt);
-            Assert.NotEqual(default, arbitrage.EndedAt);
+
+            if (isActive)
+                Assert.Equal(default, arbitrage.EndedAt);
+            else
+                Assert.NotEqual(default, arbitrage.EndedAt);
         }
 
         private void AssertArbitrageRow(ArbitrageRow arbitrage, bool ended)

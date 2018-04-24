@@ -473,7 +473,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 .ToList();
         }
 
-        public Arbitrage GetArbitrage(string conversionPath)
+        public Arbitrage GetArbitrageFromHistory(string conversionPath)
         {
             if (string.IsNullOrWhiteSpace(conversionPath))
                 throw new ArgumentNullException(nameof(conversionPath));
@@ -481,6 +481,19 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var bestArbitrage = _arbitrageHistory.FirstOrDefault(x => string.Equals(x.Value.ConversionPath, conversionPath, StringComparison.CurrentCultureIgnoreCase));
 
             return bestArbitrage.Value;
+        }
+
+        public Arbitrage GetArbitrageFromActiveOrHistory(string conversionPath)
+        {
+            if (string.IsNullOrWhiteSpace(conversionPath))
+                throw new ArgumentNullException(nameof(conversionPath));
+
+            var result = _arbitrages.FirstOrDefault(x => conversionPath == x.Value.ConversionPath).Value;
+
+            if (result == null)
+                result = _arbitrageHistory.FirstOrDefault(x => conversionPath == x.Value.ConversionPath).Value;
+
+            return result;
         }
 
         public IEnumerable<Arbitrage> GetArbitrageHistory(DateTime since, int take)
