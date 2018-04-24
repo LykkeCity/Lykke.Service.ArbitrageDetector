@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
@@ -21,19 +20,24 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ConcurrentDictionary<AssetPairSource, OrderBook> _orderBooks;
         private readonly ConcurrentDictionary<AssetPairSource, CrossRate> _crossRates;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrages;
-        private ConcurrentDictionary<string, Arbitrage> _arbitrageHistory;
+        private readonly ConcurrentDictionary<string, Arbitrage> _arbitrageHistory;
+
+        #region Settings
+
         private IEnumerable<string> _baseAssets;
         private IEnumerable<string> _intermediateAssets;
-        private string _quoteAsset;
+        private string _quote;
         private IEnumerable<string> _exchanges;
         private int _expirationTimeInSeconds;
         private decimal _minimumPnL;
         private decimal _minimumVolume;
         private int _minSpread;
         private readonly int _historyMaxSize;
-        private bool _restartNeeded;
 
+        private bool _restartNeeded;
         private readonly ILog _log;
+
+        #endregion
 
         public ArbitrageDetectorService(StartupSettings settings, ILog log, IShutdownManager shutdownManager)
             : base(settings.ExecutionDelayInMilliseconds, log)
@@ -44,7 +48,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             _baseAssets = settings.BaseAssets;
             _intermediateAssets = settings.IntermediateAssets;
-            _quoteAsset = settings.QuoteAsset;
+            _quote = settings.QuoteAsset;
             _exchanges = settings.Exchanges;
             _expirationTimeInSeconds = settings.ExpirationTimeInSeconds.Value;
             _minimumPnL = settings.MinimumPnL.Value;
@@ -65,7 +69,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         public void Process(OrderBook orderBook)
         {
             var assets = new List<string>();
-            assets.Add(_quoteAsset);
+            assets.Add(_quote);
             assets.AddRange(_baseAssets);
             assets.AddRange(_intermediateAssets);
 
@@ -96,51 +100,51 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var watch = Stopwatch.StartNew();
 
             var newActualCrossRates = new Dictionary<AssetPairSource, CrossRate>();
-            var actualOrderBooks = GetActualOrderBooks();
+            var wantedActualOrderBooks = GetWantedActualOrderBooks();
 
-            foreach (var wantedCurrency in _baseAssets)
+            foreach (var @base in _baseAssets)
             {
-                var wantedCurrencyKeys = actualOrderBooks.Keys.Where(x => x.AssetPair.ContainsAsset(wantedCurrency)).ToList();
-                foreach (var wantedCurrencykey in wantedCurrencyKeys)
+                var baseAssetKeys = wantedActualOrderBooks.Keys.Where(x => x.AssetPair.ContainsAsset(@base)).ToList();
+                foreach (var baseAssetkey in baseAssetKeys)
                 {
-                    var wantedOrderBook = actualOrderBooks[wantedCurrencykey];
+                    var baseOrderBook = wantedActualOrderBooks[baseAssetkey];
 
                     // Trying to find wanted asset in current orderBook's asset pair
-                    var wantedIntermediateAssetPair = AssetPair.FromString(wantedOrderBook.AssetPairStr, wantedCurrency);
+                    var wantedIntermediate = AssetPair.FromString(baseOrderBook.AssetPairStr, @base);
 
                     // Get intermediate currency
-                    var intermediateCurrency = wantedIntermediateAssetPair.Base == wantedCurrency
-                        ? wantedIntermediateAssetPair.Quote
-                        : wantedIntermediateAssetPair.Base;
+                    var intermediate = wantedIntermediate.Base == @base
+                        ? wantedIntermediate.Quote
+                        : wantedIntermediate.Base;
 
                     // If settings contains any and current intermediate not in the settings then ignore
-                    if (_intermediateAssets.Any() && !_intermediateAssets.Contains(intermediateCurrency))
+                    if (_intermediateAssets.Any() && !_intermediateAssets.Contains(intermediate))
                         continue;
 
                     // If original wanted/base or base/wanted pair then just save it
-                    if (intermediateCurrency == _quoteAsset)
+                    if (intermediate == _quote)
                     {
-                        var intermediateWantedCrossRate = CrossRate.FromOrderBook(wantedOrderBook, new AssetPair(wantedCurrency, _quoteAsset));
+                        var intermediateBaseCrossRate = CrossRate.FromOrderBook(baseOrderBook, new AssetPair(@base, _quote));
 
-                        var key = new AssetPairSource(intermediateWantedCrossRate.ConversionPath, intermediateWantedCrossRate.AssetPair);
-                        newActualCrossRates[key] = intermediateWantedCrossRate;
+                        var key = new AssetPairSource(intermediateBaseCrossRate.ConversionPath, intermediateBaseCrossRate.AssetPair);
+                        newActualCrossRates[key] = intermediateBaseCrossRate;
 
                         continue;
                     }
 
                     // Trying to find intermediate/base or base/intermediate pair from any exchange
-                    var intermediateBaseCurrencyKeys = actualOrderBooks.Keys
-                        .Where(x => x.AssetPair.ContainsAsset(intermediateCurrency) && x.AssetPair.ContainsAsset(_quoteAsset))
+                    var intermediateBaseKeys = wantedActualOrderBooks.Keys
+                        .Where(x => x.AssetPair.ContainsAsset(intermediate) && x.AssetPair.ContainsAsset(_quote))
                         .ToList();
 
-                    foreach (var intermediateBaseCurrencyKey in intermediateBaseCurrencyKeys)
+                    foreach (var intermediateBaseKey in intermediateBaseKeys)
                     {
                         // Calculating cross rate for base/wanted pair
-                        var wantedIntermediateOrderBook = wantedOrderBook;
-                        var intermediateBaseOrderBook = actualOrderBooks[intermediateBaseCurrencyKey];
+                        var baseIntermediateOrderBook = baseOrderBook;
+                        var intermediateBaseOrderBook = wantedActualOrderBooks[intermediateBaseKey];
 
-                        var targetBaseAssetPair = new AssetPair(wantedCurrency, _quoteAsset);
-                        var crossRate = CrossRate.FromOrderBooks(wantedIntermediateOrderBook, intermediateBaseOrderBook, targetBaseAssetPair);
+                        var targetAssetPair = new AssetPair(@base, _quote);
+                        var crossRate = CrossRate.FromOrderBooks(baseIntermediateOrderBook, intermediateBaseOrderBook, targetAssetPair);
 
                         var key = new AssetPairSource(crossRate.ConversionPath, crossRate.AssetPair);
                         newActualCrossRates[key] = crossRate;
@@ -152,11 +156,44 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             watch.Stop();
             if (watch.ElapsedMilliseconds > 200)
-                await _log.WriteInfoAsync(GetType().Name, nameof(CalculateCrossRates), $"{watch.ElapsedMilliseconds} ms, {_crossRates.Count} cross rates, {actualOrderBooks.Count} order books.");
+                await _log.WriteInfoAsync(GetType().Name, nameof(CalculateCrossRates), $"{watch.ElapsedMilliseconds} ms, {_crossRates.Count} cross rates, {wantedActualOrderBooks.Count} order books.");
 
             return _crossRates.Select(x => x.Value).ToList().AsReadOnly();
         }
-        
+
+        private (IList<CrossRateLine> bids, IList<CrossRateLine> asks)? CalculateCrossRateLines(IList<CrossRate> crossRates)
+        {
+            // If no asks or bids then return empty list
+            if (!crossRates.SelectMany(x => x.Bids).Any() || !crossRates.SelectMany(x => x.Asks).Any())
+                return null;
+
+            // 1. Calculate minAsk and maxBid
+            var maxBid = crossRates.SelectMany(x => x.Bids).Max(x => x.Price);
+            var minAsk = crossRates.SelectMany(x => x.Asks).Min(x => x.Price);
+
+            // No arbitrages
+            if (minAsk >= maxBid)
+                return null;
+
+            // 2. Collect only arbitrages lines
+            var bids = new List<CrossRateLine>();
+            var asks = new List<CrossRateLine>();
+            foreach (var crossRate in crossRates)
+            {
+                crossRate.Bids.Where(x => x.Price > minAsk && (_minimumVolume == 0 || x.Volume >= _minimumVolume))
+                    .ForEach(x => bids.Add(new CrossRateLine(crossRate, x)));
+
+                crossRate.Asks.Where(x => x.Price < maxBid && (_minimumVolume == 0 || x.Volume >= _minimumVolume))
+                    .ForEach(x => asks.Add(new CrossRateLine(crossRate, x)));
+            }
+
+            // 3. Order by Price
+            bids = bids.OrderByDescending(x => x.Price).ToList();
+            asks = asks.OrderByDescending(x => x.Price).ToList();
+
+            return (bids, asks);
+        }
+
         public async Task<Dictionary<string, Arbitrage>> CalculateArbitrages()
         {
             var newArbitrages = new Dictionary<string, Arbitrage>();
@@ -170,7 +207,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 var assetPairCrossRates = actualCrossRates.Where(x => x.AssetPair.Equals(assetPair)).ToList();
 
-                var bidsAndAsks = CalculateArbitragesLines(assetPairCrossRates);
+                var bidsAndAsks = CalculateCrossRateLines(assetPairCrossRates);
                 var bidsAndAsksMs = watch.ElapsedMilliseconds;
 
                 if (!bidsAndAsks.HasValue)
@@ -204,14 +241,18 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         if (_minSpread < 0 && spread < _minSpread)
                             continue;
 
+                        var bidVolume = bid.Volume;
+                        var askVolume = ask.Volume;
+                        var volume = askVolume < bidVolume ? askVolume : bidVolume;
+                        var pnL = Arbitrage.GetPnL(bidPrice, askPrice, volume);
+                        if (_minimumPnL > 0 && pnL < _minimumPnL)
+                            continue;
+
                         var key = Arbitrage.FormatConversionPath(bid.CrossRate.ConversionPath, ask.CrossRate.ConversionPath);
                         if (newArbitrages.TryGetValue(key, out var existed))
                         {
-                            var bidVolume = bid.Volume;
-                            var askVolume = ask.Volume;
-                            var volume = askVolume < bidVolume ? askVolume : bidVolume;
-                            var pnL = Arbitrage.GetPnL(bidPrice, askPrice, volume);
-                            if ((_minimumPnL > 0 && pnL <= _minimumPnL) || pnL <= existed.PnL)
+                            var newpnL = Arbitrage.GetPnL(bidPrice, askPrice, volume);
+                            if (newpnL <= existed.PnL)
                                 continue;
 
                             var arbitrage = new Arbitrage(assetPair, bid.CrossRate, new VolumePrice(bid.Price, bid.Volume), ask.CrossRate, new VolumePrice(ask.Price, ask.Volume));
@@ -283,7 +324,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 await _log.WriteInfoAsync(GetType().Name, nameof(RefreshArbitrages), $"{watch.ElapsedMilliseconds} ms, new {newArbitrages.Count} arbitrages, {removed} removed, {added} added, {beforeCleaning - _arbitrageHistory.Count} cleaned, {_arbitrages.Count} active, {_arbitrageHistory.Count} in history.");
         }
 
-
         private void CleanHistory()
         {
             var remained = new ConcurrentDictionary<string, Arbitrage>();
@@ -299,68 +339,33 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     .ForEach(x => remained.Add(x.Key, x.Value));
             }
 
-            _arbitrageHistory = remained;
+            _arbitrageHistory.Clear();
+            _arbitrageHistory.AddRange(remained);
         }
 
-        private (IList<ArbitrageLine> bids, IList<ArbitrageLine> asks)? CalculateArbitragesLines(IList<CrossRate> crossRates)
-        {
-            // If no asks or bids then return empty list
-            if (!crossRates.SelectMany(x => x.Bids).Any() || !crossRates.SelectMany(x => x.Asks).Any())
-                return null;
 
-            // 1. Calculate minAsk and maxBid
-            var maxBid = crossRates.SelectMany(x => x.Bids).Max(x => x.Price);
-            var minAsk = crossRates.SelectMany(x => x.Asks).Min(x => x.Price);
-
-            // No arbitrages
-            if (minAsk >= maxBid)
-                return null;
-
-            // 2. Collect only arbitrages lines
-            var bids = new List<ArbitrageLine>();
-            var asks = new List<ArbitrageLine>();
-            foreach (var crossRate in crossRates)
-            {
-                crossRate.Bids.Where(x => x.Price > minAsk && (_minimumVolume == 0 || x.Volume > _minimumVolume))
-                    .ForEach(x => bids.Add(new ArbitrageLine(crossRate, x)));
-
-                crossRate.Asks.Where(x => x.Price < maxBid && (_minimumVolume == 0 || x.Volume > _minimumVolume))
-                    .ForEach(x => asks.Add(new ArbitrageLine(crossRate, x)));
-            }
-
-            // 3. Order by Price
-            bids = bids.OrderByDescending(x => x.Price).ToList();
-            asks = asks.OrderByDescending(x => x.Price).ToList();
-
-            return (bids, asks);
-        }
-
-        private void MoveFromActualToHistory(Arbitrage arbitrage)
-        {
-            var key = arbitrage.ToString();
-
-            // Remove from actual arbitrages
-            arbitrage.EndedAt = DateTime.UtcNow;
-            _arbitrages.Remove(key);
-
-            // If found in history and old PnL is better then don't replace it
-            var found = _arbitrageHistory.TryGetValue(key, out var oldArbitrage);
-            if (found && arbitrage.PnL < oldArbitrage.PnL)
-                return;
-            
-            // Otherwise add or update
-            _arbitrageHistory.AddOrUpdate(key, arbitrage);
-        }
-
-        private Dictionary<AssetPairSource, OrderBook> GetActualOrderBooks()
+        private Dictionary<AssetPairSource, OrderBook> GetWantedActualOrderBooks()
         {
             var result = new Dictionary<AssetPairSource, OrderBook>();
 
             foreach (var keyValue in _orderBooks)
             {
+                // Filter by exchanges
                 if (_exchanges.Any() && !_exchanges.Contains(keyValue.Key.Exchange))
                     continue;
 
+                // Filter by base, quote and intermediate assets
+                var assetPair = keyValue.Key.AssetPair;
+                var passed = (_baseAssets.Contains(assetPair.Base)
+                  || _baseAssets.Contains(assetPair.Quote)
+                  || assetPair.ContainsAsset(_quote))
+                 && (!_intermediateAssets.Any()
+                  || (_intermediateAssets.Contains(assetPair.Base)
+                  ||  _intermediateAssets.Contains(assetPair.Quote)));
+                if (!passed)
+                    continue;
+
+                // Filter by expiration time
                 if (DateTime.UtcNow - keyValue.Value.Timestamp < new TimeSpan(0, 0, 0, _expirationTimeInSeconds))
                 {
                     result.Add(keyValue.Key, keyValue.Value);
@@ -383,6 +388,23 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
 
             return result;
+        }
+
+        private void MoveFromActualToHistory(Arbitrage arbitrage)
+        {
+            var key = arbitrage.ToString();
+
+            // Remove from actual arbitrages
+            arbitrage.EndedAt = DateTime.UtcNow;
+            _arbitrages.Remove(key);
+
+            // If found in history and old PnL is better then don't replace it
+            var found = _arbitrageHistory.TryGetValue(key, out var oldArbitrage);
+            if (found && arbitrage.PnL < oldArbitrage.PnL)
+                return;
+
+            // Otherwise add or update
+            _arbitrageHistory.AddOrUpdate(key, arbitrage);
         }
 
         private async void RestartIfNeeded()
@@ -486,7 +508,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public Settings GetSettings()
         {
-            return new Settings(_expirationTimeInSeconds, _baseAssets, _intermediateAssets, _quoteAsset, _minSpread, _exchanges, _minimumPnL, _minimumVolume);
+            return new Settings(_expirationTimeInSeconds, _baseAssets, _intermediateAssets, _quote, _minSpread, _exchanges, _minimumPnL, _minimumVolume);
         }
 
         public void SetSettings(Settings settings)
@@ -516,25 +538,25 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             if (settings.IntermediateAssets != null)
             {
-                _intermediateAssets = settings.IntermediateAssets;
+                _intermediateAssets = settings.IntermediateAssets.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
                 restartNeeded = true;
             }
 
             if (settings.BaseAssets != null)
             {
-                _baseAssets = settings.BaseAssets;
+                _baseAssets = settings.BaseAssets.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
                 restartNeeded = true;
             }
 
-            if (settings.QuoteAsset != null)
+            if (!string.IsNullOrWhiteSpace(settings.QuoteAsset))
             {
-                _quoteAsset = settings.QuoteAsset;
+                _quote = settings.QuoteAsset.Trim();
                 restartNeeded = true;
             }
 
             if (settings.Exchanges != null)
             {
-                _exchanges = settings.Exchanges;
+                _exchanges = settings.Exchanges.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
                 restartNeeded = true;
             }
 
