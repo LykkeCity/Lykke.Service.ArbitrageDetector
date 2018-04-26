@@ -31,11 +31,19 @@ namespace Lykke.Service.ArbitrageDetector.Client
         Task<IEnumerable<ArbitrageRow>> ArbitragesAsync();
 
         /// <summary>
-        /// Returns best arbitrage by conversion path.
+        /// Returns arbitrage from history.
         /// </summary>
         /// <param name="conversionPath"></param>
         /// <returns></returns>
-        Task<Arbitrage> ArbitrageAsync(string conversionPath);
+        Task<Arbitrage> ArbitrageFromHistoryAsync(string conversionPath);
+
+        /// <summary>
+        /// Returns an arbitrage from active arbitrages.
+        /// If not exists then returns the best from the history.
+        /// </summary>
+        /// <param name="conversionPath"></param>
+        /// <returns></returns>
+        Task<Arbitrage> ArbitrageFromActiveOrHistoryAsync(string conversionPath);
 
         /// <summary>
         /// Returns a collection of ArbitrageHistory entities.

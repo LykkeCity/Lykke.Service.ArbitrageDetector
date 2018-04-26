@@ -67,8 +67,8 @@ namespace Lykke.Service.ArbitrageDetector.Models
         {
             Source = domain.Source;
             AssetPair = new AssetPair(domain.AssetPair);
-            BestBid = domain.Bids.Any() ? new VolumePrice(domain.Bids.MinBy(x => x.Price)) : (VolumePrice?)null;
-            BestAsk = domain.Asks.Any() ? new VolumePrice(domain.Asks.MinBy(x => x.Price)) : (VolumePrice?)null;
+            BestBid = VolumePrice.FromDomain(domain.BestBid);
+            BestAsk = VolumePrice.FromDomain(domain.BestAsk);
             ConversionPath = domain.ConversionPath;
             Timestamp = domain.Timestamp;
         }

@@ -62,9 +62,14 @@ namespace Lykke.Service.ArbitrageDetector.Client
             return await _runner.RunAsync(() => _arbitrageDetectorApi.ArbitragesAsync());
         }
 
-        public async Task<Arbitrage> ArbitrageAsync(string conversionPath)
+        public async Task<Arbitrage> ArbitrageFromHistoryAsync(string conversionPath)
         {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.ArbitrageAsync(conversionPath));
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.ArbitrageFromHistoryAsync(conversionPath));
+        }
+
+        public async Task<Arbitrage> ArbitrageFromActiveOrHistoryAsync(string conversionPath)
+        {
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.ArbitrageFromActiveOrHistoryAsync(conversionPath));
         }
 
         public async Task<IEnumerable<ArbitrageRow>> ArbitrageHistoryAsync(DateTime since, int take)

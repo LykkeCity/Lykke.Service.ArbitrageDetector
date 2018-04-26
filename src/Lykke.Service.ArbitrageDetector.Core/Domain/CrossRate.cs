@@ -187,8 +187,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 foreach (var rightBid in right.Bids)
                 {
                     var newBidPrice = leftBid.Price * rightBid.Price;
-                    var rightBidVolumeInBaseCurrency = rightBid.Volume / leftBid.Price;
-                    var newBidVolume = Math.Min(leftBid.Volume, rightBidVolumeInBaseCurrency);
+                    var rightBidVolumeInBaseAsset = rightBid.Volume / leftBid.Price;
+                    var newBidVolume = Math.Min(leftBid.Volume, rightBidVolumeInBaseAsset);
 
                     var newBidVolumePrice = new VolumePrice(newBidPrice, newBidVolume);
                     bids.Add(newBidVolumePrice);
@@ -201,8 +201,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 foreach (var rightAsk in right.Asks)
                 {
                     var newAskPrice = leftAsk.Price * rightAsk.Price;
-                    var rightAskVolumeInBaseCurrency = rightAsk.Volume / leftAsk.Price;
-                    var newAskVolume = Math.Min(leftAsk.Volume, rightAskVolumeInBaseCurrency);
+                    var rightAskVolumeInBaseAsset = rightAsk.Volume / leftAsk.Price;
+                    var newAskVolume = Math.Min(leftAsk.Volume, rightAskVolumeInBaseAsset);
 
                     var newAskVolumePrice = new VolumePrice(newAskPrice, newAskVolume);
                     asks.Add(newAskVolumePrice);

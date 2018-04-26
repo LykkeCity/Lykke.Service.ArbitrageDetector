@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Services;
@@ -94,17 +93,41 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         }
 
         [HttpGet]
-        [Route("arbitrage")]
-        [SwaggerOperation("Arbitrage")]
+        [Route("arbitrageFromHistory")]
+        [SwaggerOperation("ArbitrageFromHistory")]
         [ProducesResponseType(typeof(IEnumerable<Arbitrage>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> Arbitrage(string conversionPath)
+        public async Task<IActionResult> ArbitrageFromHistory(string conversionPath)
         {
             Arbitrage result;
 
             try
             {
-                var arbitrage = _arbitrageDetectorService.GetArbitrage(conversionPath);
+                var arbitrage = _arbitrageDetectorService.GetArbitrageFromHistory(conversionPath);
+                result = arbitrage == null ? null : new Arbitrage(arbitrage);
+            }
+            catch (Exception exception)
+            {
+                await _log.WriteErrorAsync(GetType().Name, nameof(Arbitrage), exception);
+
+                return BadRequest(ErrorResponse.Create(exception.Message));
+            }
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("arbitrageFromActiveOrHistory")]
+        [SwaggerOperation("ArbitrageFromActiveOrHistory")]
+        [ProducesResponseType(typeof(IEnumerable<Arbitrage>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> ArbitrageFromActiveOrHistory(string conversionPath)
+        {
+            Arbitrage result;
+
+            try
+            {
+                var arbitrage = _arbitrageDetectorService.GetArbitrageFromActiveOrHistory(conversionPath);
                 result = arbitrage == null ? null : new Arbitrage(arbitrage);
             }
             catch (Exception exception)

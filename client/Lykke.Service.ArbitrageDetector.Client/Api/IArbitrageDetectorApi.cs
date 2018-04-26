@@ -17,8 +17,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
         [Get("/arbitrages")]
         Task<IEnumerable<ArbitrageRow>> ArbitragesAsync();
 
-        [Get("/arbitrage")]
-        Task<Arbitrage> ArbitrageAsync(string conversionPath);
+        [Get("/arbitrageFromHistory")]
+        Task<Arbitrage> ArbitrageFromHistoryAsync(string conversionPath);
+
+        [Get("/arbitrageFromActiveOrHistory")]
+        Task<Arbitrage> ArbitrageFromActiveOrHistoryAsync(string conversionPath);
 
         [Get("/arbitrageHistory")]
         Task<IEnumerable<ArbitrageRow>> ArbitrageHistory(DateTime since, int take);

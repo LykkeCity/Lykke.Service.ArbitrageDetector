@@ -199,7 +199,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var newArbitrages = new Dictionary<string, Arbitrage>();
             var actualCrossRates = GetActualCrossRates();
 
-            // For each asset pair - for each cross rate make one line for every ask and bid, order that lines and find intersections
+            // For each asset pair
             var uniqueAssetPairs = actualCrossRates.Select(x => x.AssetPair).Distinct().ToList();
             foreach (var assetPair in uniqueAssetPairs)
             {
@@ -207,6 +207,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 var assetPairCrossRates = actualCrossRates.Where(x => x.AssetPair.Equals(assetPair)).ToList();
 
+                // For each cross rate make a line for every ask and every bid
                 var bidsAndAsks = CalculateCrossRateLines(assetPairCrossRates);
                 var bidsAndAsksMs = watch.ElapsedMilliseconds;
 
@@ -268,7 +269,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 watch.Stop();
                 if (watch.ElapsedMilliseconds > 1000)
-                    await _log.WriteInfoAsync(GetType().Name, nameof(CalculateArbitrages), $"{watch.ElapsedMilliseconds} ms, {newArbitrages.Count} arbitrages, {actualCrossRates.Count} actual cross rates, {bidsAndAsksMs} for bids and asks, {bids.Count} bids, {asks.Count} asks, {totalItarations} iterations, {possibleArbitrages} possible arbitrages.");
+                    await _log.WriteInfoAsync(GetType().Name, nameof(CalculateArbitrages), $"{watch.ElapsedMilliseconds} ms, {newArbitrages.Count} arbitrages, {actualCrossRates.Count} actual cross rates, {bidsAndAsksMs} ms for bids and asks, {bids.Count} bids, {asks.Count} asks, {totalItarations} iterations, {possibleArbitrages} possible arbitrages.");
             }
 
             return newArbitrages;
@@ -472,7 +473,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 .ToList();
         }
 
-        public Arbitrage GetArbitrage(string conversionPath)
+        public Arbitrage GetArbitrageFromHistory(string conversionPath)
         {
             if (string.IsNullOrWhiteSpace(conversionPath))
                 throw new ArgumentNullException(nameof(conversionPath));
@@ -480,6 +481,19 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var bestArbitrage = _arbitrageHistory.FirstOrDefault(x => string.Equals(x.Value.ConversionPath, conversionPath, StringComparison.CurrentCultureIgnoreCase));
 
             return bestArbitrage.Value;
+        }
+
+        public Arbitrage GetArbitrageFromActiveOrHistory(string conversionPath)
+        {
+            if (string.IsNullOrWhiteSpace(conversionPath))
+                throw new ArgumentNullException(nameof(conversionPath));
+
+            var result = _arbitrages.FirstOrDefault(x => conversionPath == x.Value.ConversionPath).Value;
+
+            if (result == null)
+                result = _arbitrageHistory.FirstOrDefault(x => conversionPath == x.Value.ConversionPath).Value;
+
+            return result;
         }
 
         public IEnumerable<Arbitrage> GetArbitrageHistory(DateTime since, int take)
