@@ -46,12 +46,15 @@ namespace Lykke.Service.ArbitrageDetector.Modules
                 .AutoActivate()
                 .SingleInstance();
 
-            builder.RegisterType<RabbitMessageSubscriber>()
-                .As<IStartable>()
-                .AutoActivate()
-                .SingleInstance()
-                .WithParameter("connectionString", _settings.CurrentValue.RabbitMq.ConnectionString)
-                .WithParameter("exchangeName", _settings.CurrentValue.RabbitMq.Exchange);
+            foreach (var exchange in _settings.CurrentValue.RabbitMq.Exchanges)
+            {
+                builder.RegisterType<RabbitMessageSubscriber>()
+                    .As<IStartable>()
+                    .WithParameter("connectionString", _settings.CurrentValue.RabbitMq.ConnectionString)
+                    .WithParameter("exchangeName", exchange)
+                    .AutoActivate()
+                    .SingleInstance();
+            }
         }
     }
 }
