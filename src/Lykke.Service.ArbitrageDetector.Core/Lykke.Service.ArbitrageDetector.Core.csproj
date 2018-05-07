@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lykke.Common" Version="4.4.2" />
+    <PackageReference Include="Lykke.Common" Version="6.6.0" />
   </ItemGroup>
 
 </Project>
