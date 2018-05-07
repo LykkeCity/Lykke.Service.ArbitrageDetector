@@ -50,10 +50,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _intermediateAssets = settings.IntermediateAssets;
             _quote = settings.QuoteAsset;
             _exchanges = settings.Exchanges;
-            _expirationTimeInSeconds = settings.ExpirationTimeInSeconds.Value;
-            _minimumPnL = settings.MinimumPnL.Value;
-            _minimumVolume = settings.MinimumVolume.Value;
-            _minSpread = settings.MinSpread.Value;
+            _expirationTimeInSeconds = settings.ExpirationTimeInSeconds ?? 10;
+            _minimumPnL = settings.MinimumPnL ?? 0;
+            _minimumVolume = settings.MinimumVolume ?? 0;
+            _minSpread = settings.MinSpread ?? 0;
             _historyMaxSize = settings.HistoryMaxSize;
 
             _log = log;
@@ -180,11 +180,15 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var asks = new List<CrossRateLine>();
             foreach (var crossRate in crossRates)
             {
-                crossRate.Bids.Where(x => x.Price > minAsk && (_minimumVolume == 0 || x.Volume >= _minimumVolume))
-                    .ForEach(x => bids.Add(new CrossRateLine(crossRate, x)));
+                bids.AddRange(
+                    crossRate.Bids
+                        .Where(x => x.Price > minAsk && (_minimumVolume == 0 || x.Volume >= _minimumVolume))
+                        .Select(x => new CrossRateLine(crossRate, x)));
 
-                crossRate.Asks.Where(x => x.Price < maxBid && (_minimumVolume == 0 || x.Volume >= _minimumVolume))
-                    .ForEach(x => asks.Add(new CrossRateLine(crossRate, x)));
+                asks.AddRange(
+                    crossRate.Asks
+                        .Where(x => x.Price < maxBid && (_minimumVolume == 0 || x.Volume >= _minimumVolume))
+                        .Select(x => new CrossRateLine(crossRate, x)));
             }
 
             // 3. Order by Price
