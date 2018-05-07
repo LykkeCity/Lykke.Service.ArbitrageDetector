@@ -408,7 +408,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _arbitrageHistory.AddOrUpdate(key, arbitrage);
         }
 
-        private async void RestartIfNeeded()
+        private async Task RestartIfNeeded()
         {
             if (_restartNeeded)
             {

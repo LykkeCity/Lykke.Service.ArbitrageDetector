@@ -12,7 +12,7 @@ namespace Lykke.Service.ArbitrageDetector.Client
     /// <summary>
     /// Contains methods for work with arbitrage detector service.
     /// </summary>
-    public class ArbitrageDetectorService : IArbitrageDetectorService, IDisposable
+    public sealed class ArbitrageDetectorService : IArbitrageDetectorService, IDisposable
     {
         private readonly HttpClient _httpClient;
         private readonly IArbitrageDetectorApi _arbitrageDetectorApi;
@@ -47,9 +47,9 @@ namespace Lykke.Service.ArbitrageDetector.Client
             _runner = new ApiRunner();
         }
 
-        public async Task<IEnumerable<OrderBook>> OrderBooksAsync(string exchange, string instrument)
+        public async Task<IEnumerable<OrderBook>> OrderBooksAsync(string exchange, string assetPair)
         {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.OrderBooksAsync(exchange, instrument));
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.OrderBooksAsync(exchange, assetPair));
         }
 
         public async Task<IEnumerable<CrossRateRow>> CrossRatesAsync()

@@ -1,4 +1,5 @@
-﻿using Lykke.SettingsReader.Attributes;
+﻿using System.Collections.Generic;
+using Lykke.SettingsReader.Attributes;
 
 namespace Lykke.Service.ArbitrageDetector.Settings.ServiceSettings
 {
@@ -7,6 +8,6 @@ namespace Lykke.Service.ArbitrageDetector.Settings.ServiceSettings
         [AmqpCheck]
         public string ConnectionString { get; set; }
 
-        public string Exchange { get; set; }
+        public IEnumerable<string> Exchanges { get; set; }
     }
 }
