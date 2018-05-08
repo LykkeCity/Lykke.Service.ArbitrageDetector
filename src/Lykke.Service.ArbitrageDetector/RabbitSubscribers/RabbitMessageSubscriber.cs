@@ -33,9 +33,13 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
 
         public void Start()
         {
-            var settings = RabbitMqSubscriptionSettings
-                .CreateForSubscriber(_connectionString, _exchangeName, "arbitragedetector")
-                .MakeDurable();
+            var settings = new RabbitMqSubscriptionSettings
+            {
+                ConnectionString = _connectionString,
+                ExchangeName = _exchangeName,
+                QueueName = _exchangeName + ".ArbitrageDetector",
+                IsDurable = false
+            };
 
             _subscriber = new RabbitMqSubscriber<byte[]>(settings,
                     new ResilientErrorHandlingStrategy(_log, settings,

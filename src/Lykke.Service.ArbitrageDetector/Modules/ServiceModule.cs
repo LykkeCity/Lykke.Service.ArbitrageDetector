@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Common;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.RabbitSubscribers;
@@ -43,6 +44,7 @@ namespace Lykke.Service.ArbitrageDetector.Modules
                 .As<IArbitrageDetectorService>()
                 .WithParameter("settings", _settings.CurrentValue.Main)
                 .As<IStartable>()
+                .As<IStopable>()
                 .AutoActivate()
                 .SingleInstance();
 
@@ -50,6 +52,7 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             {
                 builder.RegisterType<RabbitMessageSubscriber>()
                     .As<IStartable>()
+                    .As<IStopable>()
                     .WithParameter("connectionString", _settings.CurrentValue.RabbitMq.ConnectionString)
                     .WithParameter("exchangeName", exchange)
                     .AutoActivate()
