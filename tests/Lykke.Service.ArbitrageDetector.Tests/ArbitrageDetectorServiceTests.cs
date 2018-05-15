@@ -17,15 +17,15 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         private const bool performance = false;
 
         [Fact]
-        public async Task StraightConversionTest()
+        public async Task From2OrderBooks_0_0_Test()
         {
             // BTCEUR * EURUSD
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
-            const string exchange = "Lykke";
-            const string btcusd = "BTCUSD";
+            const string exchange = "FE";
             const string btceur = "BTCEUR";
             const string eurusd = "EURUSD";
+            const string btcusd = "BTCUSD";
 
             var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, new List<string>(), quoteAsset, new List<string>(), 0, 0);
             var arbitrageCalculator = new ArbitrageDetectorService(settings, new LogToConsole(), null);
@@ -52,32 +52,64 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
+            var btcUsdOrderBook = new OrderBook(exchange, btcusd,
+                new List<VolumePrice> // bids
+                {
+                    new VolumePrice(10760m, 10), new VolumePrice(10768m, 10)
+                },
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(10761m, 10), new VolumePrice(10762, 10), new VolumePrice(10763, 10)
+                },
+                DateTime.UtcNow);
+
             arbitrageCalculator.Process(btcEurOrderBook);
             arbitrageCalculator.Process(eurUsdOrderBook);
+            arbitrageCalculator.Process(btcUsdOrderBook);
 
-            var crossRates = (await arbitrageCalculator.CalculateCrossRates()).ToList();
-            Assert.Single(crossRates);
-            var crossRate = crossRates.First();
-            Assert.Equal(CrossRate.GetSourcesPath(exchange,exchange), crossRate.Source);
-            Assert.Equal(CrossRate.GetConversionPath(exchange, btceur, exchange, eurusd), crossRate.ConversionPath);
-            Assert.Equal(btcusd, crossRate.AssetPairStr);
-            Assert.Equal(10769.1475m, crossRate.Bids.Max(x => x.Price), 8);
-            Assert.Equal(10982.9089835m, crossRate.Asks.Min(x => x.Price), 8);
-            Assert.Equal(4, crossRate.Bids.Count);
-            Assert.Equal(9, crossRate.Asks.Count);
-            Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
+            await arbitrageCalculator.Execute();
+
+            var crossRates = arbitrageCalculator.GetCrossRates().ToList();
+            var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
+
+            Assert.Equal(2, crossRates.Count);
+            Assert.Equal(2, arbitrages.Count);
+
+            var arbitrage1 = arbitrages.Single(x => x.ConversionPath == "(FE-BTCUSD) > (FE-BTCUSD)");
+            Assert.Equal(70, arbitrage1.PnL);
+            Assert.Equal(-0.06500743m, arbitrage1.Spread, 8);
+            Assert.Equal(10, arbitrage1.Volume);
+            Assert.NotEqual(default, arbitrage1.StartedAt);
+            Assert.Equal(default, arbitrage1.EndedAt);
+            Assert.NotEqual(default, arbitrage1.Lasted);
+            Assert.Equal(10768, arbitrage1.Bid.Price);
+            Assert.Equal(10, arbitrage1.Bid.Volume);
+            Assert.Equal(10761, arbitrage1.Ask.Price);
+            Assert.Equal(10, arbitrage1.Ask.Volume);
+
+            var arbitrage2 = arbitrages.Single(x => x.ConversionPath == "(FE-BTCEUR * FE-EURUSD) > (FE-BTCUSD)");
+            Assert.Equal(0.00923229m, arbitrage2.PnL, 8);
+            Assert.Equal(-0.07565594m, arbitrage2.Spread, 8);
+            Assert.Equal(0.00113314m, arbitrage2.Volume, 8);
+            Assert.NotEqual(default, arbitrage2.StartedAt);
+            Assert.Equal(default, arbitrage2.EndedAt);
+            Assert.NotEqual(default, arbitrage2.Lasted);
+            Assert.Equal(10769.1475m, arbitrage2.Bid.Price, 8);
+            Assert.Equal(0.00113314m, arbitrage2.Bid.Volume, 8);
+            Assert.Equal(10761, arbitrage2.Ask.Price, 8);
+            Assert.Equal(10, arbitrage2.Ask.Volume, 8);
         }
 
         [Fact]
-        public async Task ReverseConversionFirstPairTest()
+        public async Task From2OrderBooks_0_1_Test()
         {
             // BTCEUR * USDEUR
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
-            const string exchange = "Lykke";
-            const string btcusd = "BTCUSD";
+            const string exchange = "FE";
             const string btceur = "BTCEUR";
             const string usdeur = "USDEUR";
+            const string btcusd = "BTCUSD";
 
             var settings = new StartupSettings(10, 10, 1000, -20, baseAssets, new List<string>(), quoteAsset, new List<string>(), 0, 0);
             var arbitrageCalculator = new ArbitrageDetectorService(settings, new LogToConsole(), null);
@@ -109,30 +141,61 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
+            var btcUsdOrderBook = new OrderBook(exchange, btcusd,
+                new List<VolumePrice> // bids
+                {
+                    new VolumePrice(10760m, 10), new VolumePrice(10768m, 10)
+                },
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(10761m, 10), new VolumePrice(10762, 10), new VolumePrice(10763, 10)
+                },
+                DateTime.UtcNow);
+
             arbitrageCalculator.Process(btcEurOrderBook);
             arbitrageCalculator.Process(usdEurOrderBook);
+            arbitrageCalculator.Process(btcUsdOrderBook);
 
-            var crossRates = (await arbitrageCalculator.CalculateCrossRates()).ToList();
-            Assert.Single(crossRates);
-            var crossRate = crossRates.First();
-            Assert.Equal(CrossRate.GetSourcesPath(exchange, exchange), crossRate.Source);
-            Assert.Equal(CrossRate.GetConversionPath(exchange, btceur, exchange, usdeur), crossRate.ConversionPath);
-            Assert.Equal(btcusd, crossRate.AssetPairStr);
-            Assert.Equal(10769.1475m, crossRate.Bids.Max(x => x.Price), 8);
-            Assert.Equal(10982.9089835m, crossRate.Asks.Min(x => x.Price), 8);
-            Assert.Equal(4, crossRate.Bids.Count);
-            Assert.Equal(6, crossRate.Asks.Count);
-            Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
+            await arbitrageCalculator.Execute();
+
+            var crossRates = arbitrageCalculator.GetCrossRates().ToList();
+            var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
+
+            Assert.Equal(2, crossRates.Count);
+            Assert.Equal(2, arbitrages.Count);
+
+            var arbitrage1 = arbitrages.Single(x => x.ConversionPath == "(FE-BTCUSD) > (FE-BTCUSD)");
+            Assert.Equal(70, arbitrage1.PnL);
+            Assert.Equal(-0.06500743m, arbitrage1.Spread, 8);
+            Assert.Equal(10, arbitrage1.Volume);
+            Assert.NotEqual(default, arbitrage1.StartedAt);
+            Assert.Equal(default, arbitrage1.EndedAt);
+            Assert.NotEqual(default, arbitrage1.Lasted);
+            Assert.Equal(10768, arbitrage1.Bid.Price);
+            Assert.Equal(10, arbitrage1.Bid.Volume);
+            Assert.Equal(10761, arbitrage1.Ask.Price);
+            Assert.Equal(10, arbitrage1.Ask.Volume);
+
+            var arbitrage2 = arbitrages.Single(x => x.ConversionPath == "(FE-BTCEUR * FE-USDEUR) > (FE-BTCUSD)");
+            Assert.Equal(0.00756559m, arbitrage2.PnL, 8);
+            Assert.Equal(-0.07565594m, arbitrage2.Spread, 8);
+            Assert.Equal(0.00092858m, arbitrage2.Volume, 8);
+            Assert.NotEqual(default, arbitrage2.StartedAt);
+            Assert.Equal(default, arbitrage2.EndedAt);
+            Assert.NotEqual(default, arbitrage2.Lasted);
+            Assert.Equal(10769.1475m, arbitrage2.Bid.Price, 8);
+            Assert.Equal(0.00092858m, arbitrage2.Bid.Volume, 8);
+            Assert.Equal(10761, arbitrage2.Ask.Price, 8);
+            Assert.Equal(10, arbitrage2.Ask.Volume, 8);
         }
 
         [Fact]
-        public async Task ReverseConversionSecondPairTest()
+        public async Task From2OrderBooks_1_0_Test()
         {
             // EURBTC * EURUSD
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
             const string exchange = "Lykke";
-            const string btcusd = "BTCUSD";
             const string eurbtc = "EURBTC";
             const string eurusd = "EURUSD";
 
@@ -171,10 +234,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             var crossRates = (await arbitrageCalculator.CalculateCrossRates()).ToList();
             Assert.Single(crossRates);
-            var crossRate = crossRates.First();
-            Assert.Equal(CrossRate.GetSourcesPath(exchange, exchange), crossRate.Source);
-            Assert.Equal(CrossRate.GetConversionPath(exchange, eurbtc, exchange, eurusd), crossRate.ConversionPath);
-            Assert.Equal(btcusd, crossRate.AssetPairStr);
+            var crossRate = crossRates.Single();
             Assert.Equal(10769.1475m, crossRate.Bids.Max(x => x.Price), 8);
             Assert.Equal(10982.9089835m, crossRate.Asks.Min(x => x.Price), 8);
             Assert.Equal(6, crossRate.Bids.Count);
@@ -183,13 +243,12 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         }
 
         [Fact]
-        public async Task ReverseConversionBothPairsTest()
+        public async Task From2OrderBooks_1_1_Test()
         {
             // EURBTC * USDEUR
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
             const string exchange = "Lykke";
-            const string btcusd = "BTCUSD";
             const string eurbtc = "EURBTC";
             const string usdeur = "USDEUR";
 
@@ -228,16 +287,14 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             var crossRates = (await arbitrageCalculator.CalculateCrossRates()).ToList();
             Assert.Single(crossRates);
-            var crossRate = crossRates.First();
-            Assert.Equal(CrossRate.GetSourcesPath(exchange, exchange), crossRate.Source);
-            Assert.Equal(CrossRate.GetConversionPath(exchange, eurbtc, exchange, usdeur), crossRate.ConversionPath);
-            Assert.Equal(btcusd, crossRate.AssetPairStr);
+            var crossRate = crossRates.Single();
             Assert.Equal(10769.1475m, crossRate.Bids.Max(x => x.Price), 8);
             Assert.Equal(10982.9089835m, crossRate.Asks.Min(x => x.Price), 8);
             Assert.Equal(6, crossRate.Bids.Count);
             Assert.Equal(4, crossRate.Asks.Count);
             Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
         }
+
 
         [Fact]
         public async Task ArbitragesTest()
@@ -296,6 +353,50 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(11050m, arbitrage3.AskCrossRate.Asks.Max(x => x.Price));
             Assert.Equal(arbitrage3.PnL, (arbitrage3.Bid.Price - arbitrage3.Ask.Price) * arbitrage3.Volume);
         }
+
+        [Fact]
+        public async Task ArbitrageHistoryTest()
+        {
+            var baseAssets = new List<string> { "BTC" };
+            const string quoteAsset = "USD";
+
+            var settings = new StartupSettings(1, 1, 1000, -20, baseAssets, new List<string>(), quoteAsset, new List<string>(), 0, 0);
+            var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
+
+            var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
+                new List<VolumePrice> { new VolumePrice(11000, 10) }, // bids
+                new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
+                DateTime.UtcNow);
+
+            var btcUsdOrderBook2 = new OrderBook("Bitfinex", "BTCUSD",
+                new List<VolumePrice> { new VolumePrice(11100, 10) }, // bids
+                new List<VolumePrice> { new VolumePrice(11300, 10) }, // asks
+                DateTime.UtcNow);
+
+            var btcEurOrderBook = new OrderBook("Quoine", "BTCEUR",
+                new List<VolumePrice> { new VolumePrice(8825, 10) }, // bids
+                new List<VolumePrice> { new VolumePrice(8999.95m, 10) }, // asks
+                DateTime.UtcNow);
+
+            var eurUsdOrderBook = new OrderBook("Binance", "EURUSD",
+                new List<VolumePrice> { new VolumePrice(1.2203m, 10) }, // bids
+                new List<VolumePrice> { new VolumePrice(1.22033m, 10) }, // asks
+                DateTime.UtcNow);
+
+            arbitrageDetector.Process(btcUsdOrderBook1);
+            arbitrageDetector.Process(btcUsdOrderBook2);
+            arbitrageDetector.Process(btcEurOrderBook);
+            arbitrageDetector.Process(eurUsdOrderBook);
+
+            await arbitrageDetector.Execute();
+            Thread.Sleep(1000); // Wait until cross rate expire and arbitrage appears in history
+            await arbitrageDetector.Execute();
+
+            var arbitrageHistory = arbitrageDetector.GetArbitrageHistory(DateTime.MinValue, short.MaxValue);
+
+            Assert.Equal(3, arbitrageHistory.Count());
+        }
+
 
         [Fact]
         public async Task ManyCrossRatesPerformanceTest()
@@ -412,48 +513,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(735, arbitrages.Count());
         }
 
-        [Fact]
-        public async Task ArbitrageHistoryTest()
-        {
-            var baseAssets = new List<string> { "BTC" };
-            const string quoteAsset = "USD";
-
-            var settings = new StartupSettings(1, 1, 1000, -20, baseAssets, new List<string>(), quoteAsset, new List<string>(), 0, 0);
-            var arbitrageDetector = new ArbitrageDetectorService(settings, new LogToConsole(), null);
-
-            var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
-                new List<VolumePrice> { new VolumePrice(11000, 10) }, // bids
-                new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
-                DateTime.UtcNow);
-
-            var btcUsdOrderBook2 = new OrderBook("Bitfinex", "BTCUSD",
-                new List<VolumePrice> { new VolumePrice(11100, 10) }, // bids
-                new List<VolumePrice> { new VolumePrice(11300, 10) }, // asks
-                DateTime.UtcNow);
-
-            var btcEurOrderBook = new OrderBook("Quoine", "BTCEUR",
-                new List<VolumePrice> { new VolumePrice(8825, 10) }, // bids
-                new List<VolumePrice> { new VolumePrice(8999.95m, 10) }, // asks
-                DateTime.UtcNow);
-
-            var eurUsdOrderBook = new OrderBook("Binance", "EURUSD",
-                new List<VolumePrice> { new VolumePrice(1.2203m, 10) }, // bids
-                new List<VolumePrice> { new VolumePrice(1.22033m, 10) }, // asks
-                DateTime.UtcNow);
-
-            arbitrageDetector.Process(btcUsdOrderBook1);
-            arbitrageDetector.Process(btcUsdOrderBook2);
-            arbitrageDetector.Process(btcEurOrderBook);
-            arbitrageDetector.Process(eurUsdOrderBook);
-
-            await arbitrageDetector.Execute();
-            Thread.Sleep(1000); // Wait until cross rate expire and arbitrage appears in history
-            await arbitrageDetector.Execute();
-
-            var arbitrageHistory = arbitrageDetector.GetArbitrageHistory(DateTime.MinValue, short.MaxValue);
-
-            Assert.Equal(3, arbitrageHistory.Count());
-        }
 
         [Fact]
         public async Task SettingsSetAllTest()
