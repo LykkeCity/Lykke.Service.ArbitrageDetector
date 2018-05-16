@@ -105,6 +105,26 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         }
 
         /// <summary>
+        /// Checks if contains both assets.
+        /// </summary>
+        /// <param name="one"></param>
+        /// <param name="another"></param>
+        /// <returns></returns>
+        public bool ContainsAssets(string one, string another)
+        {
+            Validate();
+
+            if (string.IsNullOrWhiteSpace(one))
+                throw new ArgumentException(nameof(one));
+
+            if (string.IsNullOrWhiteSpace(another))
+                throw new ArgumentException(nameof(another));
+
+
+            return (Base == one && Quote == another) || (Base == another && Quote == one);
+        }
+
+        /// <summary>
         /// Create Asset Pair from string with one of the assets.
         /// </summary>
         /// <param name="assetPair"></param>
