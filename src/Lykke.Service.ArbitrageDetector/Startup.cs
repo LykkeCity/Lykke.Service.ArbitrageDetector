@@ -57,7 +57,7 @@ namespace Lykke.Service.ArbitrageDetector
 
                 Log = CreateLogWithSlack(services, appSettings);
 
-                builder.RegisterModule(new ServiceModule(appSettings.Nested(x => x.ArbitrageDetector), Log));
+                builder.RegisterModule(new ServiceModule(appSettings, Log));
                 builder.Populate(services);
                 ApplicationContainer = builder.Build();
 

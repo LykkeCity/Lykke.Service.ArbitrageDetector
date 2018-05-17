@@ -68,22 +68,32 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public void Process(OrderBook orderBook)
         {
-            var assets = new List<string>();
-            assets.Add(_quote);
-            assets.AddRange(_baseAssets);
-            assets.AddRange(_intermediateAssets);
-
-            foreach (var asset in assets)
+            if (orderBook.AssetPair.IsEmpty())
             {
-                if (!orderBook.AssetPairStr.Contains(asset))
-                    continue;
+                if (orderBook.Source?.ToUpper() == "LYKKE")
+                {
 
-                orderBook.SetAssetPair(asset);
+                }
 
+                var assets = new List<string>();
+                assets.Add(_quote);
+                assets.AddRange(_baseAssets);
+                assets.AddRange(_intermediateAssets);
+
+                foreach (var asset in assets)
+                {
+                    if (!orderBook.AssetPairStr.Contains(asset))
+                        continue;
+
+                    orderBook.SetAssetPair(asset);
+                    break;
+                }
+            }
+
+            if (!orderBook.AssetPair.IsEmpty())
+            {
                 var key = new AssetPairSource(orderBook.Source, orderBook.AssetPair);
                 _orderBooks.AddOrUpdate(key, orderBook);
-
-                return;
             }
         }
 
@@ -104,61 +114,109 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             foreach (var @base in _baseAssets)
             {
-                var baseAssetKeys = wantedActualOrderBooks.Keys.Where(x => x.AssetPair.ContainsAsset(@base)).ToList();
-                foreach (var baseAssetkey in baseAssetKeys)
-                {
-                    var baseOrderBook = wantedActualOrderBooks[baseAssetkey];
+                var targetAssetPair = new AssetPair(@base, _quote);
+                var newActualCrossRatesFrom1Or2OrderBooks = await GetNewActualCrossRatesFrom1Or2Pairs(wantedActualOrderBooks, targetAssetPair);
+                newActualCrossRates.AddRange(newActualCrossRatesFrom1Or2OrderBooks);
 
-                    // Trying to find wanted asset in current orderBook's asset pair
-                    var wantedIntermediate = AssetPair.FromString(baseOrderBook.AssetPairStr, @base);
-
-                    // Get intermediate currency
-                    var intermediate = wantedIntermediate.Base == @base
-                        ? wantedIntermediate.Quote
-                        : wantedIntermediate.Base;
-
-                    // If settings contains any and current intermediate not in the settings then ignore
-                    if (_intermediateAssets.Any() && !_intermediateAssets.Contains(intermediate))
-                        continue;
-
-                    // If original wanted/base or base/wanted pair then just save it
-                    if (intermediate == _quote)
-                    {
-                        var intermediateBaseCrossRate = CrossRate.FromOrderBook(baseOrderBook, new AssetPair(@base, _quote));
-
-                        var key = new AssetPairSource(intermediateBaseCrossRate.ConversionPath, intermediateBaseCrossRate.AssetPair);
-                        newActualCrossRates[key] = intermediateBaseCrossRate;
-
-                        continue;
-                    }
-
-                    // Trying to find intermediate/base or base/intermediate pair from any exchange
-                    var intermediateBaseKeys = wantedActualOrderBooks.Keys
-                        .Where(x => x.AssetPair.ContainsAsset(intermediate) && x.AssetPair.ContainsAsset(_quote))
-                        .ToList();
-
-                    foreach (var intermediateBaseKey in intermediateBaseKeys)
-                    {
-                        // Calculating cross rate for base/wanted pair
-                        var baseIntermediateOrderBook = baseOrderBook;
-                        var intermediateBaseOrderBook = wantedActualOrderBooks[intermediateBaseKey];
-
-                        var targetAssetPair = new AssetPair(@base, _quote);
-                        var crossRate = CrossRate.FromOrderBooks(baseIntermediateOrderBook, intermediateBaseOrderBook, targetAssetPair);
-
-                        var key = new AssetPairSource(crossRate.ConversionPath, crossRate.AssetPair);
-                        newActualCrossRates[key] = crossRate;
-                    }
-                }
+                var newActualCrossRatesFrom3OrderBooks = await GetNewActualCrossRatesFrom3Pairs(wantedActualOrderBooks, targetAssetPair);
+                newActualCrossRates.AddRange(newActualCrossRatesFrom3OrderBooks);
             }
 
             _crossRates.AddOrUpdateRange(newActualCrossRates);
 
             watch.Stop();
-            if (watch.ElapsedMilliseconds > 200)
+            if (watch.ElapsedMilliseconds > 500)
                 await _log.WriteInfoAsync(GetType().Name, nameof(CalculateCrossRates), $"{watch.ElapsedMilliseconds} ms, {_crossRates.Count} cross rates, {wantedActualOrderBooks.Count} order books.");
 
             return _crossRates.Select(x => x.Value).ToList().AsReadOnly();
+        }
+
+        private async Task<Dictionary<AssetPairSource, CrossRate>> GetNewActualCrossRatesFrom1Or2Pairs(Dictionary<AssetPairSource, OrderBook> wantedActualOrderBooks, AssetPair targetAssetPair)
+        {
+            var result = new Dictionary<AssetPairSource, CrossRate>();
+
+            var baseIntermediateOrderBooks = wantedActualOrderBooks.Values.Where(x => x.AssetPair.ContainsAsset(targetAssetPair.Base)).ToList();
+            foreach (var baseIntermediateOrderBook in baseIntermediateOrderBooks)
+            {
+                // Trying to find base asset in current orderBook's asset pair
+                var baseIntermediateAssetPair = AssetPair.FromString(baseIntermediateOrderBook.AssetPairStr, targetAssetPair.Base);
+
+                // Get intermediate asset
+                var intermediate = baseIntermediateAssetPair.Base == targetAssetPair.Base
+                    ? baseIntermediateAssetPair.Quote
+                    : baseIntermediateAssetPair.Base;
+
+                // If original base/quote or quote/base pair then just use it
+                if (intermediate == _quote)
+                {
+                    var crossRate = CrossRate.FromOrderBook(baseIntermediateOrderBook, targetAssetPair);
+
+                    var key = new AssetPairSource(crossRate.ConversionPath, crossRate.AssetPair);
+                    result[key] = crossRate;
+
+                    continue;
+                }
+
+                // Trying to find intermediate/quote or quote/intermediate pair
+                var intermediateQuoteOrderBooks = wantedActualOrderBooks.Values
+                    .Where(x => x.AssetPair.ContainsAsset(intermediate) && x.AssetPair.ContainsAsset(_quote))
+                    .ToList();
+
+                foreach (var intermediateQuoteOrderBook in intermediateQuoteOrderBooks)
+                {
+                    var crossRate = CrossRate.FromOrderBooks(baseIntermediateOrderBook, intermediateQuoteOrderBook, targetAssetPair);
+
+                    var key = new AssetPairSource(crossRate.ConversionPath, crossRate.AssetPair);
+                    result[key] = crossRate;
+                }
+            }
+
+            return result;
+        }
+
+        private async Task<Dictionary<AssetPairSource, CrossRate>> GetNewActualCrossRatesFrom3Pairs(Dictionary<AssetPairSource, OrderBook> wantedActualOrderBooks, AssetPair targetAssetPair)
+        {
+            var result = new Dictionary<AssetPairSource, CrossRate>();
+
+            var woBaseAndQuoteOrderBooks = wantedActualOrderBooks.Values
+                .Where(x => !x.AssetPair.ContainsAsset(targetAssetPair.Base)
+                         && !x.AssetPair.ContainsAsset(targetAssetPair.Quote)).ToList();
+            foreach (var woBaseAndQuoteOrderBook in woBaseAndQuoteOrderBooks)
+            {
+                // Get assets from order book
+                var @base = woBaseAndQuoteOrderBook.AssetPair.Base;
+                var quote = woBaseAndQuoteOrderBook.AssetPair.Quote;
+
+                // Trying to find pair from @base to target.Base and quote to target.Quote
+                var baseTargetBaseOrderBooks = wantedActualOrderBooks.Values.Where(x => x.AssetPair.ContainsAssets(@base, targetAssetPair.Base)).ToList();
+                foreach (var baseTargetBaseOrderBook in baseTargetBaseOrderBooks)
+                {
+                    var quoteTargetQuoteOrderBooks = wantedActualOrderBooks.Values.Where(x => x.AssetPair.ContainsAssets(quote, targetAssetPair.Quote)).ToList();
+                    foreach (var quoteTargetQuoteOrderBook in quoteTargetQuoteOrderBooks)
+                    {
+                        var crossRate = CrossRate.FromOrderBooks(baseTargetBaseOrderBook, woBaseAndQuoteOrderBook, quoteTargetQuoteOrderBook, targetAssetPair);
+
+                        var key = new AssetPairSource(crossRate.ConversionPath, crossRate.AssetPair);
+                        result[key] = crossRate;
+                    }
+                }
+
+                // Trying to find pair from @base to target.Quote and quote to target.Base
+                var baseTargetQuoteOrderBooks = wantedActualOrderBooks.Values.Where(x => x.AssetPair.ContainsAssets(@base, targetAssetPair.Quote)).ToList();
+                foreach (var baseTargetQuoteOrderBook in baseTargetQuoteOrderBooks)
+                {
+                    var quoteTargetBaseOrderBooks = wantedActualOrderBooks.Values.Where(x => x.AssetPair.ContainsAssets(quote, targetAssetPair.Base)).ToList();
+                    foreach (var quoteTargetBaseOrderBook in quoteTargetBaseOrderBooks)
+                    {
+                        var crossRate = CrossRate.FromOrderBooks(quoteTargetBaseOrderBook, woBaseAndQuoteOrderBook, baseTargetQuoteOrderBook, targetAssetPair);
+
+                        var key = new AssetPairSource(crossRate.ConversionPath, crossRate.AssetPair);
+                        result[key] = crossRate;
+                    }
+                }
+            }
+
+            return result;
         }
 
         private (IList<CrossRateLine> bids, IList<CrossRateLine> asks)? CalculateCrossRateLines(IList<CrossRate> crossRates)
@@ -361,12 +419,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 // Filter by base, quote and intermediate assets
                 var assetPair = keyValue.Key.AssetPair;
-                var passed = (_baseAssets.Contains(assetPair.Base)
-                  || _baseAssets.Contains(assetPair.Quote)
-                  || assetPair.ContainsAsset(_quote))
-                 && (!_intermediateAssets.Any()
-                  || (_intermediateAssets.Contains(assetPair.Base)
-                  ||  _intermediateAssets.Contains(assetPair.Quote)));
+                var passed = !_intermediateAssets.Any()
+                  || _intermediateAssets.Contains(assetPair.Base)
+                  || _intermediateAssets.Contains(assetPair.Quote);
                 if (!passed)
                     continue;
 
