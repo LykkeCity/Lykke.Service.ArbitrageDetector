@@ -6,29 +6,41 @@ using Common.Log;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.ArbitrageDetector.Core.Services;
+using Lykke.Service.ArbitrageDetector.RabbitSubscribers.OrderBookHandlers;
 
 namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
 {
-    public class RabbitMessageSubscriber : IStartable, IStopable, IMessageDeserializer<byte[]>
+    internal sealed class RabbitMessageSubscriber : IStartable, IStopable, IMessageDeserializer<byte[]>
     {
-        private readonly ILog _log;
-        private readonly IOrderBookProcessor _orderBookProcessor;
         private readonly string _connectionString;
         private readonly string _exchangeName;
         private RabbitMqSubscriber<byte[]> _subscriber;
 
+        private readonly OrderBookParser _orderBookParser;
+        private readonly OrderBookValidator _orderBookValidator;
+        private readonly OrderBookLykkeAssetsProvider _orderBookLykkeAssetsProvider;
+        private readonly IArbitrageDetectorService _arbitrageDetectorService;
+        private readonly ILog _log;
+
         public RabbitMessageSubscriber(
-            ILog log,
-            IOrderBookProcessor orderBookProcessor,
-            IShutdownManager shutdownManager,
             string connectionString,
-            string exchangeName)
+            string exchangeName,
+            IShutdownManager shutdownManager,
+            OrderBookParser orderBookParser,
+            OrderBookValidator orderBookValidator,
+            OrderBookLykkeAssetsProvider orderBookLykkeAssetsProvider,
+            IArbitrageDetectorService arbitrageDetectorService,
+            ILog log)
         {
-            _log = log;
-            _orderBookProcessor = orderBookProcessor;
-            _connectionString = connectionString;
-            _exchangeName = exchangeName;
+            _connectionString = !string.IsNullOrWhiteSpace(connectionString) ? connectionString : throw new ArgumentNullException(nameof(connectionString));
+            _exchangeName = !string.IsNullOrWhiteSpace(exchangeName) ? exchangeName : throw new ArgumentNullException(nameof(exchangeName));
+
             shutdownManager.Register(this);
+            _orderBookParser = orderBookParser ?? throw new ArgumentNullException(nameof(orderBookParser));
+            _orderBookValidator = orderBookValidator ?? throw new ArgumentNullException(nameof(orderBookValidator));
+            _orderBookLykkeAssetsProvider = orderBookLykkeAssetsProvider ?? throw new ArgumentNullException(nameof(orderBookLykkeAssetsProvider));
+            _arbitrageDetectorService = arbitrageDetectorService ?? throw new ArgumentNullException(nameof(arbitrageDetectorService));
+            _log = log ?? throw new ArgumentNullException(nameof(log));
         }
 
         public void Start()
@@ -56,7 +68,13 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
         {
             try
             {
-                _orderBookProcessor.Process(item);
+                var orderBook = _orderBookParser.Parse(item);
+                var isValid = _orderBookValidator.IsValid(orderBook);
+                if (isValid)
+                {
+                    await _orderBookLykkeAssetsProvider.ProvideAssetsIfLykke(orderBook);
+                    _arbitrageDetectorService.Process(orderBook);
+                }
             }
             catch (Exception ex)
             {

@@ -7,5 +7,6 @@ namespace Lykke.Service.ArbitrageDetector.Settings
     {
         public ArbitrageDetectorSettings ArbitrageDetector { get; set; }
         public SlackNotificationsSettings SlackNotifications { get; set; }
+        public AssetsServiceClientSettings AssetsServiceClient { get; set; }
     }
 }
