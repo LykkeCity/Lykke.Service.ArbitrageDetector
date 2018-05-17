@@ -41,12 +41,17 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers.OrderBookHandlers
         {
             var assetPirs = await _assetsService.AssetPairGetAllWithHttpMessagesAsync();
 
-            var goodAssetPairs = assetPirs.Body.Where(x => x.Name.Contains("/")).ToList();
+            var goodAssetPairs = assetPirs.Body
+                .Where(x => x.Name.Contains("/")).ToList();
+
             foreach (var assetPair in goodAssetPairs)
             {
                 var key = assetPair.Name.Replace("/", "");
+                var baseQuote = assetPair.Name.Split("/");
+                var @base = baseQuote[0];
+                var quote = baseQuote[1];
                 if (!_assetPairs.ContainsKey(key))
-                    _assetPairs.Add(assetPair.Name.Replace("/", ""), new AssetPair(assetPair.BaseAssetId, assetPair.QuotingAssetId));
+                    _assetPairs.Add(key, new AssetPair(@base, quote));
             }
         }
     }
