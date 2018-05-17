@@ -11,7 +11,9 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers.OrderBookHandlers
 {
     internal sealed class OrderBookLykkeAssetsProvider
     {
-        private readonly string _lykkeExchangeName = "lykke";
+        private const string LykkeExchangeName = "lykke";
+        
+        private readonly Dictionary<string, AssetPair> _assetPairs = new Dictionary<string, AssetPair>();
 
         private readonly IAssetsService _assetsService;
         private readonly ILog _log;
@@ -20,15 +22,32 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers.OrderBookHandlers
         {
             _assetsService = assetsService ?? throw new ArgumentNullException(nameof(assetsService));
             _log = log ?? throw new ArgumentNullException(nameof(log));
+            Task.Run(() => Init()).Wait();
         }
 
         public async Task ProvideAssetsIfLykke(OrderBook orderBook)
         {
+            if (orderBook.Source == LykkeExchangeName && _assetPairs.Count > 0)
+            {
+                var key = _assetPairs.Keys.SingleOrDefault(x => x == orderBook.AssetPairStr);
+                if (key != null)
+                {
+                    orderBook.AssetPair = _assetPairs[key];
+                }
+            }
+        }
+
+        private async Task Init()
+        {
             var assetPirs = await _assetsService.AssetPairGetAllWithHttpMessagesAsync();
 
-            var good = assetPirs.Body.Where(x => x.Name.Contains("/")).ToList();
-
-            var temp = 0;
+            var goodAssetPairs = assetPirs.Body.Where(x => x.Name.Contains("/")).ToList();
+            foreach (var assetPair in goodAssetPairs)
+            {
+                var key = assetPair.Name.Replace("/", "");
+                if (!_assetPairs.ContainsKey(key))
+                    _assetPairs.Add(assetPair.Name.Replace("/", ""), new AssetPair(assetPair.BaseAssetId, assetPair.QuotingAssetId));
+            }
         }
     }
 }
