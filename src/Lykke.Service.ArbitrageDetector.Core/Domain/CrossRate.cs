@@ -208,7 +208,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         }
 
         /// <summary>
-        /// From two order books.
+        /// From three order books.
         /// </summary>
         /// <param name="one"></param>
         /// <param name="second"></param>
