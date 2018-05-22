@@ -54,6 +54,12 @@ namespace Lykke.Service.ArbitrageDetector.Client
         Task<IEnumerable<ArbitrageRow>> ArbitrageHistoryAsync(DateTime since, int take);
 
         /// <summary>
+        /// Returns arbitrage matrix.
+        /// </summary>
+        /// <returns>Arbitrage matrix.</returns>
+        Task<Matrix> MatrixAsync();
+
+        /// <summary>
         /// Get settings.
         /// </summary>
         Task<Settings> GetSettingsAsync();
