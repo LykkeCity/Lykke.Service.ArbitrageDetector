@@ -119,6 +119,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         }
 
         [Fact]
+        public async Task MatrixTest()
+        {
+            // TODO: Must be implemented
+        }
+
+        [Fact]
         public async Task GetSettignsTest()
         {
             var settings = await Client.GetSettingsAsync();
