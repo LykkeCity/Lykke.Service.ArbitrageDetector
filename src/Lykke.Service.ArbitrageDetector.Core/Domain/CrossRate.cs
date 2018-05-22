@@ -66,7 +66,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 throw new ArgumentException(nameof(targetAssetPair.Quote));
 
             if (orderBook.AssetPair.IsEmpty())
-                throw new ArgumentException(nameof(orderBook.AssetPair));
+                throw new ArgumentException(nameof(orderBook) + "." + nameof(orderBook.AssetPair));
 
             if (!targetAssetPair.IsEqualOrReversed(orderBook.AssetPair))
                 throw new ArgumentOutOfRangeException($"{nameof(orderBook.AssetPair)} and {nameof(targetAssetPair)} aren't semantically equal.");
@@ -114,6 +114,12 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
             if (another == null)
                 throw new ArgumentNullException(nameof(another));
+
+            if (one.AssetPair.IsEmpty())
+                throw new ArgumentException(nameof(one) + "." + nameof(one.AssetPair));
+
+            if (another.AssetPair.IsEmpty())
+                throw new ArgumentException(nameof(another) + "." + nameof(another.AssetPair));
 
             if (targetAssetPair.IsEmpty())
                 throw new ArgumentException(nameof(targetAssetPair));
@@ -221,6 +227,15 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
             if (third == null)
                 throw new ArgumentNullException(nameof(third));
+
+            if (one.AssetPair.IsEmpty())
+                throw new ArgumentException(nameof(one) + "." + nameof(one.AssetPair));
+
+            if (second.AssetPair.IsEmpty())
+                throw new ArgumentException(nameof(second) + "." + nameof(second.AssetPair));
+
+            if (third.AssetPair.IsEmpty())
+                throw new ArgumentException(nameof(third) + "." + nameof(third.AssetPair));
 
             if (targetAssetPair.IsEmpty())
                 throw new ArgumentException(nameof(targetAssetPair));

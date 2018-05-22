@@ -8,6 +8,7 @@ using Lykke.Service.ArbitrageDetector.RabbitSubscribers.OrderBookHandlers;
 using Lykke.Service.ArbitrageDetector.Services;
 using Lykke.Service.ArbitrageDetector.Settings;
 using Lykke.Service.Assets.Client;
+using Lykke.Service.RateCalculator.Client;
 using Lykke.SettingsReader;
 
 namespace Lykke.Service.ArbitrageDetector.Modules
@@ -59,6 +60,13 @@ namespace Lykke.Service.ArbitrageDetector.Modules
                 .AutoActivate()
                 .SingleInstance();
 
+            builder.RegisterType<ArbitrageScreenerService>()
+                .As<ArbitrageScreenerService>()
+                .As<IStartable>()
+                .As<IStopable>()
+                .AutoActivate()
+                .SingleInstance();
+
             foreach (var exchange in _settings.CurrentValue.ArbitrageDetector.RabbitMq.Exchanges)
             {
                 builder.RegisterType<RabbitMessageSubscriber>()
@@ -72,6 +80,10 @@ namespace Lykke.Service.ArbitrageDetector.Modules
 
             builder.RegisterInstance(new AssetsService(new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl)))
                 .As<IAssetsService>()
+                .SingleInstance();
+
+            builder.RegisterInstance(new RateCalculatorClient(_settings.CurrentValue.RateCalculatorServiceClient.ServiceUrl, _log))
+                .As<IRateCalculatorClient>()
                 .SingleInstance();
         }
     }

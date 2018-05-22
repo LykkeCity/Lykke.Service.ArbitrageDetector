@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
@@ -22,7 +21,7 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers.OrderBookHandlers
         {
             _assetsService = assetsService ?? throw new ArgumentNullException(nameof(assetsService));
             _log = log ?? throw new ArgumentNullException(nameof(log));
-            Task.Run(() => Init()).Wait();
+            Task.Run(() => InitAssetsPairs()).Wait();
         }
 
         public async Task ProvideAssetsIfLykke(OrderBook orderBook)
@@ -37,11 +36,11 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers.OrderBookHandlers
             }
         }
 
-        private async Task Init()
+        private async Task InitAssetsPairs()
         {
-            var assetPirs = await _assetsService.AssetPairGetAllWithHttpMessagesAsync();
+            var allAssetPirs = await _assetsService.AssetPairGetAllWithHttpMessagesAsync();
 
-            var goodAssetPairs = assetPirs.Body
+            var goodAssetPairs = allAssetPirs.Body
                 .Where(x => x.Name.Contains("/")).ToList();
 
             foreach (var assetPair in goodAssetPairs)
@@ -54,5 +53,6 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers.OrderBookHandlers
                     _assetPairs.Add(key, new AssetPair(@base, quote));
             }
         }
+ 
     }
 }
