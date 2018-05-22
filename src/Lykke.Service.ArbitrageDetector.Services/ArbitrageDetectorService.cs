@@ -579,6 +579,37 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 .ToList();
         }
 
+        public Matrix GetMatrix(string assetPair)
+        {
+            if (string.IsNullOrWhiteSpace(assetPair))
+                return null;
+
+            var result = new Matrix(assetPair);
+
+            // Filter by asset pair
+            var orderBooks = _orderBooks.Values.Where(x => x.AssetPair.Name == assetPair).ToList();
+
+            var uniqueExchanges = orderBooks.Select(x => x.Source).Distinct().OrderBy(x => x).ToList();
+
+            var matrixSide = uniqueExchanges.Count;
+            result.Value = new(OrderBook ask, OrderBook bid)[matrixSide, matrixSide];
+            for (var i1 = 0; i1 < matrixSide; i1++)
+            {
+                var exchange1 = uniqueExchanges[i1];
+                for (var i2 = 0; i2 < matrixSide; i2++)
+                {
+                    var exchange2 = uniqueExchanges[i2];
+
+                    var orderBook1 = orderBooks.Single(x => x.Source == exchange1);
+                    var orderBook2 = orderBooks.Single(x => x.Source == exchange2);
+
+                    result.Value[i1, i2] = (orderBook1, orderBook2);
+                }
+            }
+
+            return result;
+        }
+
         public Settings GetSettings()
         {
             return new Settings(_expirationTimeInSeconds, _baseAssets, _intermediateAssets, _quote, _minSpread, _exchanges, _minimumPnL, _minimumVolume);

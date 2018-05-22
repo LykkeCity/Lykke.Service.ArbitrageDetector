@@ -1437,6 +1437,12 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
 
         [Fact]
+        public async Task MatrixTest()
+        {
+            // TODO: Must be implemented
+        }
+
+        [Fact]
         public async Task SettingsSetAllTest()
         {
             var startupSettings = new StartupSettings(10, 10, 1000, -20, new List<string> { "BTC", "ETH" }, new List<string> { "EUR", "CHF" }, "USD", new List<string>(), 0, 0);
