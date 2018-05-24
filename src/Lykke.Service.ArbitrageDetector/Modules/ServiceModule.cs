@@ -60,12 +60,12 @@ namespace Lykke.Service.ArbitrageDetector.Modules
                 .AutoActivate()
                 .SingleInstance();
 
-            builder.RegisterType<ArbitrageScreenerService>()
-                .As<ArbitrageScreenerService>()
-                .As<IStartable>()
-                .As<IStopable>()
-                .AutoActivate()
-                .SingleInstance();
+            //builder.RegisterType<ArbitrageScreenerService>()
+            //    .As<ArbitrageScreenerService>()
+            //    .As<IStartable>()
+            //    .As<IStopable>()
+            //    .AutoActivate()
+            //    .SingleInstance();
 
             foreach (var exchange in _settings.CurrentValue.ArbitrageDetector.RabbitMq.Exchanges)
             {
