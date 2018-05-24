@@ -118,8 +118,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 var newActualCrossRatesFrom1Or2OrderBooks = await GetNewActualCrossRatesFrom1Or2Pairs(wantedActualOrderBooks, targetAssetPair);
                 newActualCrossRates.AddRange(newActualCrossRatesFrom1Or2OrderBooks);
 
-                var newActualCrossRatesFrom3OrderBooks = await GetNewActualCrossRatesFrom3Pairs(wantedActualOrderBooks, targetAssetPair);
-                newActualCrossRates.AddRange(newActualCrossRatesFrom3OrderBooks);
+                //var newActualCrossRatesFrom3OrderBooks = await GetNewActualCrossRatesFrom3Pairs(wantedActualOrderBooks, targetAssetPair);
+                //newActualCrossRates.AddRange(newActualCrossRatesFrom3OrderBooks);
             }
 
             _crossRates.AddOrUpdateRange(newActualCrossRates);
