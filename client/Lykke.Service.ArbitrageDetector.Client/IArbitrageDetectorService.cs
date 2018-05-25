@@ -57,7 +57,7 @@ namespace Lykke.Service.ArbitrageDetector.Client
         /// Returns arbitrage matrix.
         /// </summary>
         /// <returns>Arbitrage matrix.</returns>
-        Task<Matrix> MatrixAsync();
+        Task<Matrix> MatrixAsync(string assetPair);
 
         /// <summary>
         /// Get settings.

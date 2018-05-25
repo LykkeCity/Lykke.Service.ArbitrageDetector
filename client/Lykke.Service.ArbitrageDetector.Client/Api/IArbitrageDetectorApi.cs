@@ -27,7 +27,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
         Task<IEnumerable<ArbitrageRow>> ArbitrageHistory(DateTime since, int take);
 
         [Get("/matrix")]
-        Task<Matrix> Matrix();
+        Task<Matrix> Matrix(string assetPair);
 
         [Get("/getSettings")]
         Task<Settings> GetSettings();
