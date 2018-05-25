@@ -8,10 +8,7 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers.OrderBookHandlers
 {
     internal sealed class OrderBookValidator
     {
-        // TODO: Must be removed or changed to silent ignore w/o lock
-        private readonly object _thisLock = new object();
-        private DateTime _lastWriteToLog = DateTime.MinValue;
-        public int WriteToLogDelayInMilliseconds { get; set; } = 5 * 60 * 1000;
+
         private readonly ILog _log;
 
         public OrderBookValidator(ILog log)
@@ -33,20 +30,29 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers.OrderBookHandlers
 
             if (bidPriceOrVolumeEquals0 || askPriceOrVolumeEquals0 || spreadIsNegative)
             {
-                lock (_thisLock)
-                {
-                    var canWriteAgain = (DateTime.Now - _lastWriteToLog).TotalMilliseconds > WriteToLogDelayInMilliseconds;
-                    if (canWriteAgain)
-                    {
-                        _lastWriteToLog = DateTime.Now;
-                        _log.WriteInfoAsync(nameof(OrderBookParser), nameof(IsValid), $"Invalid order book: {orderBook.ToJson()}");
-                    }
-                }
+                WriteToLogThrottled(orderBook);
 
                 return false;
             }
 
             return true;
+        }
+
+        // TODO: Must be removed or changed to silent ignore w/o lock
+        private readonly object _thisLock = new object();
+        private DateTime _lastWriteToLog = DateTime.MinValue;
+        public int WriteToLogDelayInMilliseconds { get; set; } = 5 * 60 * 1000;
+        public void WriteToLogThrottled(OrderBook orderBook)
+        {
+            lock (_thisLock)
+            {
+                var canWriteAgain = (DateTime.Now - _lastWriteToLog).TotalMilliseconds > WriteToLogDelayInMilliseconds;
+                if (canWriteAgain)
+                {
+                    _lastWriteToLog = DateTime.Now;
+                    _log.WriteInfoAsync(nameof(OrderBookParser), nameof(IsValid), $"Invalid order book: {orderBook.ToJson()}");
+                }
+            }
         }
     }
 }
