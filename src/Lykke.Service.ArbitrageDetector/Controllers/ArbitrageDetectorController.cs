@@ -166,7 +166,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [HttpGet]
         [Route("matrix")]
         [SwaggerOperation("Matrix")]
-        [ProducesResponseType(typeof(IEnumerable<Matrix>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Matrix), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> Matrix(string assetPair)
         {
