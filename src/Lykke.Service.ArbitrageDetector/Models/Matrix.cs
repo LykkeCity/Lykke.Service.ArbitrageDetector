@@ -20,7 +20,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
 
         public MatrixCell[,] Cells { get; set; }
 
-        public IList<IList<MatrixCell>> AnotherCells { get; set; }
+        public IList<IList<MatrixCell>> AnotherCells { get; set; } = new List<IList<MatrixCell>>();
 
 
         public Matrix(DomainMatrix matrix)
@@ -47,7 +47,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
                     if (row == 0)
                         Bids.Add(matrix.Value[row, 0].bid.BestBid?.Price);
 
-                    // Empty top left corner
+                    // The same exchanges
                     if (row == col)
                     {
                         Cells[row, col] = null;

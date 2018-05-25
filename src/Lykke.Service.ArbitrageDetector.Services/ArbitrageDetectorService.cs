@@ -532,7 +532,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var result = new Matrix(assetPair);
 
             // Filter by asset pair
-            var orderBooks = _orderBooks.Values.Where(x => x.AssetPair.Name == assetPair).ToList();
+            var orderBooks = _orderBooks.Values.Where(x => x.AssetPair.Name.ToUpper().Trim() == assetPair.ToUpper().Trim()).ToList();
 
             var uniqueExchanges = orderBooks.Select(x => x.Source).Distinct().OrderBy(x => x).ToList();
 
