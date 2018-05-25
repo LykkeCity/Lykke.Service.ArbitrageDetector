@@ -45,7 +45,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
                 for (var col = 0; col < matrix.Value.GetLength(1); col += 1)
                 {
                     if (row == 0)
-                        Bids.Add(matrix.Value[row, 0].bid.BestBid?.Price);
+                        Bids.Add(matrix.Value[row, col].bid.BestBid?.Price);
 
                     // The same exchanges
                     if (row == col)
