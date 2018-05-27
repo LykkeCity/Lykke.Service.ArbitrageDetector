@@ -11,7 +11,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
     {
         public string AssetPair { get; set; }
 
-        public IList<string> Exchanges { get; set; } = new List<string>();
+        public IList<Exchange> Exchanges { get; set; } = new List<Exchange>();
 
         public IList<decimal?> Asks { get; set; } = new List<decimal?>();
 
@@ -39,7 +39,9 @@ namespace Lykke.Service.ArbitrageDetector.Models
             {
                 var cellRow = new List<MatrixCell>();
 
-                Exchanges.Add(matrix.Value[row, 0].ask.Source);
+                var exchangeName = matrix.Value[row, 0].ask.Source;
+                var isActual = (DateTime.UtcNow - matrix.Value[row, 0].ask.Timestamp).TotalSeconds < 10;
+                Exchanges.Add(new Exchange(exchangeName, isActual));
                 Asks.Add(matrix.Value[row, 0].ask.BestAsk?.Price);
                 // row starts
                 for (var col = 0; col < matrix.Value.GetLength(1); col += 1)

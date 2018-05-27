@@ -16,7 +16,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Exchanges.
         /// </summary>
-        public IList<string> Exchanges { get; set; } = new List<string>();
+        public IList<Exchange> Exchanges { get; set; } = new List<Exchange>();
 
         /// <summary>
         /// Asks.
