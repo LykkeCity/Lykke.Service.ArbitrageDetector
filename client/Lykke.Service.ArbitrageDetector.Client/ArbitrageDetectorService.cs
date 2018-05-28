@@ -82,7 +82,7 @@ namespace Lykke.Service.ArbitrageDetector.Client
             return await _runner.RunAsync(() => _arbitrageDetectorApi.Matrix(assetPair));
         }
 
-        public async Task<Matrix> OublicMatrixAsync(string assetPair)
+        public async Task<Matrix> PublicMatrixAsync(string assetPair)
         {
             return await _runner.RunAsync(() => _arbitrageDetectorApi.PublicMatrix(assetPair));
         }
