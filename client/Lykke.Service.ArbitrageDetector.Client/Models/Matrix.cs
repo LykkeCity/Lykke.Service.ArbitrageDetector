@@ -29,13 +29,8 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public IList<decimal?> Bids { get; set; } = new List<decimal?>();
 
         /// <summary>
-        /// Cells.
+        /// Сells.
         /// </summary>
-        public MatrixCell[,] Cells { get; set; }
-
-        /// <summary>
-        /// Alternative cells.
-        /// </summary>
-        public IList<IList<MatrixCell>> AnotherCells { get; set; }
+        public IList<IList<MatrixCell>> Cells { get; set; }
     }
 }

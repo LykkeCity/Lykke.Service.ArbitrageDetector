@@ -17,10 +17,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
 
         public IList<decimal?> Bids { get; set; } = new List<decimal?>();
 
-
-        public MatrixCell[,] Cells { get; set; }
-
-        public IList<IList<MatrixCell>> AnotherCells { get; set; } = new List<IList<MatrixCell>>();
+        public IList<IList<MatrixCell>> Cells { get; set; } = new List<IList<MatrixCell>>();
 
 
         public Matrix(DomainMatrix matrix)
@@ -32,8 +29,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
                 throw new ArgumentOutOfRangeException(nameof(matrix) + "." + nameof(matrix.AssetPair));
 
             AssetPair = matrix.AssetPair;
-
-            Cells = new MatrixCell[matrix.Value.GetLength(0), matrix.Value.GetLength(1)];
 
             for (var row = 0; row < matrix.Value.GetLength(0); row += 1)
             {
@@ -52,7 +47,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
                     // The same exchanges
                     if (row == col)
                     {
-                        Cells[row, col] = null;
                         cellRow.Add(null);
                         continue;
                     }
@@ -63,18 +57,16 @@ namespace Lykke.Service.ArbitrageDetector.Models
                     if (tuple.ask.BestAsk == null || tuple.bid.BestBid == null)
                     {
                         matrixCell = new MatrixCell(null, null);
-                        Cells[row, col] = matrixCell;
                         cellRow.Add(matrixCell);
                         continue;
                     }
 
                     var spread = (tuple.ask.BestAsk.Value.Price - tuple.bid.BestBid.Value.Price) / tuple.bid.BestBid.Value.Price * 100;
                     matrixCell = new MatrixCell(spread, null);
-                    Cells[row, col] = matrixCell;
                     cellRow.Add(matrixCell);
                 }
                 // row ends
-                AnotherCells.Add(cellRow);
+                Cells.Add(cellRow);
             }
 
         }

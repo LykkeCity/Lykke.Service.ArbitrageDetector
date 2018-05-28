@@ -11,6 +11,11 @@ namespace Lykke.Service.ArbitrageDetector.Core
     public class StartupSettings : Settings
     {
         /// <summary>
+        /// Suffix for GetPublicMatrix() method
+        /// </summary>
+        public string ExchangesNamesSuffix { get; set; }
+
+        /// <summary>
         /// Arbitrage calculating execution delay in milliseconds.
         /// </summary>
         public int ExecutionDelayInMilliseconds { get; set; }

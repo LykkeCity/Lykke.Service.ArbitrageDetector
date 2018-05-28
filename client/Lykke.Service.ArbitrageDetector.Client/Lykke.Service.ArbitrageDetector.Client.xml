@@ -446,6 +446,28 @@
             <param name="conversionPath"></param>
             <param name="timestamp"></param>
         </member>
+        <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.Exchange">
+            <summary>
+            Represents an arbitrage matrix cell.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Exchange.Name">
+            <summary>
+            Name.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Exchange.IsActual">
+            <summary>
+            Is data from exchange actual.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Exchange.#ctor(System.String,System.Boolean)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="name"></param>
+            <param name="isActual"></param>
+        </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.Matrix">
             <summary>
             Represents an arbitrage matrix.
@@ -473,12 +495,7 @@
         </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Matrix.Cells">
             <summary>
-            Cells.
-            </summary>
-        </member>
-        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Matrix.AnotherCells">
-            <summary>
-            Alternative cells.
+            Сells.
             </summary>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.MatrixCell">

@@ -2,6 +2,7 @@
 using Autofac;
 using Common;
 using Common.Log;
+using Lykke.Service.ArbitrageDetector.Core;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.RabbitSubscribers;
 using Lykke.Service.ArbitrageDetector.RabbitSubscribers.OrderBookHandlers;
@@ -39,6 +40,10 @@ namespace Lykke.Service.ArbitrageDetector.Modules
 
             builder.RegisterType<ShutdownManager>()
                 .As<IShutdownManager>();
+
+            builder.RegisterInstance(_settings.CurrentValue.ArbitrageDetector.Main)
+                .As<StartupSettings>()
+                .SingleInstance();
 
             builder.RegisterType<OrderBookParser>()
                 .As<OrderBookParser>()

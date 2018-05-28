@@ -33,7 +33,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
         Matrix GetMatrix(string assetPair);
 
 
-
         Settings GetSettings();
 
         void SetSettings(Settings settings);

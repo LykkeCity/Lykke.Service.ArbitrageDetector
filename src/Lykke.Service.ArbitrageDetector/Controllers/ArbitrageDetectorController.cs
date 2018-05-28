@@ -5,9 +5,11 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Common.Log;
+using Lykke.Service.ArbitrageDetector.Core;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Models;
 using Microsoft.AspNetCore.Mvc;
+using MoreLinq;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using DataOrderBook = Lykke.Service.ArbitrageDetector.Models.OrderBook;
 
@@ -17,11 +19,14 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
     public class ArbitrageDetectorController : Controller
     {
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
+        private readonly StartupSettings _startupSettings;
+
         private readonly ILog _log;
 
-        public ArbitrageDetectorController(IArbitrageDetectorService arbitrageDetectorService, ILog log)
+        public ArbitrageDetectorController(IArbitrageDetectorService arbitrageDetectorService, StartupSettings startupSettings, ILog log)
         {
             _arbitrageDetectorService = arbitrageDetectorService;
+            _startupSettings = startupSettings;
             _log = log;
         }
 
@@ -177,6 +182,52 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             {
                 var matrix = _arbitrageDetectorService.GetMatrix(assetPair);
                 result = new Matrix(matrix);
+            }
+            catch (Exception exception)
+            {
+                await _log.WriteErrorAsync(GetType().Name, nameof(Matrix), exception);
+
+                return BadRequest(ErrorResponse.Create(exception.Message));
+            }
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("publicMatrix")]
+        [SwaggerOperation("PublicMatrix")]
+        [ProducesResponseType(typeof(Matrix), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> PublicMatrix(string assetPair)
+        {
+            Matrix result;
+
+            try
+            {
+                var matrix = _arbitrageDetectorService.GetMatrix(assetPair);
+                result = new Matrix(matrix);
+
+                var suffix = _startupSettings.ExchangesNamesSuffix;
+
+                // Remove all exchanges without suffix
+                
+                while (true)
+                {
+                    var exchangeToRemove = result.Exchanges.FirstOrDefault(x => !x.Name.ToUpper().Contains(suffix.ToUpper()));
+                    if (exchangeToRemove == null)
+                        break;
+
+                    var exchangeIndex = result.Exchanges.IndexOf(exchangeToRemove);
+                    result.Exchanges.RemoveAt(exchangeIndex);
+                    result.Bids.RemoveAt(exchangeIndex);
+                    result.Asks.RemoveAt(exchangeIndex);
+                    result.Cells.RemoveAt(exchangeIndex);
+                    foreach (var cell in result.Cells)
+                        cell.RemoveAt(exchangeIndex);
+                }
+
+                // Remove suffix from exchanges names
+                result.Exchanges.ForEach(x => x.Name = x.Name.Replace(_startupSettings.ExchangesNamesSuffix, ""));
             }
             catch (Exception exception)
             {
