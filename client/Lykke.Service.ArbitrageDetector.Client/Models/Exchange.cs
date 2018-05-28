@@ -27,5 +27,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             Name = name;
             IsActual = isActual;
         }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }
