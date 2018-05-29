@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using DomainMatrix = Lykke.Service.ArbitrageDetector.Core.Domain.Matrix;
+using DomainMatrixCell = Lykke.Service.ArbitrageDetector.Core.Domain.MatrixCell;
 
 namespace Lykke.Service.ArbitrageDetector.Models
 {
@@ -29,46 +31,20 @@ namespace Lykke.Service.ArbitrageDetector.Models
                 throw new ArgumentOutOfRangeException(nameof(matrix) + "." + nameof(matrix.AssetPair));
 
             AssetPair = matrix.AssetPair;
-
-            for (var row = 0; row < matrix.Value.GetLength(0); row += 1)
+            Exchanges = matrix.Exchanges.Select(x => new Exchange(x.Name, x.IsActual)).ToList();
+            Bids = matrix.Bids;
+            Asks = matrix.Asks;
+            foreach (var rows in matrix.Cells)
             {
-                var cellRow = new List<MatrixCell>();
+                var row = new List<MatrixCell>();
+                foreach (var cell in rows)
+                    if (cell == null)
+                        row.Add(null);
+                    else
+                        row.Add(new MatrixCell(cell.Spread, cell.Volume));
 
-                var exchangeName = matrix.Value[row, 0].ask.Source;
-                var isActual = (DateTime.UtcNow - matrix.Value[row, 0].ask.Timestamp).TotalSeconds < 10;
-                Exchanges.Add(new Exchange(exchangeName, isActual));
-                Asks.Add(matrix.Value[row, 0].ask.BestAsk?.Price);
-                // row starts
-                for (var col = 0; col < matrix.Value.GetLength(1); col += 1)
-                {
-                    if (row == 0)
-                        Bids.Add(matrix.Value[row, col].bid.BestBid?.Price);
-
-                    // The same exchanges
-                    if (row == col)
-                    {
-                        cellRow.Add(null);
-                        continue;
-                    }
-
-                    var tuple = matrix.Value[row, col];
-
-                    MatrixCell matrixCell;
-                    if (tuple.ask.BestAsk == null || tuple.bid.BestBid == null)
-                    {
-                        matrixCell = new MatrixCell(null, null);
-                        cellRow.Add(matrixCell);
-                        continue;
-                    }
-
-                    var spread = (tuple.ask.BestAsk.Value.Price - tuple.bid.BestBid.Value.Price) / tuple.bid.BestBid.Value.Price * 100;
-                    matrixCell = new MatrixCell(spread, null);
-                    cellRow.Add(matrixCell);
-                }
-                // row ends
-                Cells.Add(cellRow);
+                Cells.Add(row);
             }
-
         }
     }
 }

@@ -33,6 +33,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private decimal _minimumVolume;
         private int _minSpread;
         private readonly int _historyMaxSize;
+        private string _exchangesNamesSuffix;
 
         private bool _restartNeeded;
         private readonly ILog _log;
@@ -55,6 +56,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _minimumVolume = settings.MinimumVolume ?? 0;
             _minSpread = settings.MinSpread ?? 0;
             _historyMaxSize = settings.HistoryMaxSize;
+            _exchangesNamesSuffix = settings.ExchangesNamesSuffix;
 
             _log = log;
             shutdownManager?.Register(this);
@@ -524,7 +526,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 .ToList();
         }
 
-        public Matrix GetMatrix(string assetPair)
+        public Matrix GetMatrix(string assetPair, bool withSuffixOnly = false)
         {
             if (string.IsNullOrWhiteSpace(assetPair))
                 return null;
@@ -533,23 +535,59 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             // Filter by asset pair
             var orderBooks = _orderBooks.Values.Where(x => x.AssetPair.Name.ToUpper().Trim() == assetPair.ToUpper().Trim()).ToList();
+            
+            // Filter by actuality
+            if (withSuffixOnly)
+            {
+                orderBooks = orderBooks.Where(x => x.Source.Contains(_exchangesNamesSuffix)).ToList();    
+            }
 
             var uniqueExchanges = orderBooks.Select(x => x.Source).Distinct().OrderBy(x => x).ToList();
 
-            var matrixSide = uniqueExchanges.Count;
-            result.Value = new(OrderBook ask, OrderBook bid)[matrixSide, matrixSide];
-            for (var i1 = 0; i1 < matrixSide; i1++)
+            if (withSuffixOnly)
             {
-                var exchange1 = uniqueExchanges[i1];
-                for (var i2 = 0; i2 < matrixSide; i2++)
+                uniqueExchanges.ForEach(x => x.Replace(_exchangesNamesSuffix, ""));
+            }
+
+            var matrixSide = uniqueExchanges.Count;
+            for (var row = 0; row < matrixSide; row++)
+            {
+                var cellRow = new List<MatrixCell>();
+                var orderBookRow = orderBooks[row];
+                var isActual = (DateTime.UtcNow - orderBookRow.Timestamp).TotalSeconds < _expirationTimeInSeconds;
+
+                result.Exchanges.Add(new Exchange(orderBooks[row].Source, isActual));
+                result.Asks.Add(orderBookRow.BestAsk?.Price);
+                
+                for (var col = 0; col < matrixSide; col++)
                 {
-                    var exchange2 = uniqueExchanges[i2];
+                    var orderBookCol = orderBooks[col];
+                    
+                    if (row == 0)
+                        result.Bids.Add(orderBookCol.BestBid?.Price);
 
-                    var orderBook1 = orderBooks.Single(x => x.Source == exchange1);
-                    var orderBook2 = orderBooks.Single(x => x.Source == exchange2);
+                    // The same exchanges
+                    if (row == col)
+                    {
+                        cellRow.Add(null);
+                        continue;
+                    }
 
-                    result.Value[i1, i2] = (orderBook1, orderBook2);
+                    MatrixCell matrixCell;
+                    if (orderBookRow.BestAsk == null || orderBookCol.BestBid == null)
+                    {
+                        matrixCell = new MatrixCell(null, null);
+                        cellRow.Add(matrixCell);
+                        continue;
+                    }
+
+                    var spread = (orderBookRow.BestAsk.Value.Price - orderBookCol.BestBid.Value.Price) / orderBookCol.BestBid.Value.Price * 100;
+                    matrixCell = new MatrixCell(spread, null);
+                    cellRow.Add(matrixCell);
                 }
+
+                // row ends
+                result.Cells.Add(cellRow);
             }
 
             return result;
@@ -621,6 +659,23 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
 
             _restartNeeded = restartNeeded;
+        }
+
+        // For lykke.com
+
+        public Matrix GetPublicMatrix(string assetPair)
+        {
+            return GetMatrix(assetPair, true);
+        }
+
+        public IEnumerable<string> GetPublicMatrixAssetPairs()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetPublicMatrixAssetPairs(IEnumerable<string> assetPairs)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

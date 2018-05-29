@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
@@ -9,7 +10,13 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
     {
         public string AssetPair { get; set; }
 
-        public (OrderBook ask, OrderBook bid)[,] Value { get; set; } = new (OrderBook ask, OrderBook bid)[0, 0];
+        public IList<Exchange> Exchanges { get; set; } = new List<Exchange>();
+
+        public IList<decimal?> Asks { get; set; } = new List<decimal?>();
+
+        public IList<decimal?> Bids { get; set; } = new List<decimal?>();
+
+        public IList<IList<MatrixCell>> Cells { get; set; } = new List<IList<MatrixCell>>();
 
         public Matrix(string assetPair)
         {
