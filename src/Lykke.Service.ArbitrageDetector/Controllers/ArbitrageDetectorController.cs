@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -204,30 +203,8 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 
             try
             {
-                var matrix = _arbitrageDetectorService.GetMatrix(assetPair);
+                var matrix = _arbitrageDetectorService.GetMatrix(assetPair, true);
                 result = new Matrix(matrix);
-
-                var suffix = _startupSettings.ExchangesNamesSuffix;
-
-                // Remove all exchanges without suffix
-                
-                while (true)
-                {
-                    var exchangeToRemove = result.Exchanges.FirstOrDefault(x => !x.Name.ToUpper().Contains(suffix.ToUpper()));
-                    if (exchangeToRemove == null)
-                        break;
-
-                    var exchangeIndex = result.Exchanges.IndexOf(exchangeToRemove);
-                    result.Exchanges.RemoveAt(exchangeIndex);
-                    result.Bids.RemoveAt(exchangeIndex);
-                    result.Asks.RemoveAt(exchangeIndex);
-                    result.Cells.RemoveAt(exchangeIndex);
-                    foreach (var cell in result.Cells)
-                        cell.RemoveAt(exchangeIndex);
-                }
-
-                // Remove suffix from exchanges names
-                result.Exchanges.ForEach(x => x.Name = x.Name.Replace(_startupSettings.ExchangesNamesSuffix, ""));
             }
             catch (Exception exception)
             {

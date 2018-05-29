@@ -30,7 +30,15 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
 
         // Matrix
 
-        Matrix GetMatrix(string assetPair);
+        Matrix GetMatrix(string assetPair, bool withSuffixOnly = false);
+
+        // For lykke.com
+
+        Matrix GetPublicMatrix(string assetPair);
+
+        IEnumerable<string> GetPublicMatrixAssetPairs();
+
+        void SetPublicMatrixAssetPairs(IEnumerable<string> assetPairs);
 
 
         Settings GetSettings();
