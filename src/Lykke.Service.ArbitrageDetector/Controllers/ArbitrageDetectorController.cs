@@ -4,11 +4,9 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Common.Log;
-using Lykke.Service.ArbitrageDetector.Core;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Models;
 using Microsoft.AspNetCore.Mvc;
-using MoreLinq;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using DataOrderBook = Lykke.Service.ArbitrageDetector.Models.OrderBook;
 
@@ -18,14 +16,11 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
     public class ArbitrageDetectorController : Controller
     {
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
-        private readonly StartupSettings _startupSettings;
-
         private readonly ILog _log;
 
-        public ArbitrageDetectorController(IArbitrageDetectorService arbitrageDetectorService, StartupSettings startupSettings, ILog log)
+        public ArbitrageDetectorController(IArbitrageDetectorService arbitrageDetectorService, ILog log)
         {
             _arbitrageDetectorService = arbitrageDetectorService;
-            _startupSettings = startupSettings;
             _log = log;
         }
 

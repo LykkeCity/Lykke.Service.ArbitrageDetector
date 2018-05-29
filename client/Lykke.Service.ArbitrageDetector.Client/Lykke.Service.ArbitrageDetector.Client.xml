@@ -638,12 +638,17 @@
             Wanted exchanges.
             </summary>
         </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.PublicMatrixAssetPairs">
+            <summary>
+            Public matrix asset pairs.
+            </summary>
+        </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor">
             <summary>
             Constructor.
             </summary>
         </member>
-        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor(System.Nullable{System.Int32},System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String},System.String,System.Nullable{System.Int32},System.Collections.Generic.IEnumerable{System.String},System.Nullable{System.Decimal},System.Nullable{System.Decimal})">
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor(System.Nullable{System.Int32},System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String},System.String,System.Nullable{System.Int32},System.Collections.Generic.IEnumerable{System.String},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Collections.Generic.IEnumerable{System.String})">
             <summary>
             Constructor.
             </summary>
@@ -655,6 +660,7 @@
             <param name="exchanges"></param>
             <param name="minimumPnL"></param>
             <param name="minimumVolume"></param>
+            <param name="publicMatrixAssetPairs"></param>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice">
             <summary>

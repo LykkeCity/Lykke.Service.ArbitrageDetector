@@ -48,6 +48,11 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public IEnumerable<string> Exchanges { get; set; }
 
         /// <summary>
+        /// Public matrix asset pairs.
+        /// </summary>
+        public IEnumerable<string> PublicMatrixAssetPairs { get; set; }
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         public Settings()
@@ -65,8 +70,9 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <param name="exchanges"></param>
         /// <param name="minimumPnL"></param>
         /// <param name="minimumVolume"></param>
+        /// <param name="publicMatrixAssetPairs"></param>
         public Settings(int? expirationTimeInSeconds, IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset, int? minSpread,
-            IEnumerable<string> exchanges, decimal? minimumPnL, decimal? minimumVolume)
+            IEnumerable<string> exchanges, decimal? minimumPnL, decimal? minimumVolume, IEnumerable<string> publicMatrixAssetPairs)
         {
             ExpirationTimeInSeconds = expirationTimeInSeconds;
             BaseAssets = baseAssets;
@@ -76,6 +82,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
             Exchanges = exchanges;
             MinimumPnL = minimumPnL;
             MinimumVolume = minimumVolume;
+            PublicMatrixAssetPairs = publicMatrixAssetPairs;
         }
 
         /// <summary>
@@ -84,7 +91,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <param name="settings">Domain model</param>
         public Settings(Core.Settings settings)
             : this(settings.ExpirationTimeInSeconds, settings.BaseAssets, settings.IntermediateAssets, settings.QuoteAsset, settings.MinSpread,
-                settings.Exchanges, settings.MinimumPnL, settings.MinimumVolume)
+                settings.Exchanges, settings.MinimumPnL, settings.MinimumVolume, settings.PublicMatrixAssetPairs)
         {
         }
 
@@ -94,7 +101,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <returns>Domain model</returns>
         public Core.Settings ToModel()
         {
-            var domain = new Core.Settings(ExpirationTimeInSeconds, BaseAssets, IntermediateAssets, QuoteAsset, MinSpread, Exchanges, MinimumPnL, MinimumVolume);
+            var domain = new Core.Settings(ExpirationTimeInSeconds, BaseAssets, IntermediateAssets, QuoteAsset, MinSpread, Exchanges, MinimumPnL, MinimumVolume, PublicMatrixAssetPairs);
 
             return domain;
         }

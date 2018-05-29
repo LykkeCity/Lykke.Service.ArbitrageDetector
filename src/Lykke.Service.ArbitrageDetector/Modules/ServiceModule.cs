@@ -37,10 +37,6 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             builder.RegisterType<ShutdownManager>()
                 .As<IShutdownManager>();
 
-            builder.RegisterInstance(_settings.CurrentValue.Main)
-                .As<StartupSettings>()
-                .SingleInstance();
-
             builder.RegisterType<OrderBookProcessor>()
                 .As<IOrderBookProcessor>()
                 .SingleInstance();

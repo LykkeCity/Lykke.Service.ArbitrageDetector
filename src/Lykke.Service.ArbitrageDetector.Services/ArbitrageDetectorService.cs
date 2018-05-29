@@ -34,6 +34,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private int _minSpread;
         private readonly int _historyMaxSize;
         private string _exchangesNamesSuffix;
+        private IEnumerable<string> _publicMatrixAssetPairs;
 
         private bool _restartNeeded;
         private readonly ILog _log;
@@ -57,6 +58,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _minSpread = settings.MinSpread ?? 0;
             _historyMaxSize = settings.HistoryMaxSize;
             _exchangesNamesSuffix = settings.ExchangesNamesSuffix;
+            _publicMatrixAssetPairs = settings.PublicMatrixAssetPairs;
 
             _log = log;
             shutdownManager?.Register(this);
@@ -542,7 +544,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 orderBooks = orderBooks.Where(x => x.Source.Contains(_exchangesNamesSuffix)).ToList();    
             }
 
-            var uniqueExchanges = orderBooks.Select(x => x.Source).Distinct().OrderBy(x => x).ToList();
+            // Order by exchange name
+            orderBooks = orderBooks.OrderBy(x => x.Source).ToList();
+
+            var uniqueExchanges = orderBooks.Select(x => x.Source).Distinct().ToList();
 
             if (withSuffixOnly)
             {
@@ -595,7 +600,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public Settings GetSettings()
         {
-            return new Settings(_expirationTimeInSeconds, _baseAssets, _intermediateAssets, _quote, _minSpread, _exchanges, _minimumPnL, _minimumVolume);
+            return new Settings(_expirationTimeInSeconds, _baseAssets, _intermediateAssets, _quote, _minSpread, _exchanges, _minimumPnL, _minimumVolume, _publicMatrixAssetPairs);
         }
 
         public void SetSettings(Settings settings)
@@ -658,24 +663,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 restartNeeded = true;
             }
 
+            if (settings.PublicMatrixAssetPairs != null)
+            {
+                _publicMatrixAssetPairs = settings.PublicMatrixAssetPairs.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
+                restartNeeded = true;
+            }
+
             _restartNeeded = restartNeeded;
-        }
-
-        // For lykke.com
-
-        public Matrix GetPublicMatrix(string assetPair)
-        {
-            return GetMatrix(assetPair, true);
-        }
-
-        public IEnumerable<string> GetPublicMatrixAssetPairs()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetPublicMatrixAssetPairs(IEnumerable<string> assetPairs)
-        {
-            throw new NotImplementedException();
         }
 
         #endregion
