@@ -562,7 +562,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 var orderBookRow = orderBooks[row];
                 var isActual = (DateTime.UtcNow - orderBookRow.Timestamp).TotalSeconds < _expirationTimeInSeconds;
 
-                result.Exchanges.Add(new Exchange(orderBooks[row].Source, isActual));
+                result.Exchanges.Add(new Exchange(uniqueExchanges[row], isActual));
                 result.Asks.Add(orderBookRow.BestAsk?.Price);
                 
                 for (var col = 0; col < matrixSide; col++)
