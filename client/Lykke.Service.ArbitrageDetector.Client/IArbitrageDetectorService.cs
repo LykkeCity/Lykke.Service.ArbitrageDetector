@@ -60,10 +60,16 @@ namespace Lykke.Service.ArbitrageDetector.Client
         Task<Matrix> MatrixAsync(string assetPair);
 
         /// <summary>
-        /// Returns arbitrage matrix.
+        /// Returns public arbitrages matrix.
         /// </summary>
         /// <returns>Arbitrage matrix.</returns>
         Task<Matrix> PublicMatrixAsync(string assetPair);
+
+        /// <summary>
+        /// Returns public arbitrages matrix asset pairs.
+        /// </summary>
+        /// <returns>Arbitrage matrix.</returns>
+        Task<IEnumerable<string>> PublicMatrixAssetPairsAsync();
 
         /// <summary>
         /// Get settings.
