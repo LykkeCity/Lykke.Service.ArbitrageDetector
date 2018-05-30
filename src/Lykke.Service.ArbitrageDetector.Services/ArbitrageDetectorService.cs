@@ -33,8 +33,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private decimal _minimumVolume;
         private int _minSpread;
         private readonly int _historyMaxSize;
-        private string _exchangesNamesSuffix;
         private IEnumerable<string> _publicMatrixAssetPairs;
+        private IDictionary<string, string> _publicMatrixExchanges;
 
         private bool _restartNeeded;
         private readonly ILog _log;
@@ -57,8 +57,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _minimumVolume = settings.MinimumVolume ?? 0;
             _minSpread = settings.MinSpread ?? 0;
             _historyMaxSize = settings.HistoryMaxSize;
-            _exchangesNamesSuffix = settings.ExchangesNamesSuffix;
             _publicMatrixAssetPairs = settings.PublicMatrixAssetPairs;
+            _publicMatrixExchanges = settings.PublicMatrixExchanges;
 
             _log = log;
             shutdownManager?.Register(this);
@@ -528,7 +528,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 .ToList();
         }
 
-        public Matrix GetMatrix(string assetPair, bool withSuffixOnly = false)
+        public Matrix GetMatrix(string assetPair, bool isPublic = false)
         {
             if (string.IsNullOrWhiteSpace(assetPair))
                 return null;
@@ -538,10 +538,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
             // Filter by asset pair
             var orderBooks = _orderBooks.Values.Where(x => x.AssetPair.Name.ToUpper().Trim() == assetPair.ToUpper().Trim()).ToList();
             
-            // Filter by actuality
-            if (withSuffixOnly)
+            // Filter by exchanges
+            if (isPublic && _publicMatrixExchanges.Any())
             {
-                orderBooks = orderBooks.Where(x => x.Source.Contains(_exchangesNamesSuffix)).ToList();    
+                orderBooks = orderBooks.Where(x => _publicMatrixExchanges.Keys.Contains(x.Source)).ToList();
             }
 
             // Order by exchange name
@@ -549,9 +549,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             var uniqueExchanges = orderBooks.Select(x => x.Source).Distinct().ToList();
 
-            if (withSuffixOnly)
+            // Raplace exchange names
+            if (isPublic && _publicMatrixExchanges.Any())
             {
-                uniqueExchanges.ForEach(x => x.Replace(_exchangesNamesSuffix, ""));
+                uniqueExchanges = uniqueExchanges.Select(x => x.Replace(x, _publicMatrixExchanges[x])).ToList();
             }
 
             var matrixSide = uniqueExchanges.Count;
@@ -600,7 +601,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public Settings GetSettings()
         {
-            return new Settings(_expirationTimeInSeconds, _baseAssets, _intermediateAssets, _quote, _minSpread, _exchanges, _minimumPnL, _minimumVolume, _publicMatrixAssetPairs);
+            return new Settings(_expirationTimeInSeconds, _baseAssets, _intermediateAssets, _quote, _minSpread, _exchanges, _minimumPnL, _minimumVolume, _publicMatrixAssetPairs, _publicMatrixExchanges);
         }
 
         public void SetSettings(Settings settings)
