@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Lykke.Service.ArbitrageDetector.Client.Models
 {
@@ -54,6 +53,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public IEnumerable<string> PublicMatrixAssetPairs { get; set; }
 
         /// <summary>
+        /// Public matrix exchanges
+        /// </summary>
+        public IDictionary<string, string> PublicMatrixExchanges { get; set; }
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         public Settings()
@@ -72,8 +76,9 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <param name="minimumPnL"></param>
         /// <param name="minimumVolume"></param>
         /// <param name="publicMatrixAssetPairs"></param>
+        /// <param name="publicMatrixExchanges"></param>
         public Settings(int? expirationTimeInSeconds, IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset, int? minSpread,
-            IEnumerable<string> exchanges, decimal? minimumPnL, decimal? minimumVolume, IEnumerable<string> publicMatrixAssetPairs)
+            IEnumerable<string> exchanges, decimal? minimumPnL, decimal? minimumVolume, IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges)
         {
             ExpirationTimeInSeconds = expirationTimeInSeconds;
             BaseAssets = baseAssets;
@@ -84,6 +89,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             MinimumPnL = minimumPnL;
             MinimumVolume = minimumVolume;
             PublicMatrixAssetPairs = publicMatrixAssetPairs;
+            PublicMatrixExchanges = publicMatrixExchanges;
         }
     }
 }

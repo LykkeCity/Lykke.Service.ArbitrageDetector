@@ -151,7 +151,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         {
             var oldSettings = await Client.GetSettingsAsync();
 
-            var settings = new Settings(0, new List<string> { "AUD", "CHF" }, new List<string> { "EUR" }, "BTC", -97, new List<string> { "GDAX" }, 13, 17, new List<string> {"BTCUSD"});
+            var settings = new Settings(0, new List<string> { "AUD", "CHF" }, new List<string> { "EUR" }, "BTC", -97, new List<string> { "GDAX" }, 13, 17, new List<string> {"BTCUSD"}, new Dictionary<string, string>{ {"", ""} });
 
             await Client.SetSettingsAsync(settings);
 
@@ -314,6 +314,24 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             var oldSettings = await Client.GetSettingsAsync();
 
             var settings = new Settings { PublicMatrixAssetPairs = new List<string> { "ABCUSD" } };
+
+            await Client.SetSettingsAsync(settings);
+
+            var newSettings = await Client.GetSettingsAsync();
+            AssertSettigns(settings, newSettings);
+
+            await Client.SetSettingsAsync(oldSettings);
+
+            newSettings = await Client.GetSettingsAsync();
+            AssertSettigns(oldSettings, newSettings);
+        }
+
+        [Fact]
+        public async Task SetSettingsPublicMatrixExchangesTest()
+        {
+            var oldSettings = await Client.GetSettingsAsync();
+            
+            var settings = new Settings { PublicMatrixExchanges = new Dictionary<string, string> { { "Bitfinex(e)", "Bitfinex" } } };
 
             await Client.SetSettingsAsync(settings);
 

@@ -21,11 +21,6 @@ namespace Lykke.Service.ArbitrageDetector.Core
         public int HistoryMaxSize { get; set; }
 
         /// <summary>
-        /// Suffix for GetPublicMatrix() method
-        /// </summary>
-        public string ExchangesNamesSuffix { get; set; }
-
-        /// <summary>
         /// Constructor.
         /// </summary>
         public StartupSettings()
@@ -45,16 +40,15 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// <param name="exchanges"></param>
         /// <param name="minimumPnL"></param>
         /// <param name="minimumVolume"></param>
-        /// <param name="exchangesNamesSuffix"></param>
         /// <param name="publicMatrixAssetPairs"></param>
+        /// <param name="publicMatrixExchanges"></param>
         public StartupSettings(int executionDelayInMilliseconds, int expirationTimeInSeconds, int historyMaxSize, int minSpread,
             IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset,
-            IEnumerable<string> exchanges, decimal? minimumPnL, decimal? minimumVolume, string exchangesNamesSuffix, IEnumerable<string> publicMatrixAssetPairs)
-            : base(expirationTimeInSeconds, baseAssets, intermediateAssets, quoteAsset, minSpread, exchanges, minimumPnL, minimumVolume, publicMatrixAssetPairs)
+            IEnumerable<string> exchanges, decimal? minimumPnL, decimal? minimumVolume, IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges)
+            : base(expirationTimeInSeconds, baseAssets, intermediateAssets, quoteAsset, minSpread, exchanges, minimumPnL, minimumVolume, publicMatrixAssetPairs, publicMatrixExchanges)
         {
             ExecutionDelayInMilliseconds = executionDelayInMilliseconds;
             HistoryMaxSize = historyMaxSize;
-            ExchangesNamesSuffix = exchangesNamesSuffix;
         }
 
     }
@@ -110,6 +104,11 @@ namespace Lykke.Service.ArbitrageDetector.Core
         public IEnumerable<string> PublicMatrixAssetPairs { get; set; }
 
         /// <summary>
+        /// Public matrix exchanges
+        /// </summary>
+        public IDictionary<string, string> PublicMatrixExchanges { get; set; }
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         public Settings()
@@ -128,8 +127,9 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// <param name="minimumPnL"></param>
         /// <param name="minimumVolume"></param>
         /// <param name="publicMatrixAssetPairs"></param>
+        /// <param name="publicMatrixExchanges"></param>
         public Settings(int? expirationTimeInSeconds, IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset, int? minSpread,
-            IEnumerable<string> exchanges, decimal? minimumPnL, decimal? minimumVolume, IEnumerable<string> publicMatrixAssetPairs)
+            IEnumerable<string> exchanges, decimal? minimumPnL, decimal? minimumVolume, IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges)
         {
             ExpirationTimeInSeconds = expirationTimeInSeconds;
             MinimumPnL = minimumPnL;
@@ -140,6 +140,7 @@ namespace Lykke.Service.ArbitrageDetector.Core
             QuoteAsset = quoteAsset;
             Exchanges = exchanges;
             PublicMatrixAssetPairs = publicMatrixAssetPairs;
+            PublicMatrixExchanges = publicMatrixExchanges;
         }
 
         /// <summary>
@@ -173,6 +174,9 @@ namespace Lykke.Service.ArbitrageDetector.Core
 
             if (PublicMatrixAssetPairs == null)
                 throw new ArgumentOutOfRangeException(nameof(PublicMatrixAssetPairs));
+
+            if (PublicMatrixExchanges == null)
+                throw new ArgumentOutOfRangeException(nameof(PublicMatrixExchanges));
         }
     }
 }
