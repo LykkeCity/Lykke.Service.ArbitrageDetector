@@ -212,6 +212,30 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         }
 
         [HttpGet]
+        [Route("publicMatrix")]
+        [SwaggerOperation("PublicMatrix")]
+        [ProducesResponseType(typeof(IEnumerable<string>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> PublicMatrixAssetPairs()
+        {
+            IEnumerable<string> result;
+
+            try
+            {
+                var settings = _arbitrageDetectorService.GetSettings();
+                result = settings.PublicMatrixAssetPairs;
+            }
+            catch (Exception exception)
+            {
+                await _log.WriteErrorAsync(GetType().Name, nameof(Matrix), exception);
+
+                return BadRequest(ErrorResponse.Create(exception.Message));
+            }
+
+            return Ok(result);
+        }
+
+        [HttpGet]
         [Route("getSettings")]
         [SwaggerOperation("GetSettings")]
         [ProducesResponseType(typeof(Models.Settings), (int)HttpStatusCode.OK)]

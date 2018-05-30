@@ -137,6 +137,31 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         }
 
         [Fact]
+        public async Task PublicMatrixTest()
+        {
+            var matrix = await Client.PublicMatrixAsync("BTCUSD");
+            Assert.NotNull(matrix);
+
+            Assert.NotEmpty(matrix.AssetPair);
+            Assert.NotEmpty(matrix.Bids);
+            Assert.NotEmpty(matrix.Asks);
+            Assert.NotEmpty(matrix.Exchanges);
+            Assert.NotEmpty(matrix.Cells);
+
+            Assert.Equal(matrix.Bids.Count, matrix.Asks.Count);
+            Assert.Equal(matrix.Exchanges.Count, matrix.Asks.Count);
+            Assert.Equal(matrix.Cells.Count, matrix.Asks.Count);
+            Assert.Equal(matrix.Cells[0].Count, matrix.Asks.Count);
+        }
+
+        [Fact]
+        public async Task PublicMatrixAssetPairsTest()
+        {
+            var assetPairs = await Client.PublicMatrixAssetPairsAsync();
+            Assert.NotNull(assetPairs);
+        }
+
+        [Fact]
         public async Task GetSettignsTest()
         {
             var settings = await Client.GetSettingsAsync();
