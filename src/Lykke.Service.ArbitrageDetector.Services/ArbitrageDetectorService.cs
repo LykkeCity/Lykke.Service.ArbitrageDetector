@@ -725,6 +725,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 restartNeeded = true;
             }
 
+            if (settings.PublicMatrixExchanges!= null)
+            {
+                _publicMatrixExchanges = settings.PublicMatrixExchanges;
+                restartNeeded = true;
+            }
+
             _restartNeeded = restartNeeded;
         }
 
