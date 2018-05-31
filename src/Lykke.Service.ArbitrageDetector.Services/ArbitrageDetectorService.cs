@@ -722,13 +722,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
             if (settings.PublicMatrixAssetPairs != null)
             {
                 _publicMatrixAssetPairs = settings.PublicMatrixAssetPairs.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
-                restartNeeded = true;
             }
 
             if (settings.PublicMatrixExchanges!= null)
             {
                 _publicMatrixExchanges = settings.PublicMatrixExchanges;
-                restartNeeded = true;
             }
 
             _restartNeeded = restartNeeded;
