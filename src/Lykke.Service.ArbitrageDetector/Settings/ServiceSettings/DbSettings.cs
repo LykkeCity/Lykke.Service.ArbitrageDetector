@@ -6,5 +6,8 @@ namespace Lykke.Service.ArbitrageDetector.Settings.ServiceSettings
     {
         [AzureTableCheck]
         public string LogsConnectionString { get; set; }
+
+        [AzureTableCheck]
+        public string DataConnectionString { get; set; }
     }
 }

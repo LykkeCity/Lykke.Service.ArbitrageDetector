@@ -6,12 +6,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
-using Lykke.Service.ArbitrageDetector.Core;
+using Lykke.Service.ArbitrageDetector.AzureRepositories;
 using Lykke.Service.ArbitrageDetector.Core.Utils;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Services.Models;
 using MoreLinq;
+using Settings = Lykke.Service.ArbitrageDetector.Core.Settings;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
@@ -22,43 +23,22 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrages;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrageHistory;
 
-        #region Settings
+        private ISettingsRepository SettingsRepository { get; set; }
 
-        private IEnumerable<string> _baseAssets;
-        private IEnumerable<string> _intermediateAssets;
-        private string _quote;
-        private IEnumerable<string> _exchanges;
-        private int _expirationTimeInSeconds;
-        private decimal _minimumPnL;
-        private decimal _minimumVolume;
-        private int _minSpread;
-        private readonly int _historyMaxSize;
-        private IEnumerable<string> _publicMatrixAssetPairs;
-        private IDictionary<string, string> _publicMatrixExchanges;
+        private readonly Settings _s;
 
         private bool _restartNeeded;
         private readonly ILog _log;
 
-        #endregion
 
-        public ArbitrageDetectorService(StartupSettings settings, ILog log, IShutdownManager shutdownManager)
+        public ArbitrageDetectorService(Settings settings, ILog log, IShutdownManager shutdownManager)
             : base(settings.ExecutionDelayInMilliseconds, log)
         {
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
             settings.Validate();
 
-            _baseAssets = settings.BaseAssets;
-            _intermediateAssets = settings.IntermediateAssets;
-            _quote = settings.QuoteAsset;
-            _exchanges = settings.Exchanges;
-            _expirationTimeInSeconds = settings.ExpirationTimeInSeconds ?? 10;
-            _minimumPnL = settings.MinimumPnL ?? 0;
-            _minimumVolume = settings.MinimumVolume ?? 0;
-            _minSpread = settings.MinSpread ?? 0;
-            _historyMaxSize = settings.HistoryMaxSize;
-            _publicMatrixAssetPairs = settings.PublicMatrixAssetPairs;
-            _publicMatrixExchanges = settings.PublicMatrixExchanges;
+            _s = settings;
 
             _log = log;
             shutdownManager?.Register(this);
@@ -73,9 +53,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
         public void Process(OrderBook orderBook)
         {
             var assets = new List<string>();
-            assets.Add(_quote);
-            assets.AddRange(_baseAssets);
-            assets.AddRange(_intermediateAssets);
+            assets.Add(_s.QuoteAsset);
+            assets.AddRange(_s.BaseAssets);
+            assets.AddRange(_s.IntermediateAssets);
 
             foreach (var asset in assets)
             {
@@ -96,7 +76,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             await CalculateCrossRates();
             await RefreshArbitrages();                                        
 
-            RestartIfNeeded();
+            await RestartIfNeeded();
         }
 
         public async Task<IEnumerable<CrossRate>> CalculateCrossRates()
@@ -106,7 +86,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var newActualCrossRates = new Dictionary<AssetPairSource, CrossRate>();
             var wantedActualOrderBooks = GetWantedActualOrderBooks();
 
-            foreach (var @base in _baseAssets)
+            foreach (var @base in _s.BaseAssets)
             {
                 var baseAssetKeys = wantedActualOrderBooks.Keys.Where(x => x.AssetPair.ContainsAsset(@base)).ToList();
                 foreach (var baseAssetkey in baseAssetKeys)
@@ -122,13 +102,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         : wantedIntermediate.Base;
 
                     // If settings contains any and current intermediate not in the settings then ignore
-                    if (_intermediateAssets.Any() && !_intermediateAssets.Contains(intermediate))
+                    if (_s.IntermediateAssets.Any() && !_s.IntermediateAssets.Contains(intermediate))
                         continue;
 
                     // If original wanted/base or base/wanted pair then just save it
-                    if (intermediate == _quote)
+                    if (intermediate == _s.QuoteAsset)
                     {
-                        var intermediateBaseCrossRate = CrossRate.FromOrderBook(baseOrderBook, new AssetPair(@base, _quote));
+                        var intermediateBaseCrossRate = CrossRate.FromOrderBook(baseOrderBook, new AssetPair(@base, _s.QuoteAsset));
 
                         var key = new AssetPairSource(intermediateBaseCrossRate.ConversionPath, intermediateBaseCrossRate.AssetPair);
                         newActualCrossRates[key] = intermediateBaseCrossRate;
@@ -138,7 +118,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                     // Trying to find intermediate/base or base/intermediate pair from any exchange
                     var intermediateBaseKeys = wantedActualOrderBooks.Keys
-                        .Where(x => x.AssetPair.ContainsAsset(intermediate) && x.AssetPair.ContainsAsset(_quote))
+                        .Where(x => x.AssetPair.ContainsAsset(intermediate) && x.AssetPair.ContainsAsset(_s.QuoteAsset))
                         .ToList();
 
                     foreach (var intermediateBaseKey in intermediateBaseKeys)
@@ -147,7 +127,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var baseIntermediateOrderBook = baseOrderBook;
                         var intermediateBaseOrderBook = wantedActualOrderBooks[intermediateBaseKey];
 
-                        var targetAssetPair = new AssetPair(@base, _quote);
+                        var targetAssetPair = new AssetPair(@base, _s.QuoteAsset);
                         var crossRate = CrossRate.FromOrderBooks(baseIntermediateOrderBook, intermediateBaseOrderBook, targetAssetPair);
 
                         var key = new AssetPairSource(crossRate.ConversionPath, crossRate.AssetPair);
@@ -186,12 +166,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
             {
                 bids.AddRange(
                     crossRate.Bids
-                        .Where(x => x.Price > minAsk && (_minimumVolume == 0 || x.Volume >= _minimumVolume))
+                        .Where(x => x.Price > minAsk && (_s.MinimumVolume == 0 || x.Volume >= _s.MinimumVolume))
                         .Select(x => new CrossRateLine(crossRate, x)));
 
                 asks.AddRange(
                     crossRate.Asks
-                        .Where(x => x.Price < maxBid && (_minimumVolume == 0 || x.Volume >= _minimumVolume))
+                        .Where(x => x.Price < maxBid && (_s.MinimumVolume == 0 || x.Volume >= _s.MinimumVolume))
                         .Select(x => new CrossRateLine(crossRate, x)));
             }
 
@@ -247,14 +227,14 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         possibleArbitrages++;
 
                         var spread = Arbitrage.GetSpread(bidPrice, askPrice);
-                        if (_minSpread < 0 && spread < _minSpread)
+                        if (_s.MinSpread < 0 && spread < _s.MinSpread)
                             continue;
 
                         var bidVolume = bid.Volume;
                         var askVolume = ask.Volume;
                         var volume = askVolume < bidVolume ? askVolume : bidVolume;
                         var pnL = Arbitrage.GetPnL(bidPrice, askPrice, volume);
-                        if (_minimumPnL > 0 && pnL < _minimumPnL)
+                        if (_s.MinimumPnL > 0 && pnL < _s.MinimumPnL)
                             continue;
 
                         var key = Arbitrage.FormatConversionPath(bid.CrossRate.ConversionPath, ask.CrossRate.ConversionPath);
@@ -344,7 +324,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             {
                 _arbitrageHistory.Where(x => x.Value.AssetPair.Equals(assetPair))
                     .OrderByDescending(x => x.Value.PnL)
-                    .Take(_historyMaxSize)
+                    .Take(_s.HistoryMaxSize)
                     .ForEach(x => remained.Add(x.Key, x.Value));
             }
 
@@ -360,22 +340,22 @@ namespace Lykke.Service.ArbitrageDetector.Services
             foreach (var keyValue in _orderBooks)
             {
                 // Filter by exchanges
-                if (_exchanges.Any() && !_exchanges.Contains(keyValue.Key.Exchange))
+                if (_s.Exchanges.Any() && !_s.Exchanges.Contains(keyValue.Key.Exchange))
                     continue;
 
                 // Filter by base, quote and intermediate assets
                 var assetPair = keyValue.Key.AssetPair;
-                var passed = (_baseAssets.Contains(assetPair.Base)
-                  || _baseAssets.Contains(assetPair.Quote)
-                  || assetPair.ContainsAsset(_quote))
-                 && (!_intermediateAssets.Any()
-                  || (_intermediateAssets.Contains(assetPair.Base)
-                  ||  _intermediateAssets.Contains(assetPair.Quote)));
+                var passed = (_s.BaseAssets.Contains(assetPair.Base)
+                  || _s.BaseAssets.Contains(assetPair.Quote)
+                  || assetPair.ContainsAsset(_s.QuoteAsset))
+                 && (!_s.IntermediateAssets.Any()
+                  || (_s.IntermediateAssets.Contains(assetPair.Base)
+                  || _s.IntermediateAssets.Contains(assetPair.Quote)));
                 if (!passed)
                     continue;
 
                 // Filter by expiration time
-                if (DateTime.UtcNow - keyValue.Value.Timestamp < new TimeSpan(0, 0, 0, _expirationTimeInSeconds))
+                if (DateTime.UtcNow - keyValue.Value.Timestamp < new TimeSpan(0, 0, 0, _s.ExpirationTimeInSeconds))
                 {
                     result.Add(keyValue.Key, keyValue.Value);
                 }
@@ -390,7 +370,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             foreach (var crossRate in _crossRates)
             {
-                if (DateTime.UtcNow - crossRate.Value.Timestamp < new TimeSpan(0, 0, 0, _expirationTimeInSeconds))
+                if (DateTime.UtcNow - crossRate.Value.Timestamp < new TimeSpan(0, 0, 0, _s.ExpirationTimeInSeconds))
                 {
                     result.Add(crossRate.Value);
                 }
@@ -539,9 +519,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var orderBooks = _orderBooks.Values.Where(x => x.AssetPair.Name.ToUpper().Trim() == assetPair.ToUpper().Trim()).ToList();
             
             // Filter by exchanges
-            if (isPublic && _publicMatrixExchanges.Any())
+            if (isPublic && _s.PublicMatrixExchanges.Any())
             {
-                orderBooks = orderBooks.Where(x => _publicMatrixExchanges.Keys.Contains(x.Source)).ToList();
+                orderBooks = orderBooks.Where(x => _s.PublicMatrixExchanges.Keys.Contains(x.Source)).ToList();
             }
 
             // Order by exchange name
@@ -550,9 +530,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var uniqueExchanges = orderBooks.Select(x => x.Source).Distinct().ToList();
 
             // Raplace exchange names
-            if (isPublic && _publicMatrixExchanges.Any())
+            if (isPublic && _s.PublicMatrixExchanges.Any())
             {
-                uniqueExchanges = uniqueExchanges.Select(x => x.Replace(x, _publicMatrixExchanges[x])).ToList();
+                uniqueExchanges = uniqueExchanges.Select(x => x.Replace(x, _s.PublicMatrixExchanges[x])).ToList();
             }
 
             var matrixSide = uniqueExchanges.Count;
@@ -560,7 +540,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             {
                 var cellRow = new List<MatrixCell>();
                 var orderBookRow = orderBooks[row];
-                var isActual = (DateTime.UtcNow - orderBookRow.Timestamp).TotalSeconds < _expirationTimeInSeconds;
+                var isActual = (DateTime.UtcNow - orderBookRow.Timestamp).TotalSeconds < _s.ExpirationTimeInSeconds;
 
                 result.Exchanges.Add(new Exchange(uniqueExchanges[row], isActual));
                 result.Asks.Add(orderBookRow.BestAsk?.Price);
@@ -601,7 +581,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public Settings GetSettings()
         {
-            return new Settings(_expirationTimeInSeconds, _baseAssets, _intermediateAssets, _quote, _minSpread, _exchanges, _minimumPnL, _minimumVolume, _publicMatrixAssetPairs, _publicMatrixExchanges);
+            return _s;
         }
 
         public void SetSettings(Settings settings)
@@ -611,67 +591,71 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             var restartNeeded = false;
 
-            if (settings.ExpirationTimeInSeconds != null)
+            settings.ExpirationTimeInSeconds = settings.ExpirationTimeInSeconds < 0 ? 0 : settings.ExpirationTimeInSeconds;
+            if (_s.ExpirationTimeInSeconds != settings.ExpirationTimeInSeconds)
             {
-                _expirationTimeInSeconds = settings.ExpirationTimeInSeconds.Value;
+                _s.ExpirationTimeInSeconds = settings.ExpirationTimeInSeconds;
                 restartNeeded = true;
             }
 
-            if (settings.MinimumPnL != null)
+            settings.MinimumPnL = settings.MinimumPnL < 0 ? 0 : settings.MinimumPnL;
+            if (_s.MinimumPnL != settings.MinimumPnL)
             {
-                _minimumPnL = settings.MinimumPnL.Value;
+                _s.MinimumPnL = settings.MinimumPnL;
                 restartNeeded = true;
             }
 
-            if (settings.MinimumVolume != null)
+            settings.MinimumVolume = settings.MinimumVolume < 0 ? 0 : settings.MinimumVolume;
+            if (_s.MinimumVolume != settings.MinimumVolume)
             {
-                _minimumVolume = settings.MinimumVolume.Value;
+                _s.MinimumVolume = settings.MinimumVolume;
                 restartNeeded = true;
             }
 
-            if (settings.IntermediateAssets != null)
+            settings.MinSpread = settings.MinSpread < 0 ? 0 : settings.MinSpread;
+            if (_s.MinSpread != settings.MinSpread)
             {
-                _intermediateAssets = settings.IntermediateAssets.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
-                restartNeeded = true;
-            }
-
-            if (settings.BaseAssets != null)
-            {
-                _baseAssets = settings.BaseAssets.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
-                restartNeeded = true;
-            }
-
-            if (!string.IsNullOrWhiteSpace(settings.QuoteAsset))
-            {
-                _quote = settings.QuoteAsset.Trim();
-                restartNeeded = true;
-            }
-
-            if (settings.Exchanges != null)
-            {
-                _exchanges = settings.Exchanges.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
-                restartNeeded = true;
-            }
-
-            if (settings.MinSpread != null)
-            {
-                var minSpread = settings.MinSpread.Value;
+                var minSpread = settings.MinSpread;
 
                 if (minSpread >= 0 || minSpread < -100)
                     minSpread = 0;
 
-                _minSpread = minSpread;
+                _s.MinSpread = minSpread;
                 restartNeeded = true;
             }
 
-            if (settings.PublicMatrixAssetPairs != null)
+            if (settings.IntermediateAssets != null && !_s.IntermediateAssets.SequenceEqual(settings.IntermediateAssets))
             {
-                _publicMatrixAssetPairs = settings.PublicMatrixAssetPairs.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
+                _s.IntermediateAssets = settings.IntermediateAssets.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
+                restartNeeded = true;
             }
 
-            if (settings.PublicMatrixExchanges!= null)
+            if (settings.BaseAssets != null && !_s.BaseAssets.SequenceEqual(settings.BaseAssets))
             {
-                _publicMatrixExchanges = settings.PublicMatrixExchanges;
+                _s.BaseAssets = settings.BaseAssets.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
+                restartNeeded = true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(settings.QuoteAsset) && _s.QuoteAsset != settings.QuoteAsset)
+            {
+                _s.QuoteAsset = settings.QuoteAsset.Trim();
+                restartNeeded = true;
+            }
+
+            if (settings.Exchanges != null && !_s.Exchanges.SequenceEqual(settings.Exchanges))
+            {
+                _s.Exchanges = settings.Exchanges.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
+                restartNeeded = true;
+            }
+
+            if (settings.PublicMatrixAssetPairs != null && !_s.PublicMatrixAssetPairs.SequenceEqual(settings.PublicMatrixAssetPairs))
+            {
+                _s.PublicMatrixAssetPairs = settings.PublicMatrixAssetPairs.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
+            }
+
+            if (settings.PublicMatrixExchanges != null && !_s.PublicMatrixExchanges.SequenceEqual(settings.PublicMatrixExchanges))
+            {
+                _s.PublicMatrixExchanges = settings.PublicMatrixExchanges;
             }
 
             _restartNeeded = restartNeeded;

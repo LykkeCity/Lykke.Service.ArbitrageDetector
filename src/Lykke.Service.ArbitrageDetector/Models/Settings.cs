@@ -8,24 +8,34 @@ namespace Lykke.Service.ArbitrageDetector.Models
     public class Settings
     {
         /// <summary>
+        /// Arbitrage calculating execution delay in milliseconds.
+        /// </summary>
+        public int ExecutionDelayInMilliseconds { get; set; }
+
+        /// <summary>
+        /// Maximum length of the history of arbitrages.
+        /// </summary>
+        public int HistoryMaxSize { get; set; }
+
+        /// <summary>
         /// Expiration time in milliseconds for order books and cross rates.
         /// </summary>
-        public int? ExpirationTimeInSeconds { get; set; }
+        public int ExpirationTimeInSeconds { get; set; }
 
         /// <summary>
         /// Minimum PnL.
         /// </summary>
-        public decimal? MinimumPnL { get; set; }
+        public decimal MinimumPnL { get; set; }
 
         /// <summary>
         /// Minimum volume.
         /// </summary>
-        public decimal? MinimumVolume { get; set; }
+        public decimal MinimumVolume { get; set; }
 
         /// <summary>
         /// Minimum spread.
         /// </summary>
-        public int? MinSpread { get; set; }
+        public int MinSpread { get; set; }
 
         /// <summary>
         /// Wanted base assets.
@@ -67,27 +77,32 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Constructor.
         /// </summary>
+        /// <param name="executionDelayInMilliseconds"></param>
+        /// <param name="historyMaxSize"></param>
         /// <param name="expirationTimeInSeconds"></param>
         /// <param name="baseAssets"></param>
-        /// <param name="quoteAsset"></param>
         /// <param name="intermediateAssets"></param>
+        /// <param name="quoteAsset"></param>
         /// <param name="minSpread"></param>
         /// <param name="exchanges"></param>
         /// <param name="minimumPnL"></param>
         /// <param name="minimumVolume"></param>
         /// <param name="publicMatrixAssetPairs"></param>
         /// <param name="publicMatrixExchanges"></param>
-        public Settings(int? expirationTimeInSeconds, IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset, int? minSpread,
-            IEnumerable<string> exchanges, decimal? minimumPnL, decimal? minimumVolume, IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges)
+        public Settings(int executionDelayInMilliseconds, int historyMaxSize, int expirationTimeInSeconds, IEnumerable<string> baseAssets,
+            IEnumerable<string> intermediateAssets, string quoteAsset, int minSpread, IEnumerable<string> exchanges, decimal minimumPnL, decimal minimumVolume,
+            IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges)
         {
+            ExecutionDelayInMilliseconds = executionDelayInMilliseconds;
+            HistoryMaxSize = historyMaxSize;
             ExpirationTimeInSeconds = expirationTimeInSeconds;
+            MinimumPnL = minimumPnL;
+            MinimumVolume = minimumVolume;
+            MinSpread = minSpread;
             BaseAssets = baseAssets;
             IntermediateAssets = intermediateAssets;
             QuoteAsset = quoteAsset;
-            MinSpread = minSpread;
             Exchanges = exchanges;
-            MinimumPnL = minimumPnL;
-            MinimumVolume = minimumVolume;
             PublicMatrixAssetPairs = publicMatrixAssetPairs;
             PublicMatrixExchanges = publicMatrixExchanges;
         }
@@ -97,8 +112,9 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// </summary>
         /// <param name="settings">Domain model</param>
         public Settings(Core.Settings settings)
-            : this(settings.ExpirationTimeInSeconds, settings.BaseAssets, settings.IntermediateAssets, settings.QuoteAsset, settings.MinSpread,
-                settings.Exchanges, settings.MinimumPnL, settings.MinimumVolume, settings.PublicMatrixAssetPairs, settings.PublicMatrixExchanges)
+            : this(settings.ExecutionDelayInMilliseconds, settings.HistoryMaxSize, settings.ExpirationTimeInSeconds, settings.BaseAssets,
+                settings.IntermediateAssets, settings.QuoteAsset, settings.MinSpread, settings.Exchanges, settings.MinimumPnL, settings.MinimumVolume,
+                settings.PublicMatrixAssetPairs, settings.PublicMatrixExchanges)
         {
         }
 
@@ -108,7 +124,8 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <returns>Domain model</returns>
         public Core.Settings ToModel()
         {
-            var domain = new Core.Settings(ExpirationTimeInSeconds, BaseAssets, IntermediateAssets, QuoteAsset, MinSpread, Exchanges, MinimumPnL, MinimumVolume, PublicMatrixAssetPairs, PublicMatrixExchanges);
+            var domain = new Core.Settings(ExecutionDelayInMilliseconds, HistoryMaxSize, ExpirationTimeInSeconds, BaseAssets, IntermediateAssets, QuoteAsset,
+                MinSpread, Exchanges, MinimumPnL, MinimumVolume, PublicMatrixAssetPairs, PublicMatrixExchanges);
 
             return domain;
         }
