@@ -8,11 +8,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
     public class Settings
     {
         /// <summary>
-        /// Arbitrage calculating execution delay in milliseconds.
-        /// </summary>
-        public int ExecutionDelayInMilliseconds { get; set; }
-
-        /// <summary>
         /// Maximum length of the history of arbitrages.
         /// </summary>
         public int HistoryMaxSize { get; set; }
@@ -77,7 +72,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="executionDelayInMilliseconds"></param>
         /// <param name="historyMaxSize"></param>
         /// <param name="expirationTimeInSeconds"></param>
         /// <param name="baseAssets"></param>
@@ -89,11 +83,10 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <param name="minimumVolume"></param>
         /// <param name="publicMatrixAssetPairs"></param>
         /// <param name="publicMatrixExchanges"></param>
-        public Settings(int executionDelayInMilliseconds, int historyMaxSize, int expirationTimeInSeconds, IEnumerable<string> baseAssets,
+        public Settings(int historyMaxSize, int expirationTimeInSeconds, IEnumerable<string> baseAssets,
             IEnumerable<string> intermediateAssets, string quoteAsset, int minSpread, IEnumerable<string> exchanges, decimal minimumPnL, decimal minimumVolume,
             IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges)
         {
-            ExecutionDelayInMilliseconds = executionDelayInMilliseconds;
             HistoryMaxSize = historyMaxSize;
             ExpirationTimeInSeconds = expirationTimeInSeconds;
             MinimumPnL = minimumPnL;

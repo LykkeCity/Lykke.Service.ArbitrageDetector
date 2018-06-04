@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
-using Lykke.Service.ArbitrageDetector.Core;
 
-namespace Lykke.Service.ArbitrageDetector.AzureRepositories
+namespace Lykke.Service.ArbitrageDetector.Core.Repositories
 {
     public interface ISettingsRepository
     {

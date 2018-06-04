@@ -4,10 +4,7 @@ namespace Lykke.Service.ArbitrageDetector.Core
 {
     public interface ISettings
     {
-        int ExecutionDelayInMilliseconds { get; set; }
-
         int HistoryMaxSize { get; set; }
-
 
         int ExpirationTimeInSeconds { get; set; }
 

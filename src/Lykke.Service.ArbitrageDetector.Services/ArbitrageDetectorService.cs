@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 using Common;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.AzureRepositories;
+using Lykke.Service.ArbitrageDetector.Core;
 using Lykke.Service.ArbitrageDetector.Core.Utils;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
+using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Services.Models;
 using MoreLinq;
@@ -22,31 +24,38 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ConcurrentDictionary<AssetPairSource, CrossRate> _crossRates;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrages;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrageHistory;
-
-        private ISettingsRepository SettingsRepository { get; set; }
-
-        private readonly Settings _s;
-
         private bool _restartNeeded;
+        private ISettings _s;
         private readonly ILog _log;
+        private readonly ISettingsRepository _settingsRepository;
 
 
-        public ArbitrageDetectorService(Settings settings, ILog log, IShutdownManager shutdownManager)
-            : base(settings.ExecutionDelayInMilliseconds, log)
+        public ArbitrageDetectorService(ILog log, IShutdownManager shutdownManager, ISettingsRepository settingsRepository)
+            : base(100, log)
         {
-            if (settings == null)
-                throw new ArgumentNullException(nameof(settings));
-            settings.Validate();
-
-            _s = settings;
-
-            _log = log;
-            shutdownManager?.Register(this);
-
             _orderBooks = new ConcurrentDictionary<AssetPairSource, OrderBook>();
             _crossRates = new ConcurrentDictionary<AssetPairSource, CrossRate>();
             _arbitrages = new ConcurrentDictionary<string, Arbitrage>();
             _arbitrageHistory = new ConcurrentDictionary<string, Arbitrage>();
+
+            _log = log;
+            shutdownManager?.Register(this);
+            _settingsRepository = settingsRepository;
+
+            Task.Run(InitSettings).Wait();
+        }
+
+        private async Task InitSettings()
+        {
+            var dbSettings = await _settingsRepository.GetAsync();
+
+            if (dbSettings == null)
+            {
+                dbSettings = Settings.Default;
+                await _settingsRepository.InsertOrReplaceAsync(Settings.Default);
+            }
+
+            _s = dbSettings;
         }
 
 
@@ -579,12 +588,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return result;
         }
 
-        public Settings GetSettings()
+        public ISettings GetSettings()
         {
             return _s;
         }
 
-        public void SetSettings(Settings settings)
+        public async void SetSettings(ISettings settings)
         {
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
@@ -657,6 +666,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
             {
                 _s.PublicMatrixExchanges = settings.PublicMatrixExchanges;
             }
+
+            await _settingsRepository.InsertOrReplaceAsync(_s);
 
             _restartNeeded = restartNeeded;
         }

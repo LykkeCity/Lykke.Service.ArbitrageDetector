@@ -7,8 +7,6 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories
 {
     public class Settings : AzureTableEntity, ISettings
     {
-        public int ExecutionDelayInMilliseconds { get; set; }
-
         public int HistoryMaxSize { get; set; }
 
         public int ExpirationTimeInSeconds { get; set; }
@@ -44,7 +42,6 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories
         {
             PartitionKey = "";
             RowKey = "";
-            ExecutionDelayInMilliseconds = domain.ExecutionDelayInMilliseconds;
             HistoryMaxSize = domain.HistoryMaxSize;
             ExpirationTimeInSeconds = domain.ExpirationTimeInSeconds;
             MinimumPnL = domain.MinimumPnL;

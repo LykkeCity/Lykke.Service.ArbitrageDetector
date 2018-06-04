@@ -601,11 +601,6 @@
             Represents settings of Arbitrage Detector Service.
             </summary>
         </member>
-        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.ExecutionDelayInMilliseconds">
-            <summary>
-            Arbitrage calculating execution delay in milliseconds.
-            </summary>
-        </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.HistoryMaxSize">
             <summary>
             Maximum length of the history of arbitrages.
@@ -666,11 +661,10 @@
             Constructor.
             </summary>
         </member>
-        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor(System.Int32,System.Int32,System.Int32,System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String},System.String,System.Int32,System.Collections.Generic.IEnumerable{System.String},System.Decimal,System.Decimal,System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IDictionary{System.String,System.String})">
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor(System.Int32,System.Int32,System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String},System.String,System.Int32,System.Collections.Generic.IEnumerable{System.String},System.Decimal,System.Decimal,System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IDictionary{System.String,System.String})">
             <summary>
             Constructor.
             </summary>
-            <param name="executionDelayInMilliseconds"></param>
             <param name="historyMaxSize"></param>
             <param name="expirationTimeInSeconds"></param>
             <param name="baseAssets"></param>
