@@ -119,6 +119,49 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         }
 
         [Fact]
+        public async Task MatrixTest()
+        {
+            var matrix = await Client.MatrixAsync("BTCUSD");
+            Assert.NotNull(matrix);
+
+            Assert.NotEmpty(matrix.AssetPair);
+            Assert.NotEmpty(matrix.Bids);
+            Assert.NotEmpty(matrix.Asks);
+            Assert.NotEmpty(matrix.Exchanges);
+            Assert.NotEmpty(matrix.Cells);
+
+            Assert.Equal(matrix.Bids.Count, matrix.Asks.Count);
+            Assert.Equal(matrix.Exchanges.Count, matrix.Asks.Count);
+            Assert.Equal(matrix.Cells.Count, matrix.Asks.Count);
+            Assert.Equal(matrix.Cells[0].Count, matrix.Asks.Count);
+        }
+
+        [Fact]
+        public async Task PublicMatrixTest()
+        {
+            var matrix = await Client.PublicMatrixAsync("BTCUSD");
+            Assert.NotNull(matrix);
+
+            Assert.NotEmpty(matrix.AssetPair);
+            Assert.NotEmpty(matrix.Bids);
+            Assert.NotEmpty(matrix.Asks);
+            Assert.NotEmpty(matrix.Exchanges);
+            Assert.NotEmpty(matrix.Cells);
+
+            Assert.Equal(matrix.Bids.Count, matrix.Asks.Count);
+            Assert.Equal(matrix.Exchanges.Count, matrix.Asks.Count);
+            Assert.Equal(matrix.Cells.Count, matrix.Asks.Count);
+            Assert.Equal(matrix.Cells[0].Count, matrix.Asks.Count);
+        }
+
+        [Fact]
+        public async Task PublicMatrixAssetPairsTest()
+        {
+            var assetPairs = await Client.PublicMatrixAssetPairsAsync();
+            Assert.NotNull(assetPairs);
+        }
+
+        [Fact]
         public async Task GetSettignsTest()
         {
             var settings = await Client.GetSettingsAsync();
@@ -133,7 +176,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         {
             var oldSettings = await Client.GetSettingsAsync();
 
-            var settings = new Settings(0, new List<string> { "AUD", "CHF" }, new List<string> { "EUR" }, "BTC", -97, new List<string> { "GDAX" }, 13, 17 );
+            var settings = new Settings(150, 0, new List<string> { "AUD", "CHF" }, new List<string> { "EUR" }, "BTC", -97, new List<string> { "GDAX" }, 13, 17, new List<string> {"BTCUSD"}, new Dictionary<string, string>{ {"", ""} });
 
             await Client.SetSettingsAsync(settings);
 
@@ -289,6 +332,43 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             newSettings = await Client.GetSettingsAsync();
             AssertSettigns(oldSettings, newSettings);
         }
+
+        [Fact]
+        public async Task SetSettingsPublicMatrixAssetPairsTest()
+        {
+            var oldSettings = await Client.GetSettingsAsync();
+
+            var settings = new Settings { PublicMatrixAssetPairs = new List<string> { "ABCUSD" } };
+
+            await Client.SetSettingsAsync(settings);
+
+            var newSettings = await Client.GetSettingsAsync();
+            AssertSettigns(settings, newSettings);
+
+            await Client.SetSettingsAsync(oldSettings);
+
+            newSettings = await Client.GetSettingsAsync();
+            AssertSettigns(oldSettings, newSettings);
+        }
+
+        [Fact]
+        public async Task SetSettingsPublicMatrixExchangesTest()
+        {
+            var oldSettings = await Client.GetSettingsAsync();
+            
+            var settings = new Settings { PublicMatrixExchanges = new Dictionary<string, string> { { "Bitfinex(e)", "Bitfinex" } } };
+
+            await Client.SetSettingsAsync(settings);
+
+            var newSettings = await Client.GetSettingsAsync();
+            AssertSettigns(settings, newSettings);
+
+            await Client.SetSettingsAsync(oldSettings);
+
+            newSettings = await Client.GetSettingsAsync();
+            AssertSettigns(oldSettings, newSettings);
+        }
+
 
         private void AssertOrderBook(OrderBook orderBook)
         {
