@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Utils
 {
-    public static class SortedDictionaryExtention
+    public static class IDictionaryExtention
     {
-        public static void AddOrUpdate<TKey, TValue>(this SortedDictionary<TKey, TValue> dictionary, TKey key, TValue value)
+        public static void AddOrUpdate<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue value)
         {
             dictionary[key] = value;
         }
 
-        public static void Add<TKey, TValue>(this SortedDictionary<TKey, TValue> dictionary, TKey key, TValue value)
+        public static void Add<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue value)
         {
             if (dictionary.ContainsKey(key))
                 throw new ArgumentException(nameof(key));
@@ -18,7 +18,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Utils
             dictionary.AddOrUpdate(key, value);
         }
 
-        public static void AddRange<TKey, TValue>(this SortedDictionary<TKey, TValue> dictionary, IDictionary<TKey, TValue> other)
+        public static void AddRange<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, IDictionary<TKey, TValue> other)
         {
             if (other == null)
                 throw new ArgumentNullException(nameof(other));
@@ -29,7 +29,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Utils
             }
         }
 
-        public static void AddOrUpdateRange<TKey, TValue>(this SortedDictionary<TKey, TValue> dictionary, IDictionary<TKey, TValue> other)
+        public static void AddOrUpdateRange<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, IDictionary<TKey, TValue> other)
         {
             if (other == null)
                 throw new ArgumentNullException(nameof(other));
@@ -40,7 +40,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Utils
             }
         }
 
-        public static void Remove<TKey, TValue>(this SortedDictionary<TKey, TValue> dictionary, TKey key)
+        public static void Remove<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
         {
             TValue oldValue;
             dictionary.Remove(key, out oldValue);
