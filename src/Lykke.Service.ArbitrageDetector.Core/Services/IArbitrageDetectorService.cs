@@ -8,14 +8,17 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
     {
         void Process(OrderBook orderBook);
 
+        // Order Books
 
         IEnumerable<OrderBook> GetOrderBooks();
 
         IEnumerable<OrderBook> GetOrderBooks(string exchange, string instrument);
 
+        // Cross Rates
 
         IEnumerable<CrossRate> GetCrossRates();
 
+        // Arbitrages
 
         IEnumerable<Arbitrage> GetArbitrages();
 
@@ -25,9 +28,13 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
 
         IEnumerable<Arbitrage> GetArbitrageHistory(DateTime since, int take);
 
+        // Matrix
 
-        Settings GetSettings();
+        Matrix GetMatrix(string assetPair, bool withSuffixOnly = false);
 
-        void SetSettings(Settings settings);
+
+        ISettings GetSettings();
+
+        void SetSettings(ISettings settings);
     }
 }

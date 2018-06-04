@@ -1,6 +1,9 @@
 ﻿using Autofac;
+using AzureStorage.Tables;
 using Common;
 using Common.Log;
+using Lykke.Service.ArbitrageDetector.AzureRepositories;
+using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.RabbitSubscribers;
 using Lykke.Service.ArbitrageDetector.Services;
@@ -22,6 +25,8 @@ namespace Lykke.Service.ArbitrageDetector.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
+            // Common
+
             builder.RegisterInstance(_log)
                 .As<ILog>()
                 .SingleInstance();
@@ -36,16 +41,17 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             builder.RegisterType<ShutdownManager>()
                 .As<IShutdownManager>();
 
+            // Services and Handlers
+
             builder.RegisterType<OrderBookProcessor>()
                 .As<IOrderBookProcessor>()
                 .SingleInstance();
 
             builder.RegisterType<ArbitrageDetectorService>()
                 .As<IArbitrageDetectorService>()
-                .WithParameter("settings", _settings.CurrentValue.Main)
+                .AutoActivate()
                 .As<IStartable>()
                 .As<IStopable>()
-                .AutoActivate()
                 .SingleInstance();
 
             foreach (var exchange in _settings.CurrentValue.RabbitMq.Exchanges)
@@ -58,6 +64,14 @@ namespace Lykke.Service.ArbitrageDetector.Modules
                     .AutoActivate()
                     .SingleInstance();
             }
+
+            //  Repositories
+
+            var settingsRepository = new SettingsRepository(
+                AzureTableStorage<AzureRepositories.Settings>.Create(
+                    _settings.ConnectionString(x => x.Db.DataConnectionString),
+                    nameof(AzureRepositories.Settings), _log));
+            builder.RegisterInstance<ISettingsRepository>(settingsRepository).PropertiesAutowired();
         }
     }
 }
