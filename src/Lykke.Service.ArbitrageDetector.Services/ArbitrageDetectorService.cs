@@ -102,7 +102,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             foreach (var @base in _s.BaseAssets)
             {
-                var targetAssetPair = new AssetPair(@base, _quote);
+                var targetAssetPair = new AssetPair(@base, _s.QuoteAsset);
                 var newActualCrossRatesFrom1Or2OrderBooks = await GetNewActualCrossRatesFrom1Or2Pairs(wantedActualOrderBooks, targetAssetPair);
                 newActualCrossRates.AddRange(newActualCrossRatesFrom1Or2OrderBooks);
 
@@ -407,9 +407,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 // Filter by base, quote and intermediate assets
                 var assetPair = keyValue.Key.AssetPair;
-                var passed = !_intermediateAssets.Any()
-                  || _intermediateAssets.Contains(assetPair.Base)
-                  || _intermediateAssets.Contains(assetPair.Quote);
+                var passed = !_s.IntermediateAssets.Any()
+                  || _s.IntermediateAssets.Contains(assetPair.Base)
+                  || _s.IntermediateAssets.Contains(assetPair.Quote);
                 if (!passed)
                     continue;
 
