@@ -1,82 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace Lykke.Service.ArbitrageDetector.Core
 {
     /// <summary>
-    /// Represents settings of Arbitrage Detector Service.
+    /// Represents settings that can be changed during service execution.
     /// </summary>
-    /// <inheritdoc />
-    public class StartupSettings : Settings
+    public class Settings : ISettings
     {
-        /// <summary>
-        /// Arbitrage calculating execution delay in milliseconds.
-        /// </summary>
-        public int ExecutionDelayInMilliseconds { get; set; }
-
         /// <summary>
         /// Maximum length of the history of arbitrages.
         /// </summary>
         public int HistoryMaxSize { get; set; }
 
         /// <summary>
-        /// Constructor.
-        /// </summary>
-        public StartupSettings()
-        {
-        }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="executionDelayInMilliseconds"></param>
-        /// <param name="expirationTimeInSeconds"></param>
-        /// <param name="historyMaxSize"></param>
-        /// <param name="minSpread"></param>
-        /// <param name="baseAssets"></param>
-        /// <param name="quoteAsset"></param>
-        /// <param name="intermediateAssets"></param>
-        /// <param name="exchanges"></param>
-        /// <param name="minimumPnL"></param>
-        /// <param name="minimumVolume"></param>
-        /// <param name="publicMatrixAssetPairs"></param>
-        /// <param name="publicMatrixExchanges"></param>
-        public StartupSettings(int executionDelayInMilliseconds, int expirationTimeInSeconds, int historyMaxSize, int minSpread,
-            IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset,
-            IEnumerable<string> exchanges, decimal? minimumPnL, decimal? minimumVolume, IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges)
-            : base(expirationTimeInSeconds, baseAssets, intermediateAssets, quoteAsset, minSpread, exchanges, minimumPnL, minimumVolume, publicMatrixAssetPairs, publicMatrixExchanges)
-        {
-            ExecutionDelayInMilliseconds = executionDelayInMilliseconds;
-            HistoryMaxSize = historyMaxSize;
-        }
-
-    }
-
-    /// <summary>
-    /// Represents settings that can be changed during service execution.
-    /// </summary>
-    public class Settings
-    {
-        /// <summary>
         /// Expiration time in milliseconds for order books and cross rates.
         /// </summary>
-        public int? ExpirationTimeInSeconds { get; set; }
+        public int ExpirationTimeInSeconds { get; set; }
 
         /// <summary>
         /// Minimum PnL.
         /// </summary>
-        public decimal? MinimumPnL { get; set; }
+        public decimal MinimumPnL { get; set; }
 
         /// <summary>
         /// Minimum volume.
         /// </summary>
-        public decimal? MinimumVolume { get; set; }
+        public decimal MinimumVolume { get; set; }
 
         /// <summary>
         /// Minimum spread.
         /// </summary>
-        public int? MinSpread { get; set; }
+        public int MinSpread { get; set; }
 
         /// <summary>
         /// Wanted base assets.
@@ -118,6 +72,7 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// <summary>
         /// Constructor.
         /// </summary>
+        /// <param name="historyMaxSize"></param>
         /// <param name="expirationTimeInSeconds"></param>
         /// <param name="baseAssets"></param>
         /// <param name="intermediateAssets"></param>
@@ -128,9 +83,11 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// <param name="minimumVolume"></param>
         /// <param name="publicMatrixAssetPairs"></param>
         /// <param name="publicMatrixExchanges"></param>
-        public Settings(int? expirationTimeInSeconds, IEnumerable<string> baseAssets, IEnumerable<string> intermediateAssets, string quoteAsset, int? minSpread,
-            IEnumerable<string> exchanges, decimal? minimumPnL, decimal? minimumVolume, IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges)
+        public Settings(int historyMaxSize, int expirationTimeInSeconds, IEnumerable<string> baseAssets,
+            IEnumerable<string> intermediateAssets, string quoteAsset, int minSpread, IEnumerable<string> exchanges, decimal minimumPnL, decimal minimumVolume,
+            IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges)
         {
+            HistoryMaxSize = historyMaxSize;
             ExpirationTimeInSeconds = expirationTimeInSeconds;
             MinimumPnL = minimumPnL;
             MinimumVolume = minimumVolume;
@@ -143,40 +100,19 @@ namespace Lykke.Service.ArbitrageDetector.Core
             PublicMatrixExchanges = publicMatrixExchanges;
         }
 
-        /// <summary>
-        /// Validation.
-        /// </summary>
-        public void Validate()
+        public static ISettings Default { get; } = new Settings
         {
-            if (ExpirationTimeInSeconds == null)
-                throw new NullReferenceException(nameof(ExpirationTimeInSeconds));
-
-            if (MinimumPnL == null)
-                throw new NullReferenceException(nameof(MinimumPnL));
-
-            if (MinimumVolume == null)
-                throw new NullReferenceException(nameof(MinimumVolume));
-
-            if (MinSpread == null)
-                throw new NullReferenceException(nameof(MinSpread));
-
-            if (BaseAssets == null || !BaseAssets.Any())
-                throw new ArgumentOutOfRangeException(nameof(BaseAssets));
-
-            if (IntermediateAssets == null)
-                throw new ArgumentOutOfRangeException(nameof(IntermediateAssets));
-
-            if (string.IsNullOrWhiteSpace(QuoteAsset))
-                throw new ArgumentOutOfRangeException(nameof(QuoteAsset));
-
-            if (Exchanges == null)
-                throw new ArgumentOutOfRangeException(nameof(Exchanges));
-
-            if (PublicMatrixAssetPairs == null)
-                throw new ArgumentOutOfRangeException(nameof(PublicMatrixAssetPairs));
-
-            if (PublicMatrixExchanges == null)
-                throw new ArgumentOutOfRangeException(nameof(PublicMatrixExchanges));
-        }
+            HistoryMaxSize = 50,
+            ExpirationTimeInSeconds = 10,
+            MinimumPnL = 10,
+            MinimumVolume = 0.001m,
+            MinSpread = -5,
+            BaseAssets = new List<string>(),
+            IntermediateAssets = new List<string>(),
+            QuoteAsset = "USD",
+            Exchanges = new List<string>(),
+            PublicMatrixAssetPairs = new List<string>(),
+            PublicMatrixExchanges = new Dictionary<string, string>()
+        };
     }
 }

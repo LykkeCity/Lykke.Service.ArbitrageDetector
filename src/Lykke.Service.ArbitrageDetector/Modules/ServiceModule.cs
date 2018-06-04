@@ -1,8 +1,11 @@
 ﻿using System;
 using Autofac;
+using AzureStorage.Tables;
 using Common;
 using Common.Log;
+using Lykke.Service.ArbitrageDetector.AzureRepositories;
 using Lykke.Service.ArbitrageDetector.Core;
+using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.RabbitSubscribers;
 using Lykke.Service.ArbitrageDetector.RabbitSubscribers.OrderBookHandlers;
@@ -27,6 +30,8 @@ namespace Lykke.Service.ArbitrageDetector.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
+            // Common
+
             builder.RegisterInstance(_log)
                 .As<ILog>()
                 .SingleInstance();
@@ -41,9 +46,7 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             builder.RegisterType<ShutdownManager>()
                 .As<IShutdownManager>();
 
-            builder.RegisterInstance(_settings.CurrentValue.ArbitrageDetector.Main)
-                .As<StartupSettings>()
-                .SingleInstance();
+            // Services and Handlers
 
             builder.RegisterType<OrderBookParser>()
                 .As<OrderBookParser>()
@@ -59,7 +62,6 @@ namespace Lykke.Service.ArbitrageDetector.Modules
 
             builder.RegisterType<ArbitrageDetectorService>()
                 .As<IArbitrageDetectorService>()
-                .WithParameter("settings", _settings.CurrentValue.ArbitrageDetector.Main)
                 .As<IStartable>()
                 .As<IStopable>()
                 .AutoActivate()
@@ -90,6 +92,14 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             builder.RegisterInstance(new RateCalculatorClient(_settings.CurrentValue.RateCalculatorServiceClient.ServiceUrl, _log))
                 .As<IRateCalculatorClient>()
                 .SingleInstance();
+
+            //  Repositories
+
+            var settingsRepository = new SettingsRepository(
+                AzureTableStorage<AzureRepositories.Settings>.Create(
+                    _settings.ConnectionString(x => x.ArbitrageDetector.Db.DataConnectionString),
+                    nameof(AzureRepositories.Settings), _log));
+            builder.RegisterInstance<ISettingsRepository>(settingsRepository).PropertiesAutowired();
         }
     }
 }

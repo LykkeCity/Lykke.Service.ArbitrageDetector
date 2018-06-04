@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Lykke.Service.ArbitrageDetector.AzureRepositories\Lykke.Service.ArbitrageDetector.AzureRepositories.csproj" />
     <ProjectReference Include="..\Lykke.Service.ArbitrageDetector.Core\Lykke.Service.ArbitrageDetector.Core.csproj" />
   </ItemGroup>
 
