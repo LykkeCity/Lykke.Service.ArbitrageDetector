@@ -4,7 +4,6 @@ using AzureStorage.Tables;
 using Common;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.AzureRepositories;
-using Lykke.Service.ArbitrageDetector.Core;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.RabbitSubscribers;
@@ -60,8 +59,11 @@ namespace Lykke.Service.ArbitrageDetector.Modules
                 .As<OrderBookLykkeAssetsProvider>()
                 .SingleInstance();
 
+            // Services and Handlers
+
             builder.RegisterType<ArbitrageDetectorService>()
                 .As<IArbitrageDetectorService>()
+                .AutoActivate()
                 .As<IStartable>()
                 .As<IStopable>()
                 .AutoActivate()
