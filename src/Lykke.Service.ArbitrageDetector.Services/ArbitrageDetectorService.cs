@@ -467,6 +467,56 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
         }
 
+        private decimal? GetArbitrageVolumeForMatrix(OrderBook bidsOrderBook, OrderBook asksOrderBook)
+        {
+            // Initialize bids and asks
+            var bids = new List<VolumePrice>();
+            var asks = new List<VolumePrice>();
+            bids.AddRange(bidsOrderBook.Bids);
+            asks.AddRange(asksOrderBook.Asks);
+
+            decimal result = 0;
+            while (bids.Any() && asks.Any())
+            {
+                // Recalculate arbitrage (best bid and best ask)
+                var bestBidPrice = bids.Max(x => x.Price);
+                var bestAskPrice = asks.Min(x => x.Price);
+                bids = bids.Where(x => x.Price > bestAskPrice).OrderByDescending(x => x.Price).ToList();
+                asks = asks.Where(x => x.Price < bestBidPrice).OrderBy(x => x.Price).ToList();
+                var bid = bids.First();
+                var ask = asks.First();
+
+                if (bid.Volume > ask.Volume)
+                {
+                    result += ask.Volume;
+                    var newBidVolume = bid.Volume - ask.Volume;
+                    var newBid = new VolumePrice(bid.Price, newBidVolume);
+                    bids.Remove(bid);
+                    bids.Insert(0, newBid);
+                    asks.Remove(ask);
+                    continue;
+                }
+                if (bid.Volume < ask.Volume)
+                {
+                    result += bid.Volume;
+                    var newAskVolume = ask.Volume - bid.Volume;
+                    var newAsk = new VolumePrice(ask.Price, newAskVolume);
+                    asks.Remove(ask);
+                    asks.Insert(0, newAsk);
+                    bids.Remove(bid);
+                    continue;
+                }
+                if (bid.Volume == ask.Volume)
+                {
+                    result += bid.Volume;
+                    asks.Remove(ask);
+                    bids.Remove(bid);
+                }
+            }
+
+            return result;
+        }
+
 
         #region IArbitrageDetectorService
 
@@ -574,7 +624,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             // Filter by asset pair
             var orderBooks = _orderBooks.Values.Where(x => x.AssetPair.Name.ToUpper().Trim() == assetPair.ToUpper().Trim()).ToList();
-            
+
             // Filter by exchanges
             if (isPublic && _s.PublicMatrixExchanges.Any())
             {
@@ -595,42 +645,49 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var matrixSide = uniqueExchanges.Count;
             for (var row = 0; row < matrixSide; row++)
             {
-                var cellRow = new List<MatrixCell>();
                 var orderBookRow = orderBooks[row];
+                var cellsRow = new List<MatrixCell>();
                 var isActual = (DateTime.UtcNow - orderBookRow.Timestamp).TotalSeconds < _s.ExpirationTimeInSeconds;
 
+                // Add ask and exchange
                 result.Exchanges.Add(new Exchange(uniqueExchanges[row], isActual));
                 result.Asks.Add(orderBookRow.BestAsk?.Price);
-                
+
                 for (var col = 0; col < matrixSide; col++)
                 {
                     var orderBookCol = orderBooks[col];
-                    
+
+                    // Add bid
                     if (row == 0)
                         result.Bids.Add(orderBookCol.BestBid?.Price);
 
-                    // The same exchanges
+                    // If the same exchanges than cell = null
+                    MatrixCell cell;
                     if (row == col)
                     {
-                        cellRow.Add(null);
+                        cell = null;
+                        cellsRow.Add(cell);
                         continue;
                     }
 
-                    MatrixCell matrixCell;
                     if (orderBookRow.BestAsk == null || orderBookCol.BestBid == null)
                     {
-                        matrixCell = new MatrixCell(null, null);
-                        cellRow.Add(matrixCell);
+                        cell = new MatrixCell(null, null);
+                        cellsRow.Add(cell);
                         continue;
                     }
 
                     var spread = (orderBookRow.BestAsk.Value.Price - orderBookCol.BestBid.Value.Price) / orderBookCol.BestBid.Value.Price * 100;
-                    matrixCell = new MatrixCell(spread, null);
-                    cellRow.Add(matrixCell);
+                    decimal? volume = null;
+                    if (spread < 0)
+                        volume = GetArbitrageVolumeForMatrix(orderBookCol, orderBookRow);
+
+                    cell = new MatrixCell(spread, volume);
+                    cellsRow.Add(cell);
                 }
 
                 // row ends
-                result.Cells.Add(cellRow);
+                result.Cells.Add(cellsRow);
             }
 
             return result;
