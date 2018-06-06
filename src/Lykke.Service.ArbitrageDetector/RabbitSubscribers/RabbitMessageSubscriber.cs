@@ -72,7 +72,7 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
                 var isValid = _orderBookValidator.IsValid(orderBook);
                 if (isValid)
                 {
-                    await _orderBookLykkeAssetsProvider.ProvideAssetsIfLykke(orderBook);
+                    //await _orderBookLykkeAssetsProvider.ProvideAssetsIfLykke(orderBook);
                     _arbitrageDetectorService.Process(orderBook);
                 }
             }
