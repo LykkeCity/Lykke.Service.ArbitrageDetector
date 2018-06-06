@@ -467,56 +467,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
         }
 
-        private decimal? GetArbitrageVolumeForMatrix(OrderBook bidsOrderBook, OrderBook asksOrderBook)
-        {
-            // Initialize bids and asks
-            var bids = new List<VolumePrice>();
-            var asks = new List<VolumePrice>();
-            bids.AddRange(bidsOrderBook.Bids);
-            asks.AddRange(asksOrderBook.Asks);
-
-            decimal result = 0;
-            while (bids.Any() && asks.Any())
-            {
-                // Recalculate arbitrage (best bid and best ask)
-                var bestBidPrice = bids.Max(x => x.Price);
-                var bestAskPrice = asks.Min(x => x.Price);
-                bids = bids.Where(x => x.Price > bestAskPrice).OrderByDescending(x => x.Price).ToList();
-                asks = asks.Where(x => x.Price < bestBidPrice).OrderBy(x => x.Price).ToList();
-                var bid = bids.First();
-                var ask = asks.First();
-
-                if (bid.Volume > ask.Volume)
-                {
-                    result += ask.Volume;
-                    var newBidVolume = bid.Volume - ask.Volume;
-                    var newBid = new VolumePrice(bid.Price, newBidVolume);
-                    bids.Remove(bid);
-                    bids.Insert(0, newBid);
-                    asks.Remove(ask);
-                    continue;
-                }
-                if (bid.Volume < ask.Volume)
-                {
-                    result += bid.Volume;
-                    var newAskVolume = ask.Volume - bid.Volume;
-                    var newAsk = new VolumePrice(ask.Price, newAskVolume);
-                    asks.Remove(ask);
-                    asks.Insert(0, newAsk);
-                    bids.Remove(bid);
-                    continue;
-                }
-                if (bid.Volume == ask.Volume)
-                {
-                    result += bid.Volume;
-                    asks.Remove(ask);
-                    bids.Remove(bid);
-                }
-            }
-
-            return result;
-        }
-
 
         #region IArbitrageDetectorService
 
@@ -680,7 +630,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     var spread = (orderBookRow.BestAsk.Value.Price - orderBookCol.BestBid.Value.Price) / orderBookCol.BestBid.Value.Price * 100;
                     decimal? volume = null;
                     if (spread < 0)
-                        volume = GetArbitrageVolumeForMatrix(orderBookCol, orderBookRow);
+                        volume = Arbitrage.GetArbitrageVolume(orderBookCol, orderBookRow);
 
                     cell = new MatrixCell(spread, volume);
                     cellsRow.Add(cell);
