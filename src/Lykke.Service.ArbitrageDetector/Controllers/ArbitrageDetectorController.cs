@@ -8,7 +8,6 @@ using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using DataOrderBook = Lykke.Service.ArbitrageDetector.Models.OrderBook;
 
 namespace Lykke.Service.ArbitrageDetector.Controllers
 {
@@ -27,15 +26,15 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [HttpGet]
         [Route("orderBooks")]
         [SwaggerOperation("OrderBooks")]
-        [ProducesResponseType(typeof(IEnumerable<DataOrderBook>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<OrderBookRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> OrderBooks(string exchange, string assetPair)
         {
-            IEnumerable<DataOrderBook> result;
+            IEnumerable<OrderBookRow> result;
 
             try
             {
-                result = _arbitrageDetectorService.GetOrderBooks(exchange, assetPair).Select(x => new DataOrderBook(x)).ToList();
+                result = _arbitrageDetectorService.GetOrderBooks(exchange, assetPair).Select(x => new OrderBookRow(x)).ToList();
             }
             catch (Exception exception)
             {

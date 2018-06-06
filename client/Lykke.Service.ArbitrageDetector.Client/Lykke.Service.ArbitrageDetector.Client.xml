@@ -48,6 +48,54 @@
             Contains methods for work with arbitrage detector service.
             </summary>
         </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.#ctor(System.String)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="url"></param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.#ctor(Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageDetectorServiceClientSettings)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="settings"></param>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.OrderBooksAsync(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.CrossRatesAsync">
+            <inheritdoc />
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.ArbitragesAsync">
+            <inheritdoc />
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.ArbitrageFromHistoryAsync(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.ArbitrageFromActiveOrHistoryAsync(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.ArbitrageHistoryAsync(System.DateTime,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.MatrixAsync(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.PublicMatrixAsync(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.PublicMatrixAssetPairsAsync">
+            <inheritdoc />
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.GetSettingsAsync">
+            <inheritdoc />
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.SetSettingsAsync(Lykke.Service.ArbitrageDetector.Client.Models.Settings)">
+            <inheritdoc />
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.Dispose">
+            <inheritdoc />
+        </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage">
             <summary>
             Represents an arbitrage situation.
@@ -595,6 +643,58 @@
             <param name="source"></param>
             <param name="assetPair"></param>
             <returns></returns>
+        </member>
+        <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.OrderBookRow">
+            <summary>
+            Represents a cross rate.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBookRow.Source">
+            <summary>
+            Conversion path.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBookRow.AssetPair">
+            <summary>
+            Asset pair.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBookRow.BestBid">
+            <summary>
+            Best bid.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBookRow.BestAsk">
+            <summary>
+            Best ask.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBookRow.BidsVolume">
+            <summary>
+            Comulative volume of all bids.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBookRow.AsksVolume">
+            <summary>
+            Comulative volume of all asks.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBookRow.Timestamp">
+            <summary>
+            Timestamp.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.OrderBookRow.#ctor(System.String,Lykke.Service.ArbitrageDetector.Client.Models.AssetPair,System.Nullable{Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice},System.Nullable{Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice},System.Decimal,System.Decimal,System.DateTime)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="source"></param>
+            <param name="assetPair"></param>
+            <param name="bestBid"></param>
+            <param name="bestAsk"></param>
+            <param name="bidsVolume"></param>
+            <param name="asksVolume"></param>
+            <param name="timestamp"></param>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.Settings">
             <summary>

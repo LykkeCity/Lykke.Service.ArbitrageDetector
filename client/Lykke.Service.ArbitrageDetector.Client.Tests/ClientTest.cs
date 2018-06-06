@@ -18,7 +18,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             Assert.NotEmpty(orderBooks);
 
             var orderBook = orderBooks.First();
-            AssertOrderBook(orderBook);
+            AssertOrderBookRow(orderBook);
         }
 
         [Fact]
@@ -30,7 +30,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
 
             var orderBook = orderBooks.First();
             Assert.Equal("lykke", orderBook.Source);
-            AssertOrderBook(orderBook);
+            AssertOrderBookRow(orderBook);
         }
 
         [Fact]
@@ -42,7 +42,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
 
             var orderBook = orderBooks.First();
             Assert.True(orderBook.AssetPair.Base == "USD" || orderBook.AssetPair.Quote == "USD");
-            AssertOrderBook(orderBook);
+            AssertOrderBookRow(orderBook);
         }
 
         [Fact]
@@ -381,6 +381,15 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             Assert.NotEqual(default, orderBook.Asks.First().Price);
             Assert.NotEqual(default, orderBook.Asks.First().Volume);
             Assert.NotEqual(default, orderBook.Timestamp);
+        }
+
+        private void AssertOrderBookRow(OrderBookRow orderBookRow)
+        {
+            Assert.NotEmpty(orderBookRow.Source);
+            Assert.False(orderBookRow.AssetPair.IsEmpty());
+            Assert.True(orderBookRow.BestBid.HasValue || orderBookRow.BestAsk.HasValue);
+            Assert.True(orderBookRow.BidsVolume != 0 || orderBookRow.AsksVolume != 0);
+            Assert.NotEqual(default, orderBookRow.Timestamp);
         }
 
         private void AssertCrossRate(CrossRate crossRate)
