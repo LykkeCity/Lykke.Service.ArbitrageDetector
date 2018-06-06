@@ -139,23 +139,29 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <returns></returns>
         public static decimal? GetArbitrageVolume(OrderBook bidsOrderBook, OrderBook asksOrderBook)
         {
-            // Initialize bids and asks
+            if (bidsOrderBook.Bids == null)
+                throw new ArgumentException($"{nameof(bidsOrderBook)}.{nameof(bidsOrderBook.Bids)}");
+
+            if (asksOrderBook.Asks == null)
+                throw new ArgumentException($"{nameof(asksOrderBook)}.{nameof(asksOrderBook.Asks)}");
+
+            // Clone bids and asks (that in arbitrage only)
             var bids = new List<VolumePrice>();
             var asks = new List<VolumePrice>();
             bids.AddRange(bidsOrderBook.Bids);
             asks.AddRange(asksOrderBook.Asks);
 
+            if (!bidsOrderBook.Bids.Any() || !asksOrderBook.Asks.Any() || bids.Max(x => x.Price) < asks.Min(x => x.Price))
+                return null; // no arbitrage
+
             decimal result = 0;
-            while (true)
+            do
             {
                 // Recalculate arbitrage (best bid and best ask)
                 var bestBidPrice = bids.Max(x => x.Price);
                 var bestAskPrice = asks.Min(x => x.Price);
                 bids = bids.Where(x => x.Price > bestAskPrice).OrderByDescending(x => x.Price).ToList();
                 asks = asks.Where(x => x.Price < bestBidPrice).OrderBy(x => x.Price).ToList();
-
-                if (!bids.Any() && !asks.Any())
-                    break;
 
                 var bid = bids.First();
                 var ask = asks.First();
@@ -170,6 +176,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                     asks.Remove(ask);
                     continue;
                 }
+
                 if (bid.Volume < ask.Volume)
                 {
                     result += bid.Volume;
@@ -180,6 +187,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                     bids.Remove(bid);
                     continue;
                 }
+
                 if (bid.Volume == ask.Volume)
                 {
                     result += bid.Volume;
@@ -187,6 +195,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                     asks.Remove(ask);
                 }
             }
+            while (bids.Any() && asks.Any());
 
             return result == 0 ? (decimal?)null : result;
         }
