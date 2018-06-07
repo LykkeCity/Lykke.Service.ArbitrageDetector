@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Autofac.Extras.DynamicProxy;
 using Common.Log;
+using Lykke.Service.ArbitrageDetector.Aspects.Cache;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +14,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace Lykke.Service.ArbitrageDetector.Controllers
 {
     [Produces("application/json")]
+    [Intercept(typeof(CacheInterceptor))]
     public class ArbitrageDetectorController : Controller
     {
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
@@ -28,7 +31,8 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("OrderBooks")]
         [ProducesResponseType(typeof(IEnumerable<OrderBookRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> OrderBooks(string exchange, string assetPair)
+        [Cache(Duration = 30 * 1000)]
+        public virtual IActionResult OrderBooks(string exchange, string assetPair)
         {
             IEnumerable<OrderBookRow> result;
 
@@ -38,7 +42,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(GetType().Name, nameof(OrderBooks), exception);
+                _log.WriteErrorAsync(GetType().Name, nameof(OrderBooks), exception);
                 return BadRequest(ErrorResponse.Create(exception.Message));
             }
 

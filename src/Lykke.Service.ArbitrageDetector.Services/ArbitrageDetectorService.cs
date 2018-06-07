@@ -470,16 +470,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         #region IArbitrageDetectorService
 
-        public IEnumerable<OrderBook> GetOrderBooks()
-        {
-            if (!_orderBooks.Any())
-                return new List<OrderBook>();
-
-            return _orderBooks.Select(x => x.Value)
-                .OrderByDescending(x => x.Timestamp)
-                .ToList();
-        }
-
         public IEnumerable<OrderBook> GetOrderBooks(string exchange, string instrument)
         {
             if (!_orderBooks.Any())

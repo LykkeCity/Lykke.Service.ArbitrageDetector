@@ -2,11 +2,15 @@
 using System.Threading.Tasks;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using Autofac.Extras.DynamicProxy;
 using AzureStorage.Tables;
+using Castle.DynamicProxy;
 using Common.Log;
 using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.Logs;
+using Lykke.Service.ArbitrageDetector.Aspects.Cache;
+using Lykke.Service.ArbitrageDetector.Controllers;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Settings;
 using Lykke.Service.ArbitrageDetector.Modules;
@@ -41,26 +45,39 @@ namespace Lykke.Service.ArbitrageDetector
             try
             {
                 services.AddMvc()
-                    .AddJsonOptions(options =>
-                    {
-                        options.SerializerSettings.ContractResolver =
-                            new Newtonsoft.Json.Serialization.DefaultContractResolver();
-                    });
+                        .AddControllersAsServices()
+                        .AddJsonOptions(options =>
+                        {
+                            options.SerializerSettings.ContractResolver =
+                                new Newtonsoft.Json.Serialization.DefaultContractResolver();
+                        });
 
                 services.AddSwaggerGen(options =>
                 {
                     options.DefaultLykkeConfiguration("v1", "ArbitrageDetector API");
                 });
 
-                var builder = new ContainerBuilder();
                 var appSettings = Configuration.LoadSettings<AppSettings>();
 
                 Log = CreateLogWithSlack(services, appSettings);
 
+                var builder = new ContainerBuilder();
+
                 builder.RegisterModule(new ServiceModule(appSettings, Log));
                 builder.Populate(services);
-                ApplicationContainer = builder.Build();
 
+
+
+                // Controllers
+
+                builder.RegisterType<ArbitrageDetectorController>()
+                    .As<ArbitrageDetectorController>()
+                    .EnableClassInterceptors()
+                    .InterceptedBy(typeof(CacheInterceptor))
+                    .InstancePerLifetimeScope();
+
+
+                ApplicationContainer = builder.Build();
                 return new AutofacServiceProvider(ApplicationContainer);
             }
             catch (Exception ex)

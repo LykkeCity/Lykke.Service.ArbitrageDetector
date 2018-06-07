@@ -27,6 +27,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Autofac.Extras.DynamicProxy" Version="4.4.0" />
+    <PackageReference Include="Castle.Core" Version="4.3.0" />
+    <PackageReference Include="Castle.Core.AsyncInterceptor" Version="1.5.0" />
     <PackageReference Include="Lykke.Common" Version="6.7.0" />
     <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.7.0" />
     <PackageReference Include="Lykke.Logs" Version="4.3.3" />
@@ -43,6 +46,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="2.4.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.2" />
+    <PackageReference Include="System.Runtime.Caching" Version="4.5.0" />
   </ItemGroup>
   
   <ItemGroup>

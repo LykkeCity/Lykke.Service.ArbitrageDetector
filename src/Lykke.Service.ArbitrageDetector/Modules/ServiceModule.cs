@@ -1,9 +1,12 @@
 ﻿using System;
 using Autofac;
+using Autofac.Extras.DynamicProxy;
 using AzureStorage.Tables;
 using Common;
 using Common.Log;
+using Lykke.Service.ArbitrageDetector.Aspects.Cache;
 using Lykke.Service.ArbitrageDetector.AzureRepositories;
+using Lykke.Service.ArbitrageDetector.Controllers;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.RabbitSubscribers;
@@ -63,7 +66,6 @@ namespace Lykke.Service.ArbitrageDetector.Modules
 
             builder.RegisterType<ArbitrageDetectorService>()
                 .As<IArbitrageDetectorService>()
-                .AutoActivate()
                 .As<IStartable>()
                 .As<IStopable>()
                 .AutoActivate()
@@ -102,6 +104,20 @@ namespace Lykke.Service.ArbitrageDetector.Modules
                     _settings.ConnectionString(x => x.ArbitrageDetector.Db.DataConnectionString),
                     nameof(AzureRepositories.Settings), _log));
             builder.RegisterInstance<ISettingsRepository>(settingsRepository).PropertiesAutowired();
+
+            // Cache
+
+            builder.RegisterType<MemoryCacheProvider>()
+                .As<ICacheProvider>()
+                .SingleInstance();
+
+            builder.RegisterType<CacheInterceptor>()
+                .As<CacheInterceptor>()
+                .SingleInstance();
+
+            builder.RegisterType<CacheAsyncInterceptor>()
+                .As<CacheAsyncInterceptor>()
+                .SingleInstance();
         }
     }
 }

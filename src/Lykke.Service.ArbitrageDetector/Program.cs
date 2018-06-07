@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.PlatformAbstractions;
 
@@ -25,6 +26,7 @@ namespace Lykke.Service.ArbitrageDetector
                 var host = new WebHostBuilder()
                     .UseKestrel()
                     .UseUrls("http://*:5000")
+                    .ConfigureServices(services => services.AddAutofac())
                     .UseContentRoot(Directory.GetCurrentDirectory())
                     .UseStartup<Startup>()
                     .UseApplicationInsights()
