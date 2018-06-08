@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
-using Autofac.Extras.DynamicProxy;
-using Common.Log;
 using Lykke.Service.ArbitrageDetector.Aspects.Cache;
+using Lykke.Service.ArbitrageDetector.Aspects.ExceptionHandling;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -14,16 +12,15 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace Lykke.Service.ArbitrageDetector.Controllers
 {
     [Produces("application/json")]
-    [Intercept(typeof(CacheInterceptor))]
+    [ExceptionToBadRequest]
+    [Cache(Duration = 30 * 1000)]
     public class ArbitrageDetectorController : Controller
     {
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
-        private readonly ILog _log;
 
-        public ArbitrageDetectorController(IArbitrageDetectorService arbitrageDetectorService, ILog log)
+        public ArbitrageDetectorController(IArbitrageDetectorService arbitrageDetectorService)
         {
             _arbitrageDetectorService = arbitrageDetectorService;
-            _log = log;
         }
 
         [HttpGet]
@@ -31,20 +28,9 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("OrderBooks")]
         [ProducesResponseType(typeof(IEnumerable<OrderBookRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [Cache(Duration = 30 * 1000)]
         public virtual IActionResult OrderBooks(string exchange, string assetPair)
         {
-            IEnumerable<OrderBookRow> result;
-
-            try
-            {
-                result = _arbitrageDetectorService.GetOrderBooks(exchange, assetPair).Select(x => new OrderBookRow(x)).ToList();
-            }
-            catch (Exception exception)
-            {
-                _log.WriteErrorAsync(GetType().Name, nameof(OrderBooks), exception);
-                return BadRequest(ErrorResponse.Create(exception.Message));
-            }
+            var result = _arbitrageDetectorService.GetOrderBooks(exchange, assetPair).Select(x => new OrderBookRow(x)).ToList();
 
             return Ok(result);
         }
@@ -54,20 +40,9 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("CrossRates")]
         [ProducesResponseType(typeof(IEnumerable<CrossRateRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> CrossRates()
+        public IActionResult CrossRates()
         {
-            IEnumerable<CrossRateRow> result;
-
-            try
-            {
-                result = _arbitrageDetectorService.GetCrossRates().Select(x => new CrossRateRow(x)).ToList();
-            }
-            catch (Exception exception)
-            {
-                await _log.WriteErrorAsync(GetType().Name, nameof(CrossRates), exception);
-
-                return BadRequest(ErrorResponse.Create(exception.Message));
-            }
+            var result = _arbitrageDetectorService.GetCrossRates().Select(x => new CrossRateRow(x)).ToList();
 
             return Ok(result);
         }
@@ -77,20 +52,9 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("Arbitrages")]
         [ProducesResponseType(typeof(IEnumerable<ArbitrageRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> Arbitrages()
+        public IActionResult Arbitrages()
         {
-            IEnumerable<ArbitrageRow> result;
-
-            try
-            {
-                result = _arbitrageDetectorService.GetArbitrages().Select(x => new ArbitrageRow(x)).ToList();
-            }
-            catch (Exception exception)
-            {
-                await _log.WriteErrorAsync(GetType().Name, nameof(Arbitrages), exception);
-
-                return BadRequest(ErrorResponse.Create(exception.Message));
-            }
+            var result = _arbitrageDetectorService.GetArbitrages().Select(x => new ArbitrageRow(x)).ToList();
 
             return Ok(result);
         }
@@ -100,21 +64,10 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("ArbitrageFromHistory")]
         [ProducesResponseType(typeof(IEnumerable<Arbitrage>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ArbitrageFromHistory(string conversionPath)
+        public IActionResult ArbitrageFromHistory(string conversionPath)
         {
-            Arbitrage result;
-
-            try
-            {
-                var arbitrage = _arbitrageDetectorService.GetArbitrageFromHistory(conversionPath);
-                result = arbitrage == null ? null : new Arbitrage(arbitrage);
-            }
-            catch (Exception exception)
-            {
-                await _log.WriteErrorAsync(GetType().Name, nameof(Arbitrage), exception);
-
-                return BadRequest(ErrorResponse.Create(exception.Message));
-            }
+            var arbitrage = _arbitrageDetectorService.GetArbitrageFromHistory(conversionPath);
+            var result = arbitrage == null ? null : new Arbitrage(arbitrage);
 
             return Ok(result);
         }
@@ -124,21 +77,10 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("ArbitrageFromActiveOrHistory")]
         [ProducesResponseType(typeof(IEnumerable<Arbitrage>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ArbitrageFromActiveOrHistory(string conversionPath)
+        public IActionResult ArbitrageFromActiveOrHistory(string conversionPath)
         {
-            Arbitrage result;
-
-            try
-            {
-                var arbitrage = _arbitrageDetectorService.GetArbitrageFromActiveOrHistory(conversionPath);
-                result = arbitrage == null ? null : new Arbitrage(arbitrage);
-            }
-            catch (Exception exception)
-            {
-                await _log.WriteErrorAsync(GetType().Name, nameof(Arbitrage), exception);
-
-                return BadRequest(ErrorResponse.Create(exception.Message));
-            }
+            var arbitrage = _arbitrageDetectorService.GetArbitrageFromActiveOrHistory(conversionPath);
+            var result = arbitrage == null ? null : new Arbitrage(arbitrage);
 
             return Ok(result);
         }
@@ -148,20 +90,9 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("ArbitrageHistory")]
         [ProducesResponseType(typeof(IEnumerable<ArbitrageRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ArbitrageHistory(DateTime since, int take)
+        public IActionResult ArbitrageHistory(DateTime since, int take)
         {
-            IEnumerable<ArbitrageRow> result;
-
-            try
-            {
-                result = _arbitrageDetectorService.GetArbitrageHistory(since, take).Select(x => new ArbitrageRow(x)).ToList();
-            }
-            catch (Exception exception)
-            {
-                await _log.WriteErrorAsync(GetType().Name, nameof(ArbitrageHistory), exception);
-
-                return BadRequest(ErrorResponse.Create(exception.Message));
-            }
+            var result = _arbitrageDetectorService.GetArbitrageHistory(since, take).Select(x => new ArbitrageRow(x)).ToList();
 
             return Ok(result);
         }
@@ -171,21 +102,10 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("Matrix")]
         [ProducesResponseType(typeof(Matrix), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> Matrix(string assetPair)
+        public IActionResult Matrix(string assetPair)
         {
-            Matrix result;
-
-            try
-            {
-                var matrix = _arbitrageDetectorService.GetMatrix(assetPair);
-                result = new Matrix(matrix);
-            }
-            catch (Exception exception)
-            {
-                await _log.WriteErrorAsync(GetType().Name, nameof(Matrix), exception);
-
-                return BadRequest(ErrorResponse.Create(exception.Message));
-            }
+            var matrix = _arbitrageDetectorService.GetMatrix(assetPair);
+            var result = new Matrix(matrix);
 
             return Ok(result);
         }
@@ -195,21 +115,10 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("PublicMatrix")]
         [ProducesResponseType(typeof(Matrix), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> PublicMatrix(string assetPair)
+        public IActionResult PublicMatrix(string assetPair)
         {
-            Matrix result;
-
-            try
-            {
-                var matrix = _arbitrageDetectorService.GetMatrix(assetPair, true);
-                result = new Matrix(matrix);
-            }
-            catch (Exception exception)
-            {
-                await _log.WriteErrorAsync(GetType().Name, nameof(Matrix), exception);
-
-                return BadRequest(ErrorResponse.Create(exception.Message));
-            }
+            var matrix = _arbitrageDetectorService.GetMatrix(assetPair, true);
+            var result = new Matrix(matrix);
 
             return Ok(result);
         }
@@ -219,21 +128,10 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("PublicMatrixAssetPairs")]
         [ProducesResponseType(typeof(IEnumerable<string>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> PublicMatrixAssetPairs()
+        public IActionResult PublicMatrixAssetPairs()
         {
-            IEnumerable<string> result;
-
-            try
-            {
-                var settings = _arbitrageDetectorService.GetSettings();
-                result = settings.PublicMatrixAssetPairs;
-            }
-            catch (Exception exception)
-            {
-                await _log.WriteErrorAsync(GetType().Name, nameof(Matrix), exception);
-
-                return BadRequest(ErrorResponse.Create(exception.Message));
-            }
+            var settings = _arbitrageDetectorService.GetSettings();
+            var result = settings.PublicMatrixAssetPairs;
 
             return Ok(result);
         }
@@ -243,21 +141,10 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("GetSettings")]
         [ProducesResponseType(typeof(Models.Settings), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetSettings()
+        public IActionResult GetSettings()
         {
-            Models.Settings result;
-
-            try
-            {
-                var settings = _arbitrageDetectorService.GetSettings();
-                result = new Models.Settings(settings);
-            }
-            catch (Exception exception)
-            {
-                await _log.WriteErrorAsync(GetType().Name, nameof(GetSettings), exception);
-
-                return BadRequest(ErrorResponse.Create(exception.Message));
-            }
+            var settings = _arbitrageDetectorService.GetSettings();
+            var result = new Models.Settings(settings);
 
             return Ok(result);
         }
@@ -267,18 +154,9 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("SetSettings")]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> SetSettings([FromBody]Models.Settings settings)
+        public IActionResult SetSettings([FromBody]Models.Settings settings)
         {
-            try
-            {
-                _arbitrageDetectorService.SetSettings(settings.ToModel());
-            }
-            catch (Exception exception)
-            {
-                await _log.WriteErrorAsync(GetType().Name, nameof(SetSettings), exception);
-
-                return BadRequest(ErrorResponse.Create(exception.Message));
-            }
+            _arbitrageDetectorService.SetSettings(settings.ToModel());
 
             return Ok();
         }

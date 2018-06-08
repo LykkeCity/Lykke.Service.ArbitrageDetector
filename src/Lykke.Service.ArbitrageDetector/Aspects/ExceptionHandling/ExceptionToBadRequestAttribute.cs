@@ -1,10 +1,9 @@
 ﻿using System;
 
-namespace Lykke.Service.ArbitrageDetector.Aspects.Cache
+namespace Lykke.Service.ArbitrageDetector.Aspects.ExceptionHandling
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-    public class CacheAttribute : Attribute
+    public class ExceptionToBadRequestAttribute : Attribute
     {
-        public int Duration { get; set; }
     }
 }

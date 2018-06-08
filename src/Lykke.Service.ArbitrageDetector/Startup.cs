@@ -63,19 +63,14 @@ namespace Lykke.Service.ArbitrageDetector
 
                 var builder = new ContainerBuilder();
 
-                builder.RegisterModule(new ServiceModule(appSettings, Log));
+                builder.RegisterModule(new CommonModule(Log));
+                builder.RegisterModule(new AspectsModule());
+                builder.RegisterModule(new RepositoriesModule(appSettings, Log));
+                builder.RegisterModule(new ServicesModule(appSettings, Log));
                 builder.Populate(services);
-
-
-
-                // Controllers
-
-                builder.RegisterType<ArbitrageDetectorController>()
-                    .As<ArbitrageDetectorController>()
-                    .EnableClassInterceptors()
-                    .InterceptedBy(typeof(CacheInterceptor))
-                    .InstancePerLifetimeScope();
-
+                // Controllers must be applied after builder.Populate():
+                // See http://autofaccn.readthedocs.io/en/latest/integration/aspnetcore.html#controllers-as-services
+                builder.RegisterModule(new ControllersModule());
 
                 ApplicationContainer = builder.Build();
                 return new AutofacServiceProvider(ApplicationContainer);
