@@ -13,7 +13,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 {
     [Produces("application/json")]
     [ExceptionToBadRequest]
-    [Cache(Duration = 30 * 1000)]
+    [Cache(Duration = 1000)]
     public class ArbitrageDetectorController : Controller
     {
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
