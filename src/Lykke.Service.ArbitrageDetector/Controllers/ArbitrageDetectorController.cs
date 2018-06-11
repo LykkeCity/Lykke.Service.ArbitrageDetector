@@ -26,9 +26,21 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [HttpGet]
         [Route("orderBooks")]
         [SwaggerOperation("OrderBooks")]
-        [ProducesResponseType(typeof(IEnumerable<OrderBookRow>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<OrderBook>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public virtual IActionResult OrderBooks(string exchange, string assetPair)
+        {
+            var result = _arbitrageDetectorService.GetOrderBooks(exchange, assetPair).Select(x => new OrderBook(x)).ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("newOrderBooks")]
+        [SwaggerOperation("NewOrderBooks")]
+        [ProducesResponseType(typeof(IEnumerable<OrderBookRow>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public virtual IActionResult NewOrderBooks(string exchange, string assetPair)
         {
             var result = _arbitrageDetectorService.GetOrderBooks(exchange, assetPair).Select(x => new OrderBookRow(x)).ToList();
 

@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Lykke.Service.ArbitrageDetector.Aspects.ExceptionHandling
 {
+    /// <summary>
+    /// Supress exceptions and return BadRequest.
+    /// </summary>
     public class ExceptionToBadRequestInterceptor : IInterceptor
     {
         private readonly ILog _log;

@@ -7,6 +7,9 @@ using Castle.DynamicProxy;
 
 namespace Lykke.Service.ArbitrageDetector.Aspects.Cache
 {
+    /// <summary>
+    /// If [Cache] applied on class then intercept every method wich has a result.
+    /// </summary>
     public class CacheInterceptor : IInterceptor
     {
         private readonly ICacheProvider _cache;

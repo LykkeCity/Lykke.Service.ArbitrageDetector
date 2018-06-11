@@ -56,9 +56,15 @@ namespace Lykke.Service.ArbitrageDetector.Client
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<OrderBookRow>> OrderBooksAsync(string exchange, string assetPair)
+        public async Task<IEnumerable<OrderBook>> OrderBooksAsync(string exchange, string assetPair)
         {
             return await _runner.RunAsync(() => _arbitrageDetectorApi.OrderBooksAsync(exchange, assetPair));
+        }
+
+        /// <inheritdoc />
+        public async Task<IEnumerable<OrderBookRow>> NewOrderBooksAsync(string exchange, string assetPair)
+        {
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.NewOrderBooksAsync(exchange, assetPair));
         }
 
         /// <inheritdoc />
