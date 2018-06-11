@@ -470,16 +470,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         #region IArbitrageDetectorService
 
-        public IEnumerable<OrderBook> GetOrderBooks()
-        {
-            if (!_orderBooks.Any())
-                return new List<OrderBook>();
-
-            return _orderBooks.Select(x => x.Value)
-                .OrderByDescending(x => x.Timestamp)
-                .ToList();
-        }
-
         public IEnumerable<OrderBook> GetOrderBooks(string exchange, string instrument)
         {
             if (!_orderBooks.Any())
@@ -574,7 +564,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             // Filter by asset pair
             var orderBooks = _orderBooks.Values.Where(x => x.AssetPair.Name.ToUpper().Trim() == assetPair.ToUpper().Trim()).ToList();
-            
+
             // Filter by exchanges
             if (isPublic && _s.PublicMatrixExchanges.Any())
             {
@@ -595,42 +585,49 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var matrixSide = uniqueExchanges.Count;
             for (var row = 0; row < matrixSide; row++)
             {
-                var cellRow = new List<MatrixCell>();
                 var orderBookRow = orderBooks[row];
+                var cellsRow = new List<MatrixCell>();
                 var isActual = (DateTime.UtcNow - orderBookRow.Timestamp).TotalSeconds < _s.ExpirationTimeInSeconds;
 
+                // Add ask and exchange
                 result.Exchanges.Add(new Exchange(uniqueExchanges[row], isActual));
                 result.Asks.Add(orderBookRow.BestAsk?.Price);
-                
+
                 for (var col = 0; col < matrixSide; col++)
                 {
                     var orderBookCol = orderBooks[col];
-                    
+
+                    // Add bid
                     if (row == 0)
                         result.Bids.Add(orderBookCol.BestBid?.Price);
 
-                    // The same exchanges
+                    // If the same exchanges than cell = null
+                    MatrixCell cell;
                     if (row == col)
                     {
-                        cellRow.Add(null);
+                        cell = null;
+                        cellsRow.Add(cell);
                         continue;
                     }
 
-                    MatrixCell matrixCell;
                     if (orderBookRow.BestAsk == null || orderBookCol.BestBid == null)
                     {
-                        matrixCell = new MatrixCell(null, null);
-                        cellRow.Add(matrixCell);
+                        cell = new MatrixCell(null, null);
+                        cellsRow.Add(cell);
                         continue;
                     }
 
                     var spread = (orderBookRow.BestAsk.Value.Price - orderBookCol.BestBid.Value.Price) / orderBookCol.BestBid.Value.Price * 100;
-                    matrixCell = new MatrixCell(spread, null);
-                    cellRow.Add(matrixCell);
+                    decimal? volume = null;
+                    if (spread < 0)
+                        volume = Arbitrage.GetArbitrageVolume(orderBookCol, orderBookRow);
+
+                    cell = new MatrixCell(spread, volume);
+                    cellsRow.Add(cell);
                 }
 
                 // row ends
-                result.Cells.Add(cellRow);
+                result.Cells.Add(cellsRow);
             }
 
             return result;
