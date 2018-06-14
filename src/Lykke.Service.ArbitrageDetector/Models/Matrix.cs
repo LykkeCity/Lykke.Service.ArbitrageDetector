@@ -25,10 +25,10 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public Matrix(DomainMatrix matrix)
         {
             if (matrix == null)
-                throw new ArgumentNullException(nameof(matrix) + "." + nameof(matrix.AssetPair));
+                throw new ArgumentNullException(nameof(matrix));
 
             if (string.IsNullOrWhiteSpace(matrix.AssetPair))
-                throw new ArgumentOutOfRangeException(nameof(matrix) + "." + nameof(matrix.AssetPair));
+                throw new ArgumentOutOfRangeException(nameof(matrix.AssetPair));
 
             AssetPair = matrix.AssetPair;
             Exchanges = matrix.Exchanges.Select(x => new Exchange(x.Name, x.IsActual)).ToList();
