@@ -20,6 +20,7 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
         private readonly OrderBookValidator _orderBookValidator;
         private readonly OrderBookLykkeAssetsProvider _orderBookLykkeAssetsProvider;
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
+        private readonly ILykkeArbitrageDetectorService _lykkeArbitrageDetectorService;
         private readonly ILog _log;
 
         public RabbitMessageSubscriber(
@@ -30,6 +31,7 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
             OrderBookValidator orderBookValidator,
             OrderBookLykkeAssetsProvider orderBookLykkeAssetsProvider,
             IArbitrageDetectorService arbitrageDetectorService,
+            ILykkeArbitrageDetectorService lykkeArbitrageDetectorService,
             ILog log)
         {
             _connectionString = !string.IsNullOrWhiteSpace(connectionString) ? connectionString : throw new ArgumentNullException(nameof(connectionString));
@@ -40,6 +42,7 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
             _orderBookValidator = orderBookValidator ?? throw new ArgumentNullException(nameof(orderBookValidator));
             _orderBookLykkeAssetsProvider = orderBookLykkeAssetsProvider ?? throw new ArgumentNullException(nameof(orderBookLykkeAssetsProvider));
             _arbitrageDetectorService = arbitrageDetectorService ?? throw new ArgumentNullException(nameof(arbitrageDetectorService));
+            _lykkeArbitrageDetectorService = lykkeArbitrageDetectorService ?? throw new ArgumentNullException(nameof(lykkeArbitrageDetectorService));
             _log = log ?? throw new ArgumentNullException(nameof(log));
         }
 
@@ -72,8 +75,13 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
                 var isValid = _orderBookValidator.IsValid(orderBook);
                 if (isValid)
                 {
-                    //await _orderBookLykkeAssetsProvider.ProvideAssetsIfLykke(orderBook);
                     _arbitrageDetectorService.Process(orderBook);
+
+                    if (string.Equals(orderBook.Source, "lykke"))
+                    {
+                        await _orderBookLykkeAssetsProvider.ProvideAssetsIfLykke(orderBook);
+                        _lykkeArbitrageDetectorService.Process(orderBook);
+                    }
                 }
             }
             catch (Exception ex)

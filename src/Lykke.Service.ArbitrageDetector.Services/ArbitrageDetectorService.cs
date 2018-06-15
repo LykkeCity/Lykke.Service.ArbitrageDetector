@@ -86,9 +86,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
         public override async Task Execute()
         {
             await CalculateCrossRates();
-            await RefreshArbitrages();                                        
+            await RefreshArbitrages();
 
-            RestartIfNeeded();
+            await RestartIfNeeded();
         }
 
         public async Task<IEnumerable<CrossRate>> CalculateCrossRates()
@@ -101,7 +101,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             foreach (var @base in _s.BaseAssets)
             {
                 var target = new AssetPair(@base, _s.QuoteAsset);
-                var newActualCrossRatesFrom1Or2OrderBooks = CrossRate.GetCrossRatesFrom1Or2Pairs(orderBooks, target);
+                var newActualCrossRatesFrom1Or2OrderBooks = CrossRate.GetCrossRatesFrom1Or2Pairs(target, orderBooks);
                 newActualCrossRates.AddRange(newActualCrossRatesFrom1Or2OrderBooks);
 
                 //var newActualCrossRatesFrom3OrderBooks = CrossRate.GetCrossRatesFrom3Pairs(orderBooks, target);
@@ -533,7 +533,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     var spread = (orderBookRow.BestAsk.Value.Price - orderBookCol.BestBid.Value.Price) / orderBookCol.BestBid.Value.Price * 100;
                     decimal? volume = null;
                     if (spread < 0)
-                        volume = Arbitrage.GetArbitrageVolume(orderBookCol, orderBookRow);
+                        volume = Arbitrage.GetArbitrageVolume(orderBookCol.Bids, orderBookRow.Asks);
 
                     cell = new MatrixCell(spread, volume);
                     cellsRow.Add(cell);

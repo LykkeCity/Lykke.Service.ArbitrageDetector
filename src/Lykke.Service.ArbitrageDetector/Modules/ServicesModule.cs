@@ -58,6 +58,13 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             //    .AutoActivate()
             //    .SingleInstance();
 
+            builder.RegisterType<LykkeArbitrageDetectorService>()
+                .As<ILykkeArbitrageDetectorService>()
+                .As<IStartable>()
+                .As<IStopable>()
+                .AutoActivate()
+                .SingleInstance();
+
             builder.RegisterInstance(new AssetsService(new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl)))
                 .As<IAssetsService>()
                 .SingleInstance();

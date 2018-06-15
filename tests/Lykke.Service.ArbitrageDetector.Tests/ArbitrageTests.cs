@@ -20,7 +20,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var orderBook1 = new OrderBook(exchangeName, assetPair, bids, asks, timestamp);
             var orderBook2 = new OrderBook(exchangeName, assetPair, bids, asks, timestamp);
 
-            var volume = Arbitrage.GetArbitrageVolume(orderBook1, orderBook2);
+            var volume = Arbitrage.GetArbitrageVolume(orderBook1.Bids, orderBook2.Asks);
             Assert.Null(volume);
         }
 
@@ -46,7 +46,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var orderBook1 = new OrderBook(exchangeName, assetPair, bids, asks, timestamp);
             var orderBook2 = new OrderBook(exchangeName, assetPair, bids, asks, timestamp);
 
-            var volume = Arbitrage.GetArbitrageVolume(orderBook1, orderBook2);
+            var volume = Arbitrage.GetArbitrageVolume(orderBook1.Bids, orderBook2.Asks);
             Assert.Null(volume);
         }
 
@@ -73,7 +73,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var bidsOrderBook = new OrderBook(exchangeName, assetPair, bids, new List<VolumePrice>(), timestamp);
             var asksOrderBook = new OrderBook(exchangeName, assetPair, new List<VolumePrice>(), asks, timestamp);
 
-            var volume = Arbitrage.GetArbitrageVolume(bidsOrderBook, asksOrderBook);
+            var volume = Arbitrage.GetArbitrageVolume(bidsOrderBook.Bids, asksOrderBook.Asks);
             Assert.Equal(9, volume);
         }
 
@@ -109,7 +109,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var bidsOrderBook = new OrderBook(exchangeName, assetPair, bids, new List<VolumePrice>(), timestamp);
             var asksOrderBook = new OrderBook(exchangeName, assetPair, new List<VolumePrice>(), asks, timestamp);
 
-            var volume = Arbitrage.GetArbitrageVolume(bidsOrderBook, asksOrderBook);
+            var volume = Arbitrage.GetArbitrageVolume(bidsOrderBook.Bids, asksOrderBook.Asks);
             Assert.Equal(41, volume);
         }
 
@@ -154,7 +154,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var bidsOrderBook = new OrderBook(exchangeName, assetPair, bids, new List<VolumePrice>(), timestamp);
             var asksOrderBook = new OrderBook(exchangeName, assetPair, new List<VolumePrice>(), asks, timestamp);
 
-            var volume = Arbitrage.GetArbitrageVolume(bidsOrderBook, asksOrderBook);
+            var volume = Arbitrage.GetArbitrageVolume(bidsOrderBook.Bids, asksOrderBook.Asks);
             Assert.Equal(70, volume);
         }
     }
