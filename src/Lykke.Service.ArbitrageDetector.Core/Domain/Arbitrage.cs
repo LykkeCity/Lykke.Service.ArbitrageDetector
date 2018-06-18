@@ -134,25 +134,25 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Calculates best volume (biggest spread strategy).
         /// </summary>
-        /// <param name="bidsOrderBook">OrderBook with bids.</param>
-        /// <param name="asksOrderBook">OrderBook with asks.</param>
+        /// <param name="sourceBids">OrderBook with bids.</param>
+        /// <param name="sourceAsks">OrderBook with asks.</param>
         /// <returns></returns>
-        public static decimal? GetArbitrageVolume(OrderBook bidsOrderBook, OrderBook asksOrderBook)
+        public static decimal? GetArbitrageVolume(IReadOnlyCollection<VolumePrice> sourceBids, IReadOnlyCollection<VolumePrice> sourceAsks)
         {
-            if (bidsOrderBook.Bids == null)
-                throw new ArgumentException($"{nameof(bidsOrderBook)}.{nameof(bidsOrderBook.Bids)}");
+            if (sourceBids == null)
+                throw new ArgumentException($"{nameof(sourceBids)}");
 
-            if (asksOrderBook.Asks == null)
-                throw new ArgumentException($"{nameof(asksOrderBook)}.{nameof(asksOrderBook.Asks)}");
+            if (sourceAsks == null)
+                throw new ArgumentException($"{nameof(sourceAsks)}");
+
+            if (!sourceBids.Any() || !sourceAsks.Any() || sourceBids.Max(x => x.Price) < sourceAsks.Min(x => x.Price))
+                return null; // no arbitrage
 
             // Clone bids and asks (that in arbitrage only)
             var bids = new List<VolumePrice>();
             var asks = new List<VolumePrice>();
-            bids.AddRange(bidsOrderBook.Bids);
-            asks.AddRange(asksOrderBook.Asks);
-
-            if (!bidsOrderBook.Bids.Any() || !asksOrderBook.Asks.Any() || bids.Max(x => x.Price) < asks.Min(x => x.Price))
-                return null; // no arbitrage
+            bids.AddRange(sourceBids);
+            asks.AddRange(sourceAsks);
 
             decimal result = 0;
             do

@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using Lykke.Service.ArbitrageDetector.Core.Domain;
 
-namespace Lykke.Service.ArbitrageDetector.Core.Domain
+namespace Lykke.Service.ArbitrageDetector.Models
 {
     /// <summary>
     /// Represents an arbitrage situation.
@@ -64,14 +63,38 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         {
             BaseAssetPair = baseAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(baseAssetPair)) : baseAssetPair;
             CrossAssetPair = crossAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(crossAssetPair)) : crossAssetPair;
-            Spread = spread;
+            Spread = Math.Round(spread, 8);
             BaseSide = string.IsNullOrWhiteSpace(baseSide) ? throw new ArgumentNullException(nameof(baseSide)) : baseSide;
-            ConversionPath = string.IsNullOrWhiteSpace(conversionPath) ? throw new ArgumentNullException(nameof(conversionPath)) : conversionPath;
-            Volume = volume;
-            BaseAsk = baseAsk;
-            BaseBid = baseBid;
-            CrossAsk = crossAsk;
-            CrossBid = crossBid;
+            ConversionPath = string.IsNullOrWhiteSpace(conversionPath) ? throw new ArgumentNullException(nameof(conversionPath)) : conversionPath.Replace("lykke-", "");
+            Volume = Math.Round(volume, 8);
+            BaseAsk = baseAsk.HasValue ? Math.Round(baseAsk.Value, 8) : (decimal?)null;
+            BaseBid = baseBid.HasValue ? Math.Round(baseBid.Value, 8) : (decimal?)null;
+            CrossAsk = crossAsk.HasValue ? Math.Round(crossAsk.Value, 8) : (decimal?)null;
+            CrossBid = crossBid.HasValue ? Math.Round(crossBid.Value, 8) : (decimal?)null;
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="domain"></param>
+        public LykkeArbitrageRow(Core.Domain.LykkeArbitrageRow domain)
+        {
+            BaseAssetPair = new AssetPair(domain.BaseAssetPair);
+            CrossAssetPair = new AssetPair(domain.CrossAssetPair);
+            Spread = Math.Round(domain.Spread, 8);
+            BaseSide = domain.BaseSide;
+            ConversionPath = domain.ConversionPath.Replace("lykke-", "");
+            Volume = Math.Round(domain.Volume, 8);
+            BaseAsk = domain.BaseAsk.HasValue ? Math.Round(domain.BaseAsk.Value, 8) : (decimal?)null;
+            BaseBid = domain.BaseBid.HasValue ? Math.Round(domain.BaseBid.Value, 8) : (decimal?)null;
+            CrossAsk = domain.CrossAsk.HasValue ? Math.Round(domain.CrossAsk.Value, 8) : (decimal?)null;
+            CrossBid = domain.CrossBid.HasValue ? Math.Round(domain.CrossBid.Value, 8) : (decimal?)null;
+        }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return ConversionPath;
         }
     }
 }

@@ -38,6 +38,9 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
         [Get("/publicMatrixAssetPairs")]
         Task<IEnumerable<string>> PublicMatrixAssetPairs();
 
+        [Get("/lykkeArbitrages")]
+        Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitrages();
+
         [Get("/getSettings")]
         Task<Settings> GetSettings();
 

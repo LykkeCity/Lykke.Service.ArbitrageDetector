@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using DomainMatrix = Lykke.Service.ArbitrageDetector.Core.Domain.Matrix;
-using DomainMatrixCell = Lykke.Service.ArbitrageDetector.Core.Domain.MatrixCell;
 
 namespace Lykke.Service.ArbitrageDetector.Models
 {

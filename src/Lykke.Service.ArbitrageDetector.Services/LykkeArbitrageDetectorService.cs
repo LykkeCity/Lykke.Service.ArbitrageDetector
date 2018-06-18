@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Common;
@@ -11,8 +9,6 @@ using Lykke.Service.ArbitrageDetector.Core.Utils;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
-using Lykke.Service.ArbitrageDetector.Services.Models;
-using MoreLinq;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
@@ -146,12 +142,15 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         if (baseSide == "bid")
                             volume = Arbitrage.GetArbitrageVolume(baseOrderBook.Bids, bestArbitrageBySpread.Asks);
 
-                        result.Add(baseOrderBook.AssetPair, new LykkeArbitrageRow(baseOrderBook.AssetPair, bestArbitrageBySpread.AssetPair,
+                        result.AddOrUpdate(baseOrderBook.AssetPair, new LykkeArbitrageRow(baseOrderBook.AssetPair, bestArbitrageBySpread.AssetPair,
                             minSpread, baseSide, bestArbitrageBySpread.ConversionPath, volume.Value,
                             baseOrderBook.BestBid?.Price, baseOrderBook.BestAsk?.Price, bestArbitrageBySpread.BestBid?.Price, bestArbitrageBySpread.BestAsk?.Price));
                     }
                 }
             }
+
+            _arbitrages.Clear();
+            _arbitrages.AddRange(result);
         }
 
         public IEnumerable<LykkeArbitrageRow> GetArbitrages()

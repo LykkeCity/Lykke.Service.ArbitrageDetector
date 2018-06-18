@@ -7,6 +7,7 @@ using Lykke.Service.ArbitrageDetector.Aspects.ExceptionHandling;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Models;
 using Microsoft.AspNetCore.Mvc;
+using MoreLinq;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.ArbitrageDetector.Controllers
@@ -17,10 +18,12 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
     public class ArbitrageDetectorController : Controller
     {
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
+        private readonly ILykkeArbitrageDetectorService _lykkeArbitrageDetectorService;
 
-        public ArbitrageDetectorController(IArbitrageDetectorService arbitrageDetectorService)
+        public ArbitrageDetectorController(IArbitrageDetectorService arbitrageDetectorService, ILykkeArbitrageDetectorService lykkeArbitrageDetectorService)
         {
             _arbitrageDetectorService = arbitrageDetectorService;
+            _lykkeArbitrageDetectorService = lykkeArbitrageDetectorService;
         }
 
         [HttpGet]
@@ -144,6 +147,21 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         {
             var settings = _arbitrageDetectorService.GetSettings();
             var result = settings.PublicMatrixAssetPairs;
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("lykkeArbitrages")]
+        [SwaggerOperation("LykkeArbitrages")]
+        [ProducesResponseType(typeof(IEnumerable<LykkeArbitrageRow>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public IActionResult LykkeArbitrages()
+        {
+            var result = _lykkeArbitrageDetectorService.GetArbitrages()
+                .Select(x => new LykkeArbitrageRow(x))
+                .OrderBy(x => x.BaseAssetPair.Name)
+                .ToList();
 
             return Ok(result);
         }
