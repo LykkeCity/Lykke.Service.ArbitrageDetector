@@ -47,6 +47,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             OriginalOrderBooks = originalOrderBooks ?? throw new ArgumentNullException(nameof(originalOrderBooks));
         }
 
+
         /// <summary>
         /// From one order book if equal or reversed.
         /// </summary>
@@ -344,6 +345,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return result;
         }
 
+
         /// <summary>
         /// Get cross rates from 1 or 2 asset pairs.
         /// </summary>
@@ -449,6 +451,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return GetCrossRatesFrom1Or2Pairs(target, new List<OrderBook> { orderBook }, allOrderBooks);
         }
 
+
         /// <summary>
         /// Get cross rates from 3 asset pairs.
         /// </summary>
@@ -526,6 +529,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         {
             return GetCrossRatesFrom3Pairs(target, new List<OrderBook> { orderBook }, allOrderBooks);
         }
+
 
         /// <summary>
         /// Formats conversion path.

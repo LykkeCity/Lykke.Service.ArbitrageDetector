@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,7 +16,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
     public class LykkeArbitrageDetectorService : TimerPeriod, ILykkeArbitrageDetectorService
     {
         private readonly ConcurrentDictionary<AssetPairSource, OrderBook> _orderBooks;
-        private readonly ConcurrentDictionary<AssetPair, LykkeArbitrageRow> _arbitrages;
+        private readonly object _lockArbitrages = new object();
+        private readonly List<LykkeArbitrageRow> _arbitrages;
         private ISettings _s;
         private readonly ILog _log;
         private readonly ISettingsRepository _settingsRepository;
@@ -25,7 +27,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             : base(100, log)
         {
             _orderBooks = new ConcurrentDictionary<AssetPairSource, OrderBook>();
-            _arbitrages = new ConcurrentDictionary<AssetPair, LykkeArbitrageRow>();
+            _arbitrages = new List<LykkeArbitrageRow>();
 
             _log = log;
             shutdownManager?.Register(this);
@@ -76,25 +78,34 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public override async Task Execute()
         {
-            CalculateArbitrages();
+            CalculateAndRefreshArbitrages();
         }
 
-        private void CalculateArbitrages()
+        private void CalculateAndRefreshArbitrages()
         {
-            var result = new ConcurrentDictionary<AssetPair, LykkeArbitrageRow>();
+            var lykkeArbitrages = GetArbitrages(_orderBooks.Values.ToList());
 
-            var orderBooks = _orderBooks.Values.ToList();
+            lock (_lockArbitrages)
+            {
+                _arbitrages.Clear();
+                _arbitrages.AddRange(lykkeArbitrages);
+            }
+        }
+
+        private IEnumerable<LykkeArbitrageRow> GetArbitrages(IReadOnlyCollection<OrderBook> orderBooks)
+        {
+            var result = new List<LykkeArbitrageRow>();
 
             for (var i = 0; i < orderBooks.Count; i++)
             {
                 if (i == orderBooks.Count - 1)
                     break;
 
-                var baseOrderBook = orderBooks[i];
+                var baseOrderBook = orderBooks.ElementAt(i);
 
                 for (var j = i + 1; j < orderBooks.Count; j++)
                 {
-                    var currentOrderBook = orderBooks[j];
+                    var currentOrderBook = orderBooks.ElementAt(j);
 
                     // Calculate all cross rates between base order book and current order book
                     var crossPairs = new Dictionary<AssetPairSource, CrossRate>();
@@ -106,61 +117,66 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     var minSpread = decimal.MaxValue;
                     CrossRate bestArbitrageBySpread = null;
                     string baseSide = null;
-                    decimal? volume = null;
-
                     // Compare each cross rate with base order book
                     foreach (var crossRate in crossPairs.Values)
                     {
-                        if (crossRate.BestBid.HasValue && baseOrderBook.BestAsk.HasValue && crossRate.BestBid.Value.Price > baseOrderBook.BestAsk.Value.Price)
-                        {
-                            var spread = Arbitrage.GetSpread(crossRate.BestBid.Value.Price, baseOrderBook.BestAsk.Value.Price);
-                            if (spread < minSpread)
-                            {
-                                minSpread = spread;
-                                bestArbitrageBySpread = crossRate;
-                                baseSide = "ask";
-                            }
-                        }
-
-                        if (crossRate.BestAsk.HasValue && baseOrderBook.BestBid.HasValue && baseOrderBook.BestBid.Value.Price > crossRate.BestAsk.Value.Price)
+                        // baseOrderBook.BestBid > crossRate.BestAsk
+                        if (baseOrderBook.BestBid.HasValue && crossRate.BestAsk.HasValue && baseOrderBook.BestBid.Value.Price > crossRate.BestAsk.Value.Price)
                         {
                             var spread = Arbitrage.GetSpread(baseOrderBook.BestBid.Value.Price, crossRate.BestAsk.Value.Price);
                             if (spread < minSpread)
                             {
                                 minSpread = spread;
                                 bestArbitrageBySpread = crossRate;
-                                baseSide = "bid";
+                                baseSide = "Bid";
+                            }
+                        }
+
+                        // crossRate.BestBid > baseOrderBook.BestAsk
+                        if (baseOrderBook.BestAsk.HasValue && crossRate.BestBid.HasValue && crossRate.BestBid.Value.Price > baseOrderBook.BestAsk.Value.Price)
+                        {
+                            var spread = Arbitrage.GetSpread(crossRate.BestBid.Value.Price, baseOrderBook.BestAsk.Value.Price);
+                            if (spread < minSpread)
+                            {
+                                minSpread = spread;
+                                bestArbitrageBySpread = crossRate;
+                                baseSide = "Ask";
                             }
                         }
                     }
 
                     if (minSpread < 0)
                     {
-                        if (baseSide == "ask")
-                            volume = Arbitrage.GetArbitrageVolume(bestArbitrageBySpread.Bids, baseOrderBook.Asks);
+                        decimal? volume = null;
 
-                        if (baseSide == "bid")
+                        if (baseSide == "Bid")
                             volume = Arbitrage.GetArbitrageVolume(baseOrderBook.Bids, bestArbitrageBySpread.Asks);
 
-                        result.AddOrUpdate(baseOrderBook.AssetPair, new LykkeArbitrageRow(baseOrderBook.AssetPair, bestArbitrageBySpread.AssetPair,
+                        if (baseSide == "Ask")
+                            volume = Arbitrage.GetArbitrageVolume(bestArbitrageBySpread.Bids, baseOrderBook.Asks);
+
+                        if (!volume.HasValue)
+                            throw new NullReferenceException(nameof(volume));
+
+                        result.Add(new LykkeArbitrageRow(baseOrderBook.AssetPair, bestArbitrageBySpread.AssetPair,
                             minSpread, baseSide, bestArbitrageBySpread.ConversionPath, volume.Value,
                             baseOrderBook.BestBid?.Price, baseOrderBook.BestAsk?.Price, bestArbitrageBySpread.BestBid?.Price, bestArbitrageBySpread.BestAsk?.Price));
                     }
                 }
             }
 
-            _arbitrages.Clear();
-            _arbitrages.AddRange(result);
+            return result;
         }
 
         public IEnumerable<LykkeArbitrageRow> GetArbitrages()
         {
-            if (!_arbitrages.Any())
-                return new List<LykkeArbitrageRow>();
+            var copy = new List<LykkeArbitrageRow>();
+            lock (_lockArbitrages)
+            {
+                copy.AddRange(_arbitrages);
+            }
 
-            return _arbitrages.Select(x => x.Value)
-                .OrderBy(x => x.BaseAssetPair.Name)
-                .ToList();
+            return copy.OrderBy(x => x.BaseAssetPair.Name).ToList();
         }
     }
 }
