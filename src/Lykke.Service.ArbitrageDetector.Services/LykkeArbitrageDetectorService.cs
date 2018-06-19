@@ -158,7 +158,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         if (!volume.HasValue)
                             throw new NullReferenceException(nameof(volume));
 
-                        result.Add(new LykkeArbitrageRow(baseOrderBook.AssetPair, bestArbitrageBySpread.AssetPair,
+                        result.Add(new LykkeArbitrageRow(baseOrderBook.AssetPair, currentOrderBook.AssetPair,
                             minSpread, baseSide, bestArbitrageBySpread.ConversionPath, volume.Value,
                             baseOrderBook.BestBid?.Price, baseOrderBook.BestAsk?.Price, bestArbitrageBySpread.BestBid?.Price, bestArbitrageBySpread.BestAsk?.Price));
                     }
@@ -176,7 +176,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 copy.AddRange(_arbitrages);
             }
 
-            return copy.OrderBy(x => x.BaseAssetPair.Name).ToList();
+            return copy.OrderBy(x => x.BaseAssetPair.Name).ThenBy(x => x.CrossAssetPair.Name).ToList();
         }
     }
 }
