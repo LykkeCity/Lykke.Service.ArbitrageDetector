@@ -103,6 +103,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 var baseOrderBook = orderBooks.ElementAt(i);
 
+                var minSpread = decimal.MaxValue;
+                OrderBook bestOrderBook = null;
+                CrossRate bestArbitrageBySpread = null;
+                string baseSide = null;
+
                 for (var j = i + 1; j < orderBooks.Count; j++)
                 {
                     var currentOrderBook = orderBooks.ElementAt(j);
@@ -114,9 +119,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     var crossRateFrom3Pairs = CrossRate.GetCrossRatesFrom3Pairs(baseOrderBook.AssetPair, currentOrderBook, orderBooks);
                     crossPairs.AddRange(crossRateFrom3Pairs);
 
-                    var minSpread = decimal.MaxValue;
-                    CrossRate bestArbitrageBySpread = null;
-                    string baseSide = null;
                     // Compare each cross rate with base order book
                     foreach (var crossRate in crossPairs.Values)
                     {
@@ -126,6 +128,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             var spread = Arbitrage.GetSpread(baseOrderBook.BestBid.Value.Price, crossRate.BestAsk.Value.Price);
                             if (spread < minSpread)
                             {
+                                bestOrderBook = currentOrderBook;
                                 minSpread = spread;
                                 bestArbitrageBySpread = crossRate;
                                 baseSide = "Bid";
@@ -138,30 +141,31 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             var spread = Arbitrage.GetSpread(crossRate.BestBid.Value.Price, baseOrderBook.BestAsk.Value.Price);
                             if (spread < minSpread)
                             {
+                                bestOrderBook = currentOrderBook;
                                 minSpread = spread;
                                 bestArbitrageBySpread = crossRate;
                                 baseSide = "Ask";
                             }
                         }
                     }
+                }
 
-                    if (minSpread < 0)
-                    {
-                        decimal? volume = null;
+                if (minSpread < 0)
+                {
+                    decimal? volume = null;
 
-                        if (baseSide == "Bid")
-                            volume = Arbitrage.GetArbitrageVolume(baseOrderBook.Bids, bestArbitrageBySpread.Asks);
+                    if (baseSide == "Bid")
+                        volume = Arbitrage.GetArbitrageVolume(baseOrderBook.Bids, bestArbitrageBySpread.Asks);
 
-                        if (baseSide == "Ask")
-                            volume = Arbitrage.GetArbitrageVolume(bestArbitrageBySpread.Bids, baseOrderBook.Asks);
+                    if (baseSide == "Ask")
+                        volume = Arbitrage.GetArbitrageVolume(bestArbitrageBySpread.Bids, baseOrderBook.Asks);
 
-                        if (!volume.HasValue)
-                            throw new NullReferenceException(nameof(volume));
+                    if (!volume.HasValue)
+                        throw new NullReferenceException(nameof(volume));
 
-                        result.Add(new LykkeArbitrageRow(baseOrderBook.AssetPair, currentOrderBook.AssetPair,
-                            minSpread, baseSide, bestArbitrageBySpread.ConversionPath, volume.Value,
-                            baseOrderBook.BestBid?.Price, baseOrderBook.BestAsk?.Price, bestArbitrageBySpread.BestBid?.Price, bestArbitrageBySpread.BestAsk?.Price));
-                    }
+                    result.Add(new LykkeArbitrageRow(baseOrderBook.AssetPair, bestOrderBook.AssetPair,
+                        minSpread, baseSide, bestArbitrageBySpread.ConversionPath, volume.Value,
+                        baseOrderBook.BestBid?.Price, baseOrderBook.BestAsk?.Price, bestArbitrageBySpread.BestBid?.Price, bestArbitrageBySpread.BestAsk?.Price));
                 }
             }
 

@@ -27,7 +27,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 new VolumePrice(8900.12345677m, 3)
             };
 
-
             void Construct1() => new OrderBook("", assetPair, bids, asks, timestamp);
             Assert.Throws<ArgumentException>((Action)Construct1);
 
