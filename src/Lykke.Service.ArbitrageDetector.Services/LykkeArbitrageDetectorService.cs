@@ -160,7 +160,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             // Filter by basePair
             if (!string.IsNullOrWhiteSpace(basePair))
-                copy = copy.Where(x => x.BaseAssetPair.Name == basePair).ToList();
+                copy = copy.Where(x => string.Equals(x.BaseAssetPair.Name, basePair, StringComparison.OrdinalIgnoreCase)).ToList();
 
             var groupedByBasePair = copy.GroupBy(x => x.BaseAssetPair);
             foreach (var basePairArbitrages in groupedByBasePair)
@@ -168,7 +168,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 var baseArbitrages = basePairArbitrages.ToList();
 
                 // No base pair
-                if (string.IsNullOrEmpty(basePair))
+                if (string.IsNullOrWhiteSpace(basePair))
                 {
                     // Best cross pair for each base pair
                     var bestBySpread = baseArbitrages.MinBy(x => x.Spread);
@@ -188,7 +188,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     else
                     {
                         // Filter by cross pair
-                        baseArbitrages = baseArbitrages.Where(x => x.CrossAssetPair.Name == crossPair).ToList();
+                        baseArbitrages = baseArbitrages.Where(x => string.Equals(x.CrossAssetPair.Name, crossPair, StringComparison.OrdinalIgnoreCase)).ToList();
 
                         var groupedByCrossPair = baseArbitrages.GroupBy(x => x.CrossAssetPair);
                         foreach (var baseCrossPairsArbitrages in groupedByCrossPair)
