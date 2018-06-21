@@ -7,7 +7,6 @@ using Lykke.Service.ArbitrageDetector.Aspects.ExceptionHandling;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Models;
 using Microsoft.AspNetCore.Mvc;
-using MoreLinq;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.ArbitrageDetector.Controllers
@@ -166,7 +165,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
+        [HttpGet, DoNotCache]
         [Route("getSettings")]
         [SwaggerOperation("GetSettings")]
         [ProducesResponseType(typeof(Models.Settings), (int)HttpStatusCode.OK)]
@@ -179,7 +178,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
+        [HttpPost, DoNotCache]
         [Route("setSettings")]
         [SwaggerOperation("SetSettings")]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
