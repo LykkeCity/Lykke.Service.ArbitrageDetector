@@ -71,5 +71,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             CrossAsk = crossAsk;
             CrossBid = crossBid;
         }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return BaseAssetPair + "-" + CrossAssetPair + " : " + ConversionPath;
+        }
     }
 }
