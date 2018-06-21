@@ -198,6 +198,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                         possibleArbitrages++;
 
+                        // Filtering by spread
                         var spread = Arbitrage.GetSpread(bidPrice, askPrice);
                         if (_s.MinSpread < 0 && spread < _s.MinSpread)
                             continue;
@@ -205,6 +206,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var bidVolume = bid.Volume;
                         var askVolume = ask.Volume;
                         var volume = askVolume < bidVolume ? askVolume : bidVolume;
+                        // Filtering by PnL
                         var pnL = Arbitrage.GetPnL(bidPrice, askPrice, volume);
                         if (_s.MinimumPnL > 0 && pnL < _s.MinimumPnL)
                             continue;
@@ -213,6 +215,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         if (newArbitrages.TryGetValue(key, out var existed))
                         {
                             var newpnL = Arbitrage.GetPnL(bidPrice, askPrice, volume);
+                            // Best PnL
                             if (newpnL <= existed.PnL)
                                 continue;
 

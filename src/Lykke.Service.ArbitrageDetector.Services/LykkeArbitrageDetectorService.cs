@@ -10,6 +10,7 @@ using Lykke.Service.ArbitrageDetector.Core.Utils;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
+using MoreLinq;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
@@ -92,7 +93,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
         }
 
-        private IEnumerable<LykkeArbitrageRow> GetArbitrages(IReadOnlyCollection<OrderBook> orderBooks)
+        private IReadOnlyCollection<LykkeArbitrageRow> GetArbitrages(IReadOnlyCollection<OrderBook> orderBooks)
         {
             var result = new List<LykkeArbitrageRow>();
 
@@ -101,75 +102,50 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 if (i == orderBooks.Count - 1)
                     break;
 
-                var baseOrderBook = orderBooks.ElementAt(i);
-
-                var minSpread = decimal.MaxValue;
-                OrderBook bestOrderBook = null;
-                CrossRate bestArbitrageBySpread = null;
-                string baseSide = null;
-
+                var basePair = orderBooks.ElementAt(i);
                 for (var j = i + 1; j < orderBooks.Count; j++)
                 {
-                    var currentOrderBook = orderBooks.ElementAt(j);
+                    var crossPair = orderBooks.ElementAt(j);
 
-                    // Calculate all cross rates between base order book and current order book
-                    var crossPairs = new Dictionary<AssetPairSource, CrossRate>();
-                    var crossRateFrom1Or2Pairs = CrossRate.GetCrossRatesFrom1Or2Pairs(baseOrderBook.AssetPair, currentOrderBook, orderBooks);
-                    crossPairs.AddRange(crossRateFrom1Or2Pairs);
-                    var crossRateFrom3Pairs = CrossRate.GetCrossRatesFrom3Pairs(baseOrderBook.AssetPair, currentOrderBook, orderBooks);
-                    crossPairs.AddRange(crossRateFrom3Pairs);
+                    // Calculate all cross pairs between base order book and current order book
+                    var crossRates = new Dictionary<AssetPairSource, CrossRate>();
+                    var crossRateFrom1Or2Pairs = CrossRate.GetCrossRatesFrom1Or2Pairs(basePair.AssetPair, crossPair, orderBooks);
+                    crossRates.AddRange(crossRateFrom1Or2Pairs);
+                    var crossRateFrom3Pairs = CrossRate.GetCrossRatesFrom3Pairs(basePair.AssetPair, crossPair, orderBooks);
+                    crossRates.AddRange(crossRateFrom3Pairs);
 
-                    // Compare each cross rate with base order book
-                    foreach (var crossRate in crossPairs.Values)
+                    // Compare each cross pair with base pair
+                    foreach (var crossRate in crossRates.Values)
                     {
-                        // baseOrderBook.BestBid > crossRate.BestAsk
-                        if (baseOrderBook.BestBid.HasValue && crossRate.BestAsk.HasValue && baseOrderBook.BestBid.Value.Price > crossRate.BestAsk.Value.Price)
+                        var spread = decimal.MaxValue;
+                        decimal volume = 0;
+                        string baseSide = null;
+                        
+                        if (basePair.BestBid?.Price > crossRate.BestAsk?.Price)
                         {
-                            var spread = Arbitrage.GetSpread(baseOrderBook.BestBid.Value.Price, crossRate.BestAsk.Value.Price);
-                            if (spread < minSpread)
-                            {
-                                bestOrderBook = currentOrderBook;
-                                minSpread = spread;
-                                bestArbitrageBySpread = crossRate;
-                                baseSide = "Bid";
-                            }
+                            spread = Arbitrage.GetSpread(basePair.BestBid.Value.Price, crossRate.BestAsk.Value.Price);
+                            volume = Arbitrage.GetArbitrageVolume(basePair.Bids, crossRate.Asks) ?? throw new InvalidOperationException("Every arbitrage must have volume");
+                            baseSide = "Bid";
                         }
 
-                        // crossRate.BestBid > baseOrderBook.BestAsk
-                        if (baseOrderBook.BestAsk.HasValue && crossRate.BestBid.HasValue && crossRate.BestBid.Value.Price > baseOrderBook.BestAsk.Value.Price)
+                        if (crossRate.BestBid?.Price > basePair.BestAsk?.Price)
                         {
-                            var spread = Arbitrage.GetSpread(crossRate.BestBid.Value.Price, baseOrderBook.BestAsk.Value.Price);
-                            if (spread < minSpread)
-                            {
-                                bestOrderBook = currentOrderBook;
-                                minSpread = spread;
-                                bestArbitrageBySpread = crossRate;
-                                baseSide = "Ask";
-                            }
+                            spread = Arbitrage.GetSpread(crossRate.BestBid.Value.Price, basePair.BestAsk.Value.Price);
+                            volume = Arbitrage.GetArbitrageVolume(crossRate.Bids, basePair.Asks) ?? throw new InvalidOperationException("Every arbitrage must have volume");
+                            baseSide = "Ask";
                         }
+
+                        if (string.IsNullOrWhiteSpace(baseSide)) // no arbitrages
+                            continue;
+
+                        var lykkeArbitrage = new LykkeArbitrageRow(basePair.AssetPair, crossPair.AssetPair, spread, baseSide, crossRate.ConversionPath,
+                            volume, basePair.BestBid?.Price, basePair.BestAsk?.Price, crossPair.BestBid?.Price, crossPair.BestAsk?.Price);
+                        result.Add(lykkeArbitrage);
                     }
-                }
-
-                if (minSpread < 0)
-                {
-                    decimal? volume = null;
-
-                    if (baseSide == "Bid")
-                        volume = Arbitrage.GetArbitrageVolume(baseOrderBook.Bids, bestArbitrageBySpread.Asks);
-
-                    if (baseSide == "Ask")
-                        volume = Arbitrage.GetArbitrageVolume(bestArbitrageBySpread.Bids, baseOrderBook.Asks);
-
-                    if (!volume.HasValue)
-                        throw new NullReferenceException(nameof(volume));
-
-                    result.Add(new LykkeArbitrageRow(baseOrderBook.AssetPair, bestOrderBook.AssetPair,
-                        minSpread, baseSide, bestArbitrageBySpread.ConversionPath, volume.Value,
-                        baseOrderBook.BestBid?.Price, baseOrderBook.BestAsk?.Price, bestArbitrageBySpread.BestBid?.Price, bestArbitrageBySpread.BestAsk?.Price));
                 }
             }
 
-            return result;
+            return result.OrderBy(x => x.BaseAssetPair).ThenBy(x => x.CrossAssetPair).ToList();
         }
 
         public IEnumerable<LykkeArbitrageRow> GetArbitrages()
@@ -180,7 +156,24 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 copy.AddRange(_arbitrages);
             }
 
-            return copy.OrderBy(x => x.BaseAssetPair.Name).ThenBy(x => x.CrossAssetPair.Name).ToList();
+            var result = new List<LykkeArbitrageRow>();
+
+            var groupedByBasePair = copy.GroupBy(x => x.BaseAssetPair);
+            foreach (var basePairArbitrages in groupedByBasePair)
+            {
+                var baseArbitrages = basePairArbitrages.ToList();
+
+                var groupedByCrossPair = baseArbitrages.GroupBy(x => x.CrossAssetPair);
+                foreach (var baseCrossPairsArbitrages in groupedByCrossPair)
+                {
+                    var baseCrossArbitrages = baseCrossPairsArbitrages.ToList();
+
+                    var bestBySpread = baseCrossArbitrages.MinBy(x => x.Spread);
+                    result.Add(bestBySpread);
+                }
+            }
+
+            return result;
         }
     }
 }
