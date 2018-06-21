@@ -9,7 +9,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
     internal interface IArbitrageDetectorApi
     {
         [Get("/orderBooks")]
-        Task<IEnumerable<OrderBook>> OrderBooksAsync(string exchange, string assetPair);
+        Task<IEnumerable<OrderBookRow>> OrderBooksAsync(string exchange, string assetPair);
 
         [Get("/newOrderBooks")]
         Task<IEnumerable<OrderBookRow>> NewOrderBooksAsync(string exchange, string assetPair);
