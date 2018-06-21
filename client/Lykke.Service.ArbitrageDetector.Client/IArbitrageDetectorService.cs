@@ -84,7 +84,7 @@ namespace Lykke.Service.ArbitrageDetector.Client
         /// Returns a collection of LykkeArbitrageRow entities.
         /// </summary>
         /// <returns>A collection of Lykke Arbitrage entities.</returns>
-        Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync();
+        Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync(string basePair, string crossPair);
 
         /// <summary>
         /// Get settings.

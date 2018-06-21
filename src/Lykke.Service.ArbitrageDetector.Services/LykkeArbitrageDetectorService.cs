@@ -139,7 +139,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             continue;
 
                         var lykkeArbitrage = new LykkeArbitrageRow(basePair.AssetPair, crossPair.AssetPair, spread, baseSide, crossRate.ConversionPath,
-                            volume, basePair.BestBid?.Price, basePair.BestAsk?.Price, crossPair.BestBid?.Price, crossPair.BestAsk?.Price);
+                            volume, basePair.BestBid?.Price, basePair.BestAsk?.Price, crossRate.BestBid?.Price, crossRate.BestAsk?.Price);
                         result.Add(lykkeArbitrage);
                     }
                 }
@@ -148,7 +148,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return result.OrderBy(x => x.BaseAssetPair).ThenBy(x => x.CrossAssetPair).ToList();
         }
 
-        public IEnumerable<LykkeArbitrageRow> GetArbitrages()
+        public IEnumerable<LykkeArbitrageRow> GetArbitrages(string basePair, string crossPair)
         {
             var copy = new List<LykkeArbitrageRow>();
             lock (_lockArbitrages)
@@ -158,19 +158,50 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             var result = new List<LykkeArbitrageRow>();
 
+            // Filter by basePair
+            if (!string.IsNullOrWhiteSpace(basePair))
+                copy = copy.Where(x => x.BaseAssetPair.Name == basePair).ToList();
+
             var groupedByBasePair = copy.GroupBy(x => x.BaseAssetPair);
             foreach (var basePairArbitrages in groupedByBasePair)
             {
                 var baseArbitrages = basePairArbitrages.ToList();
 
-                var groupedByCrossPair = baseArbitrages.GroupBy(x => x.CrossAssetPair);
-                foreach (var baseCrossPairsArbitrages in groupedByCrossPair)
+                // No base pair
+                if (string.IsNullOrEmpty(basePair))
                 {
-                    var baseCrossArbitrages = baseCrossPairsArbitrages.ToList();
-
-                    var bestBySpread = baseCrossArbitrages.MinBy(x => x.Spread);
+                    // Best cross pair for each base pair
+                    var bestBySpread = baseArbitrages.MinBy(x => x.Spread);
                     result.Add(bestBySpread);
                 }
+                // Base pair selected
+                else
+                {
+                    // No cross pair
+                    if (string.IsNullOrWhiteSpace(crossPair))
+                    {
+                        // All cross pairs for selected base pair
+                        result.AddRange(baseArbitrages);
+                    }
+                    // Cross pair selected
+                    else
+                    {
+                        // Filter by cross pair
+                        baseArbitrages = baseArbitrages.Where(x => x.CrossAssetPair.Name == crossPair).ToList();
+
+                        var groupedByCrossPair = baseArbitrages.GroupBy(x => x.CrossAssetPair);
+                        foreach (var baseCrossPairsArbitrages in groupedByCrossPair)
+                        {
+                            var baseCrossArbitrages = baseCrossPairsArbitrages.ToList();
+
+                            result.AddRange(baseCrossArbitrages);
+                        }
+                    }
+
+                    result.AddRange(baseArbitrages);
+                }
+
+                
             }
 
             return result;

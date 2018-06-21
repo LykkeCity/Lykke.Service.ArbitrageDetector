@@ -116,9 +116,9 @@ namespace Lykke.Service.ArbitrageDetector.Client
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync()
+        public async Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync(string basePair, string crossPair)
         {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.LykkeArbitrages());
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.LykkeArbitrages(basePair, crossPair));
         }
 
         /// <inheritdoc />

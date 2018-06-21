@@ -155,9 +155,9 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("LykkeArbitrages")]
         [ProducesResponseType(typeof(IEnumerable<LykkeArbitrageRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public IActionResult LykkeArbitrages()
+        public IActionResult LykkeArbitrages(string basePair, string crossPair)
         {
-            var result = _lykkeArbitrageDetectorService.GetArbitrages()
+            var result = _lykkeArbitrageDetectorService.GetArbitrages(basePair, crossPair)
                 .Select(x => new LykkeArbitrageRow(x))
                 .OrderBy(x => x.BaseAssetPair.Name)
                 .ToList();
