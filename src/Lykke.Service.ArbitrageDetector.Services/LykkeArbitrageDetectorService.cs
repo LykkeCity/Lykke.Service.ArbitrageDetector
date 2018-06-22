@@ -181,8 +181,16 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     // No cross pair
                     if (string.IsNullOrWhiteSpace(crossPair))
                     {
-                        // All cross pairs for selected base pair
-                        result.AddRange(baseArbitrages);
+                        // Group by cross pair
+                        var groupedByCrossPair = baseArbitrages.GroupBy(x => x.CrossAssetPair);
+
+                        foreach (var group in groupedByCrossPair)
+                        {
+                            var crossPairGrouped = group.ToList();
+                            var bestBySpread = crossPairGrouped.MinBy(x => x.Spread);
+
+                            result.Add(bestBySpread);
+                        }
                     }
                     // Cross pair selected
                     else
@@ -199,8 +207,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         }
                     }
                 }
-
-                
             }
 
             return result;
