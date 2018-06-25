@@ -552,6 +552,16 @@
             Cross asset pair.
             </summary>
         </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.CrossPairsCount">
+            <summary>
+            Count of cross pairs.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.CrossRatesCount">
+            <summary>
+            Count of cross rates.
+            </summary>
+        </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.Spread">
             <summary>
             Spread

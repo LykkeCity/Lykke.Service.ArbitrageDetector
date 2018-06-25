@@ -19,6 +19,16 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public AssetPair CrossAssetPair { get; }
 
         /// <summary>
+        /// Count of cross pairs.
+        /// </summary>
+        public int CrossPairsCount { get; }
+
+        /// <summary>
+        /// Count of cross rates.
+        /// </summary>
+        public int CrossRatesCount { get; }
+
+        /// <summary>
         /// Spread
         /// </summary>
         public decimal Spread { get; }
@@ -58,11 +68,13 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// </summary>
         public decimal? CrossBid { get; }
 
-        public LykkeArbitrageRow(AssetPair baseAssetPair, AssetPair crossAssetPair, decimal spread, string baseSide,
+        public LykkeArbitrageRow(AssetPair baseAssetPair, AssetPair crossAssetPair, int crossPairsCount, int crossRatesCount, decimal spread, string baseSide,
             string conversionPath, decimal volume, decimal? baseBid, decimal? baseAsk, decimal? crossBid, decimal? crossAsk)
         {
             BaseAssetPair = baseAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(baseAssetPair)) : baseAssetPair;
             CrossAssetPair = crossAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(crossAssetPair)) : crossAssetPair;
+            CrossPairsCount = crossPairsCount;
+            CrossRatesCount = crossRatesCount;
             Spread = Math.Round(spread, 8);
             BaseSide = string.IsNullOrWhiteSpace(baseSide) ? throw new ArgumentNullException(nameof(baseSide)) : baseSide;
             ConversionPath = string.IsNullOrWhiteSpace(conversionPath) ? throw new ArgumentNullException(nameof(conversionPath)) : conversionPath.Replace("lykke-", "");
@@ -81,6 +93,8 @@ namespace Lykke.Service.ArbitrageDetector.Models
         {
             BaseAssetPair = new AssetPair(domain.BaseAssetPair);
             CrossAssetPair = new AssetPair(domain.CrossAssetPair);
+            CrossPairsCount = domain.CrossPairsCount;
+            CrossRatesCount = domain.CrossRatesCount;
             Spread = Math.Round(domain.Spread, 8);
             BaseSide = domain.BaseSide;
             ConversionPath = domain.ConversionPath.Replace("lykke-", "");

@@ -172,6 +172,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 {
                     // Best cross pair for each base pair
                     var bestBySpread = baseArbitrages.MinBy(x => x.Spread);
+                    bestBySpread.CrossPairsCount = baseArbitrages.Count;
 
                     result.Add(bestBySpread);
                 }
@@ -188,6 +189,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         {
                             var crossPairGrouped = group.ToList();
                             var bestBySpread = crossPairGrouped.MinBy(x => x.Spread);
+                            bestBySpread.CrossRatesCount = crossPairGrouped.Count;
 
                             result.Add(bestBySpread);
                         }

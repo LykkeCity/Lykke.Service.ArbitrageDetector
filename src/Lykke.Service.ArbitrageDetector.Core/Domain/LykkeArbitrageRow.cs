@@ -18,6 +18,16 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public AssetPair CrossAssetPair { get; }
 
         /// <summary>
+        /// Count of cross pairs.
+        /// </summary>
+        public int CrossPairsCount { get; set; }
+
+        /// <summary>
+        /// Count of cross rates.
+        /// </summary>
+        public int CrossRatesCount { get; set; }
+
+        /// <summary>
         /// Spread
         /// </summary>
         public decimal Spread { get; }
