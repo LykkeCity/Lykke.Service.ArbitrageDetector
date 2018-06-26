@@ -13,24 +13,25 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 {
     [Produces("application/json")]
     [ExceptionToBadRequest]
-    [Cache(Duration = 1000)]
     public class ArbitrageDetectorController : Controller
     {
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
+        private readonly ILykkeArbitrageDetectorService _lykkeArbitrageDetectorService;
 
-        public ArbitrageDetectorController(IArbitrageDetectorService arbitrageDetectorService)
+        public ArbitrageDetectorController(IArbitrageDetectorService arbitrageDetectorService, ILykkeArbitrageDetectorService lykkeArbitrageDetectorService)
         {
             _arbitrageDetectorService = arbitrageDetectorService;
+            _lykkeArbitrageDetectorService = lykkeArbitrageDetectorService;
         }
 
         [HttpGet]
         [Route("orderBooks")]
         [SwaggerOperation("OrderBooks")]
-        [ProducesResponseType(typeof(IEnumerable<OrderBook>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<OrderBookRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public virtual IActionResult OrderBooks(string exchange, string assetPair)
         {
-            var result = _arbitrageDetectorService.GetOrderBooks(exchange, assetPair).Select(x => new OrderBook(x)).ToList();
+            var result = _arbitrageDetectorService.GetOrderBooks(exchange, assetPair).Select(x => new OrderBookRow(x)).ToList();
 
             return Ok(result);
         }
@@ -144,6 +145,21 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         {
             var settings = _arbitrageDetectorService.GetSettings();
             var result = settings.PublicMatrixAssetPairs;
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("lykkeArbitrages")]
+        [SwaggerOperation("LykkeArbitrages")]
+        [ProducesResponseType(typeof(IEnumerable<LykkeArbitrageRow>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public IActionResult LykkeArbitrages(string basePair, string crossPair)
+        {
+            var result = _lykkeArbitrageDetectorService.GetArbitrages(basePair, crossPair)
+                .Select(x => new LykkeArbitrageRow(x))
+                .OrderBy(x => x.BaseAssetPair.Name)
+                .ToList();
 
             return Ok(result);
         }

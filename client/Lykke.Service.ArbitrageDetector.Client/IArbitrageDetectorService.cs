@@ -16,8 +16,7 @@ namespace Lykke.Service.ArbitrageDetector.Client
         /// <param name="exchange">Name of an exchange.</param>
         /// <param name="assetPair">Name of an instrument</param>
         /// <returns>A collection of OrderBook entities.</returns>
-        [Obsolete]
-        Task<IEnumerable<OrderBook>> OrderBooksAsync(string exchange, string assetPair);
+        Task<IEnumerable<OrderBookRow>> OrderBooksAsync(string exchange, string assetPair);
 
         /// <summary>
         /// Returns a collection of OrderBook entities by exchange and instrument.
@@ -79,6 +78,12 @@ namespace Lykke.Service.ArbitrageDetector.Client
         /// </summary>
         /// <returns>Arbitrage matrix.</returns>
         Task<IEnumerable<string>> PublicMatrixAssetPairsAsync();
+
+        /// <summary>
+        /// Returns a collection of LykkeArbitrageRow entities.
+        /// </summary>
+        /// <returns>A collection of Lykke Arbitrage entities.</returns>
+        Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync(string basePair, string crossPair);
 
         /// <summary>
         /// Get settings.

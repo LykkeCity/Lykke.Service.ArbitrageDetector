@@ -56,7 +56,7 @@ namespace Lykke.Service.ArbitrageDetector.Client
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<OrderBook>> OrderBooksAsync(string exchange, string assetPair)
+        public async Task<IEnumerable<OrderBookRow>> OrderBooksAsync(string exchange, string assetPair)
         {
             return await _runner.RunAsync(() => _arbitrageDetectorApi.OrderBooksAsync(exchange, assetPair));
         }
@@ -113,6 +113,12 @@ namespace Lykke.Service.ArbitrageDetector.Client
         public async Task<IEnumerable<string>> PublicMatrixAssetPairsAsync()
         {
             return await _runner.RunAsync(() => _arbitrageDetectorApi.PublicMatrixAssetPairs());
+        }
+
+        /// <inheritdoc />
+        public async Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync(string basePair, string crossPair)
+        {
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.LykkeArbitrages(basePair, crossPair));
         }
 
         /// <inheritdoc />

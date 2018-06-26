@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using MoreLinq;
 using DomainCrossRate = Lykke.Service.ArbitrageDetector.Core.Domain.CrossRate;
 
 namespace Lykke.Service.ArbitrageDetector.Models

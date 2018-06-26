@@ -37,7 +37,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <inheritdoc />
         public int CompareTo(object obj)
         {
-            if (obj == null || !(obj is AssetPairSource))
+            if (!(obj is AssetPairSource))
                 throw new ArgumentException(nameof(obj));
 
             return string.Compare(ToString(), ((AssetPairSource)obj).ToString(), StringComparison.Ordinal);

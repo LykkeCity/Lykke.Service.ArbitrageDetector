@@ -9,7 +9,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
     internal interface IArbitrageDetectorApi
     {
         [Get("/orderBooks")]
-        Task<IEnumerable<OrderBook>> OrderBooksAsync(string exchange, string assetPair);
+        Task<IEnumerable<OrderBookRow>> OrderBooksAsync(string exchange, string assetPair);
 
         [Get("/newOrderBooks")]
         Task<IEnumerable<OrderBookRow>> NewOrderBooksAsync(string exchange, string assetPair);
@@ -37,6 +37,9 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
 
         [Get("/publicMatrixAssetPairs")]
         Task<IEnumerable<string>> PublicMatrixAssetPairs();
+
+        [Get("/lykkeArbitrages")]
+        Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitrages(string basePair, string crossPair);
 
         [Get("/getSettings")]
         Task<Settings> GetSettings();

@@ -125,6 +125,26 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         }
 
         /// <summary>
+        /// Returns other asset than argument
+        /// </summary>
+        /// <param name="one"></param>
+        /// <returns></returns>
+        public string GetOtherAsset(string one)
+        {
+            Validate();
+
+            if (string.IsNullOrWhiteSpace(one))
+                throw new ArgumentException(nameof(one));
+
+            if (!ContainsAsset(one))
+                return null;
+
+            var result = string.Equals(Base, one, StringComparison.OrdinalIgnoreCase) ? Quote : Base;
+
+            return result;
+        }
+
+        /// <summary>
         /// Create Asset Pair from string with one of the assets.
         /// </summary>
         /// <param name="assetPair"></param>

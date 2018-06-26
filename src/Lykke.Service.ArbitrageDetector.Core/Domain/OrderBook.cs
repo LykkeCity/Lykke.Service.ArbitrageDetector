@@ -84,6 +84,18 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         }
 
         /// <summary>
+        /// Set AssetPair.
+        /// </summary>
+        /// <param name="assetPair"></param>
+        public void SetAssetPair(AssetPair assetPair)
+        {
+            if (assetPair.IsEmpty())
+                throw new ArgumentNullException(nameof(assetPair));
+
+            AssetPair = assetPair;
+        }
+
+        /// <summary>
         /// Returns new reversed order book.
         /// </summary>
         /// <returns></returns>

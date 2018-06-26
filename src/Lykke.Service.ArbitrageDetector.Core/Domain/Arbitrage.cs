@@ -134,25 +134,25 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Calculates best volume (biggest spread strategy).
         /// </summary>
-        /// <param name="bidsOrderBook">OrderBook with bids.</param>
-        /// <param name="asksOrderBook">OrderBook with asks.</param>
+        /// <param name="sourceBids">OrderBook with bids.</param>
+        /// <param name="sourceAsks">OrderBook with asks.</param>
         /// <returns></returns>
-        public static decimal? GetArbitrageVolume(OrderBook bidsOrderBook, OrderBook asksOrderBook)
+        public static decimal? GetArbitrageVolume(IReadOnlyCollection<VolumePrice> sourceBids, IReadOnlyCollection<VolumePrice> sourceAsks)
         {
-            if (bidsOrderBook.Bids == null)
-                throw new ArgumentException($"{nameof(bidsOrderBook)}.{nameof(bidsOrderBook.Bids)}");
+            if (sourceBids == null)
+                throw new ArgumentException($"{nameof(sourceBids)}");
 
-            if (asksOrderBook.Asks == null)
-                throw new ArgumentException($"{nameof(asksOrderBook)}.{nameof(asksOrderBook.Asks)}");
+            if (sourceAsks == null)
+                throw new ArgumentException($"{nameof(sourceAsks)}");
+
+            if (!sourceBids.Any() || !sourceAsks.Any() || sourceBids.Max(x => x.Price) < sourceAsks.Min(x => x.Price))
+                return null; // no arbitrage
 
             // Clone bids and asks (that in arbitrage only)
             var bids = new List<VolumePrice>();
             var asks = new List<VolumePrice>();
-            bids.AddRange(bidsOrderBook.Bids);
-            asks.AddRange(asksOrderBook.Asks);
-
-            if (!bidsOrderBook.Bids.Any() || !asksOrderBook.Asks.Any() || bids.Max(x => x.Price) < asks.Min(x => x.Price))
-                return null; // no arbitrage
+            bids.AddRange(sourceBids);
+            asks.AddRange(sourceAsks);
 
             decimal result = 0;
             do
@@ -198,6 +198,54 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             while (bids.Any() && asks.Any());
 
             return result == 0 ? (decimal?)null : result;
+        }
+
+
+        /// <summary>
+        /// Returns chained order books for arbitrage execution.
+        /// </summary>
+        /// <param name="crossRate"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public static IReadOnlyCollection<OrderBook> GetChainedOrderBooks(CrossRate crossRate, AssetPair target)
+        {
+            if (crossRate == null)
+                throw new NullReferenceException(nameof(crossRate));
+
+            var orderBooks = crossRate.OriginalOrderBooks;
+
+            var result = new List<OrderBook>();
+
+            var @base = target.Base;   // BTC
+            var quote = target.Quote;  // USD
+
+            var first = orderBooks.Single(x => x.AssetPair.ContainsAsset(quote)); // Looking for USD|CHF
+            if (first.AssetPair.Base == quote)  // Reverse if USD/CHF
+                first = first.Reverse();
+            result.Add(first);  // CHF/USD
+
+            if (orderBooks.Count == 1)
+                return result;
+
+            var nextAsset = first.AssetPair.Base; // CHF
+            var second = orderBooks.Single(x => x.AssetPair.ContainsAsset(nextAsset) && !x.AssetPair.IsEqualOrReversed(first.AssetPair)); // Looking for CHF|EUR
+            if (second.AssetPair.Base == nextAsset)  // Reverse if CHF/EUR
+                second = second.Reverse();
+            result.Add(second);  // EUR/CHF
+
+            if (orderBooks.Count == 2)
+                if (second.AssetPair.Base != @base)
+                    throw new InvalidOperationException($"{nameof(second)}.{nameof(second.AssetPair)}.{nameof(second.AssetPair.Base)}={second.AssetPair.Base} must be equal to {quote}");
+                else
+                    return result;
+
+            nextAsset = second.AssetPair.Base; // EUR
+            var third = orderBooks.Single(x => x.AssetPair.ContainsAsset(nextAsset) && x.AssetPair.ContainsAsset(@base)); // Looking for EUR|BTC
+            if (third.AssetPair.Base == nextAsset)  // Reverse if EUR/BTC
+                third = third.Reverse();
+            result.Add(third);  // BTC/EUR
+
+            return result;
         }
     }
 }

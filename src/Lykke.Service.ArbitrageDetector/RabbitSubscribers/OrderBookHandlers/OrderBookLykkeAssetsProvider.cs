@@ -41,7 +41,7 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers.OrderBookHandlers
             var allAssetPirs = await _assetsService.AssetPairGetAllWithHttpMessagesAsync();
 
             var goodAssetPairs = allAssetPirs.Body
-                .Where(x => x.Name.Contains("/")).ToList();
+                .Where(x => x.Name != null && x.Name.Contains("/")).ToList();
 
             foreach (var assetPair in goodAssetPairs)
             {

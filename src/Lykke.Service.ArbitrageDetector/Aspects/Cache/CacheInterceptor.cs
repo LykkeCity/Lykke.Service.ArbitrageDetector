@@ -26,6 +26,11 @@ namespace Lykke.Service.ArbitrageDetector.Aspects.Cache
             // Method attribute has more priority than class attribute
             var cacheAttr = cacheMethodAttr ?? cacheClassAttr;
 
+            // If method has [DoNotCache] attribute, then don't cache it
+            var doNotCacheAttribute = GetDontCacheMethodAttribute(invocation);
+            if (doNotCacheAttribute != null)
+                cacheAttr = null;
+
             if (cacheAttr == null)
             {
                 invocation.Proceed();
@@ -89,8 +94,13 @@ namespace Lykke.Service.ArbitrageDetector.Aspects.Cache
 
         private static CacheAttribute GetCacheMethodAttribute(IInvocation invocation)
         {
-            var classAttr = Attribute.GetCustomAttribute(invocation.MethodInvocationTarget, typeof(CacheAttribute))
-                as CacheAttribute;
+            var classAttr = Attribute.GetCustomAttribute(invocation.MethodInvocationTarget, typeof(CacheAttribute)) as CacheAttribute;
+            return classAttr;
+        }
+
+        private static DoNotCacheAttribute GetDontCacheMethodAttribute(IInvocation invocation)
+        {
+            var classAttr = Attribute.GetCustomAttribute(invocation.MethodInvocationTarget, typeof(DoNotCacheAttribute)) as DoNotCacheAttribute;
             return classAttr;
         }
 
@@ -103,11 +113,13 @@ namespace Lykke.Service.ArbitrageDetector.Aspects.Cache
 
         private static string GetInvocationSignature(IInvocation invocation)
         {
-            return string.Format("{0}-{1}-{2}",
+            var result = string.Format("{0}-{1}-{2}",
                 invocation.TargetType.FullName,
                 invocation.Method.Name,
                 string.Join("-", invocation.Arguments.Select(a => (a ?? "").ToString()).ToArray())
             );
+
+            return result;
         }
     }
 }

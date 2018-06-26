@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
+using MoreLinq;
 using Xunit;
 
 namespace Lykke.Service.ArbitrageDetector.Tests
@@ -20,7 +22,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var orderBook1 = new OrderBook(exchangeName, assetPair, bids, asks, timestamp);
             var orderBook2 = new OrderBook(exchangeName, assetPair, bids, asks, timestamp);
 
-            var volume = Arbitrage.GetArbitrageVolume(orderBook1, orderBook2);
+            var volume = Arbitrage.GetArbitrageVolume(orderBook1.Bids, orderBook2.Asks);
             Assert.Null(volume);
         }
 
@@ -46,7 +48,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var orderBook1 = new OrderBook(exchangeName, assetPair, bids, asks, timestamp);
             var orderBook2 = new OrderBook(exchangeName, assetPair, bids, asks, timestamp);
 
-            var volume = Arbitrage.GetArbitrageVolume(orderBook1, orderBook2);
+            var volume = Arbitrage.GetArbitrageVolume(orderBook1.Bids, orderBook2.Asks);
             Assert.Null(volume);
         }
 
@@ -73,7 +75,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var bidsOrderBook = new OrderBook(exchangeName, assetPair, bids, new List<VolumePrice>(), timestamp);
             var asksOrderBook = new OrderBook(exchangeName, assetPair, new List<VolumePrice>(), asks, timestamp);
 
-            var volume = Arbitrage.GetArbitrageVolume(bidsOrderBook, asksOrderBook);
+            var volume = Arbitrage.GetArbitrageVolume(bidsOrderBook.Bids, asksOrderBook.Asks);
             Assert.Equal(9, volume);
         }
 
@@ -109,7 +111,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var bidsOrderBook = new OrderBook(exchangeName, assetPair, bids, new List<VolumePrice>(), timestamp);
             var asksOrderBook = new OrderBook(exchangeName, assetPair, new List<VolumePrice>(), asks, timestamp);
 
-            var volume = Arbitrage.GetArbitrageVolume(bidsOrderBook, asksOrderBook);
+            var volume = Arbitrage.GetArbitrageVolume(bidsOrderBook.Bids, asksOrderBook.Asks);
             Assert.Equal(41, volume);
         }
 
@@ -154,8 +156,269 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var bidsOrderBook = new OrderBook(exchangeName, assetPair, bids, new List<VolumePrice>(), timestamp);
             var asksOrderBook = new OrderBook(exchangeName, assetPair, new List<VolumePrice>(), asks, timestamp);
 
-            var volume = Arbitrage.GetArbitrageVolume(bidsOrderBook, asksOrderBook);
+            var volume = Arbitrage.GetArbitrageVolume(bidsOrderBook.Bids, asksOrderBook.Asks);
             Assert.Equal(70, volume);
+        }
+
+
+        [Fact]
+        public void OrderBooks_ChainedOrderBooks_0_Test()
+        {
+            var assetPair = new AssetPair("BTC", "USD");
+            var orderBook = new OrderBook("FE", assetPair.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
+            orderBook.SetAssetPair(assetPair);
+            var crossRate = new CrossRate("FE", assetPair, new List<VolumePrice>(), new List<VolumePrice>(), "None", new List<OrderBook> {orderBook}, DateTime.UtcNow);
+
+            var result = Arbitrage.GetChainedOrderBooks(crossRate, assetPair);
+            Assert.Single(result);
+            Assert.True(result.Single().AssetPair.Equals(assetPair));
+        }
+
+        [Fact]
+        public void OrderBooks_ChainedOrderBooks_1_Test()
+        {
+            var assetPair = new AssetPair("BTC", "USD");
+            var reversed = assetPair.Reverse();
+            var orderBook = new OrderBook("FE", reversed.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
+            orderBook.SetAssetPair(reversed);
+            var crossRate = new CrossRate("FE", assetPair, new List<VolumePrice>(), new List<VolumePrice>(), "None", new List<OrderBook> { orderBook }, DateTime.UtcNow);
+
+            var result = Arbitrage.GetChainedOrderBooks(crossRate, assetPair);
+            Assert.Single(result);
+            Assert.True(result.Single().AssetPair.Equals(assetPair));
+        }
+
+
+        [Fact]
+        public void OrderBooks_ChainedOrderBooks_0_0_Test()
+        {
+            var target = new AssetPair("BTC", "USD");
+            var assetPair1 = new AssetPair("BTC", "EUR");
+            var assetPair2 = new AssetPair("EUR", "USD");
+            // result = EUR/USD, BTC/EUR
+
+            var crossRate = GetCrossRate(assetPair1, assetPair2, target);
+
+            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+
+            AssertChained2(result);
+        }
+
+        [Fact]
+        public void OrderBooks_ChainedOrderBooks_0_1_Test()
+        {
+            var target = new AssetPair("BTC", "USD");
+            var assetPair1 = new AssetPair("BTC", "EUR");
+            var assetPair2 = new AssetPair("USD", "EUR");
+            // result = EUR/USD, BTC/EUR
+
+            var crossRate = GetCrossRate(assetPair1, assetPair2, target);
+
+            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+
+            AssertChained2(result);
+        }
+
+        [Fact]
+        public void OrderBooks_ChainedOrderBooks_1_0_Test()
+        {
+            var target = new AssetPair("BTC", "USD");
+            var assetPair1 = new AssetPair("EUR", "BTC");
+            var assetPair2 = new AssetPair("EUR", "USD");
+            // result = EUR/USD, BTC/EUR
+
+            var crossRate = GetCrossRate(assetPair1, assetPair2, target);
+
+            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+
+            AssertChained2(result);
+        }
+
+        [Fact]
+        public void OrderBooks_ChainedOrderBooks_1_1_Test()
+        {
+            var target = new AssetPair("BTC", "USD");
+            var assetPair1 = new AssetPair("EUR", "BTC");
+            var assetPair2 = new AssetPair("USD", "EUR");
+            // result = EUR/USD, BTC/EUR
+
+            var crossRate = GetCrossRate(assetPair1, assetPair2, target);
+
+            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+
+            AssertChained2(result);
+        }
+
+        
+        [Fact]
+        public void OrderBooks_ChainedOrderBooks_0_0_0_Test()
+        {
+            var target = new AssetPair("BTC", "USD");
+            var assetPair1 = new AssetPair("BTC", "EUR");
+            var assetPair2 = new AssetPair("EUR", "CHF");
+            var assetPair3 = new AssetPair("CHF", "USD");
+            // result = CHF/USD, EUR/CHF, BTC/EUR
+
+            var crossRate = GetCrossRate(assetPair1, assetPair2, assetPair3, target);
+
+            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+
+            AssertChained3(result);
+        }
+
+        [Fact]
+        public void OrderBooks_ChainedOrderBooks_0_0_1_Test()
+        {
+            var target = new AssetPair("BTC", "USD");
+            var assetPair1 = new AssetPair("BTC", "EUR");
+            var assetPair2 = new AssetPair("EUR", "CHF");
+            var assetPair3 = new AssetPair("USD", "CHF");
+            // result = CHF/USD, EUR/CHF, BTC/EUR
+
+            var crossRate = GetCrossRate(assetPair1, assetPair2, assetPair3, target);
+
+            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+
+            AssertChained3(result);
+        }
+
+        [Fact]
+        public void OrderBooks_ChainedOrderBooks_0_1_0_Test()
+        {
+            var target = new AssetPair("BTC", "USD");
+            var assetPair1 = new AssetPair("BTC", "EUR");
+            var assetPair2 = new AssetPair("CHF", "EUR");
+            var assetPair3 = new AssetPair("CHF", "USD");
+            // result = CHF/USD, EUR/CHF, BTC/EUR
+
+            var crossRate = GetCrossRate(assetPair1, assetPair2, assetPair3, target);
+
+            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+
+            AssertChained3(result);
+        }
+
+        [Fact]
+        public void OrderBooks_ChainedOrderBooks_1_0_0_Test()
+        {
+            var target = new AssetPair("BTC", "USD");
+            var assetPair1 = new AssetPair("EUR", "BTC");
+            var assetPair2 = new AssetPair("EUR", "CHF");
+            var assetPair3 = new AssetPair("CHF", "USD");
+            // result = CHF/USD, EUR/CHF, BTC/EUR
+
+            var crossRate = GetCrossRate(assetPair1, assetPair2, assetPair3, target);
+
+            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+
+            AssertChained3(result);
+        }
+
+        [Fact]
+        public void OrderBooks_ChainedOrderBooks_0_1_1_Test()
+        {
+            var target = new AssetPair("BTC", "USD");
+            var assetPair1 = new AssetPair("BTC", "EUR");
+            var assetPair2 = new AssetPair("CHF", "EUR");
+            var assetPair3 = new AssetPair("USD", "CHF");
+            // result = CHF/USD, EUR/CHF, BTC/EUR
+
+            var crossRate = GetCrossRate(assetPair1, assetPair2, assetPair3, target);
+
+            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+
+            AssertChained3(result);
+        }
+
+        [Fact]
+        public void OrderBooks_ChainedOrderBooks_1_1_0_Test()
+        {
+            var target = new AssetPair("BTC", "USD");
+            var assetPair1 = new AssetPair("EUR", "BTC");
+            var assetPair2 = new AssetPair("CHF", "EUR");
+            var assetPair3 = new AssetPair("CHF", "USD");
+            // result = CHF/USD, EUR/CHF, BTC/EUR
+
+            var crossRate = GetCrossRate(assetPair1, assetPair2, assetPair3, target);
+
+            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+
+            AssertChained3(result);
+        }
+
+        [Fact]
+        public void OrderBooks_ChainedOrderBooks_1_0_1_Test()
+        {
+            var target = new AssetPair("BTC", "USD");
+            var assetPair1 = new AssetPair("EUR", "BTC");
+            var assetPair2 = new AssetPair("EUR", "CHF");
+            var assetPair3 = new AssetPair("USD", "CHF");
+            // result = CHF/USD, EUR/CHF, BTC/EUR
+
+            var crossRate = GetCrossRate(assetPair1, assetPair2, assetPair3, target);
+
+            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+
+            AssertChained3(result);
+        }
+
+        [Fact]
+        public void OrderBooks_ChainedOrderBooks_1_1_1_Test()
+        {
+            var target = new AssetPair("BTC", "USD");
+            var assetPair1 = new AssetPair("EUR", "BTC");
+            var assetPair2 = new AssetPair("CHF", "EUR");
+            var assetPair3 = new AssetPair("USD", "CHF");
+            // result = CHF/USD, EUR/CHF, BTC/EUR
+
+            var crossRate = GetCrossRate(assetPair1, assetPair2, assetPair3, target);
+
+            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+
+            AssertChained3(result);
+        }
+
+
+        private CrossRate GetCrossRate(AssetPair assetPair1, AssetPair assetPair2, AssetPair target)
+        {
+            var orderBook1 = new OrderBook("FE", assetPair1.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
+            orderBook1.SetAssetPair(assetPair1);
+            var orderBook2 = new OrderBook("FE", assetPair2.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
+            orderBook2.SetAssetPair(assetPair2);
+
+            return new CrossRate("FE", target, new List<VolumePrice>(), new List<VolumePrice>(), "None", new List<OrderBook> { orderBook1, orderBook2 }, DateTime.UtcNow);
+        }
+
+        private CrossRate GetCrossRate(AssetPair assetPair1, AssetPair assetPair2, AssetPair assetPair3, AssetPair target)
+        {
+            var orderBook1 = new OrderBook("FE", assetPair1.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
+            orderBook1.SetAssetPair(assetPair1);
+            var orderBook2 = new OrderBook("FE", assetPair2.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
+            orderBook2.SetAssetPair(assetPair2);
+            var orderBook3 = new OrderBook("FE", assetPair3.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
+            orderBook3.SetAssetPair(assetPair3);
+
+            return new CrossRate("FE", target, new List<VolumePrice>(), new List<VolumePrice>(), "None", new List<OrderBook> { orderBook1, orderBook2, orderBook3 }, DateTime.UtcNow);
+        }
+
+        private void AssertChained2(IReadOnlyCollection<OrderBook> result)
+        {
+            Assert.Equal(2, result.Count);
+            Assert.Equal("EUR", result.ElementAt(0).AssetPair.Base);
+            Assert.Equal("USD", result.ElementAt(0).AssetPair.Quote);
+            Assert.Equal("BTC", result.ElementAt(1).AssetPair.Base);
+            Assert.Equal("EUR", result.ElementAt(1).AssetPair.Quote);
+        }
+
+        private void AssertChained3(IReadOnlyCollection<OrderBook> result)
+        {
+            Assert.Equal(3, result.Count);
+            Assert.Equal("CHF", result.ElementAt(0).AssetPair.Base);
+            Assert.Equal("USD", result.ElementAt(0).AssetPair.Quote);
+            Assert.Equal("EUR", result.ElementAt(1).AssetPair.Base);
+            Assert.Equal("CHF", result.ElementAt(1).AssetPair.Quote);
+            Assert.Equal("BTC", result.ElementAt(2).AssetPair.Base);
+            Assert.Equal("EUR", result.ElementAt(2).AssetPair.Quote);
         }
     }
 }
