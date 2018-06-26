@@ -77,7 +77,7 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
                 {
                     _arbitrageDetectorService.Process(orderBook);
 
-                    if (string.Equals(orderBook.Source, "lykke"))
+                    if (string.Equals(orderBook.Source, "lykke", StringComparison.OrdinalIgnoreCase))
                     {
                         await _orderBookLykkeAssetsProvider.ProvideAssetsIfLykke(orderBook);
                         _lykkeArbitrageDetectorService.Process(orderBook);
