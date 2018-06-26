@@ -113,11 +113,13 @@ namespace Lykke.Service.ArbitrageDetector.Aspects.Cache
 
         private static string GetInvocationSignature(IInvocation invocation)
         {
-            return string.Format("{0}-{1}-{2}",
+            var result = string.Format("{0}-{1}-{2}",
                 invocation.TargetType.FullName,
                 invocation.Method.Name,
                 string.Join("-", invocation.Arguments.Select(a => (a ?? "").ToString()).ToArray())
             );
+
+            return result;
         }
     }
 }

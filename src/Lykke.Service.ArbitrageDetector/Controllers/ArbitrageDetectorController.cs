@@ -13,7 +13,6 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 {
     [Produces("application/json")]
     [ExceptionToBadRequest]
-    [Cache(Duration = 500)]
     public class ArbitrageDetectorController : Controller
     {
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
@@ -165,7 +164,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet, DoNotCache]
+        [HttpGet]
         [Route("getSettings")]
         [SwaggerOperation("GetSettings")]
         [ProducesResponseType(typeof(Models.Settings), (int)HttpStatusCode.OK)]
@@ -178,7 +177,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpPost, DoNotCache]
+        [HttpPost]
         [Route("setSettings")]
         [SwaggerOperation("SetSettings")]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
