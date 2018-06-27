@@ -145,7 +145,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             if (sourceAsks == null)
                 throw new ArgumentException($"{nameof(sourceAsks)}");
 
-            if (!sourceBids.Any() || !sourceAsks.Any() || sourceBids.Max(x => x.Price) < sourceAsks.Min(x => x.Price))
+            if (!sourceBids.Any() || !sourceAsks.Any() || sourceBids.Max(x => x.Price) <= sourceAsks.Min(x => x.Price))
                 return null; // no arbitrage
 
             // Clone bids and asks (that in arbitrage only)
@@ -157,15 +157,19 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             decimal result = 0;
             do
             {
-                // Recalculate arbitrage (best bid and best ask)
+                // Recalculate best bid and best ask
                 var bestBidPrice = bids.Max(x => x.Price);
                 var bestAskPrice = asks.Min(x => x.Price);
                 bids = bids.Where(x => x.Price > bestAskPrice).OrderByDescending(x => x.Price).ToList();
                 asks = asks.Where(x => x.Price < bestBidPrice).OrderBy(x => x.Price).ToList();
 
+                if (!bids.Any() || !asks.Any()) // no more arbitrage
+                    break;
+
                 var bid = bids.First();
                 var ask = asks.First();
 
+                // Calculate volume for current step and remove it
                 if (bid.Volume > ask.Volume)
                 {
                     result += ask.Volume;
