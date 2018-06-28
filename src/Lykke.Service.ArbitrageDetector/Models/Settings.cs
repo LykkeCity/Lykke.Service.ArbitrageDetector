@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 
 namespace Lykke.Service.ArbitrageDetector.Models
 {
@@ -63,6 +64,11 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public IDictionary<string, string> PublicMatrixExchanges { get; set; }
 
         /// <summary>
+        /// Internal matrix asset pairs.
+        /// </summary>
+        public IEnumerable<string> MatrixAssetPairs { get; set; }
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         public Settings()
@@ -83,9 +89,10 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <param name="minimumVolume"></param>
         /// <param name="publicMatrixAssetPairs"></param>
         /// <param name="publicMatrixExchanges"></param>
+        /// <param name="matrixAssetPairs"></param>
         public Settings(int historyMaxSize, int expirationTimeInSeconds, IEnumerable<string> baseAssets,
             IEnumerable<string> intermediateAssets, string quoteAsset, int minSpread, IEnumerable<string> exchanges, decimal minimumPnL, decimal minimumVolume,
-            IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges)
+            IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges, IEnumerable<string> matrixAssetPairs)
         {
             HistoryMaxSize = historyMaxSize;
             ExpirationTimeInSeconds = expirationTimeInSeconds;
@@ -98,16 +105,17 @@ namespace Lykke.Service.ArbitrageDetector.Models
             Exchanges = exchanges;
             PublicMatrixAssetPairs = publicMatrixAssetPairs;
             PublicMatrixExchanges = publicMatrixExchanges;
+            MatrixAssetPairs = matrixAssetPairs;
         }
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="settings">Domain model</param>
-        public Settings(Core.ISettings settings)
+        public Settings(ISettings settings)
             : this(settings.HistoryMaxSize, settings.ExpirationTimeInSeconds, settings.BaseAssets,
                 settings.IntermediateAssets, settings.QuoteAsset, settings.MinSpread, settings.Exchanges, settings.MinimumPnL, settings.MinimumVolume,
-                settings.PublicMatrixAssetPairs, settings.PublicMatrixExchanges)
+                settings.PublicMatrixAssetPairs, settings.PublicMatrixExchanges, settings.MatrixAssetPairs)
         {
         }
 
@@ -115,10 +123,10 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// Converts object to domain model.
         /// </summary>
         /// <returns>Domain model</returns>
-        public Core.ISettings ToModel()
+        public ISettings ToModel()
         {
-            var domain = new Core.Settings(HistoryMaxSize, ExpirationTimeInSeconds, BaseAssets, IntermediateAssets, QuoteAsset,
-                MinSpread, Exchanges, MinimumPnL, MinimumVolume, PublicMatrixAssetPairs, PublicMatrixExchanges);
+            var domain = new Core.Domain.Settings(HistoryMaxSize, ExpirationTimeInSeconds, BaseAssets, IntermediateAssets, QuoteAsset,
+                MinSpread, Exchanges, MinimumPnL, MinimumVolume, PublicMatrixAssetPairs, PublicMatrixExchanges, MatrixAssetPairs);
 
             return domain;
         }

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Lykke.Service.ArbitrageDetector.Core
+namespace Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces
 {
     public interface ISettings
     {
@@ -28,5 +28,8 @@ namespace Lykke.Service.ArbitrageDetector.Core
         IEnumerable<string> PublicMatrixAssetPairs { get; set; }
 
         IDictionary<string, string> PublicMatrixExchanges { get; set; }
+
+
+        IEnumerable<string> MatrixAssetPairs { get; set; }
     }
 }

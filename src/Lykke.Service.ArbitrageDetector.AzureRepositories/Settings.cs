@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Lykke.AzureStorage.Tables;
 using Lykke.AzureStorage.Tables.Entity.Annotation;
-using Lykke.Service.ArbitrageDetector.Core;
+using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 
 namespace Lykke.Service.ArbitrageDetector.AzureRepositories
 {
@@ -34,6 +34,9 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories
         [JsonValueSerializer]
         public IDictionary<string, string> PublicMatrixExchanges { get; set; }
 
+        [JsonValueSerializer]
+        public IEnumerable<string> MatrixAssetPairs { get; set; }
+
         public Settings()
         {
         }
@@ -53,6 +56,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories
             Exchanges = domain.Exchanges;
             PublicMatrixAssetPairs = domain.PublicMatrixAssetPairs;
             PublicMatrixExchanges = domain.PublicMatrixExchanges;
+            MatrixAssetPairs = domain.MatrixAssetPairs;
         }
     }
 }
