@@ -623,7 +623,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 _s.PublicMatrixExchanges = settings.PublicMatrixExchanges;
             }
 
-            if (settings.MatrixAssetPairs != null && !_s.MatrixAssetPairs.SequenceEqual(settings.MatrixAssetPairs))
+            if (settings.MatrixAssetPairs != null && !settings.MatrixAssetPairs.SequenceEqual(_s.MatrixAssetPairs ?? new List<string>()))
             {
                 _s.MatrixAssetPairs = settings.MatrixAssetPairs.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
             }
