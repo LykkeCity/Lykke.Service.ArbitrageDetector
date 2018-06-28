@@ -99,13 +99,13 @@ namespace Lykke.Service.ArbitrageDetector.Models
             MinimumPnL = minimumPnL;
             MinimumVolume = minimumVolume;
             MinSpread = minSpread;
-            BaseAssets = baseAssets;
-            IntermediateAssets = intermediateAssets;
+            BaseAssets = baseAssets ?? new List<string>();
+            IntermediateAssets = intermediateAssets ?? new List<string>();
             QuoteAsset = quoteAsset;
-            Exchanges = exchanges;
-            PublicMatrixAssetPairs = publicMatrixAssetPairs;
-            PublicMatrixExchanges = publicMatrixExchanges;
-            MatrixAssetPairs = matrixAssetPairs;
+            Exchanges = exchanges ?? new List<string>();
+            PublicMatrixAssetPairs = publicMatrixAssetPairs ?? new List<string>();
+            PublicMatrixExchanges = publicMatrixExchanges ?? new Dictionary<string, string>();
+            MatrixAssetPairs = matrixAssetPairs ?? new List<string>();
         }
 
         /// <summary>
