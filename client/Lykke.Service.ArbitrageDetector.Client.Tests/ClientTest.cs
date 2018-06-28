@@ -423,10 +423,18 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         {
             Assert.NotEmpty(crossRate.Source);
             Assert.False(crossRate.AssetPair.IsEmpty());
-            Assert.NotEqual(default, crossRate.BestBid.Value.Price);
-            Assert.NotEqual(default, crossRate.BestBid.Value.Volume);
-            Assert.NotEqual(default, crossRate.BestAsk.Value.Price);
-            Assert.NotEqual(default, crossRate.BestAsk.Value.Volume);
+            if (crossRate.BestBid.HasValue)
+            {
+                Assert.NotEqual(default, crossRate.BestBid.Value.Price);
+                Assert.NotEqual(default, crossRate.BestBid.Value.Volume);
+            }
+
+            if (crossRate.BestAsk.HasValue)
+            {
+                Assert.NotEqual(default, crossRate.BestAsk.Value.Price);
+                Assert.NotEqual(default, crossRate.BestAsk.Value.Volume);
+            }
+
             Assert.NotEmpty(crossRate.ConversionPath);
             Assert.NotEqual(default, crossRate.Timestamp);
         }
