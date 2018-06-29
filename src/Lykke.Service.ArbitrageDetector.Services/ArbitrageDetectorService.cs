@@ -6,9 +6,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
-using Lykke.Service.ArbitrageDetector.Core;
 using Lykke.Service.ArbitrageDetector.Core.Utils;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
+using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Services.Models;
@@ -621,6 +621,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
             if (settings.PublicMatrixExchanges != null && !_s.PublicMatrixExchanges.SequenceEqual(settings.PublicMatrixExchanges))
             {
                 _s.PublicMatrixExchanges = settings.PublicMatrixExchanges;
+            }
+
+            if (settings.MatrixAssetPairs != null && !settings.MatrixAssetPairs.SequenceEqual(_s.MatrixAssetPairs ?? new List<string>()))
+            {
+                _s.MatrixAssetPairs = settings.MatrixAssetPairs.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
             }
 
             await _settingsRepository.InsertOrReplaceAsync(_s);

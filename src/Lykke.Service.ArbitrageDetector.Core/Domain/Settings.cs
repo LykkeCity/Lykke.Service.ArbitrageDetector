@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 
-namespace Lykke.Service.ArbitrageDetector.Core
+namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
     /// <summary>
     /// Represents settings that can be changed during service execution.
@@ -63,6 +64,11 @@ namespace Lykke.Service.ArbitrageDetector.Core
         public IDictionary<string, string> PublicMatrixExchanges { get; set; }
 
         /// <summary>
+        /// Internal matrix asset pairs.
+        /// </summary>
+        public IEnumerable<string> MatrixAssetPairs { get; set; }
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         public Settings()
@@ -83,9 +89,10 @@ namespace Lykke.Service.ArbitrageDetector.Core
         /// <param name="minimumVolume"></param>
         /// <param name="publicMatrixAssetPairs"></param>
         /// <param name="publicMatrixExchanges"></param>
+        /// <param name="matrixAssetPairs"></param>
         public Settings(int historyMaxSize, int expirationTimeInSeconds, IEnumerable<string> baseAssets,
             IEnumerable<string> intermediateAssets, string quoteAsset, int minSpread, IEnumerable<string> exchanges, decimal minimumPnL, decimal minimumVolume,
-            IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges)
+            IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges, IEnumerable<string> matrixAssetPairs)
         {
             HistoryMaxSize = historyMaxSize;
             ExpirationTimeInSeconds = expirationTimeInSeconds;
@@ -98,6 +105,7 @@ namespace Lykke.Service.ArbitrageDetector.Core
             Exchanges = exchanges;
             PublicMatrixAssetPairs = publicMatrixAssetPairs;
             PublicMatrixExchanges = publicMatrixExchanges;
+            MatrixAssetPairs = matrixAssetPairs;
         }
 
         public static ISettings Default { get; } = new Settings
@@ -112,7 +120,8 @@ namespace Lykke.Service.ArbitrageDetector.Core
             QuoteAsset = "USD",
             Exchanges = new List<string>(),
             PublicMatrixAssetPairs = new List<string>(),
-            PublicMatrixExchanges = new Dictionary<string, string>()
+            PublicMatrixExchanges = new Dictionary<string, string>(),
+            MatrixAssetPairs = new List<string>()
         };
     }
 }

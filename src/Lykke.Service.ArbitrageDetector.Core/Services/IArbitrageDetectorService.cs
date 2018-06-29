@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
+using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Services
 {

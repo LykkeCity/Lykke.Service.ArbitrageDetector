@@ -176,7 +176,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         {
             var oldSettings = await Client.GetSettingsAsync();
 
-            var settings = new Settings(150, 0, new List<string> { "AUD", "CHF" }, new List<string> { "EUR" }, "BTC", -97, new List<string> { "GDAX" }, 13, 17, new List<string> {"BTCUSD"}, new Dictionary<string, string>{ {"", ""} });
+            var settings = new Settings(150, 0, new List<string> { "AUD", "CHF" }, new List<string> { "EUR" }, "BTC", -97, new List<string> { "GDAX" }, 13, 17, new List<string> {"BTCUSD"}, new Dictionary<string, string>{ {"", ""} }, new List<string>{ "BTCUSD" });
 
             await Client.SetSettingsAsync(settings);
 
@@ -369,6 +369,24 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             AssertSettigns(oldSettings, newSettings);
         }
 
+        [Fact]
+        public async Task SetSettingsMatrixAssetPairsTest()
+        {
+            var oldSettings = await Client.GetSettingsAsync();
+
+            var settings = new Settings { MatrixAssetPairs = new List<string> { "ABCUSD" } };
+
+            await Client.SetSettingsAsync(settings);
+
+            var newSettings = await Client.GetSettingsAsync();
+            AssertSettigns(settings, newSettings);
+
+            await Client.SetSettingsAsync(oldSettings);
+
+            newSettings = await Client.GetSettingsAsync();
+            AssertSettigns(oldSettings, newSettings);
+        }
+
 
         private void AssertOrderBook(OrderBook orderBook)
         {
@@ -405,10 +423,18 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         {
             Assert.NotEmpty(crossRate.Source);
             Assert.False(crossRate.AssetPair.IsEmpty());
-            Assert.NotEqual(default, crossRate.BestBid.Value.Price);
-            Assert.NotEqual(default, crossRate.BestBid.Value.Volume);
-            Assert.NotEqual(default, crossRate.BestAsk.Value.Price);
-            Assert.NotEqual(default, crossRate.BestAsk.Value.Volume);
+            if (crossRate.BestBid.HasValue)
+            {
+                Assert.NotEqual(default, crossRate.BestBid.Value.Price);
+                Assert.NotEqual(default, crossRate.BestBid.Value.Volume);
+            }
+
+            if (crossRate.BestAsk.HasValue)
+            {
+                Assert.NotEqual(default, crossRate.BestAsk.Value.Price);
+                Assert.NotEqual(default, crossRate.BestAsk.Value.Volume);
+            }
+
             Assert.NotEmpty(crossRate.ConversionPath);
             Assert.NotEqual(default, crossRate.Timestamp);
         }
