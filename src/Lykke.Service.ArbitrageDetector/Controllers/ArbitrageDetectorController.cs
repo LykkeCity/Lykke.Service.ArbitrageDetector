@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using Lykke.Service.ArbitrageDetector.Aspects.Cache;
 using Lykke.Service.ArbitrageDetector.Aspects.ExceptionHandling;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Models;
@@ -137,7 +136,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("PublicMatrixAssetPairs")]
         [ProducesResponseType(typeof(IEnumerable<string>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ResponseCache(Duration = 60)]
+        [ResponseCache(Duration = 1)]
         public IActionResult PublicMatrixAssetPairs()
         {
             var settings = _arbitrageDetectorService.GetSettings();
