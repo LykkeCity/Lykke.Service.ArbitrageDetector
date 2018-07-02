@@ -29,19 +29,8 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("OrderBooks")]
         [ProducesResponseType(typeof(IEnumerable<OrderBookRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "exchange", "assetPair" })]
         public virtual IActionResult OrderBooks(string exchange, string assetPair)
-        {
-            var result = _arbitrageDetectorService.GetOrderBooks(exchange, assetPair).Select(x => new OrderBookRow(x)).ToList();
-
-            return Ok(result);
-        }
-
-        [HttpGet]
-        [Route("newOrderBooks")]
-        [SwaggerOperation("NewOrderBooks")]
-        [ProducesResponseType(typeof(IEnumerable<OrderBookRow>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public virtual IActionResult NewOrderBooks(string exchange, string assetPair)
         {
             var result = _arbitrageDetectorService.GetOrderBooks(exchange, assetPair).Select(x => new OrderBookRow(x)).ToList();
 
@@ -53,6 +42,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("CrossRates")]
         [ProducesResponseType(typeof(IEnumerable<CrossRateRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ResponseCache(Duration = 1)]
         public IActionResult CrossRates()
         {
             var result = _arbitrageDetectorService.GetCrossRates().Select(x => new CrossRateRow(x)).ToList();
@@ -65,6 +55,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("Arbitrages")]
         [ProducesResponseType(typeof(IEnumerable<ArbitrageRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ResponseCache(Duration = 1)]
         public IActionResult Arbitrages()
         {
             var result = _arbitrageDetectorService.GetArbitrages().Select(x => new ArbitrageRow(x)).ToList();
@@ -77,6 +68,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("ArbitrageFromHistory")]
         [ProducesResponseType(typeof(IEnumerable<Arbitrage>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "conversionPath" })]
         public IActionResult ArbitrageFromHistory(string conversionPath)
         {
             var arbitrage = _arbitrageDetectorService.GetArbitrageFromHistory(conversionPath);
@@ -90,6 +82,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("ArbitrageFromActiveOrHistory")]
         [ProducesResponseType(typeof(IEnumerable<Arbitrage>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "conversionPath" })]
         public IActionResult ArbitrageFromActiveOrHistory(string conversionPath)
         {
             var arbitrage = _arbitrageDetectorService.GetArbitrageFromActiveOrHistory(conversionPath);
@@ -103,6 +96,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("ArbitrageHistory")]
         [ProducesResponseType(typeof(IEnumerable<ArbitrageRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "since", "take" })]
         public IActionResult ArbitrageHistory(DateTime since, int take)
         {
             var result = _arbitrageDetectorService.GetArbitrageHistory(since, take).Select(x => new ArbitrageRow(x)).ToList();
@@ -115,6 +109,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("Matrix")]
         [ProducesResponseType(typeof(Matrix), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "assetPair" })]
         public IActionResult Matrix(string assetPair)
         {
             var matrix = _arbitrageDetectorService.GetMatrix(assetPair);
@@ -128,6 +123,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("PublicMatrix")]
         [ProducesResponseType(typeof(Matrix), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ResponseCache(Duration = 1, VaryByQueryKeys = new [] { "assetPair" })]
         public IActionResult PublicMatrix(string assetPair)
         {
             var matrix = _arbitrageDetectorService.GetMatrix(assetPair, true);
@@ -141,6 +137,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("PublicMatrixAssetPairs")]
         [ProducesResponseType(typeof(IEnumerable<string>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ResponseCache(Duration = 60)]
         public IActionResult PublicMatrixAssetPairs()
         {
             var settings = _arbitrageDetectorService.GetSettings();
@@ -154,6 +151,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("LykkeArbitrages")]
         [ProducesResponseType(typeof(IEnumerable<LykkeArbitrageRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "basePair", "crossPair" })]
         public IActionResult LykkeArbitrages(string basePair, string crossPair)
         {
             var result = _lykkeArbitrageDetectorService.GetArbitrages(basePair, crossPair)

@@ -2,15 +2,11 @@
 using System.Threading.Tasks;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using Autofac.Extras.DynamicProxy;
 using AzureStorage.Tables;
-using Castle.DynamicProxy;
 using Common.Log;
 using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.Logs;
-using Lykke.Service.ArbitrageDetector.Aspects.Cache;
-using Lykke.Service.ArbitrageDetector.Controllers;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Settings;
 using Lykke.Service.ArbitrageDetector.Modules;
@@ -18,6 +14,7 @@ using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -44,7 +41,8 @@ namespace Lykke.Service.ArbitrageDetector
         {
             try
             {
-                services.AddMvc()
+                services.AddResponseCaching()
+                        .AddMvc()
                         .AddControllersAsServices()
                         .AddJsonOptions(options =>
                         {
@@ -93,6 +91,8 @@ namespace Lykke.Service.ArbitrageDetector
 
                 app.UseLykkeForwardedHeaders();
                 app.UseLykkeMiddleware("ArbitrageDetector", ex => new { Message = "Technical problem" });
+
+                app.UseResponseCaching();
 
                 app.UseMvc();
                 app.UseSwagger(c =>
