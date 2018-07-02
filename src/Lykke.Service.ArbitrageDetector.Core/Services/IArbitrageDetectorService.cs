@@ -29,8 +29,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
 
         // Matrix
 
-        Matrix GetMatrix(string assetPair, bool withSuffixOnly = false);
+        Matrix GetMatrix(string assetPair, bool isPublic = false);
 
+        // Settings
 
         ISettings GetSettings();
 
