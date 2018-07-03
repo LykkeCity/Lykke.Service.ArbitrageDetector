@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using System.Net;
-using Lykke.Service.ArbitrageDetector.Core.Services;
+using Lykke.Service.ArbitrageDetector.Core.Services.Infrastructure;
 using Lykke.Service.ArbitrageDetector.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;

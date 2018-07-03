@@ -3,7 +3,7 @@ using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
+namespace Lykke.Service.ArbitrageDetector.OrderBookHandlers
 {
     internal sealed class OrderBookParser
     {

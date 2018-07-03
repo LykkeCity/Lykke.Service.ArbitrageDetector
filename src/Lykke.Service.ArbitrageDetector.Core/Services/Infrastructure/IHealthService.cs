@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Lykke.Service.ArbitrageDetector.Core.Domain.Health;
 
-namespace Lykke.Service.ArbitrageDetector.Core.Services
+namespace Lykke.Service.ArbitrageDetector.Core.Services.Infrastructure
 {
     // NOTE: See https://lykkex.atlassian.net/wiki/spaces/LKEWALLET/pages/35755585/Add+your+app+to+Monitoring
     public interface IHealthService

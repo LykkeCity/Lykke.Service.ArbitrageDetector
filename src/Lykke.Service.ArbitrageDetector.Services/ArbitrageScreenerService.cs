@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Common;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
-using Lykke.Service.ArbitrageDetector.Core.Services;
+using Lykke.Service.ArbitrageDetector.Core.Services.Infrastructure;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.RateCalculator.Client;
 using Lykke.Service.RateCalculator.Client.AutorestClient.Models;

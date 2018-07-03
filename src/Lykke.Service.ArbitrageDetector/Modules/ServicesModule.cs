@@ -1,21 +1,18 @@
 ﻿using System;
 using Autofac;
-using Autofac.Extras.DynamicProxy;
-using AzureStorage.Tables;
 using Common;
 using Common.Log;
-using Lykke.Service.ArbitrageDetector.Aspects.Cache;
-using Lykke.Service.ArbitrageDetector.AzureRepositories;
-using Lykke.Service.ArbitrageDetector.Controllers;
-using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
+using Lykke.Service.ArbitrageDetector.OrderBookHandlers;
 using Lykke.Service.ArbitrageDetector.RabbitSubscribers;
-using Lykke.Service.ArbitrageDetector.RabbitSubscribers.OrderBookHandlers;
 using Lykke.Service.ArbitrageDetector.Services;
 using Lykke.Service.ArbitrageDetector.Settings;
-using Lykke.Service.Assets.Client;
 using Lykke.Service.RateCalculator.Client;
 using Lykke.SettingsReader;
+using ILykkeAssetsService = Lykke.Service.Assets.Client.IAssetsService;
+using LykkeAssetsService = Lykke.Service.Assets.Client.AssetsService;
+using IAssetsService = Lykke.Service.ArbitrageDetector.Core.Services.IAssetsService;
+using AssetsService = Lykke.Service.ArbitrageDetector.Services.AssetsService;
 
 namespace Lykke.Service.ArbitrageDetector.Modules
 {
@@ -40,10 +37,11 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             builder.RegisterType<OrderBookValidator>()
                 .SingleInstance();
 
-            builder.RegisterType<OrderBookLykkeAssetsProvider>()
-                .SingleInstance();
-
             // Services
+
+            builder.RegisterType<AssetsService>()
+                .As<IAssetsService>()
+                .SingleInstance();
 
             builder.RegisterType<ArbitrageDetectorService>()
                 .As<IArbitrageDetectorService>()
@@ -65,8 +63,8 @@ namespace Lykke.Service.ArbitrageDetector.Modules
                 .AutoActivate()
                 .SingleInstance();
 
-            builder.RegisterInstance(new AssetsService(new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl)))
-                .As<IAssetsService>()
+            builder.RegisterInstance(new LykkeAssetsService(new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl)))
+                .As<ILykkeAssetsService>()
                 .SingleInstance();
 
             builder.RegisterInstance(new RateCalculatorClient(_settings.CurrentValue.RateCalculatorServiceClient.ServiceUrl, _log))
