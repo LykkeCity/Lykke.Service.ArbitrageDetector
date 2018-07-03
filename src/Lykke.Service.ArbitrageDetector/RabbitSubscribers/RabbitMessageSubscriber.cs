@@ -6,7 +6,8 @@ using Common.Log;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.ArbitrageDetector.Core.Services;
-using Lykke.Service.ArbitrageDetector.RabbitSubscribers.OrderBookHandlers;
+using Lykke.Service.ArbitrageDetector.Core.Services.Infrastructure;
+using Lykke.Service.ArbitrageDetector.OrderBookHandlers;
 
 namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
 {
@@ -18,7 +19,7 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
 
         private readonly OrderBookParser _orderBookParser;
         private readonly OrderBookValidator _orderBookValidator;
-        private readonly OrderBookLykkeAssetsProvider _orderBookLykkeAssetsProvider;
+        
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
         private readonly ILykkeArbitrageDetectorService _lykkeArbitrageDetectorService;
         private readonly ILog _log;
@@ -29,7 +30,6 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
             IShutdownManager shutdownManager,
             OrderBookParser orderBookParser,
             OrderBookValidator orderBookValidator,
-            OrderBookLykkeAssetsProvider orderBookLykkeAssetsProvider,
             IArbitrageDetectorService arbitrageDetectorService,
             ILykkeArbitrageDetectorService lykkeArbitrageDetectorService,
             ILog log)
@@ -40,7 +40,6 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
             shutdownManager.Register(this);
             _orderBookParser = orderBookParser ?? throw new ArgumentNullException(nameof(orderBookParser));
             _orderBookValidator = orderBookValidator ?? throw new ArgumentNullException(nameof(orderBookValidator));
-            _orderBookLykkeAssetsProvider = orderBookLykkeAssetsProvider ?? throw new ArgumentNullException(nameof(orderBookLykkeAssetsProvider));
             _arbitrageDetectorService = arbitrageDetectorService ?? throw new ArgumentNullException(nameof(arbitrageDetectorService));
             _lykkeArbitrageDetectorService = lykkeArbitrageDetectorService ?? throw new ArgumentNullException(nameof(lykkeArbitrageDetectorService));
             _log = log ?? throw new ArgumentNullException(nameof(log));
@@ -76,12 +75,7 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
                 if (isValid)
                 {
                     _arbitrageDetectorService.Process(orderBook);
-
-                    if (string.Equals(orderBook.Source, "lykke", StringComparison.OrdinalIgnoreCase))
-                    {
-                        await _orderBookLykkeAssetsProvider.ProvideAssetsIfLykke(orderBook);
-                        _lykkeArbitrageDetectorService.Process(orderBook);
-                    }
+                    _lykkeArbitrageDetectorService.Process(orderBook);                        
                 }
             }
             catch (Exception ex)

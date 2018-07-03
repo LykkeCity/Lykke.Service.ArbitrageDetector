@@ -2,9 +2,9 @@
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
-using Lykke.Service.ArbitrageDetector.Core.Services;
+using Lykke.Service.ArbitrageDetector.Core.Services.Infrastructure;
 
-namespace Lykke.Service.ArbitrageDetector.Services
+namespace Lykke.Service.ArbitrageDetector.Services.Infrastructure
 {
     // NOTE: Sometimes, shutdown process should be expressed explicitly. 
     // If this is your case, use this class to manage shutdown.

@@ -2,16 +2,12 @@
 using System.Threading.Tasks;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using Autofac.Extras.DynamicProxy;
 using AzureStorage.Tables;
-using Castle.DynamicProxy;
 using Common.Log;
 using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.Logs;
-using Lykke.Service.ArbitrageDetector.Aspects.Cache;
-using Lykke.Service.ArbitrageDetector.Controllers;
-using Lykke.Service.ArbitrageDetector.Core.Services;
+using Lykke.Service.ArbitrageDetector.Core.Services.Infrastructure;
 using Lykke.Service.ArbitrageDetector.Settings;
 using Lykke.Service.ArbitrageDetector.Modules;
 using Lykke.SettingsReader;

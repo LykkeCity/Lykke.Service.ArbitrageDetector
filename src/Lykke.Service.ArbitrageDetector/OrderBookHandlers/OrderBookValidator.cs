@@ -4,11 +4,10 @@ using Common;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 
-namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers.OrderBookHandlers
+namespace Lykke.Service.ArbitrageDetector.OrderBookHandlers
 {
     internal sealed class OrderBookValidator
     {
-
         private readonly ILog _log;
 
         public OrderBookValidator(ILog log)
@@ -50,7 +49,7 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers.OrderBookHandlers
                 if (canWriteAgain)
                 {
                     _lastWriteToLog = DateTime.Now;
-                    _log.WriteInfoAsync(nameof(OrderBookParser), nameof(IsValid), $"Invalid order book: {orderBook.ToJson()}");
+                    _log.WriteInfoAsync(nameof(OrderBookParser), nameof(IsValid), $"Invalid order book: {orderBook.Source}-{orderBook.AssetPairStr}");
                 }
             }
         }

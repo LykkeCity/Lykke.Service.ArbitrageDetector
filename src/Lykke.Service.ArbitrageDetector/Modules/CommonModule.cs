@@ -1,7 +1,8 @@
 ﻿using Autofac;
 using Common.Log;
-using Lykke.Service.ArbitrageDetector.Core.Services;
+using Lykke.Service.ArbitrageDetector.Core.Services.Infrastructure;
 using Lykke.Service.ArbitrageDetector.Services;
+using Lykke.Service.ArbitrageDetector.Services.Infrastructure;
 
 namespace Lykke.Service.ArbitrageDetector.Modules
 {
