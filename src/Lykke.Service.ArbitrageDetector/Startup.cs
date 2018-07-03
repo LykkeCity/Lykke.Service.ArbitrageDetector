@@ -41,7 +41,7 @@ namespace Lykke.Service.ArbitrageDetector
         {
             try
             {
-                services.AddResponseCaching()
+                services//.AddResponseCaching()
                         .AddMvc()
                         .AddControllersAsServices()
                         .AddJsonOptions(options =>
@@ -92,7 +92,7 @@ namespace Lykke.Service.ArbitrageDetector
                 app.UseLykkeForwardedHeaders();
                 app.UseLykkeMiddleware("ArbitrageDetector", ex => new { Message = "Technical problem" });
 
-                app.UseResponseCaching();
+                //app.UseResponseCaching();
 
                 app.UseMvc();
                 app.UseSwagger(c =>
