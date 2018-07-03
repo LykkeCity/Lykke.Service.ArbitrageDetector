@@ -14,7 +14,6 @@ using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -41,7 +40,7 @@ namespace Lykke.Service.ArbitrageDetector
         {
             try
             {
-                services//.AddResponseCaching()
+                services.AddResponseCaching()
                         .AddMvc()
                         .AddControllersAsServices()
                         .AddJsonOptions(options =>
@@ -92,7 +91,7 @@ namespace Lykke.Service.ArbitrageDetector
                 app.UseLykkeForwardedHeaders();
                 app.UseLykkeMiddleware("ArbitrageDetector", ex => new { Message = "Technical problem" });
 
-                //app.UseResponseCaching();
+                app.UseResponseCaching();
 
                 app.UseMvc();
                 app.UseSwagger(c =>
