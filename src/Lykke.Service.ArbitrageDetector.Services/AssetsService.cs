@@ -84,6 +84,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 return 2;
             }
 
+            AssetPair oneInfered;
             // Try to infer by assets
             foreach (var asset in _assets)
             {
@@ -98,10 +99,24 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     var @base = assetPairStr.ToUpper().StartsWith(asset.ToUpper()) ? asset : otherAsset;
                     var quote = string.Equals(@base, asset, StringComparison.OrdinalIgnoreCase) ? otherAsset : asset;
                     assetPair = new AssetPair(@base, quote);
-                    orderBook.SetAssetPair(assetPair);
 
-                    return infered;
+                    if (infered == 1)
+                    {
+                        oneInfered = assetPair;
+                        continue; // still try to find both assets
+                    }
+
+                    // If found both assets then stop looking
+                    orderBook.SetAssetPair(assetPair);
+                    return 2;
                 }
+            }
+
+            // If found only one asset then use it
+            if (!oneInfered.IsEmpty())
+            {
+                orderBook.SetAssetPair(oneInfered);
+                return 1;
             }
 
             return 0;
