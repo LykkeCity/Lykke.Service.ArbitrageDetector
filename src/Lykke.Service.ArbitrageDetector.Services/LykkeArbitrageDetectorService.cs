@@ -28,7 +28,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ILog _log;
         
         public LykkeArbitrageDetectorService(ILog log, IShutdownManager shutdownManager, ISettingsRepository settingsRepository, IAssetsService assetsService)
-            : base(100, log)
+            : base(500, log)
         {
             shutdownManager?.Register(this);
 

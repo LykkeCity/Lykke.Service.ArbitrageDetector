@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Lykke.Service.ArbitrageDetector.Client.Models
 {
@@ -68,6 +69,16 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public IEnumerable<string> MatrixAssetPairs { get; set; }
 
         /// <summary>
+        /// Time interval for matrix snapshots to database.
+        /// </summary>
+        public TimeSpan MatrixSnapshotInterval { get; set; }
+
+        /// <summary>
+        /// Asset pairs for matrix snapshots.
+        /// </summary>
+        public IEnumerable<string> MatrixSnapshotAssetPairs { get; set; }
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         public Settings()
@@ -89,9 +100,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <param name="publicMatrixAssetPairs"></param>
         /// <param name="publicMatrixExchanges"></param>
         /// <param name="matrixAssetPairs"></param>
+        /// <param name="matrixSnapshotInterval"></param>
+        /// <param name="matrixSnapshotAssetPairs"></param>
         public Settings(int historyMaxSize, int expirationTimeInSeconds, IEnumerable<string> baseAssets,
             IEnumerable<string> intermediateAssets, string quoteAsset, int minSpread, IEnumerable<string> exchanges, decimal minimumPnL, decimal minimumVolume,
-            IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges, IEnumerable<string> matrixAssetPairs)
+            IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges, IEnumerable<string> matrixAssetPairs,
+            TimeSpan matrixSnapshotInterval, IEnumerable<string> matrixSnapshotAssetPairs)
         {
             HistoryMaxSize = historyMaxSize;
             ExpirationTimeInSeconds = expirationTimeInSeconds;
@@ -105,6 +119,8 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             PublicMatrixAssetPairs = publicMatrixAssetPairs;
             PublicMatrixExchanges = publicMatrixExchanges;
             MatrixAssetPairs = matrixAssetPairs;
+            MatrixSnapshotInterval = matrixSnapshotInterval;
+            MatrixSnapshotAssetPairs = matrixSnapshotAssetPairs;
         }
     }
 }

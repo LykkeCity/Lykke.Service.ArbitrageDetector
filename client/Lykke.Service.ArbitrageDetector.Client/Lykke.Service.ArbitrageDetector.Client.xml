@@ -841,12 +841,22 @@
             Internal matrix asset pairs.
             </summary>
         </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.MatrixSnapshotInterval">
+            <summary>
+            Time interval for matrix snapshots to database.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.MatrixSnapshotAssetPairs">
+            <summary>
+            Asset pairs for matrix snapshots.
+            </summary>
+        </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor">
             <summary>
             Constructor.
             </summary>
         </member>
-        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor(System.Int32,System.Int32,System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String},System.String,System.Int32,System.Collections.Generic.IEnumerable{System.String},System.Decimal,System.Decimal,System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IDictionary{System.String,System.String},System.Collections.Generic.IEnumerable{System.String})">
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor(System.Int32,System.Int32,System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String},System.String,System.Int32,System.Collections.Generic.IEnumerable{System.String},System.Decimal,System.Decimal,System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IDictionary{System.String,System.String},System.Collections.Generic.IEnumerable{System.String},System.TimeSpan,System.Collections.Generic.IEnumerable{System.String})">
             <summary>
             Constructor.
             </summary>
@@ -862,6 +872,8 @@
             <param name="publicMatrixAssetPairs"></param>
             <param name="publicMatrixExchanges"></param>
             <param name="matrixAssetPairs"></param>
+            <param name="matrixSnapshotInterval"></param>
+            <param name="matrixSnapshotAssetPairs"></param>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice">
             <summary>
