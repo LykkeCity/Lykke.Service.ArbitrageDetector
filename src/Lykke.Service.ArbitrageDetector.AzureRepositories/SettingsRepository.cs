@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using AzureStorage;
+using Lykke.Service.ArbitrageDetector.AzureRepositories.Models;
 using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 

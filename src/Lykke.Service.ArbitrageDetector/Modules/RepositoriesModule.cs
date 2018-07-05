@@ -22,9 +22,9 @@ namespace Lykke.Service.ArbitrageDetector.Modules
         protected override void Load(ContainerBuilder builder)
         {
             var settingsRepository = new SettingsRepository(
-                AzureTableStorage<AzureRepositories.Settings>.Create(
+                AzureTableStorage<AzureRepositories.Models.Settings>.Create(
                     _settings.ConnectionString(x => x.ArbitrageDetector.Db.DataConnectionString),
-                    nameof(AzureRepositories.Settings), _log));
+                    nameof(AzureRepositories.Models.Settings), _log));
             builder.RegisterInstance<ISettingsRepository>(settingsRepository).PropertiesAutowired();
         }
     }
