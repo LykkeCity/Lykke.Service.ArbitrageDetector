@@ -11,6 +11,7 @@ using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
+using Lykke.Service.ArbitrageDetector.Core.Services.Infrastructure;
 using Lykke.Service.ArbitrageDetector.Services.Models;
 using MoreLinq;
 
@@ -24,21 +25,23 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrageHistory;
         private bool _restartNeeded;
         private ISettings _s;
-        private readonly ILog _log;
         private readonly ISettingsRepository _settingsRepository;
+        private readonly IAssetsService _assetsService;
+        private readonly ILog _log;
 
-
-        public ArbitrageDetectorService(ILog log, IShutdownManager shutdownManager, ISettingsRepository settingsRepository)
+        public ArbitrageDetectorService(ILog log, IShutdownManager shutdownManager, ISettingsRepository settingsRepository, IAssetsService assetsService)
             : base(100, log)
         {
+            shutdownManager?.Register(this);
+
             _orderBooks = new ConcurrentDictionary<AssetPairSource, OrderBook>();
             _crossRates = new ConcurrentDictionary<AssetPairSource, CrossRate>();
             _arbitrages = new ConcurrentDictionary<string, Arbitrage>();
             _arbitrageHistory = new ConcurrentDictionary<string, Arbitrage>();
 
-            _log = log;
-            shutdownManager?.Register(this);
-            _settingsRepository = settingsRepository;
+            _settingsRepository = settingsRepository ?? throw new ArgumentNullException(nameof(settingsRepository));
+            _assetsService = assetsService ?? throw new ArgumentNullException(nameof(assetsService));
+            _log = log ?? throw new ArgumentNullException(nameof(log));
 
             Task.Run(InitSettings).Wait();
         }
@@ -59,24 +62,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public void Process(OrderBook orderBook)
         {
-            if (orderBook.AssetPair.IsEmpty())
-            {
-                var assets = new List<string>();
-                assets.Add(_s.QuoteAsset);
-                assets.AddRange(_s.BaseAssets);
-                assets.AddRange(_s.IntermediateAssets);
-
-                foreach (var asset in assets)
-                {
-                    if (!orderBook.AssetPairStr.Contains(asset))
-                        continue;
-
-                    orderBook.SetAssetPair(asset);
-                    break;
-                }
-            }
-
-            if (!orderBook.AssetPair.IsEmpty())
+            if (_assetsService.InferBaseAndQuoteAssets(orderBook) > 0)
             {
                 var key = new AssetPairSource(orderBook.Source, orderBook.AssetPair);
                 _orderBooks.AddOrUpdate(key, orderBook);
@@ -382,6 +368,22 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
         }
 
+        private decimal? GetPriceWithAccuracy(decimal? price, AssetPair assetPair)
+        {
+            if (!price.HasValue)
+                return null;
+
+            return Math.Round(price.Value, _assetsService.GetAccuracy(assetPair)?.PriceAccuracy ?? 5);
+        }
+
+        private decimal? GetVolumeWithAccuracy(decimal? volume, AssetPair assetPair)
+        {
+            if (!volume.HasValue)
+                return null;
+
+            return Math.Round(volume.Value, _assetsService.GetAccuracy(assetPair)?.PriceAccuracy ?? 4);
+        }
+
 
         #region IArbitrageDetectorService
 
@@ -504,10 +506,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 var orderBookRow = orderBooks[row];
                 var cellsRow = new List<MatrixCell>();
                 var isActual = (DateTime.UtcNow - orderBookRow.Timestamp).TotalSeconds < _s.ExpirationTimeInSeconds;
+                var assetPairObj = orderBookRow.AssetPair;
 
                 // Add ask and exchange
                 result.Exchanges.Add(new Exchange(uniqueExchanges[row], isActual));
-                result.Asks.Add(orderBookRow.BestAsk?.Price);
+                result.Asks.Add(GetPriceWithAccuracy(orderBookRow.BestAsk?.Price, assetPairObj));
 
                 for (var col = 0; col < matrixSide; col++)
                 {
@@ -515,7 +518,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                     // Add bid
                     if (row == 0)
-                        result.Bids.Add(orderBookCol.BestBid?.Price);
+                        result.Bids.Add(GetPriceWithAccuracy(orderBookCol.BestBid?.Price, assetPairObj));
 
                     // If the same exchanges than cell = null
                     MatrixCell cell;
@@ -534,9 +537,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     }
 
                     var spread = (orderBookRow.BestAsk.Value.Price - orderBookCol.BestBid.Value.Price) / orderBookCol.BestBid.Value.Price * 100;
+                    spread = Math.Round(spread, 2);
                     decimal? volume = null;
                     if (spread < 0)
-                        volume = Arbitrage.GetArbitrageVolume(orderBookCol.Bids, orderBookRow.Asks);
+                        volume = GetVolumeWithAccuracy(Arbitrage.GetArbitrageVolume(orderBookCol.Bids, orderBookRow.Asks), assetPairObj);
 
                     cell = new MatrixCell(spread, volume);
                     cellsRow.Add(cell);

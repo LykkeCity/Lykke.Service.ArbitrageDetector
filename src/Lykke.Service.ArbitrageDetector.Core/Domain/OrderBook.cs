@@ -113,7 +113,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <inheritdoc />
         public override string ToString()
         {
-            return FormatSourceAssetPair(Source, AssetPair.Name);
+            return FormatSourceAssetPair(Source, AssetPair.IsEmpty() ? AssetPairStr : AssetPair.Name);
         }
 
         /// <summary>

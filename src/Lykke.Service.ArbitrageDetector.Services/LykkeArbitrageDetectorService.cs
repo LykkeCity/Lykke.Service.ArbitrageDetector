@@ -10,67 +10,52 @@ using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
+using Lykke.Service.ArbitrageDetector.Core.Services.Infrastructure;
 using MoreLinq;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
     public class LykkeArbitrageDetectorService : TimerPeriod, ILykkeArbitrageDetectorService
     {
+        private const string LykkeExchangeName = "lykke";
+
         private readonly ConcurrentDictionary<AssetPairSource, OrderBook> _orderBooks;
         private readonly object _lockArbitrages = new object();
         private readonly List<LykkeArbitrageRow> _arbitrages;
         private ISettings _s;
-        private readonly ILog _log;
         private readonly ISettingsRepository _settingsRepository;
-
-
-        public LykkeArbitrageDetectorService(ILog log, IShutdownManager shutdownManager, ISettingsRepository settingsRepository)
+        private readonly IAssetsService _assetsService;
+        private readonly ILog _log;
+        
+        public LykkeArbitrageDetectorService(ILog log, IShutdownManager shutdownManager, ISettingsRepository settingsRepository, IAssetsService assetsService)
             : base(100, log)
         {
+            shutdownManager?.Register(this);
+
             _orderBooks = new ConcurrentDictionary<AssetPairSource, OrderBook>();
             _arbitrages = new List<LykkeArbitrageRow>();
 
-            _log = log;
-            shutdownManager?.Register(this);
-            _settingsRepository = settingsRepository;
+            _settingsRepository = settingsRepository ?? throw new ArgumentNullException(nameof(settingsRepository));
+            _assetsService = assetsService ?? throw new ArgumentNullException(nameof(assetsService));
+            _log = log ?? throw new ArgumentNullException(nameof(log));
 
-            Task.Run(InitSettings).Wait();
-        }
-
-        private async Task InitSettings()
-        {
-            var dbSettings = await _settingsRepository.GetAsync();
-
-            if (dbSettings == null)
+            // Initialize settings
+            Task.Run(async () =>
             {
-                dbSettings = Settings.Default;
-                await _settingsRepository.InsertOrReplaceAsync(Settings.Default);
-            }
-
-            _s = dbSettings;
+                var dbSettings = await _settingsRepository.GetAsync();
+                if (dbSettings == null)
+                {
+                    dbSettings = Settings.Default;
+                    await _settingsRepository.InsertOrReplaceAsync(Settings.Default);
+                }
+                _s = dbSettings;
+            }).Wait();
         }
-
 
         public void Process(OrderBook orderBook)
         {
-            if (orderBook.AssetPair.IsEmpty())
-            {
-                var assets = new List<string>();
-                assets.Add(_s.QuoteAsset);
-                assets.AddRange(_s.BaseAssets);
-                assets.AddRange(_s.IntermediateAssets);
-
-                foreach (var asset in assets)
-                {
-                    if (!orderBook.AssetPairStr.Contains(asset))
-                        continue;
-
-                    orderBook.SetAssetPair(asset);
-                    break;
-                }
-            }
-
-            if (!orderBook.AssetPair.IsEmpty())
+            var isLykkeExchange = string.Equals(orderBook.Source, LykkeExchangeName, StringComparison.OrdinalIgnoreCase);
+            if (isLykkeExchange && _assetsService.InferBaseAndQuoteAssets(orderBook) > 0)
             {
                 var key = new AssetPairSource(orderBook.Source, orderBook.AssetPair);
                 _orderBooks.AddOrUpdate(key, orderBook);
