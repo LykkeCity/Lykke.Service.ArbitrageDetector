@@ -504,7 +504,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             for (var row = 0; row < matrixSide; row++)
             {
                 var orderBookRow = orderBooks[row];
-                var cellsRow = new List<MatrixCell>();
+                var cellsRow = new List<IMatrixCell>();
                 var isActual = (DateTime.UtcNow - orderBookRow.Timestamp).TotalSeconds < _s.ExpirationTimeInSeconds;
                 var assetPairObj = orderBookRow.AssetPair;
 
