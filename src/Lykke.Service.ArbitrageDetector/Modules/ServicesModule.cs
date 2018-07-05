@@ -71,6 +71,12 @@ namespace Lykke.Service.ArbitrageDetector.Modules
                 .As<IRateCalculatorClient>()
                 .SingleInstance();
 
+            builder.RegisterType<MatrixSnapshotsService>()
+                .As<IStartable>()
+                .As<IStopable>()
+                .AutoActivate()
+                .SingleInstance();
+
             // RabbitMessageSubscribers
 
             foreach (var exchange in _settings.CurrentValue.ArbitrageDetector.RabbitMq.Exchanges)

@@ -18,8 +18,10 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
         [JsonValueSerializer]
         public IList<IExchange> Exchanges { get; set; }
 
+        [JsonValueSerializer]
         public IList<decimal?> Asks { get; set; }
 
+        [JsonValueSerializer]
         public IList<decimal?> Bids { get; set; }
 
         [JsonValueSerializer]
@@ -31,8 +33,11 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
 
         public Matrix(IMatrix domain)
         {
+            var dateTime = DateTime.UtcNow;
+
             AssetPair = domain.AssetPair; // PartitionKey
-            RowKey = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture);
+            RowKey = dateTime.ToString(CultureInfo.InvariantCulture);
+            Timestamp = dateTime;
 
             Exchanges = domain.Exchanges;
             Asks = domain.Asks;
