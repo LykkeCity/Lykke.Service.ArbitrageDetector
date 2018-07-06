@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
@@ -10,10 +10,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
 {
     public class MatrixSnapshotsService : TimerPeriod
     {
+        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 5, 0);
         private readonly IMatrixRepository _matrixRepository;
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
 
-        public MatrixSnapshotsService(ILog log, IMatrixRepository matrixRepository, IArbitrageDetectorService arbitrageDetectorService) : base(10*1000, log)
+        public MatrixSnapshotsService(TimeSpan interval, ILog log, IMatrixRepository matrixRepository, IArbitrageDetectorService arbitrageDetectorService)
+            // TODO: must be changed after Common.TimerPeriod change
+            : base((int)interval.TotalMilliseconds == 0 ? (int)DefaultInterval.TotalMilliseconds : (int)interval.TotalMilliseconds, log)
         {
             _matrixRepository = matrixRepository;
             _arbitrageDetectorService = arbitrageDetectorService;
@@ -21,11 +24,18 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public override async Task Execute()
         {
+            SaveMatrixToDatabase();
+        }
+
+        private async void SaveMatrixToDatabase()
+        {
             var settings = _arbitrageDetectorService.GetSettings();
 
-            if (settings.MatrixSnapshotAssetPairs == null || !settings.MatrixSnapshotAssetPairs.Any())
+            // First time settings initialization
+            if (settings.MatrixSnapshotAssetPairs == null)
             {
-                settings.MatrixSnapshotAssetPairs = new List<string> { "BTCUSD" };
+                settings.MatrixSnapshotAssetPairs = new List<string>();
+                settings.MatrixSnapshotInterval = new TimeSpan(0, 0, 5, 0);
                 _arbitrageDetectorService.SetSettings(settings);
             }
 
@@ -34,8 +44,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
             foreach (var assetPair in assetPairs)
             {
                 var matrix = _arbitrageDetectorService.GetMatrix(assetPair);
-                await _matrixRepository.InsertOrReplaceAsync(matrix);
+                await _matrixRepository.InsertAsync(matrix);
             }
-        }
+;        }
     }
 }

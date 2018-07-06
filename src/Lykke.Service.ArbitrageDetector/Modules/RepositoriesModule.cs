@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using AzureStorage.Tables;
 using Common.Log;
+using Lykke.Service.ArbitrageDetector.AzureRepositories.Models;
 using Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Settings;
@@ -28,9 +29,9 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             builder.RegisterInstance<ISettingsRepository>(settingsRepository).PropertiesAutowired();
 
             var matrixRepository = new MatrixRepository(
-                AzureTableStorage<AzureRepositories.Models.Matrix>.Create(
+                AzureTableStorage<Matrix>.Create(
                     _settings.ConnectionString(x => x.ArbitrageDetector.Db.DataConnectionString),
-                    nameof(AzureRepositories.Models.Matrix), _log));
+                    nameof(Matrix), _log));
             builder.RegisterInstance<IMatrixRepository>(matrixRepository).PropertiesAutowired();
         }
     }

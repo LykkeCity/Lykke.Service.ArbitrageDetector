@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\client\Lykke.Service.ArbitrageDetector.Client\Lykke.Service.ArbitrageDetector.Client.csproj" />
     <ProjectReference Include="..\Lykke.Service.ArbitrageDetector.Core\Lykke.Service.ArbitrageDetector.Core.csproj" />
   </ItemGroup>
 

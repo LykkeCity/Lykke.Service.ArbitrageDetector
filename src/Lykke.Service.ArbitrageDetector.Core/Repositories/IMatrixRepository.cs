@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 
@@ -8,7 +9,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Repositories
     {
         Task<IMatrix> GetAsync(string assetPair, DateTime dateTime);
 
-        Task InsertOrReplaceAsync(IMatrix matrix);
+        Task<IEnumerable<IMatrix>> GetByAssetPairAndDateAsync(string assetPair, DateTime dateTime);
+
+        Task InsertAsync(IMatrix matrix);
 
         Task<bool> DeleteAsync(string assetPair, DateTime dateTime);
     }
