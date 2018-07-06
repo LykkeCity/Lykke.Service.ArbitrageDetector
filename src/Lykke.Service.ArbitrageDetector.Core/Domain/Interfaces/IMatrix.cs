@@ -6,12 +6,12 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces
     {
         string AssetPair { get; set; }
 
-        IList<IExchange> Exchanges { get; set; }
+        IList<Exchange> Exchanges { get; set; }
 
         IList<decimal?> Asks { get; set; }
 
         IList<decimal?> Bids { get; set; }
 
-        IList<IList<IMatrixCell>> Cells { get; set; }
+        IList<IList<MatrixCell>> Cells { get; set; }
     }
 }

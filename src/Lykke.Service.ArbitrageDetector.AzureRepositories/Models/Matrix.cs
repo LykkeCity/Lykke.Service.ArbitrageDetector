@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Lykke.AzureStorage.Tables;
 using Lykke.AzureStorage.Tables.Entity.Annotation;
+using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 
 namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
@@ -16,7 +16,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
         }
 
         [JsonValueSerializer]
-        public IList<IExchange> Exchanges { get; set; }
+        public IList<Exchange> Exchanges { get; set; }
 
         [JsonValueSerializer]
         public IList<decimal?> Asks { get; set; }
@@ -25,7 +25,9 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
         public IList<decimal?> Bids { get; set; }
 
         [JsonValueSerializer]
-        public IList<IList<IMatrixCell>> Cells { get; set; }
+        public IList<IList<MatrixCell>> Cells { get; set; }
+
+        public DateTime DateTime { get; set; }
 
         public Matrix()
         {
@@ -36,13 +38,15 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
             var dateTime = DateTime.UtcNow;
 
             AssetPair = domain.AssetPair; // PartitionKey
-            RowKey = dateTime.ToString(CultureInfo.InvariantCulture);
-            Timestamp = dateTime;
+            RowKey = dateTime.Ticks.ToString();
 
             Exchanges = domain.Exchanges;
             Asks = domain.Asks;
             Bids = domain.Bids;
+
             Cells = domain.Cells;
+
+            DateTime = dateTime;
         }
     }
 }

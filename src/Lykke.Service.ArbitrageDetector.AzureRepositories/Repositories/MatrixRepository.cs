@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Globalization;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AzureStorage;
 using Lykke.Service.ArbitrageDetector.AzureRepositories.Models;
@@ -19,17 +19,22 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 
         public async Task<IMatrix> GetAsync(string assetPair, DateTime dateTime)
         {
-            return await _storage.GetDataAsync(assetPair, dateTime.ToString(CultureInfo.InvariantCulture));
+            return await _storage.GetDataAsync(assetPair, dateTime.Ticks.ToString());
         }
 
-        public async Task InsertOrReplaceAsync(IMatrix matrix)
+        public async Task<IEnumerable<IMatrix>> GetByAssetPairAndDateAsync(string assetPair, DateTime dateTime)
         {
-            await _storage.InsertOrReplaceAsync(new Matrix(matrix));
+            return await _storage.GetDataAsync(assetPair, x => x.DateTime.Date == dateTime.Date);
+        }
+
+        public async Task InsertAsync(IMatrix matrix)
+        {
+            await _storage.InsertAsync(new Matrix(matrix));
         }
 
         public async Task<bool> DeleteAsync(string assetPair, DateTime dateTime)
         {
-            return await _storage.DeleteIfExistAsync(assetPair, dateTime.ToString(CultureInfo.InvariantCulture));
+            return await _storage.DeleteIfExistAsync(assetPair, dateTime.Ticks.ToString());
         }
     }
 }
