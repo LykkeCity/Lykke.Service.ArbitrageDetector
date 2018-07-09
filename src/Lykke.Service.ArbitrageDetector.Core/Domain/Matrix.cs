@@ -3,9 +3,6 @@ using System.Collections.Generic;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    /// <summary>
-    /// Represents an arbitrage situation.
-    /// </summary>
     public sealed class Matrix
     {
         public string AssetPair { get; set; }
@@ -17,6 +14,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public IList<decimal?> Bids { get; set; } = new List<decimal?>();
 
         public IList<IList<MatrixCell>> Cells { get; set; } = new List<IList<MatrixCell>>();
+
+        public DateTime DateTime { get; set; }
 
         public Matrix(string assetPair)
         {

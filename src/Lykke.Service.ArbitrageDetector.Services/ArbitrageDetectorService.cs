@@ -30,7 +30,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ILog _log;
 
         public ArbitrageDetectorService(ILog log, IShutdownManager shutdownManager, ISettingsRepository settingsRepository, IAssetsService assetsService)
-            : base(100, log)
+            : base(500, log)
         {
             shutdownManager?.Register(this);
 
@@ -549,6 +549,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 // row ends
                 result.Cells.Add(cellsRow);
             }
+
+            result.DateTime = DateTime.UtcNow;
 
             return result;
         }

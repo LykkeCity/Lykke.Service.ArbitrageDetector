@@ -16,7 +16,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly IList<LykkeAssetPair> _lykkeAssetPairs;
         private readonly List<string> _assets = new List<string>();
         private readonly List<AssetPair> _assetPairs = new List<AssetPair>();
-        private readonly List<IAssetPairAccuracy> _assetPairAccuracies = new List<IAssetPairAccuracy>();
+        private readonly List<AssetPairAccuracy> _assetPairAccuracies = new List<AssetPairAccuracy>();
 
         private readonly ILykkeAssetsService _assetsService;
         private readonly ILog _log;
@@ -33,7 +33,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private void Initialize()
         {
             var assetPairs = new List<AssetPair>();
-            var assetPairAccuracies = new List<IAssetPairAccuracy>();
+            var assetPairAccuracies = new List<AssetPairAccuracy>();
             var assets = new List<string>();
 
             var goodAssetPairs = _lykkeAssetPairs
@@ -122,7 +122,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return 0;
         }
 
-        public IAssetPairAccuracy GetAccuracy(AssetPair assetPair)
+        public AssetPairAccuracy GetAccuracy(AssetPair assetPair)
         {
             if (assetPair.IsEmpty())
                 throw new ArgumentOutOfRangeException(nameof(assetPair));

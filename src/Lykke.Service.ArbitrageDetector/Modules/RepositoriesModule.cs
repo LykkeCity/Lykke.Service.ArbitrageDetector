@@ -1,7 +1,9 @@
 ﻿using Autofac;
+using AzureStorage.Blob;
 using AzureStorage.Tables;
 using Common.Log;
-using Lykke.Service.ArbitrageDetector.AzureRepositories;
+using Lykke.Service.ArbitrageDetector.AzureRepositories.Models;
+using Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Settings;
 using Lykke.SettingsReader;
@@ -21,11 +23,20 @@ namespace Lykke.Service.ArbitrageDetector.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
-            var settingsRepository = new SettingsRepository(
-                AzureTableStorage<AzureRepositories.Settings>.Create(
-                    _settings.ConnectionString(x => x.ArbitrageDetector.Db.DataConnectionString),
-                    nameof(AzureRepositories.Settings), _log));
-            builder.RegisterInstance<ISettingsRepository>(settingsRepository).PropertiesAutowired();
+            var connectionString = _settings.ConnectionString(x => x.ArbitrageDetector.Db.DataConnectionString);
+
+            // Table
+
+            builder.RegisterInstance(AzureTableStorage<AzureRepositories.Models.Settings>.Create(connectionString, nameof(AzureRepositories.Models.Settings), _log));
+            builder.RegisterType<SettingsRepository>().As<ISettingsRepository>();
+
+            builder.RegisterInstance(AzureTableStorage<MatrixReference>.Create(connectionString, nameof(MatrixReference), _log));
+            builder.RegisterType<MatrixRepository>().As<IMatrixRepository>();
+
+            // Blob
+
+            builder.RegisterInstance(AzureBlobStorage.Create(connectionString));
+            builder.RegisterType<MatrixBlobRepository>().As<IMatrixBlobRepository>();
         }
     }
 }

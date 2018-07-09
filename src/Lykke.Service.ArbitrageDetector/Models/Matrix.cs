@@ -5,9 +5,6 @@ using DomainMatrix = Lykke.Service.ArbitrageDetector.Core.Domain.Matrix;
 
 namespace Lykke.Service.ArbitrageDetector.Models
 {
-    /// <summary>
-    /// Represents an arbitrage situation.
-    /// </summary>
     public sealed class Matrix
     {
         public string AssetPair { get; set; }
@@ -20,6 +17,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
 
         public IList<IList<MatrixCell>> Cells { get; set; } = new List<IList<MatrixCell>>();
 
+        public DateTime DateTime { get; set; }
 
         public Matrix(DomainMatrix matrix)
         {
@@ -44,6 +42,8 @@ namespace Lykke.Service.ArbitrageDetector.Models
 
                 Cells.Add(row);
             }
+
+            DateTime = matrix.DateTime;
         }
     }
 }

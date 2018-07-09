@@ -1,8 +1,5 @@
 ﻿namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    /// <summary>
-    /// Represents an arbitrage matrix cell.
-    /// </summary>
     public sealed class MatrixCell
     {
         public decimal? Spread { get; set; }

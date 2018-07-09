@@ -1,10 +1,5 @@
-﻿using System;
-
-namespace Lykke.Service.ArbitrageDetector.Core.Domain
+﻿namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    /// <summary>
-    /// Represents an arbitrage matrix cell.
-    /// </summary>
     public sealed class Exchange
     {
         public string Name { get; set; }

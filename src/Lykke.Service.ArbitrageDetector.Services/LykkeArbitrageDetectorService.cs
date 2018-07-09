@@ -7,8 +7,6 @@ using Common;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Utils;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
-using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
-using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Core.Services.Infrastructure;
 using MoreLinq;
@@ -22,34 +20,19 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ConcurrentDictionary<AssetPairSource, OrderBook> _orderBooks;
         private readonly object _lockArbitrages = new object();
         private readonly List<LykkeArbitrageRow> _arbitrages;
-        private ISettings _s;
-        private readonly ISettingsRepository _settingsRepository;
         private readonly IAssetsService _assetsService;
         private readonly ILog _log;
         
-        public LykkeArbitrageDetectorService(ILog log, IShutdownManager shutdownManager, ISettingsRepository settingsRepository, IAssetsService assetsService)
-            : base(100, log)
+        public LykkeArbitrageDetectorService(ILog log, IShutdownManager shutdownManager, IAssetsService assetsService)
+            : base(500, log)
         {
             shutdownManager?.Register(this);
 
             _orderBooks = new ConcurrentDictionary<AssetPairSource, OrderBook>();
             _arbitrages = new List<LykkeArbitrageRow>();
 
-            _settingsRepository = settingsRepository ?? throw new ArgumentNullException(nameof(settingsRepository));
             _assetsService = assetsService ?? throw new ArgumentNullException(nameof(assetsService));
             _log = log ?? throw new ArgumentNullException(nameof(log));
-
-            // Initialize settings
-            Task.Run(async () =>
-            {
-                var dbSettings = await _settingsRepository.GetAsync();
-                if (dbSettings == null)
-                {
-                    dbSettings = Settings.Default;
-                    await _settingsRepository.InsertOrReplaceAsync(Settings.Default);
-                }
-                _s = dbSettings;
-            }).Wait();
         }
 
         public void Process(OrderBook orderBook)

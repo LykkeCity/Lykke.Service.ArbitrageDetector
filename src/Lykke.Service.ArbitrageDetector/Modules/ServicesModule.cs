@@ -1,7 +1,10 @@
 ﻿using System;
 using Autofac;
+using AzureStorage.Tables;
 using Common;
 using Common.Log;
+using Lykke.Service.ArbitrageDetector.AzureRepositories.Models;
+using Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.OrderBookHandlers;
 using Lykke.Service.ArbitrageDetector.RabbitSubscribers;
@@ -29,6 +32,12 @@ namespace Lykke.Service.ArbitrageDetector.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
+            // TODO: must be moved into particular service after Common.TimerPeriod change
+            var settingsRepository = new SettingsRepository(
+                AzureTableStorage<AzureRepositories.Models.Settings>.Create(
+                    _settings.ConnectionString(x => x.ArbitrageDetector.Db.DataConnectionString), nameof(AzureRepositories.Models.Settings), _log));
+            var setings = settingsRepository.GetAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+
             // Order Book Handlers
 
             builder.RegisterType<OrderBookParser>()
@@ -69,6 +78,14 @@ namespace Lykke.Service.ArbitrageDetector.Modules
 
             builder.RegisterInstance(new RateCalculatorClient(_settings.CurrentValue.RateCalculatorServiceClient.ServiceUrl, _log))
                 .As<IRateCalculatorClient>()
+                .SingleInstance();
+
+            builder.RegisterType<MatrixSnapshotsService>()
+                .As<IMatrixSnapshotsService>()
+                .WithParameter("interval", setings.MatrixSnapshotInterval)
+                .As<IStartable>()
+                .As<IStopable>()
+                .AutoActivate()
                 .SingleInstance();
 
             // RabbitMessageSubscribers

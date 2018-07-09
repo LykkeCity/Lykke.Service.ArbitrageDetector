@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Lykke.AzureStorage.Tables;
 using Lykke.AzureStorage.Tables.Entity.Annotation;
 using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 
-namespace Lykke.Service.ArbitrageDetector.AzureRepositories
+namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
 {
     public class Settings : AzureTableEntity, ISettings
     {
@@ -37,6 +38,11 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories
         [JsonValueSerializer]
         public IEnumerable<string> MatrixAssetPairs { get; set; }
 
+        public TimeSpan MatrixSnapshotInterval { get; set; }
+
+        [JsonValueSerializer]
+        public IEnumerable<string> MatrixSnapshotAssetPairs { get; set; }
+
         public Settings()
         {
         }
@@ -57,6 +63,8 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories
             PublicMatrixAssetPairs = domain.PublicMatrixAssetPairs;
             PublicMatrixExchanges = domain.PublicMatrixExchanges;
             MatrixAssetPairs = domain.MatrixAssetPairs;
+            MatrixSnapshotInterval = domain.MatrixSnapshotInterval;
+            MatrixSnapshotAssetPairs = domain.MatrixSnapshotAssetPairs;
         }
     }
 }
