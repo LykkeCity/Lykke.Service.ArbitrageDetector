@@ -16,6 +16,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public IList<IList<MatrixCell>> Cells { get; set; } = new List<IList<MatrixCell>>();
 
+        public DateTime DateTime { get; set; }
+
         public Matrix(string assetPair)
         {
             AssetPair = string.IsNullOrEmpty(assetPair) ? throw new ArgumentNullException(nameof(assetPair)) : assetPair;

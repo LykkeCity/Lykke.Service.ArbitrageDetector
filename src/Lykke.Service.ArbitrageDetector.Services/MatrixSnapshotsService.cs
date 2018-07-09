@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
+using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
-    public class MatrixSnapshotsService : TimerPeriod
+    public class MatrixSnapshotsService : TimerPeriod, IMatrixSnapshotsService
     {
         private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 5, 0);
         private readonly IMatrixRepository _matrixRepository;
@@ -46,6 +47,20 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 var matrix = _arbitrageDetectorService.GetMatrix(assetPair);
                 await _matrixRepository.InsertAsync(matrix);
             }
-;        }
+        }
+
+        #region IMatrixSnapshotsService
+
+        public async Task<IEnumerable<IMatrix>> GetByAssetPairAndDateAsync(string assetPair, DateTime date)
+        {
+            return await _matrixRepository.GetByAssetPairAndDateAsync("BTCUSD", DateTime.UtcNow.AddDays(-1));
+        }
+
+        public async Task<IEnumerable<IMatrix>> GetDateTimesOnlyByAssetPairAndDateAsync(string assetPair, DateTime date)
+        {
+            return await _matrixRepository.GetDateTimesOnlyByAssetPairAndDateAsync("BTCUSD", DateTime.UtcNow.AddDays(-1));
+        }
+
+        #endregion
     }
 }

@@ -29,9 +29,7 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             builder.RegisterInstance<ISettingsRepository>(settingsRepository).PropertiesAutowired();
 
             var matrixRepository = new MatrixRepository(
-                AzureTableStorage<Matrix>.Create(
-                    _settings.ConnectionString(x => x.ArbitrageDetector.Db.DataConnectionString),
-                    nameof(Matrix), _log));
+                AzureTableStorage<Matrix>.Create( _settings.ConnectionString(x => x.ArbitrageDetector.Db.DataConnectionString), nameof(Matrix), _log));
             builder.RegisterInstance<IMatrixRepository>(matrixRepository).PropertiesAutowired();
         }
     }

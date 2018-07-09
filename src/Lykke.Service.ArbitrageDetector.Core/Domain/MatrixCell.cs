@@ -1,8 +1,6 @@
-﻿using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
-
-namespace Lykke.Service.ArbitrageDetector.Core.Domain
+﻿namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    public sealed class MatrixCell : IMatrixCell
+    public sealed class MatrixCell
     {
         public decimal? Spread { get; set; }
 
