@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
-using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
+using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 
@@ -25,10 +25,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public override async Task Execute()
         {
-            SaveMatrixToDatabase();
+            InitializeSettingsFirstTime();
+            await SaveMatrixToDatabase();
         }
 
-        private async void SaveMatrixToDatabase()
+        private void InitializeSettingsFirstTime()
         {
             var settings = _arbitrageDetectorService.GetSettings();
 
@@ -39,6 +40,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 settings.MatrixSnapshotInterval = new TimeSpan(0, 0, 5, 0);
                 _arbitrageDetectorService.SetSettings(settings);
             }
+        }
+
+        private async Task SaveMatrixToDatabase()
+        {
+            var settings = _arbitrageDetectorService.GetSettings();
 
             var assetPairs = settings.MatrixSnapshotAssetPairs;
 
@@ -51,12 +57,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         #region IMatrixSnapshotsService
 
-        public async Task<IEnumerable<IMatrix>> GetByAssetPairAndDateAsync(string assetPair, DateTime date)
+        public async Task<IEnumerable<Matrix>> GetByAssetPairAndDateAsync(string assetPair, DateTime date)
         {
             return await _matrixRepository.GetByAssetPairAndDateAsync("BTCUSD", DateTime.UtcNow.AddDays(-1));
         }
 
-        public async Task<IEnumerable<IMatrix>> GetDateTimesOnlyByAssetPairAndDateAsync(string assetPair, DateTime date)
+        public async Task<IEnumerable<Matrix>> GetDateTimesOnlyByAssetPairAndDateAsync(string assetPair, DateTime date)
         {
             return await _matrixRepository.GetDateTimesOnlyByAssetPairAndDateAsync("BTCUSD", DateTime.UtcNow.AddDays(-1));
         }

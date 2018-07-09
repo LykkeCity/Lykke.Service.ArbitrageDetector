@@ -550,6 +550,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 result.Cells.Add(cellsRow);
             }
 
+            result.DateTime = DateTime.UtcNow;
+
             return result;
         }
 

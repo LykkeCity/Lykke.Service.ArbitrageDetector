@@ -111,7 +111,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 
         [HttpGet]
         [Route("matrix")]
-        [SwaggerOperation("Matrix")]
+        [SwaggerOperation("MatrixReference")]
         [ProducesResponseType(typeof(Matrix), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "assetPair" })]

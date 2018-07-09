@@ -3,7 +3,7 @@ using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    public class AssetPairAccuracy : IAssetPairAccuracy
+    public class AssetPairAccuracy
     {
         public AssetPair AssetPair { get; }
 
