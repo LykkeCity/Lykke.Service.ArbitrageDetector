@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
-using MoreLinq;
 using Xunit;
 
 namespace Lykke.Service.ArbitrageDetector.Tests
