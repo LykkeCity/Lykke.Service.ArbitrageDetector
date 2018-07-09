@@ -1,5 +1,4 @@
 ﻿using Lykke.Service.ArbitrageDetector.Core.Domain;
-using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Services
 {
@@ -10,7 +9,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
         /// </summary>
         /// <param name="assetPair"></param>
         /// <returns></returns>
-        IAssetPairAccuracy GetAccuracy(AssetPair assetPair);
+        AssetPairAccuracy GetAccuracy(AssetPair assetPair);
 
         /// <summary>
         /// Try to infer assets in AssetPairStr.

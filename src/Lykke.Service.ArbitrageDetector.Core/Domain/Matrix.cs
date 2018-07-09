@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    public sealed class Matrix : IMatrix
+    public sealed class Matrix
     {
         public string AssetPair { get; set; }
 
