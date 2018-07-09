@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Lykke.Service.ArbitrageDetector.Aspects.ExceptionHandling;
+using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -16,11 +18,15 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
     {
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
         private readonly ILykkeArbitrageDetectorService _lykkeArbitrageDetectorService;
+        private readonly IMatrixSnapshotsService _matrixSnapshotsService;
 
-        public ArbitrageDetectorController(IArbitrageDetectorService arbitrageDetectorService, ILykkeArbitrageDetectorService lykkeArbitrageDetectorService)
+        public ArbitrageDetectorController(IArbitrageDetectorService arbitrageDetectorService, 
+            ILykkeArbitrageDetectorService lykkeArbitrageDetectorService,
+            IMatrixSnapshotsService matrixSnapshotsService)
         {
             _arbitrageDetectorService = arbitrageDetectorService;
             _lykkeArbitrageDetectorService = lykkeArbitrageDetectorService;
+            _matrixSnapshotsService = matrixSnapshotsService;
         }
 
         [HttpGet]
@@ -185,5 +191,33 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 
             return Ok();
         }
+
+        [HttpGet]
+        [Route("matrixSnapshot")]
+        [SwaggerOperation("MatrixSnapshot")]
+        [ProducesResponseType(typeof(IEnumerable<Matrix>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        //[ResponseCache(Duration = 60*60*24, VaryByQueryKeys = new[] { "*" })]
+        public async Task<IActionResult> MatrixSnapshots(string assetPair, DateTime date)
+        {
+            var result = await _matrixSnapshotsService.GetByAssetPairAndDateAsync(assetPair, date);
+
+            var temp = result.Count(x => x.DateTime.Date != date.Date);
+
+            return Ok(result);
+        }
+
+        //[HttpGet]
+        //[Route("matrixSnapshots")]
+        //[SwaggerOperation("MatrixSnapshots")]
+        //[ProducesResponseType(typeof(IEnumerable<DateTime>), (int)HttpStatusCode.OK)]
+        //[ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        //[ResponseCache(Duration = 60, VaryByQueryKeys = new[] { "*" })]
+        //public async Task<IActionResult> MatrixSnapshots(string assetPair, DateTime date)
+        //{
+        //    var result = await _matrixSnapshotsService.GetDateTimesOnlyByAssetPairAndDateAsync(assetPair, date);
+
+        //    return Ok(result.Select(x => x.DateTime).ToList());
+        //}
     }
 }

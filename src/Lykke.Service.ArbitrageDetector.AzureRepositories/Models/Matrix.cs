@@ -9,11 +9,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
 {
     public class Matrix : AzureTableEntity, IMatrix
     {
-        public string AssetPair
-        {
-            get => PartitionKey;
-            set => PartitionKey = value;
-        }
+        public string AssetPair { get; set; }
 
         [JsonValueSerializer]
         public IList<Exchange> Exchanges { get; set; }
@@ -37,15 +33,14 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
         {
             var dateTime = DateTime.UtcNow;
 
-            AssetPair = domain.AssetPair; // PartitionKey
+            PartitionKey = domain.AssetPair;
             RowKey = dateTime.Ticks.ToString();
 
+            AssetPair = domain.AssetPair;
             Exchanges = domain.Exchanges;
             Asks = domain.Asks;
             Bids = domain.Bids;
-
             Cells = domain.Cells;
-
             DateTime = dateTime;
         }
     }

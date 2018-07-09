@@ -1,8 +1,6 @@
-﻿using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
-
-namespace Lykke.Service.ArbitrageDetector.Core.Domain
+﻿namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    public sealed class Exchange : IExchange
+    public sealed class Exchange
     {
         public string Name { get; set; }
 

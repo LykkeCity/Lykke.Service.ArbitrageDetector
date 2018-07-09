@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces
 {
@@ -13,5 +14,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces
         IList<decimal?> Bids { get; set; }
 
         IList<IList<MatrixCell>> Cells { get; set; }
+
+        DateTime DateTime { get; set; }
     }
 }
