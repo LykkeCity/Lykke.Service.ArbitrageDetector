@@ -193,11 +193,11 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         }
 
         [HttpGet]
-        [Route("matrixSnapshot")]
-        [SwaggerOperation("MatrixSnapshot")]
+        [Route("matrixSnapshots")]
+        [SwaggerOperation("MatrixSnapshots")]
         [ProducesResponseType(typeof(IEnumerable<Matrix>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        //[ResponseCache(Duration = 60*60*24, VaryByQueryKeys = new[] { "*" })]
+        //[ResponseCache(Duration = 60*60*1, VaryByQueryKeys = new[] { "*" })] // 1 hour
         public async Task<IActionResult> MatrixSnapshots(string assetPair, DateTime date)
         {
             var result = await _matrixSnapshotsService.GetByAssetPairAndDateAsync(assetPair, date);
@@ -208,14 +208,14 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         }
 
         //[HttpGet]
-        //[Route("matrixSnapshots")]
-        //[SwaggerOperation("MatrixSnapshots")]
+        //[Route("matrixSnapshot")]
+        //[SwaggerOperation("MatrixSnapshot")]
         //[ProducesResponseType(typeof(IEnumerable<DateTime>), (int)HttpStatusCode.OK)]
         //[ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         //[ResponseCache(Duration = 60, VaryByQueryKeys = new[] { "*" })]
-        //public async Task<IActionResult> MatrixSnapshots(string assetPair, DateTime date)
+        //public async Task<IActionResult> MatrixSnapshots(string assetPair, DateTime dateTime)
         //{
-        //    var result = await _matrixSnapshotsService.GetDateTimesOnlyByAssetPairAndDateAsync(assetPair, date);
+        //    var result = await _matrixSnapshotsService.GetDateTimesOnlyByAssetPairAndDateAsync(assetPair, dateTime);
 
         //    return Ok(result.Select(x => x.DateTime).ToList());
         //}

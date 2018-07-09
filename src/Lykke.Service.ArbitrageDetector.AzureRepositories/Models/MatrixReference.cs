@@ -19,7 +19,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
 
         public static string GeneratePartitionKey(string assetPair, DateTime date)
         {
-            return $"{assetPair} {date.ToIsoDate()}";
+            return $"{assetPair} - {date.ToIsoDate()}";
         }
 
         public static string GenerateRowKey(DateTime dateTime)
@@ -34,7 +34,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
 
         public static string GenerateBlobId(string assetPair, DateTime dateTime)
         {
-            return $"{assetPair} {dateTime.ToIsoDateTime()}";
+            return $"{assetPair} - {dateTime.ToIsoDateTime()}";
         }
     }
 }
