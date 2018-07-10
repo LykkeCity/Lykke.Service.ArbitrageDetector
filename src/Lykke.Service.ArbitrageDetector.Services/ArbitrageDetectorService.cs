@@ -30,7 +30,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ILog _log;
 
         public ArbitrageDetectorService(ILog log, IShutdownManager shutdownManager, ISettingsRepository settingsRepository, IAssetsService assetsService)
-            : base(500, log)
+            : base(2*1000, log)
         {
             shutdownManager?.Register(this);
 
