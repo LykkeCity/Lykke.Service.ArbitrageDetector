@@ -12,7 +12,7 @@ namespace Lykke.Service.ArbitrageDetector.Modules
         {
             builder.RegisterType<ArbitrageDetectorController>()
                 .EnableClassInterceptors()
-                .InterceptedBy(typeof(CacheInterceptor))
+                //.InterceptedBy(typeof(CacheInterceptor))
                 .InterceptedBy(typeof(ExceptionToBadRequestInterceptor))
                 .InstancePerLifetimeScope();
         }

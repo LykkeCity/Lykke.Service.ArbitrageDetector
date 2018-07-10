@@ -74,8 +74,8 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
                 var isValid = _orderBookValidator.IsValid(orderBook);
                 if (isValid)
                 {
-                    //_arbitrageDetectorService.Process(orderBook);
-                    //_lykkeArbitrageDetectorService.Process(orderBook);                        
+                    _arbitrageDetectorService.Process(orderBook);
+                    _lykkeArbitrageDetectorService.Process(orderBook);                        
                 }
             }
             catch (Exception ex)

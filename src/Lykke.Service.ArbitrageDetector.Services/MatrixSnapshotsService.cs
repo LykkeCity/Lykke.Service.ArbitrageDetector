@@ -51,7 +51,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             foreach (var assetPair in assetPairs)
             {
                 var matrix = _arbitrageDetectorService.GetMatrix(assetPair);
-                //await _matrixRepository.InsertAsync(matrix);
+                await _matrixRepository.InsertAsync(matrix);
             }
         }
 

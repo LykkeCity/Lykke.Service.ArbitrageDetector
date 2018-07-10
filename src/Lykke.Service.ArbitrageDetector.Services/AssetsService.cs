@@ -134,8 +134,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         private IList<LykkeAssetPair> GetAllLykkeAssetPairs()
         {
-            return new List<LykkeAssetPair>();
-            //return _assetsService.AssetPairGetAll();
+            return _assetsService.AssetPairGetAll();
         }
     }
 }
