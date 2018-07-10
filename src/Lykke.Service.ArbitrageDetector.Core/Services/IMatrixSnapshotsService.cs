@@ -7,8 +7,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
 {
     public interface IMatrixSnapshotsService
     {
-        Task<IEnumerable<Matrix>> GetByAssetPairAndDateAsync(string assetPair, DateTime date);
+        Task<Matrix> GetAsync(string assetPair, DateTime date);
 
-        Task<IEnumerable<Matrix>> GetDateTimesOnlyByAssetPairAndDateAsync(string assetPair, DateTime date);
+        Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime date);
+
+        Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime from, DateTime to);
     }
 }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
-using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 using Lykke.Service.Assets.Client;
 using IAssetsService = Lykke.Service.ArbitrageDetector.Core.Services.IAssetsService;
 using ILykkeAssetsService = Lykke.Service.Assets.Client.IAssetsService;

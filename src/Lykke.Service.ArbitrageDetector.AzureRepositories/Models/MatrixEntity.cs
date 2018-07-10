@@ -5,13 +5,16 @@ using Lykke.Service.ArbitrageDetector.Core.Domain;
 
 namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
 {
-    public class MatrixReference : AzureTableEntity
+    public class MatrixEntity : AzureTableEntity
     {
-        public MatrixReference()
+        public string AssetPair => PartitionKey.Split(" - ")[0];
+        public DateTime DateTime => DateTime.Parse(RowKey);
+
+        public MatrixEntity()
         {
         }
 
-        public MatrixReference(Matrix matrix)
+        public MatrixEntity(Matrix matrix)
         {
             PartitionKey = GeneratePartitionKey(matrix.AssetPair, matrix.DateTime);
             RowKey = GenerateRowKey(matrix.DateTime);

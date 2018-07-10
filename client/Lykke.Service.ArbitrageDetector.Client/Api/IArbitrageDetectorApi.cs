@@ -46,5 +46,14 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
 
         [Post("/setSettings")]
         Task SetSettings(Settings settings);
+
+        [Get("/matrixSnapshotStampsByDate")]
+        Task<IEnumerable<DateTime>> MatrixSnapshotStampsByDate(string assetPair, DateTime date);
+
+        [Get("/MatrixSnapshotStampsByDateTimeRange")]
+        Task<IEnumerable<DateTime>> MatrixSnapshotStampsByDateTimeRange(string assetPair, DateTime from, DateTime to);
+
+        [Get("/matrixSnapshot")]
+        Task<Matrix> MatrixSnapshot(string assetPair, DateTime dateTime);
     }
 }
