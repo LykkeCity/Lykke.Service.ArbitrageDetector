@@ -56,7 +56,6 @@ namespace Lykke.Service.ArbitrageDetector.Modules
                 .As<IArbitrageDetectorService>()
                 .As<IStartable>()
                 .As<IStopable>()
-                .AutoActivate()
                 .SingleInstance();
 
             //builder.RegisterType<ArbitrageScreenerService>()
@@ -69,7 +68,6 @@ namespace Lykke.Service.ArbitrageDetector.Modules
                 .As<ILykkeArbitrageDetectorService>()
                 .As<IStartable>()
                 .As<IStopable>()
-                .AutoActivate()
                 .SingleInstance();
 
             builder.RegisterInstance(new LykkeAssetsService(new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl)))
@@ -85,7 +83,6 @@ namespace Lykke.Service.ArbitrageDetector.Modules
                 .WithParameter("interval", setings.MatrixSnapshotInterval)
                 .As<IStartable>()
                 .As<IStopable>()
-                .AutoActivate()
                 .SingleInstance();
 
             // RabbitMessageSubscribers
