@@ -89,7 +89,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 var target = new AssetPair(@base, _s.QuoteAsset);
                 var newActualCrossRatesFrom1Or2OrderBooks = CrossRate.GetCrossRatesFrom1Or2Pairs(target, orderBooks);
                 newActualCrossRates.AddRange(newActualCrossRatesFrom1Or2OrderBooks);
-
                 //var newActualCrossRatesFrom3OrderBooks = CrossRate.GetCrossRatesFrom3Pairs(orderBooks, target);
                 //newActualCrossRates.AddRange(newActualCrossRatesFrom3OrderBooks);
             }
