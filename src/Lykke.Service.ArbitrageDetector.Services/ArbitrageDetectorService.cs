@@ -71,7 +71,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public override async Task Execute()
         {
-            //await CalculateCrossRates();
+            await CalculateCrossRates();
             await RefreshArbitrages();
 
             await RestartIfNeeded();
