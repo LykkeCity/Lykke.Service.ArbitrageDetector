@@ -95,5 +95,30 @@ namespace Lykke.Service.ArbitrageDetector.Client
         /// </summary>
         /// <param name="settings"></param>
         Task SetSettingsAsync(Settings settings);
+
+        /// <summary>
+        /// Get matrix datetime stamps by date.
+        /// </summary>
+        /// <param name="assetPair"></param>
+        /// <param name="date"></param>
+        /// <returns></returns>
+        Task<IEnumerable<DateTime>> MatrixSnapshotStampsByDate(string assetPair, DateTime date);
+
+        /// <summary>
+        /// Get matrix datetime stamps by date range.
+        /// </summary>
+        /// <param name="assetPair"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <returns></returns>
+        Task<IEnumerable<DateTime>> MatrixSnapshotStampsByDateTimeRange(string assetPair, DateTime from, DateTime to);
+
+        /// <summary>
+        /// Get matrix snapshot.
+        /// </summary>
+        /// <param name="assetPair"></param>
+        /// <param name="dateTime"></param>
+        /// <returns></returns>
+        Task<Matrix> MatrixSnapshot(string assetPair, DateTime dateTime);
     }
 }

@@ -6,12 +6,12 @@ using AzureStorage;
 
 namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 {
-    public abstract class BaseBlobRepository
+    public abstract class BlobRepository
     {
         private string _container;
         private readonly IBlobStorage _storage;
 
-        protected BaseBlobRepository(IBlobStorage storage, string container)
+        protected BlobRepository(IBlobStorage storage, string container)
         {
             _container = !string.IsNullOrWhiteSpace(container) ? container.ToLower() : throw new ArgumentOutOfRangeException(nameof(container));
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
@@ -21,7 +21,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 
         protected async Task SaveBlobAsync(string blobKey, byte[] blobData)
         {
-            //TODO: additional request can be bad for performance
+            //TODO: additional request can be bad for performance, need to change AzureBlobStorage -> createIfNotExists
             if (await BlobExistsAsync(blobKey))
                 throw new InvalidOperationException($"Blob is already existed, id: {blobKey}");
 
@@ -30,7 +30,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 
         protected async Task SaveBlobAsync(string blobKey, string blobString)
         {
-            //TODO: additional request can be bad for performance
+            //TODO: additional request can be bad for performance, need to change AzureBlobStorage -> createIfNotExists
             if (await BlobExistsAsync(blobKey))
                 throw new InvalidOperationException($"Blob is already existed, id: {blobKey}");
 

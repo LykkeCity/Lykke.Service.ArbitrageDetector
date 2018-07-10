@@ -3,31 +3,29 @@ using System.Threading.Tasks;
 using AzureStorage;
 using Common;
 using Lykke.Service.ArbitrageDetector.AzureRepositories.Models;
-using Lykke.Service.ArbitrageDetector.Core.Domain;
-using Lykke.Service.ArbitrageDetector.Core.Repositories;
 
 namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 {
-    public class MatrixBlobRepository : BaseBlobRepository, IMatrixBlobRepository
+    public class MatrixBlobRepository : BlobRepository
     {
-        public MatrixBlobRepository(IBlobStorage storage) : base(storage, nameof(Matrix))
+        public MatrixBlobRepository(IBlobStorage storage) : base(storage, nameof(MatrixBlob))
         {
         }
 
-        public Task SaveAsync(Matrix matrix)
+        public Task SaveAsync(MatrixBlob matrix)
         {
-            return SaveBlobAsync(MatrixReference.GenerateBlobId(matrix), matrix.ToJson());
+            return SaveBlobAsync(MatrixEntity.GenerateBlobId(matrix.Matrix()), matrix.ToJson());
         }
 
-        public Task<Matrix> GetAsync(string assetPair, DateTime dateTime)
+        public Task<MatrixBlob> GetAsync(string assetPair, DateTime dateTime)
         {
-            var blobId = MatrixReference.GenerateBlobId(assetPair, dateTime);
-            return Task.Run(() =>  GetBlobStringAsync(blobId).GetAwaiter().GetResult().DeserializeJson<Matrix>());
+            var blobId = MatrixEntity.GenerateBlobId(assetPair, dateTime);
+            return Task.Run(() => GetBlobStringAsync(blobId).GetAwaiter().GetResult().DeserializeJson<MatrixBlob>());
         }
 
         public async Task DeleteIfExistsAsync(string assetPair, DateTime dateTime)
         {
-            var blobId = MatrixReference.GenerateBlobId(assetPair, dateTime);
+            var blobId = MatrixEntity.GenerateBlobId(assetPair, dateTime);
             if (await BlobExistsAsync(blobId))
                 await DeleteBlobAsync(blobId);
         }

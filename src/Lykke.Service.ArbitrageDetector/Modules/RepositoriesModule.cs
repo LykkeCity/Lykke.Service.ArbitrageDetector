@@ -25,18 +25,18 @@ namespace Lykke.Service.ArbitrageDetector.Modules
         {
             var connectionString = _settings.ConnectionString(x => x.ArbitrageDetector.Db.DataConnectionString);
 
+            // Blob
+
+            builder.RegisterInstance(AzureBlobStorage.Create(connectionString));
+            builder.RegisterType<MatrixBlobRepository>();
+
             // Table
 
             builder.RegisterInstance(AzureTableStorage<AzureRepositories.Models.Settings>.Create(connectionString, nameof(AzureRepositories.Models.Settings), _log));
             builder.RegisterType<SettingsRepository>().As<ISettingsRepository>();
 
-            builder.RegisterInstance(AzureTableStorage<MatrixReference>.Create(connectionString, nameof(MatrixReference), _log));
+            builder.RegisterInstance(AzureTableStorage<MatrixEntity>.Create(connectionString, nameof(MatrixEntity), _log));
             builder.RegisterType<MatrixRepository>().As<IMatrixRepository>();
-
-            // Blob
-
-            builder.RegisterInstance(AzureBlobStorage.Create(connectionString));
-            builder.RegisterType<MatrixBlobRepository>().As<IMatrixBlobRepository>();
         }
     }
 }
