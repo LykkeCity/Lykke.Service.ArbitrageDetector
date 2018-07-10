@@ -21,5 +21,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         {
             AssetPair = string.IsNullOrEmpty(assetPair) ? throw new ArgumentNullException(nameof(assetPair)) : assetPair;
         }
+
+        public override string ToString()
+        {
+            return $"{AssetPair} - {DateTime}";
+        }
     }
 }

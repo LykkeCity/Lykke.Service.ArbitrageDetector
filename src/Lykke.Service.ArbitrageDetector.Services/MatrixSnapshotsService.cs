@@ -57,14 +57,19 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         #region IMatrixSnapshotsService
 
-        public async Task<IEnumerable<Matrix>> GetByAssetPairAndDateAsync(string assetPair, DateTime date)
+        public Task<Matrix> GetAsync(string assetPair, DateTime date)
         {
-            return await _matrixRepository.GetByAssetPairAndDateAsync("BTCUSD", DateTime.UtcNow.AddDays(-1));
+            return _matrixRepository.GetAsync(assetPair, date);
         }
 
-        public async Task<IEnumerable<Matrix>> GetDateTimesOnlyByAssetPairAndDateAsync(string assetPair, DateTime date)
+        public Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime date)
         {
-            return await _matrixRepository.GetDateTimesOnlyByAssetPairAndDateAsync("BTCUSD", DateTime.UtcNow.AddDays(-1));
+            return _matrixRepository.GetDateTimeStampsAsync(assetPair, date);
+        }
+
+        public Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime from, DateTime to)
+        {
+            return _matrixRepository.GetDateTimeStampsAsync(assetPair, from, to);
         }
 
         #endregion

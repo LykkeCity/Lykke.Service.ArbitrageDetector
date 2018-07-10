@@ -9,9 +9,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Repositories
     {
         Task<Matrix> GetAsync(string assetPair, DateTime dateTime);
 
-        Task<IEnumerable<Matrix>> GetByAssetPairAndDateAsync(string assetPair, DateTime date);
+        Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime date);
 
-        Task<IEnumerable<Matrix>> GetDateTimesOnlyByAssetPairAndDateAsync(string assetPair, DateTime date);
+        Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime from, DateTime to);
 
         Task InsertAsync(Matrix matrix);
 
