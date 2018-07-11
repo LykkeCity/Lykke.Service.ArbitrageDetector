@@ -15,6 +15,12 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
         private readonly MatrixBlobRepository _blobRepository;
         private readonly INoSQLTableStorage<MatrixEntity> _storage;
 
+        public async Task InsertAsync(Matrix matrix)
+        {
+            await _storage.InsertAsync(new MatrixEntity(matrix));
+            await _blobRepository.SaveAsync(new MatrixBlob(matrix));
+        }
+
         public MatrixRepository(MatrixBlobRepository blobRepository, INoSQLTableStorage<MatrixEntity> storage)
         {
             _blobRepository = blobRepository ?? throw new ArgumentNullException(nameof(blobRepository));
@@ -38,6 +44,32 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 
         public async Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime from, DateTime to)
         {
+            var entities = await GetAsync(assetPair, from, to);
+
+            return entities.Select(x => x.DateTime);
+        }
+
+        public async Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date)
+        {
+            var entities = await GetAsync(date.Date, date.AddDays(1).Date);
+
+            return entities.Select(x => x.AssetPair).Distinct().OrderBy(x => x).ToList();
+            
+        }
+
+        public async Task<bool> DeleteAsync(string assetPair, DateTime dateTime)
+        {
+            var pkey = MatrixEntity.GeneratePartitionKey(assetPair, dateTime);
+            var rowkey = MatrixEntity.GenerateRowKey(dateTime);
+
+            var result = await _storage.DeleteIfExistAsync(pkey, rowkey);
+            await _blobRepository.DeleteIfExistsAsync(assetPair, dateTime);
+
+            return result;
+        }
+
+        private async Task<IEnumerable<MatrixEntity>> GetAsync(string assetPair, DateTime from, DateTime to)
+        {
             if (string.IsNullOrWhiteSpace(assetPair)) { throw new ArgumentException(nameof(assetPair)); }
 
             var pKeyFrom = MatrixEntity.GeneratePartitionKey(assetPair, from);
@@ -57,26 +89,23 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 
             query.FilterString = TableQuery.CombineFilters(pkeyFilter, TableOperators.And, rowkeyFilter);
 
-            var references = await _storage.WhereAsync(query);
-
-            return references.Select(x => x.DateTime);
+            return await _storage.WhereAsync(query);
         }
 
-        public async Task InsertAsync(Matrix matrix)
+        private async Task<IEnumerable<MatrixEntity>> GetAsync(DateTime from, DateTime to)
         {
-            await _storage.InsertAsync(new MatrixEntity(matrix));
-            await _blobRepository.SaveAsync(new MatrixBlob(matrix));
-        }
+            var rowKeyFrom = MatrixEntity.GenerateRowKey(from);
+            var rowKeyTo = MatrixEntity.GenerateRowKey(to);
 
-        public async Task<bool> DeleteAsync(string assetPair, DateTime dateTime)
-        {
-            var pkey = MatrixEntity.GeneratePartitionKey(assetPair, dateTime);
-            var rowkey = MatrixEntity.GenerateRowKey(dateTime);
+            var query = new TableQuery<MatrixEntity>();
 
-            var result = await _storage.DeleteIfExistAsync(pkey, rowkey);
-            await _blobRepository.DeleteIfExistsAsync(assetPair, dateTime);
+            var rowkeyCondFrom = TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.GreaterThanOrEqual, rowKeyFrom);
+            var rowkeyCondTo = TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.LessThanOrEqual, rowKeyTo);
+            var rowkeyFilter = TableQuery.CombineFilters(rowkeyCondFrom, TableOperators.And, rowkeyCondTo);
 
-            return result;
+            query.FilterString = rowkeyFilter;
+
+            return await _storage.WhereAsync(query);
         }
     }
 }

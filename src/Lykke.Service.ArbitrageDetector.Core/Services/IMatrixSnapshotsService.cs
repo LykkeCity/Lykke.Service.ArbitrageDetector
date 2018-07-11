@@ -12,5 +12,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
         Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime date);
 
         Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime from, DateTime to);
+
+        Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date);
     }
 }
