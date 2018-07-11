@@ -72,6 +72,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return _matrixRepository.GetDateTimeStampsAsync(assetPair, from, to);
         }
 
+        public Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date)
+        {
+            return _matrixRepository.GetAssetPairsAsync(date);
+        }
+
         #endregion
     }
 }

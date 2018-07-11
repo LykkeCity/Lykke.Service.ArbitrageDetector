@@ -218,6 +218,19 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         }
 
         [HttpGet]
+        [Route("matrixSnapshotAssetPairs")]
+        [SwaggerOperation("MatrixSnapshotAssetPairs")]
+        [ProducesResponseType(typeof(IEnumerable<string>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ResponseCache(Duration = 60 * 60 * 1, VaryByQueryKeys = new[] { "*" })] // 1 hour
+        public async Task<IActionResult> MatrixSnapshotAssetPairs(DateTime date)
+        {
+            var result = (await _matrixSnapshotsService.GetAssetPairsAsync(date)).ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet]
         [Route("matrixSnapshot")]
         [SwaggerOperation("MatrixSnapshot")]
         [ProducesResponseType(typeof(Matrix), (int)HttpStatusCode.OK)]
