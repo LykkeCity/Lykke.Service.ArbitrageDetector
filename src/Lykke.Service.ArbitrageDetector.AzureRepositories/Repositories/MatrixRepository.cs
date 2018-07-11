@@ -37,7 +37,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
         public async Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime date)
         {
             if (string.IsNullOrWhiteSpace(assetPair)) { throw new ArgumentException(nameof(assetPair)); }
-            if (date == default || date.TimeOfDay.Ticks != 0) { throw new ArgumentOutOfRangeException(nameof(date)); }
+            date = date.Date;
 
             return await GetDateTimeStampsAsync(assetPair, date.Date, date.AddDays(1).Date);
         }
@@ -51,10 +51,11 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 
         public async Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date)
         {
+            date = date.Date;
+
             var entities = await GetAsync(date.Date, date.AddDays(1).Date);
 
             return entities.Select(x => x.AssetPair).Distinct().OrderBy(x => x).ToList();
-            
         }
 
         public async Task<bool> DeleteAsync(string assetPair, DateTime dateTime)

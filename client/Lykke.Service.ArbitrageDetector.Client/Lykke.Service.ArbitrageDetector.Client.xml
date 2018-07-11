@@ -123,10 +123,10 @@
         <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.MatrixSnapshotStampsByDateTimeRange(System.String,System.DateTime,System.DateTime)">
             <inheritdoc />
         </member>
-        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.MatrixSnapshot(System.String,System.DateTime)">
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.MatrixSnapshotAssetPairs(System.DateTime)">
             <inheritdoc />
         </member>
-        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.MatrixSnapshotAssetPairs(System.DateTime)">
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.MatrixSnapshot(System.String,System.DateTime)">
             <inheritdoc />
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.ArbitrageDetectorService.Dispose">
