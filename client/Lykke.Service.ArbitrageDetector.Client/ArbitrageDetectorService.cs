@@ -152,6 +152,12 @@ namespace Lykke.Service.ArbitrageDetector.Client
         }
 
         /// <inheritdoc />
+        public async Task<IEnumerable<string>> MatrixSnapshotAssetPairs(DateTime date)
+        {
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixSnapshotAssetPairs(date));
+        }
+
+        /// <inheritdoc />
         public void Dispose()
         {
             _httpClient?.Dispose();
