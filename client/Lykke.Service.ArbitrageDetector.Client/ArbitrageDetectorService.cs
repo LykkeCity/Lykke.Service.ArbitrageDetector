@@ -146,15 +146,15 @@ namespace Lykke.Service.ArbitrageDetector.Client
         }
 
         /// <inheritdoc />
-        public async Task<Matrix> MatrixSnapshot(string assetPair, DateTime dateTime)
-        {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixSnapshot(assetPair, dateTime));
-        }
-
-        /// <inheritdoc />
         public async Task<IEnumerable<string>> MatrixSnapshotAssetPairs(DateTime date)
         {
             return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixSnapshotAssetPairs(date));
+        }
+
+        /// <inheritdoc />
+        public async Task<Matrix> MatrixSnapshot(string assetPair, DateTime dateTime)
+        {
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixSnapshot(assetPair, dateTime));
         }
 
         /// <inheritdoc />
