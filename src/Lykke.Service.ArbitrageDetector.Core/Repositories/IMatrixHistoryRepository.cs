@@ -5,7 +5,7 @@ using Lykke.Service.ArbitrageDetector.Core.Domain;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Repositories
 {
-    public interface IMatrixRepository
+    public interface IMatrixHistoryRepository
     {
         Task<Matrix> GetAsync(string assetPair, DateTime dateTime);
 

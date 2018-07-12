@@ -78,8 +78,8 @@ namespace Lykke.Service.ArbitrageDetector.Modules
                 .As<IRateCalculatorClient>()
                 .SingleInstance();
 
-            builder.RegisterType<MatrixSnapshotsService>()
-                .As<IMatrixSnapshotsService>()
+            builder.RegisterType<MatrixHistoryService>()
+                .As<IMatrixHistoryService>()
                 .WithParameter("interval", setings.MatrixSnapshotInterval)
                 .As<IStartable>()
                 .As<IStopable>()

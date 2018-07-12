@@ -10,28 +10,28 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 {
-    public class MatrixRepository : IMatrixRepository
+    public class MatrixHistoryRepository : IMatrixHistoryRepository
     {
-        private readonly MatrixBlobRepository _blobRepository;
+        private readonly MatrixHistoryBlobRepository _historyBlobRepository;
         private readonly INoSQLTableStorage<MatrixEntity> _storage;
 
         public async Task InsertAsync(Matrix matrix)
         {
             await _storage.InsertAsync(new MatrixEntity(matrix));
-            await _blobRepository.SaveAsync(new MatrixBlob(matrix));
+            await _historyBlobRepository.SaveAsync(new MatrixBlob(matrix));
         }
 
-        public MatrixRepository(MatrixBlobRepository blobRepository, INoSQLTableStorage<MatrixEntity> storage)
+        public MatrixHistoryRepository(MatrixHistoryBlobRepository historyBlobRepository, INoSQLTableStorage<MatrixEntity> storage)
         {
-            _blobRepository = blobRepository ?? throw new ArgumentNullException(nameof(blobRepository));
+            _historyBlobRepository = historyBlobRepository ?? throw new ArgumentNullException(nameof(historyBlobRepository));
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
         }
 
         public async Task<Matrix> GetAsync(string assetPair, DateTime dateTime)
         {
-            var result = await _blobRepository.GetAsync(assetPair, dateTime);
-            
-            return result.Matrix();
+            var result = await _historyBlobRepository.GetAsync(assetPair, dateTime);
+
+            return result?.Matrix();
         }
 
         public async Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime date)
@@ -64,7 +64,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
             var rowkey = MatrixEntity.GenerateRowKey(dateTime);
 
             var result = await _storage.DeleteIfExistAsync(pkey, rowkey);
-            await _blobRepository.DeleteIfExistsAsync(assetPair, dateTime);
+            await _historyBlobRepository.DeleteIfExistsAsync(assetPair, dateTime);
 
             return result;
         }

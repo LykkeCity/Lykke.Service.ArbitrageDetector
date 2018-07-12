@@ -28,7 +28,7 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             // Blob
 
             builder.RegisterInstance(AzureBlobStorage.Create(connectionString));
-            builder.RegisterType<MatrixBlobRepository>();
+            builder.RegisterType<MatrixHistoryBlobRepository>();
 
             // Table
 
@@ -36,7 +36,7 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             builder.RegisterType<SettingsRepository>().As<ISettingsRepository>();
 
             builder.RegisterInstance(AzureTableStorage<MatrixEntity>.Create(connectionString, nameof(MatrixEntity), _log));
-            builder.RegisterType<MatrixRepository>().As<IMatrixRepository>();
+            builder.RegisterType<MatrixHistoryRepository>().As<IMatrixHistoryRepository>();
         }
     }
 }

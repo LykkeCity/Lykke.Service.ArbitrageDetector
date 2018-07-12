@@ -5,14 +5,12 @@ using Lykke.Service.ArbitrageDetector.Core.Domain;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Services
 {
-    public interface IMatrixSnapshotsService
+    public interface IMatrixHistoryService
     {
-        Task<Matrix> GetAsync(string assetPair, DateTime date);
-
         Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime date);
 
-        Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime from, DateTime to);
-
         Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date);
+
+        Task<Matrix> GetAsync(string assetPair, DateTime date);
     }
 }
