@@ -9,17 +9,17 @@ using Lykke.Service.ArbitrageDetector.Core.Services;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
-    public class MatrixSnapshotsService : TimerPeriod, IMatrixSnapshotsService
+    public class MatrixHistoryService : TimerPeriod, IMatrixHistoryService
     {
         private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 5, 0);
-        private readonly IMatrixRepository _matrixRepository;
+        private readonly IMatrixHistoryRepository _matrixHistoryRepository;
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
 
-        public MatrixSnapshotsService(TimeSpan interval, ILog log, IMatrixRepository matrixRepository, IArbitrageDetectorService arbitrageDetectorService)
+        public MatrixHistoryService(TimeSpan interval, ILog log, IMatrixHistoryRepository matrixHistoryRepository, IArbitrageDetectorService arbitrageDetectorService)
             // TODO: must be changed after Common.TimerPeriod change
             : base((int)interval.TotalMilliseconds == 0 ? (int)DefaultInterval.TotalMilliseconds : (int)interval.TotalMilliseconds, log)
         {
-            _matrixRepository = matrixRepository;
+            _matrixHistoryRepository = matrixHistoryRepository;
             _arbitrageDetectorService = arbitrageDetectorService;
         }
 
@@ -51,30 +51,25 @@ namespace Lykke.Service.ArbitrageDetector.Services
             foreach (var assetPair in assetPairs)
             {
                 var matrix = _arbitrageDetectorService.GetMatrix(assetPair);
-                await _matrixRepository.InsertAsync(matrix);
+                await _matrixHistoryRepository.InsertAsync(matrix);
             }
         }
 
-        #region IMatrixSnapshotsService
-
-        public Task<Matrix> GetAsync(string assetPair, DateTime date)
-        {
-            return _matrixRepository.GetAsync(assetPair, date);
-        }
+        #region IMatrixHistoryService
 
         public Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime date)
         {
-            return _matrixRepository.GetDateTimeStampsAsync(assetPair, date);
-        }
-
-        public Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime from, DateTime to)
-        {
-            return _matrixRepository.GetDateTimeStampsAsync(assetPair, from, to);
+            return _matrixHistoryRepository.GetDateTimeStampsAsync(assetPair, date);
         }
 
         public Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date)
         {
-            return _matrixRepository.GetAssetPairsAsync(date);
+            return _matrixHistoryRepository.GetAssetPairsAsync(date);
+        }
+
+        public Task<Matrix> GetAsync(string assetPair, DateTime date)
+        {
+            return _matrixHistoryRepository.GetAsync(assetPair, date);
         }
 
         #endregion

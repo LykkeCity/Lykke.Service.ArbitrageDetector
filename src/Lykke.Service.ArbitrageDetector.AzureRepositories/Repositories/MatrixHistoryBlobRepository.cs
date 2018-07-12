@@ -6,9 +6,9 @@ using Lykke.Service.ArbitrageDetector.AzureRepositories.Models;
 
 namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 {
-    public class MatrixBlobRepository : BlobRepository
+    public class MatrixHistoryBlobRepository : BlobRepository
     {
-        public MatrixBlobRepository(IBlobStorage storage) : base(storage, nameof(MatrixBlob))
+        public MatrixHistoryBlobRepository(IBlobStorage storage) : base(storage, nameof(MatrixBlob))
         {
         }
 
@@ -17,10 +17,13 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
             return SaveBlobAsync(MatrixEntity.GenerateBlobId(matrix.Matrix()), matrix.ToJson());
         }
 
-        public Task<MatrixBlob> GetAsync(string assetPair, DateTime dateTime)
+        public async Task<MatrixBlob> GetAsync(string assetPair, DateTime dateTime)
         {
             var blobId = MatrixEntity.GenerateBlobId(assetPair, dateTime);
-            return Task.Run(() => GetBlobStringAsync(blobId).GetAwaiter().GetResult().DeserializeJson<MatrixBlob>());
+            if (!await BlobExistsAsync(blobId))
+                return null;
+
+            return (await GetBlobStringAsync(blobId)).DeserializeJson<MatrixBlob>();
         }
 
         public async Task DeleteIfExistsAsync(string assetPair, DateTime dateTime)

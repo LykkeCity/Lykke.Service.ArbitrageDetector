@@ -86,6 +86,29 @@ namespace Lykke.Service.ArbitrageDetector.Client
         Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync(string basePair, string crossPair);
 
         /// <summary>
+        /// Get matrix datetime stamps by date.
+        /// </summary>
+        /// <param name="assetPair"></param>
+        /// <param name="date"></param>
+        /// <returns></returns>
+        Task<IEnumerable<DateTime>> MatrixHistoryStamps(string assetPair, DateTime date);
+
+        /// <summary>
+        /// Get available asset pairs by date.
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns></returns>
+        Task<IEnumerable<string>> MatrixHistoryAssetPairs(DateTime date);
+
+        /// <summary>
+        /// Get matrix snapshot.
+        /// </summary>
+        /// <param name="assetPair"></param>
+        /// <param name="dateTime"></param>
+        /// <returns></returns>
+        Task<Matrix> MatrixHistory(string assetPair, DateTime dateTime);
+
+        /// <summary>
         /// Get settings.
         /// </summary>
         Task<Settings> GetSettingsAsync();
@@ -95,37 +118,5 @@ namespace Lykke.Service.ArbitrageDetector.Client
         /// </summary>
         /// <param name="settings"></param>
         Task SetSettingsAsync(Settings settings);
-
-        /// <summary>
-        /// Get matrix datetime stamps by date.
-        /// </summary>
-        /// <param name="assetPair"></param>
-        /// <param name="date"></param>
-        /// <returns></returns>
-        Task<IEnumerable<DateTime>> MatrixSnapshotStampsByDate(string assetPair, DateTime date);
-
-        /// <summary>
-        /// Get matrix datetime stamps by date range.
-        /// </summary>
-        /// <param name="assetPair"></param>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <returns></returns>
-        Task<IEnumerable<DateTime>> MatrixSnapshotStampsByDateTimeRange(string assetPair, DateTime from, DateTime to);
-
-        /// <summary>
-        /// Get available asset pairs by date.
-        /// </summary>
-        /// <param name="date"></param>
-        /// <returns></returns>
-        Task<IEnumerable<string>> MatrixSnapshotAssetPairs(DateTime date);
-
-        /// <summary>
-        /// Get matrix snapshot.
-        /// </summary>
-        /// <param name="assetPair"></param>
-        /// <param name="dateTime"></param>
-        /// <returns></returns>
-        Task<Matrix> MatrixSnapshot(string assetPair, DateTime dateTime);
     }
 }

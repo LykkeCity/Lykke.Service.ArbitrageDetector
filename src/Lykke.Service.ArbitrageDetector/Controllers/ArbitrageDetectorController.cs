@@ -17,15 +17,15 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
     {
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
         private readonly ILykkeArbitrageDetectorService _lykkeArbitrageDetectorService;
-        private readonly IMatrixSnapshotsService _matrixSnapshotsService;
+        private readonly IMatrixHistoryService _matrixHistoryService;
 
         public ArbitrageDetectorController(IArbitrageDetectorService arbitrageDetectorService, 
             ILykkeArbitrageDetectorService lykkeArbitrageDetectorService,
-            IMatrixSnapshotsService matrixSnapshotsService)
+            IMatrixHistoryService matrixHistoryService)
         {
             _arbitrageDetectorService = arbitrageDetectorService;
             _lykkeArbitrageDetectorService = lykkeArbitrageDetectorService;
-            _matrixSnapshotsService = matrixSnapshotsService;
+            _matrixHistoryService = matrixHistoryService;
         }
 
         [HttpGet]
@@ -167,6 +167,45 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         }
 
         [HttpGet]
+        [Route("matrixHistoryStamps")]
+        [SwaggerOperation("MatrixHistoryStamps")]
+        [ProducesResponseType(typeof(IEnumerable<DateTime>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ResponseCache(Duration = 60 * 1, VaryByQueryKeys = new[] { "*" })] // 1 minute
+        public async Task<IActionResult> MatrixHistoryStamps(string assetPair, DateTime date)
+        {
+            var result = (await _matrixHistoryService.GetDateTimeStampsAsync(assetPair, date)).ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("matrixHistoryAssetPairs")]
+        [SwaggerOperation("MatrixHistoryAssetPairs")]
+        [ProducesResponseType(typeof(IEnumerable<string>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ResponseCache(Duration = 60 * 1, VaryByQueryKeys = new[] { "*" })] // 1 minute
+        public async Task<IActionResult> MatrixHistoryAssetPairs(DateTime date)
+        {
+            var result = (await _matrixHistoryService.GetAssetPairsAsync(date)).ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("matrixHistory")]
+        [SwaggerOperation("MatrixHistory")]
+        [ProducesResponseType(typeof(Matrix), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ResponseCache(Duration = 60 * 60 * 4, VaryByQueryKeys = new[] { "*" })] // 4 hours
+        public async Task<IActionResult> MatrixHistory(string assetPair, DateTime dateTime)
+        {
+            var result = await _matrixHistoryService.GetAsync(assetPair, dateTime);
+
+            return Ok(result);
+        }
+
+        [HttpGet]
         [Route("getSettings")]
         [SwaggerOperation("GetSettings")]
         [ProducesResponseType(typeof(Models.Settings), (int)HttpStatusCode.OK)]
@@ -189,58 +228,6 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             _arbitrageDetectorService.SetSettings(settings.ToModel());
 
             return Ok();
-        }
-
-        [HttpGet]
-        [Route("matrixSnapshotStampsByDate")]
-        [SwaggerOperation("MatrixSnapshotStampsByDate")]
-        [ProducesResponseType(typeof(IEnumerable<DateTime>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ResponseCache(Duration = 60*1, VaryByQueryKeys = new[] { "*" })] // 1 minute
-        public async Task<IActionResult> MatrixSnapshotStampsByDate(string assetPair, DateTime date)
-        {
-            var result = (await _matrixSnapshotsService.GetDateTimeStampsAsync(assetPair, date)).ToList();
-
-            return Ok(result);
-        }
-
-        [HttpGet]
-        [Route("matrixSnapshotStampsByDateTimeRange")]
-        [SwaggerOperation("MatrixSnapshotStampsByDateTimeRange")]
-        [ProducesResponseType(typeof(IEnumerable<DateTime>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ResponseCache(Duration = 60 * 1, VaryByQueryKeys = new[] { "*" })] // 1 minute
-        public async Task<IActionResult> MatrixSnapshotStampsByDateTimeRange(string assetPair, DateTime from, DateTime to)
-        {
-            var result = (await _matrixSnapshotsService.GetDateTimeStampsAsync(assetPair, from, to)).ToList();
-
-            return Ok(result);
-        }
-
-        [HttpGet]
-        [Route("matrixSnapshotAssetPairs")]
-        [SwaggerOperation("MatrixSnapshotAssetPairs")]
-        [ProducesResponseType(typeof(IEnumerable<string>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ResponseCache(Duration = 60 * 1, VaryByQueryKeys = new[] { "*" })] // 1 minute
-        public async Task<IActionResult> MatrixSnapshotAssetPairs(DateTime date)
-        {
-            var result = (await _matrixSnapshotsService.GetAssetPairsAsync(date)).ToList();
-
-            return Ok(result);
-        }
-
-        [HttpGet]
-        [Route("matrixSnapshot")]
-        [SwaggerOperation("MatrixSnapshot")]
-        [ProducesResponseType(typeof(Matrix), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ResponseCache(Duration = 60 * 60 * 4, VaryByQueryKeys = new[] { "*" })] // 4 hours
-        public async Task<IActionResult> MatrixSnapshot(string assetPair, DateTime dateTime)
-        {
-            var result = await _matrixSnapshotsService.GetAsync(assetPair, dateTime);
-
-            return Ok(result);
         }
     }
 }
