@@ -134,27 +134,21 @@ namespace Lykke.Service.ArbitrageDetector.Client
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<DateTime>> MatrixSnapshotStampsByDate(string assetPair, DateTime date)
+        public async Task<IEnumerable<DateTime>> MatrixHistoryStamps(string assetPair, DateTime date)
         {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixSnapshotStampsByDate(assetPair, date));
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixHistoryStamps(assetPair, date));
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<DateTime>> MatrixSnapshotStampsByDateTimeRange(string assetPair, DateTime from, DateTime to)
+        public async Task<IEnumerable<string>> MatrixHistoryAssetPairs(DateTime date)
         {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixSnapshotStampsByDateTimeRange(assetPair, from, to));
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixHistoryAssetPairs(date));
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<string>> MatrixSnapshotAssetPairs(DateTime date)
+        public async Task<Matrix> MatrixHistory(string assetPair, DateTime dateTime)
         {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixSnapshotAssetPairs(date));
-        }
-
-        /// <inheritdoc />
-        public async Task<Matrix> MatrixSnapshot(string assetPair, DateTime dateTime)
-        {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixSnapshot(assetPair, dateTime));
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixHistory(assetPair, dateTime));
         }
 
         /// <inheritdoc />
