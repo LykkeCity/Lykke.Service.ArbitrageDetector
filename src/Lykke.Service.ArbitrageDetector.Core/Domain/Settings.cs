@@ -6,9 +6,13 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
     public class Settings : ISettings
     {
-        public int HistoryMaxSize { get; set; }
+        // Common
 
         public int ExpirationTimeInSeconds { get; set; }
+
+        // Arbitrages, Synthetics
+
+        public int HistoryMaxSize { get; set; }
 
         public decimal MinimumPnL { get; set; }
 
@@ -16,28 +20,30 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public int MinSpread { get; set; }
 
-
         public IEnumerable<string> BaseAssets { get; set; }
 
         public IEnumerable<string> IntermediateAssets { get; set; }
 
         public string QuoteAsset { get; set; }
 
-
         public IEnumerable<string> Exchanges { get; set; }
 
+        // Matrix
+
+        public IEnumerable<string> MatrixAssetPairs { get; set; }
+
+        // Public Matrix
 
         public IEnumerable<string> PublicMatrixAssetPairs { get; set; }
 
         public IDictionary<string, string> PublicMatrixExchanges { get; set; }
 
-
-        public IEnumerable<string> MatrixAssetPairs { get; set; }
-
+        // Matrix History
 
         public TimeSpan MatrixSnapshotInterval { get; set; }
 
         public IEnumerable<string> MatrixSnapshotAssetPairs { get; set; }
+
 
         public Settings()
         {
