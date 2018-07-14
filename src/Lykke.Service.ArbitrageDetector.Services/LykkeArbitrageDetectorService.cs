@@ -47,13 +47,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public override async Task Execute()
         {
-            CalculateAndRefreshArbitrages();
+            var lykkeArbitrages = GetArbitrages(_orderBooks.Values.ToList());
+            RefreshArbitrages(lykkeArbitrages);
         }
 
-        private void CalculateAndRefreshArbitrages()
+        private void RefreshArbitrages(IEnumerable<LykkeArbitrageRow> lykkeArbitrages)
         {
-            var lykkeArbitrages = GetArbitrages(_orderBooks.Values.ToList());
-
             lock (_lockArbitrages)
             {
                 _arbitrages.Clear();
