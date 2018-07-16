@@ -27,13 +27,13 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         {
             var lykkeExchange = Exchanges.SingleOrDefault(x => x.Name.Equals(exchangeName, StringComparison.OrdinalIgnoreCase));
 
-            if (lykkeExchange == null || !lykkeExchange.IsActual)
+            if (lykkeExchange == null) //|| !lykkeExchange.IsActual)
                 return null;
 
             var lykkeIndex = Exchanges.IndexOf(lykkeExchange);
             var lykkeRow = Cells.ElementAt(lykkeIndex);
-            var minSpreadInRow = lykkeRow.Min(x => x.Spread) ?? 0;
-            var minSpreadInColumn = Cells.Select(x => x.ElementAt(lykkeIndex)).Min(x => x.Spread) ?? 0;
+            var minSpreadInRow = lykkeRow.Where(x => x?.Spread != null).Min(x => x.Spread) ?? 0;
+            var minSpreadInColumn = Cells.Select(x => x.ElementAt(lykkeIndex)).Where(x => x?.Spread != null).Min(x => x.Spread) ?? 0;
             var result = Math.Min(minSpreadInRow, minSpreadInColumn);
 
             return result;
