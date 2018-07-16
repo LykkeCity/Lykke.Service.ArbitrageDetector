@@ -21,32 +21,32 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             _matrixHistoryRepository = matrixHistoryRepository;
             _arbitrageDetectorService = arbitrageDetectorService;
+
+            InitSettings();
+        }
+
+        private void InitSettings()
+        {
+            var settings = _arbitrageDetectorService.GetSettings();
+            // First time matrix history settings initialization
+            if (settings.MatrixHistoryAssetPairs == null)
+            {
+                settings.MatrixHistoryAssetPairs = new List<string>();
+                settings.MatrixHistoryInterval = new TimeSpan(0, 0, 5, 0);
+                _arbitrageDetectorService.SetSettings(settings);
+            }
         }
 
         public override async Task Execute()
         {
-            InitializeSettingsFirstTime();
             await SaveMatrixToDatabase();
-        }
-
-        private void InitializeSettingsFirstTime()
-        {
-            var settings = _arbitrageDetectorService.GetSettings();
-
-            // First time settings initialization
-            if (settings.MatrixSnapshotAssetPairs == null)
-            {
-                settings.MatrixSnapshotAssetPairs = new List<string>();
-                settings.MatrixSnapshotInterval = new TimeSpan(0, 0, 5, 0);
-                _arbitrageDetectorService.SetSettings(settings);
-            }
         }
 
         private async Task SaveMatrixToDatabase()
         {
             var settings = _arbitrageDetectorService.GetSettings();
 
-            var assetPairs = settings.MatrixSnapshotAssetPairs;
+            var assetPairs = settings.MatrixHistoryAssetPairs;
 
             foreach (var assetPair in assetPairs)
             {
@@ -57,14 +57,14 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         #region IMatrixHistoryService
 
-        public Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime date)
+        public Task<IEnumerable<DateTime>> GetStampsAsync(string assetPair, DateTime date, decimal? maxSpread, IReadOnlyCollection<string> exchanges)
         {
-            return _matrixHistoryRepository.GetDateTimeStampsAsync(assetPair, date);
+            return _matrixHistoryRepository.GetDateTimeStampsAsync(assetPair, date, maxSpread, exchanges);
         }
 
-        public Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date)
+        public Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date, decimal? maxSpread, IReadOnlyCollection<string> exchanges)
         {
-            return _matrixHistoryRepository.GetAssetPairsAsync(date);
+            return _matrixHistoryRepository.GetAssetPairsAsync(date, maxSpread, exchanges);
         }
 
         public Task<Matrix> GetAsync(string assetPair, DateTime date)

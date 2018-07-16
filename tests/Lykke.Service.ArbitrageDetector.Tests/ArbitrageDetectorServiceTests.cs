@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
-using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Services;

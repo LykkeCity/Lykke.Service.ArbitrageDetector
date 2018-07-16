@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
@@ -40,9 +39,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         // Matrix History
 
-        public TimeSpan MatrixSnapshotInterval { get; set; }
+        public TimeSpan MatrixHistoryInterval { get; set; }
 
-        public IEnumerable<string> MatrixSnapshotAssetPairs { get; set; }
+        public IEnumerable<string> MatrixHistoryAssetPairs { get; set; }
 
 
         public Settings()
@@ -66,8 +65,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             PublicMatrixAssetPairs = publicMatrixAssetPairs;
             PublicMatrixExchanges = publicMatrixExchanges;
             MatrixAssetPairs = matrixAssetPairs;
-            MatrixSnapshotInterval = matrixSnapshotInterval;
-            MatrixSnapshotAssetPairs = matrixSnapshotAssetPairs;
+            MatrixHistoryInterval = matrixSnapshotInterval;
+            MatrixHistoryAssetPairs = matrixSnapshotAssetPairs;
         }
 
         public static ISettings Default { get; } = new Settings
@@ -84,8 +83,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             PublicMatrixAssetPairs = new List<string>(),
             PublicMatrixExchanges = new Dictionary<string, string>(),
             MatrixAssetPairs = new List<string>(),
-            MatrixSnapshotInterval = new TimeSpan(0, 0, 5, 0),
-            MatrixSnapshotAssetPairs = new List<string>()
+            MatrixHistoryInterval = new TimeSpan(0, 0, 5, 0),
+            MatrixHistoryAssetPairs = new List<string>()
         };
     }
 }

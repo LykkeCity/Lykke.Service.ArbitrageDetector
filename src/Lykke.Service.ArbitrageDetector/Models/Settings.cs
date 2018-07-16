@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
+using Lykke.Service.ArbitrageDetector.Core.Domain;
 
 namespace Lykke.Service.ArbitrageDetector.Models
 {
@@ -34,9 +34,9 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public IEnumerable<string> MatrixAssetPairs { get; set; }
 
 
-        public TimeSpan MatrixSnapshotInterval { get; set; }
+        public TimeSpan MatrixHistoryInterval { get; set; }
 
-        public IEnumerable<string> MatrixSnapshotAssetPairs { get; set; }
+        public IEnumerable<string> MatrixHistoryAssetPairs { get; set; }
 
 
         public Settings()
@@ -60,15 +60,15 @@ namespace Lykke.Service.ArbitrageDetector.Models
             PublicMatrixAssetPairs = publicMatrixAssetPairs ?? new List<string>();
             PublicMatrixExchanges = publicMatrixExchanges ?? new Dictionary<string, string>();
             MatrixAssetPairs = matrixAssetPairs ?? new List<string>();
-            MatrixSnapshotInterval = matrixSnapshotInterval;
-            MatrixSnapshotAssetPairs = matrixSnapshotAssetPairs;
+            MatrixHistoryInterval = matrixSnapshotInterval;
+            MatrixHistoryAssetPairs = matrixSnapshotAssetPairs;
         }
 
         public Settings(ISettings settings)
             : this(settings.HistoryMaxSize, settings.ExpirationTimeInSeconds, settings.BaseAssets,
                 settings.IntermediateAssets, settings.QuoteAsset, settings.MinSpread, settings.Exchanges, settings.MinimumPnL, settings.MinimumVolume,
                 settings.PublicMatrixAssetPairs, settings.PublicMatrixExchanges, settings.MatrixAssetPairs,
-                settings.MatrixSnapshotInterval, settings.MatrixSnapshotAssetPairs)
+                settings.MatrixHistoryInterval, settings.MatrixHistoryAssetPairs)
         {
         }
 
@@ -76,7 +76,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         {
             var domain = new Core.Domain.Settings(HistoryMaxSize, ExpirationTimeInSeconds, BaseAssets, IntermediateAssets, QuoteAsset,
                 MinSpread, Exchanges, MinimumPnL, MinimumVolume, PublicMatrixAssetPairs, PublicMatrixExchanges, MatrixAssetPairs,
-                MatrixSnapshotInterval, MatrixSnapshotAssetPairs);
+                MatrixHistoryInterval, MatrixHistoryAssetPairs);
 
             return domain;
         }

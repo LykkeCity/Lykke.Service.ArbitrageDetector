@@ -134,15 +134,15 @@ namespace Lykke.Service.ArbitrageDetector.Client
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<DateTime>> MatrixHistoryStamps(string assetPair, DateTime date)
+        public async Task<IEnumerable<DateTime>> MatrixHistoryStamps(string assetPair, DateTime date, decimal? maxSpread = null, IReadOnlyCollection<string> exchanges = null)
         {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixHistoryStamps(assetPair, date));
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixHistoryStamps(assetPair, date, maxSpread, exchanges));
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<string>> MatrixHistoryAssetPairs(DateTime date)
+        public async Task<IEnumerable<string>> MatrixHistoryAssetPairs(DateTime date, decimal? maxSpread = null, IReadOnlyCollection<string> exchanges = null)
         {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixHistoryAssetPairs(date));
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixHistoryAssetPairs(date, maxSpread, exchanges));
         }
 
         /// <inheritdoc />

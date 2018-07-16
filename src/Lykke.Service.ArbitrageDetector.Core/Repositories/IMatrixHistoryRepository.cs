@@ -9,11 +9,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Repositories
     {
         Task<Matrix> GetAsync(string assetPair, DateTime dateTime);
 
-        Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime date);
+        Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime date, decimal? maxSpread, IReadOnlyCollection<string> exchanges);
 
-        Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime from, DateTime to);
+        Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime from, DateTime to, decimal? maxSpread, IReadOnlyCollection<string> exchanges);
 
-        Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date);
+        Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date, decimal? maxSpread, IReadOnlyCollection<string> exchanges);
 
         Task InsertAsync(Matrix matrix);
 
