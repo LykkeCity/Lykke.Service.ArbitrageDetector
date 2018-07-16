@@ -1,22 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces
+namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
     /// <summary>
     /// Represents settings of Arbitrage Detector Service.
     /// </summary>
     public interface ISettings
     {
-        /// <summary>
-        /// Maximum length of the history of arbitrages.
-        /// </summary>
-        int HistoryMaxSize { get; set; }
+        // Common
 
         /// <summary>
         /// Expiration time in milliseconds for order books and cross rates.
         /// </summary>
         int ExpirationTimeInSeconds { get; set; }
+
+
+        // Arbitrages, Synthetics
+
+        /// <summary>
+        /// Maximum length of the history of arbitrages.
+        /// </summary>
+        int HistoryMaxSize { get; set; }
 
         /// <summary>
         /// Minimum PnL.
@@ -53,6 +58,22 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces
         /// </summary>
         IEnumerable<string> Exchanges { get; set; }
 
+
+        // Matrix
+
+        /// <summary>
+        /// Internal matrix asset pairs.
+        /// </summary>
+        IEnumerable<string> MatrixAssetPairs { get; set; }
+
+        /// <summary>
+        /// Alert spread (highlighted with a color).
+        /// </summary>
+        decimal? MatrixAlertSpread { get; set; }
+
+
+        // Public Matrix
+
         /// <summary>
         /// Public matrix asset pairs.
         /// </summary>
@@ -63,19 +84,22 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces
         /// </summary>
         IDictionary<string, string> PublicMatrixExchanges { get; set; }
 
-        /// <summary>
-        /// Internal matrix asset pairs.
-        /// </summary>
-        IEnumerable<string> MatrixAssetPairs { get; set; }
+
+        // Matrix History
 
         /// <summary>
-        /// Time interval for matrix snapshots to database.
+        /// Time interval between matrix snapshots.
         /// </summary>
-        TimeSpan MatrixSnapshotInterval { get; set; }
+        TimeSpan MatrixHistoryInterval { get; set; }
 
         /// <summary>
-        /// Asset pairs for matrix snapshots.
+        /// Asset pairs for matrix history.
         /// </summary>
-        IEnumerable<string> MatrixSnapshotAssetPairs { get; set; }
+        IEnumerable<string> MatrixHistoryAssetPairs { get; set; }
+
+        /// <summary>
+        /// Lykke exchange name for "arbitrages only" option.
+        /// </summary>
+        string MatrixHistoryLykkeName { get; set; }
     }
 }

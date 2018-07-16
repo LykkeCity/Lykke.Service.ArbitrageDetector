@@ -41,13 +41,13 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
         [Get("/lykkeArbitrages")]
         Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitrages(string basePair, string crossPair);
 
-        [Get("/matrixHistoryStamps")]
-        Task<IEnumerable<DateTime>> MatrixHistoryStamps(string assetPair, DateTime date);
+        [Get("/matrixHistory/stamps")]
+        Task<IEnumerable<DateTime>> MatrixHistoryStamps(string assetPair, DateTime date, decimal? maxSpread = null, IReadOnlyCollection<string> exchanges = null);
 
-        [Get("/matrixHistoryAssetPairs")]
-        Task<IEnumerable<string>> MatrixHistoryAssetPairs(DateTime date);
+        [Get("/matrixHistory/assetPairs")]
+        Task<IEnumerable<string>> MatrixHistoryAssetPairs(DateTime date, decimal? maxSpread = null, IReadOnlyCollection<string> exchanges = null);
 
-        [Get("/matrixHistory")]
+        [Get("/matrixHistory/matrix")]
         Task<Matrix> MatrixHistory(string assetPair, DateTime dateTime);
 
         [Get("/getSettings")]

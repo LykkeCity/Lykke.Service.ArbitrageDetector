@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
@@ -20,6 +21,22 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public Matrix(string assetPair)
         {
             AssetPair = string.IsNullOrEmpty(assetPair) ? throw new ArgumentNullException(nameof(assetPair)) : assetPair;
+        }
+
+        public decimal? GetLowestSpread(string exchangeName)
+        {
+            var lykkeExchange = Exchanges.SingleOrDefault(x => x.Name.Equals(exchangeName, StringComparison.OrdinalIgnoreCase));
+
+            if (lykkeExchange == null || !lykkeExchange.IsActual)
+                return null;
+
+            var lykkeIndex = Exchanges.IndexOf(lykkeExchange);
+            var lykkeRow = Cells.ElementAt(lykkeIndex);
+            var minSpreadInRow = lykkeRow.Min(x => x.Spread) ?? 0;
+            var minSpreadInColumn = Cells.Select(x => x.ElementAt(lykkeIndex)).Min(x => x.Spread) ?? 0;
+            var result = Math.Min(minSpreadInRow, minSpreadInColumn);
+
+            return result;
         }
 
         public override string ToString()

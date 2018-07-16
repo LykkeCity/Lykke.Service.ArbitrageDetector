@@ -8,7 +8,9 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 {
     public class MatrixHistoryBlobRepository : BlobRepository
     {
-        public MatrixHistoryBlobRepository(IBlobStorage storage) : base(storage, nameof(MatrixBlob))
+        private const string ContainerName = "matrix-history";
+
+        public MatrixHistoryBlobRepository(IBlobStorage storage) : base(storage, ContainerName)
         {
         }
 

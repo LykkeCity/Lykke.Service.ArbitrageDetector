@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
     public class Settings : ISettings
     {
-        public int HistoryMaxSize { get; set; }
+        // Common
 
         public int ExpirationTimeInSeconds { get; set; }
+
+        // Arbitrages, Synthetics
+
+        public int HistoryMaxSize { get; set; }
 
         public decimal MinimumPnL { get; set; }
 
@@ -16,28 +19,34 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public int MinSpread { get; set; }
 
-
         public IEnumerable<string> BaseAssets { get; set; }
 
         public IEnumerable<string> IntermediateAssets { get; set; }
 
         public string QuoteAsset { get; set; }
 
-
         public IEnumerable<string> Exchanges { get; set; }
 
+        // Matrix
+
+        public IEnumerable<string> MatrixAssetPairs { get; set; }
+
+        public decimal? MatrixAlertSpread { get; set; }
+
+        // Public Matrix
 
         public IEnumerable<string> PublicMatrixAssetPairs { get; set; }
 
         public IDictionary<string, string> PublicMatrixExchanges { get; set; }
 
+        // Matrix History
 
-        public IEnumerable<string> MatrixAssetPairs { get; set; }
+        public TimeSpan MatrixHistoryInterval { get; set; }
 
+        public IEnumerable<string> MatrixHistoryAssetPairs { get; set; }
 
-        public TimeSpan MatrixSnapshotInterval { get; set; }
+        public string MatrixHistoryLykkeName { get; set; }
 
-        public IEnumerable<string> MatrixSnapshotAssetPairs { get; set; }
 
         public Settings()
         {
@@ -46,7 +55,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public Settings(int historyMaxSize, int expirationTimeInSeconds, IEnumerable<string> baseAssets,
             IEnumerable<string> intermediateAssets, string quoteAsset, int minSpread, IEnumerable<string> exchanges, decimal minimumPnL, decimal minimumVolume,
             IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges, IEnumerable<string> matrixAssetPairs,
-            TimeSpan matrixSnapshotInterval, IEnumerable<string> matrixSnapshotAssetPairs)
+            TimeSpan matrixHistoryInterval, IEnumerable<string> matrixHistoryAssetPairs, decimal? matrixMinimumSpread, string matrixHistoryLykkeName)
         {
             HistoryMaxSize = historyMaxSize;
             ExpirationTimeInSeconds = expirationTimeInSeconds;
@@ -60,8 +69,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             PublicMatrixAssetPairs = publicMatrixAssetPairs;
             PublicMatrixExchanges = publicMatrixExchanges;
             MatrixAssetPairs = matrixAssetPairs;
-            MatrixSnapshotInterval = matrixSnapshotInterval;
-            MatrixSnapshotAssetPairs = matrixSnapshotAssetPairs;
+            MatrixHistoryInterval = matrixHistoryInterval;
+            MatrixHistoryAssetPairs = matrixHistoryAssetPairs;
+            MatrixAlertSpread = matrixMinimumSpread;
+            MatrixHistoryLykkeName = matrixHistoryLykkeName;
         }
 
         public static ISettings Default { get; } = new Settings
@@ -78,8 +89,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             PublicMatrixAssetPairs = new List<string>(),
             PublicMatrixExchanges = new Dictionary<string, string>(),
             MatrixAssetPairs = new List<string>(),
-            MatrixSnapshotInterval = new TimeSpan(0, 0, 5, 0),
-            MatrixSnapshotAssetPairs = new List<string>()
+            MatrixAlertSpread = -1,
+            MatrixHistoryInterval = new TimeSpan(0, 0, 5, 0),
+            MatrixHistoryAssetPairs = new List<string>(),
+            MatrixHistoryLykkeName = "lykke"
         };
     }
 }

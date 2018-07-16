@@ -21,32 +21,50 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             _matrixHistoryRepository = matrixHistoryRepository;
             _arbitrageDetectorService = arbitrageDetectorService;
+
+            InitSettings();
+        }
+
+        private void InitSettings()
+        {
+            var settings = _arbitrageDetectorService.GetSettings();
+
+            var isDirty = false;
+
+            // First time matrix history settings initialization
+
+            if (settings.MatrixHistoryAssetPairs == null)
+            {
+                settings.MatrixHistoryAssetPairs = new List<string>();
+                isDirty = true;
+            }
+
+            if (settings.MatrixHistoryInterval == default)
+            {
+                settings.MatrixHistoryInterval = new TimeSpan(0, 0, 5, 0);
+                isDirty = true;
+            }
+
+            if (string.IsNullOrWhiteSpace(settings.MatrixHistoryLykkeName))
+            {
+                settings.MatrixHistoryLykkeName = "lykke";
+                isDirty = true;
+            }
+
+            if (isDirty)
+                _arbitrageDetectorService.SetSettings(settings);
         }
 
         public override async Task Execute()
         {
-            InitializeSettingsFirstTime();
             await SaveMatrixToDatabase();
-        }
-
-        private void InitializeSettingsFirstTime()
-        {
-            var settings = _arbitrageDetectorService.GetSettings();
-
-            // First time settings initialization
-            if (settings.MatrixSnapshotAssetPairs == null)
-            {
-                settings.MatrixSnapshotAssetPairs = new List<string>();
-                settings.MatrixSnapshotInterval = new TimeSpan(0, 0, 5, 0);
-                _arbitrageDetectorService.SetSettings(settings);
-            }
         }
 
         private async Task SaveMatrixToDatabase()
         {
             var settings = _arbitrageDetectorService.GetSettings();
 
-            var assetPairs = settings.MatrixSnapshotAssetPairs;
+            var assetPairs = settings.MatrixHistoryAssetPairs;
 
             foreach (var assetPair in assetPairs)
             {
@@ -57,14 +75,16 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         #region IMatrixHistoryService
 
-        public Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime date)
+        public Task<IEnumerable<DateTime>> GetStampsAsync(string assetPair, DateTime date, bool arbitragesOnly)
         {
-            return _matrixHistoryRepository.GetDateTimeStampsAsync(assetPair, date);
+            var settings = _arbitrageDetectorService.GetSettings();
+            return _matrixHistoryRepository.GetDateTimeStampsAsync(assetPair, date, settings.MatrixAlertSpread, new [] { settings.MatrixHistoryLykkeName });
         }
 
-        public Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date)
+        public Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date, bool arbitragesOnly)
         {
-            return _matrixHistoryRepository.GetAssetPairsAsync(date);
+            var settings = _arbitrageDetectorService.GetSettings();
+            return _matrixHistoryRepository.GetAssetPairsAsync(date, settings.MatrixAlertSpread, new[] { settings.MatrixHistoryLykkeName });
         }
 
         public Task<Matrix> GetAsync(string assetPair, DateTime date)

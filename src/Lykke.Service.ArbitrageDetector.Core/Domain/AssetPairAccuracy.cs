@@ -1,5 +1,4 @@
 ﻿using System;
-using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {

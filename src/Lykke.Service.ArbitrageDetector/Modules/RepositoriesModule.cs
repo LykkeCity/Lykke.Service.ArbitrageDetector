@@ -2,7 +2,6 @@
 using AzureStorage.Blob;
 using AzureStorage.Tables;
 using Common.Log;
-using Lykke.Service.ArbitrageDetector.AzureRepositories.Models;
 using Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Settings;
@@ -35,8 +34,9 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             builder.RegisterInstance(AzureTableStorage<AzureRepositories.Models.Settings>.Create(connectionString, nameof(AzureRepositories.Models.Settings), _log));
             builder.RegisterType<SettingsRepository>().As<ISettingsRepository>();
 
-            builder.RegisterInstance(AzureTableStorage<MatrixEntity>.Create(connectionString, nameof(MatrixEntity), _log));
-            builder.RegisterType<MatrixHistoryRepository>().As<IMatrixHistoryRepository>();
+            builder.RegisterType<MatrixHistoryRepository>()
+                .As<IMatrixHistoryRepository>()
+                .WithParameter("connectionString", connectionString);
         }
     }
 }
