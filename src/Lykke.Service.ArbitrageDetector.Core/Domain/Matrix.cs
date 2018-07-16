@@ -32,8 +32,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
             var lykkeIndex = Exchanges.IndexOf(lykkeExchange);
             var lykkeRow = Cells.ElementAt(lykkeIndex);
-            var minSpreadInRow = lykkeRow.Where(x => x?.Spread != null).Min(x => x.Spread) ?? 0;
-            var minSpreadInColumn = Cells.Select(x => x.ElementAt(lykkeIndex)).Where(x => x?.Spread != null).Min(x => x.Spread) ?? 0;
+            var minSpreadInRow = lykkeRow.Where(x => x?.Spread != null).Select(x => x.Spread.Value).Min(x => x);
+            var lykkeColumn = Cells.Select(x => x.ElementAt(lykkeIndex));
+            var minSpreadInColumn = lykkeColumn.Where(x => x?.Spread != null).Select(x => x.Spread.Value).Min(x => x);
             var result = Math.Min(minSpreadInRow, minSpreadInColumn);
 
             return result;
