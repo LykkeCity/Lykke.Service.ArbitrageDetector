@@ -8,15 +8,20 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
     /// </summary>
     public class Settings
     {
-        /// <summary>
-        /// Maximum length of the history of arbitrages.
-        /// </summary>
-        public int HistoryMaxSize { get; set; }
+        // Common
 
         /// <summary>
         /// Expiration time in milliseconds for order books and cross rates.
         /// </summary>
         public int ExpirationTimeInSeconds { get; set; }
+
+
+        // Arbitrages, Synthetic
+
+        /// <summary>
+        /// Maximum length of the history of arbitrages.
+        /// </summary>
+        public int HistoryMaxSize { get; set; }
 
         /// <summary>
         /// Minimum PnL.
@@ -53,6 +58,9 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// </summary>
         public IEnumerable<string> Exchanges { get; set; }
 
+
+        // Public Matrix
+
         /// <summary>
         /// Public matrix asset pairs.
         /// </summary>
@@ -63,20 +71,36 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// </summary>
         public IDictionary<string, string> PublicMatrixExchanges { get; set; }
 
+
+        // Matrix
+
         /// <summary>
         /// Internal matrix asset pairs.
         /// </summary>
         public IEnumerable<string> MatrixAssetPairs { get; set; }
 
         /// <summary>
+        /// Alert spread (highlighted with a color).
+        /// </summary>
+        public decimal? MatrixAlertSpread { get; set; }
+
+
+        // Matrix History
+
+        /// <summary>
         /// Time interval for matrix snapshots to database.
         /// </summary>
-        public TimeSpan MatrixSnapshotInterval { get; set; }
+        public TimeSpan MatrixHistoryInterval { get; set; }
 
         /// <summary>
         /// Asset pairs for matrix snapshots.
         /// </summary>
-        public IEnumerable<string> MatrixSnapshotAssetPairs { get; set; }
+        public IEnumerable<string> MatrixHistoryAssetPairs { get; set; }
+
+        /// <summary>
+        /// Lykke exchange name for "arbitrages only" option.
+        /// </summary>
+        public string MatrixHistoryLykkeName { get; set; }
 
         /// <summary>
         /// Constructor.
@@ -100,12 +124,14 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <param name="publicMatrixAssetPairs"></param>
         /// <param name="publicMatrixExchanges"></param>
         /// <param name="matrixAssetPairs"></param>
-        /// <param name="matrixSnapshotInterval"></param>
-        /// <param name="matrixSnapshotAssetPairs"></param>
+        /// <param name="matrixHistoryInterval"></param>
+        /// <param name="matrixHistoryAssetPairs"></param>
+        /// <param name="matrixMinimumSpread"></param>
+        /// <param name="matrixHistoryLykkeName"></param>
         public Settings(int historyMaxSize, int expirationTimeInSeconds, IEnumerable<string> baseAssets,
             IEnumerable<string> intermediateAssets, string quoteAsset, int minSpread, IEnumerable<string> exchanges, decimal minimumPnL, decimal minimumVolume,
             IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges, IEnumerable<string> matrixAssetPairs,
-            TimeSpan matrixSnapshotInterval, IEnumerable<string> matrixSnapshotAssetPairs)
+            TimeSpan matrixHistoryInterval, IEnumerable<string> matrixHistoryAssetPairs, decimal? matrixMinimumSpread, string matrixHistoryLykkeName)
         {
             HistoryMaxSize = historyMaxSize;
             ExpirationTimeInSeconds = expirationTimeInSeconds;
@@ -119,8 +145,10 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             PublicMatrixAssetPairs = publicMatrixAssetPairs;
             PublicMatrixExchanges = publicMatrixExchanges;
             MatrixAssetPairs = matrixAssetPairs;
-            MatrixSnapshotInterval = matrixSnapshotInterval;
-            MatrixSnapshotAssetPairs = matrixSnapshotAssetPairs;
+            MatrixHistoryInterval = matrixHistoryInterval;
+            MatrixHistoryAssetPairs = matrixHistoryAssetPairs;
+            MatrixAlertSpread = matrixMinimumSpread;
+            MatrixHistoryLykkeName = matrixHistoryLykkeName;
         }
     }
 }

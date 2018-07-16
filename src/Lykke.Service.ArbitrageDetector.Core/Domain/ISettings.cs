@@ -66,6 +66,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// </summary>
         IEnumerable<string> MatrixAssetPairs { get; set; }
 
+        /// <summary>
+        /// Alert spread (highlighted with a color).
+        /// </summary>
+        decimal? MatrixAlertSpread { get; set; }
+
 
         // Public Matrix
 
@@ -91,5 +96,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// Asset pairs for matrix history.
         /// </summary>
         IEnumerable<string> MatrixHistoryAssetPairs { get; set; }
+
+        /// <summary>
+        /// Lykke exchange name for "arbitrages only" option.
+        /// </summary>
+        string MatrixHistoryLykkeName { get; set; }
     }
 }

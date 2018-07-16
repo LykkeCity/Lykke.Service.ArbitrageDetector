@@ -31,6 +31,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public IEnumerable<string> MatrixAssetPairs { get; set; }
 
+        public decimal? MatrixAlertSpread { get; set; }
+
         // Public Matrix
 
         public IEnumerable<string> PublicMatrixAssetPairs { get; set; }
@@ -43,6 +45,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public IEnumerable<string> MatrixHistoryAssetPairs { get; set; }
 
+        public string MatrixHistoryLykkeName { get; set; }
+
 
         public Settings()
         {
@@ -51,7 +55,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public Settings(int historyMaxSize, int expirationTimeInSeconds, IEnumerable<string> baseAssets,
             IEnumerable<string> intermediateAssets, string quoteAsset, int minSpread, IEnumerable<string> exchanges, decimal minimumPnL, decimal minimumVolume,
             IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges, IEnumerable<string> matrixAssetPairs,
-            TimeSpan matrixSnapshotInterval, IEnumerable<string> matrixSnapshotAssetPairs)
+            TimeSpan matrixHistoryInterval, IEnumerable<string> matrixHistoryAssetPairs, decimal? matrixMinimumSpread, string matrixHistoryLykkeName)
         {
             HistoryMaxSize = historyMaxSize;
             ExpirationTimeInSeconds = expirationTimeInSeconds;
@@ -65,8 +69,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             PublicMatrixAssetPairs = publicMatrixAssetPairs;
             PublicMatrixExchanges = publicMatrixExchanges;
             MatrixAssetPairs = matrixAssetPairs;
-            MatrixHistoryInterval = matrixSnapshotInterval;
-            MatrixHistoryAssetPairs = matrixSnapshotAssetPairs;
+            MatrixHistoryInterval = matrixHistoryInterval;
+            MatrixHistoryAssetPairs = matrixHistoryAssetPairs;
+            MatrixAlertSpread = matrixMinimumSpread;
+            MatrixHistoryLykkeName = matrixHistoryLykkeName;
         }
 
         public static ISettings Default { get; } = new Settings
@@ -83,8 +89,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             PublicMatrixAssetPairs = new List<string>(),
             PublicMatrixExchanges = new Dictionary<string, string>(),
             MatrixAssetPairs = new List<string>(),
+            MatrixAlertSpread = -1,
             MatrixHistoryInterval = new TimeSpan(0, 0, 5, 0),
-            MatrixHistoryAssetPairs = new List<string>()
+            MatrixHistoryAssetPairs = new List<string>(),
+            MatrixHistoryLykkeName = "lykke"
         };
     }
 }
