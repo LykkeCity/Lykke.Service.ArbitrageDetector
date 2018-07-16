@@ -28,13 +28,31 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private void InitSettings()
         {
             var settings = _arbitrageDetectorService.GetSettings();
+
+            var isDirty = false;
+
             // First time matrix history settings initialization
+
             if (settings.MatrixHistoryAssetPairs == null)
             {
                 settings.MatrixHistoryAssetPairs = new List<string>();
-                settings.MatrixHistoryInterval = new TimeSpan(0, 0, 5, 0);
-                _arbitrageDetectorService.SetSettings(settings);
+                isDirty = true;
             }
+
+            if (settings.MatrixHistoryInterval == default)
+            {
+                settings.MatrixHistoryInterval = new TimeSpan(0, 0, 5, 0);
+                isDirty = true;
+            }
+
+            if (string.IsNullOrWhiteSpace(settings.MatrixHistoryLykkeName))
+            {
+                settings.MatrixHistoryLykkeName = "lykke";
+                isDirty = true;
+            }
+
+            if (isDirty)
+                _arbitrageDetectorService.SetSettings(settings);
         }
 
         public override async Task Execute()
@@ -57,14 +75,16 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         #region IMatrixHistoryService
 
-        public Task<IEnumerable<DateTime>> GetStampsAsync(string assetPair, DateTime date, decimal? maxSpread, IReadOnlyCollection<string> exchanges)
+        public Task<IEnumerable<DateTime>> GetStampsAsync(string assetPair, DateTime date, bool arbitragesOnly)
         {
-            return _matrixHistoryRepository.GetDateTimeStampsAsync(assetPair, date, maxSpread, exchanges);
+            var settings = _arbitrageDetectorService.GetSettings();
+            return _matrixHistoryRepository.GetDateTimeStampsAsync(assetPair, date, settings.MatrixAlertSpread, new [] { settings.MatrixHistoryLykkeName });
         }
 
-        public Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date, decimal? maxSpread, IReadOnlyCollection<string> exchanges)
+        public Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date, bool arbitragesOnly)
         {
-            return _matrixHistoryRepository.GetAssetPairsAsync(date, maxSpread, exchanges);
+            var settings = _arbitrageDetectorService.GetSettings();
+            return _matrixHistoryRepository.GetAssetPairsAsync(date, settings.MatrixAlertSpread, new[] { settings.MatrixHistoryLykkeName });
         }
 
         public Task<Matrix> GetAsync(string assetPair, DateTime date)

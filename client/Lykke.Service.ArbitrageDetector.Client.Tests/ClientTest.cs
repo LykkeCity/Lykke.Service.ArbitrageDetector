@@ -176,7 +176,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         {
             var oldSettings = await Client.GetSettingsAsync();
 
-            var settings = new Settings(150, 0, new List<string> { "AUD", "CHF" }, new List<string> { "EUR" }, "BTC", -97, new List<string> { "GDAX" }, 13, 17, new List<string> {"BTCUSD"}, new Dictionary<string, string>{ {"", ""} }, new List<string>{ "BTCUSD" }, new TimeSpan(0, 0, 5, 0), new List<string> { "BTCUSD" });
+            var settings = new Settings(150, 0, new List<string> { "AUD", "CHF" }, new List<string> { "EUR" }, "BTC", -97, new List<string> { "GDAX" }, 13, 17, new List<string> {"BTCUSD"}, new Dictionary<string, string>{ {"", ""} }, new List<string>{ "BTCUSD" }, new TimeSpan(0, 0, 5, 0), new List<string> { "BTCUSD" }, -1, "lykke");
 
             await Client.SetSettingsAsync(settings);
 

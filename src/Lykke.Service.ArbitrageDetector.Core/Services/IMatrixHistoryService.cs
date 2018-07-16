@@ -7,9 +7,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
 {
     public interface IMatrixHistoryService
     {
-        Task<IEnumerable<DateTime>> GetStampsAsync(string assetPair, DateTime date, decimal? maxSpread, IReadOnlyCollection<string> exchanges);
+        Task<IEnumerable<DateTime>> GetStampsAsync(string assetPair, DateTime date, bool arbitragesOnly);
 
-        Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date, decimal? maxSpread, IReadOnlyCollection<string> exchanges);
+        Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date, bool arbitragesOnly);
 
         Task<Matrix> GetAsync(string assetPair, DateTime date);
     }
