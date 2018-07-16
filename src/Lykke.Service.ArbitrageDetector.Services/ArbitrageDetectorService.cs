@@ -55,6 +55,19 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 _settingsRepository.InsertOrReplaceAsync(Settings.Default).GetAwaiter().GetResult();
             }
 
+            // First time settings initialization
+
+            var isDirty = false;
+
+            if (dbSettings.MatrixAlertSpread == null)
+            {
+                dbSettings.MatrixAlertSpread = -1;
+                isDirty = true;
+            }
+
+            if (isDirty)
+                _settingsRepository.InsertOrReplaceAsync(dbSettings);
+
             _s = dbSettings;
         }
 

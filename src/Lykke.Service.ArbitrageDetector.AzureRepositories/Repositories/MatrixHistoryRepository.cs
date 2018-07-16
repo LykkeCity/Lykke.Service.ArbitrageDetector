@@ -27,8 +27,11 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 
         public async Task InsertAsync(Matrix matrix)
         {
-            await _storage.InsertAsync(new MatrixEntity(matrix));
-            await _blobRepository.SaveAsync(new MatrixBlob(matrix));
+            var entity = new MatrixEntity(matrix);
+            await _storage.InsertAsync(entity);
+
+            var blob = new MatrixBlob(matrix);
+            await _blobRepository.SaveAsync(blob);
         }
 
         public async Task<Matrix> GetAsync(string assetPair, DateTime dateTime)

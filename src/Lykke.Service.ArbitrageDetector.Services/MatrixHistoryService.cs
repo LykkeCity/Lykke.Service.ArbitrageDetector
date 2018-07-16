@@ -29,9 +29,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             var settings = _arbitrageDetectorService.GetSettings();
 
-            var isDirty = false;
-
             // First time matrix history settings initialization
+
+            var isDirty = false;
 
             if (settings.MatrixHistoryAssetPairs == null)
             {
