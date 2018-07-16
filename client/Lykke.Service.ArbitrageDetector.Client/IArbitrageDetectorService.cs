@@ -91,14 +91,14 @@ namespace Lykke.Service.ArbitrageDetector.Client
         /// <param name="assetPair"></param>
         /// <param name="date"></param>
         /// <returns></returns>
-        Task<IEnumerable<DateTime>> MatrixHistoryStamps(string assetPair, DateTime date);
+        Task<IEnumerable<DateTime>> MatrixHistoryStamps(string assetPair, DateTime date, decimal? maxSpread = null, IReadOnlyCollection<string> exchanges = null);
 
         /// <summary>
         /// Get available asset pairs by date.
         /// </summary>
         /// <param name="date"></param>
         /// <returns></returns>
-        Task<IEnumerable<string>> MatrixHistoryAssetPairs(DateTime date);
+        Task<IEnumerable<string>> MatrixHistoryAssetPairs(DateTime date, decimal? maxSpread = null, IReadOnlyCollection<string> exchanges = null);
 
         /// <summary>
         /// Get matrix snapshot.

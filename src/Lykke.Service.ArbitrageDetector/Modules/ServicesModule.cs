@@ -36,7 +36,7 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             var settingsRepository = new SettingsRepository(
                 AzureTableStorage<AzureRepositories.Models.Settings>.Create(
                     _settings.ConnectionString(x => x.ArbitrageDetector.Db.DataConnectionString), nameof(AzureRepositories.Models.Settings), _log));
-            var setings = settingsRepository.GetAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            var dbSetings = settingsRepository.GetAsync().GetAwaiter().GetResult();
 
             // Order Book Handlers
 
@@ -80,7 +80,7 @@ namespace Lykke.Service.ArbitrageDetector.Modules
 
             builder.RegisterType<MatrixHistoryService>()
                 .As<IMatrixHistoryService>()
-                .WithParameter("interval", setings.MatrixSnapshotInterval)
+                .WithParameter("interval", dbSetings.MatrixHistoryInterval)
                 .As<IStartable>()
                 .As<IStopable>()
                 .SingleInstance();

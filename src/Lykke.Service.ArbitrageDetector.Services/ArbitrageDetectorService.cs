@@ -8,7 +8,6 @@ using Common;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Utils;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
-using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Core.Services.Infrastructure;
@@ -43,17 +42,17 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _assetsService = assetsService ?? throw new ArgumentNullException(nameof(assetsService));
             _log = log ?? throw new ArgumentNullException(nameof(log));
 
-            Task.Run(InitSettings).Wait();
+            InitSettings();
         }
 
-        private async Task InitSettings()
+        private void InitSettings()
         {
-            var dbSettings = await _settingsRepository.GetAsync();
+            var dbSettings = _settingsRepository.GetAsync().GetAwaiter().GetResult();
 
             if (dbSettings == null)
             {
                 dbSettings = Settings.Default;
-                await _settingsRepository.InsertOrReplaceAsync(Settings.Default);
+                _settingsRepository.InsertOrReplaceAsync(Settings.Default).GetAwaiter().GetResult();
             }
 
             _s = dbSettings;
