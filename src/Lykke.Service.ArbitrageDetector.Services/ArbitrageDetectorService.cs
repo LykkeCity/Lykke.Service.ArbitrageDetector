@@ -645,6 +645,30 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 _s.MatrixAssetPairs = settings.MatrixAssetPairs.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
             }
 
+            settings.MatrixAlertSpread = settings.MatrixAlertSpread >= 0 || settings.MatrixAlertSpread < -100 ? null : settings.MatrixAlertSpread;
+            if (_s.MatrixAlertSpread != settings.MatrixAlertSpread)
+            {
+                _s.MatrixAlertSpread = settings.MatrixAlertSpread;
+                restartNeeded = true;
+            }
+
+            if (settings.MatrixHistoryAssetPairs != null && !settings.MatrixHistoryAssetPairs.SequenceEqual(_s.MatrixHistoryAssetPairs ?? new List<string>()))
+            {
+                _s.MatrixHistoryAssetPairs = settings.MatrixHistoryAssetPairs.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
+            }
+
+            settings.MatrixHistoryInterval = (int)settings.MatrixHistoryInterval.TotalMinutes < 0 ? new TimeSpan(0, 0, 5, 0) : settings.MatrixHistoryInterval;
+            if (_s.MatrixHistoryInterval != settings.MatrixHistoryInterval)
+            {
+                _s.MatrixHistoryInterval = settings.MatrixHistoryInterval;
+            }
+
+            if (!string.IsNullOrWhiteSpace(settings.MatrixHistoryLykkeName) && _s.MatrixHistoryLykkeName != settings.MatrixHistoryLykkeName)
+            {
+                _s.MatrixHistoryLykkeName = settings.MatrixHistoryLykkeName.Trim();
+                restartNeeded = true;
+            }
+
             await _settingsRepository.InsertOrReplaceAsync(_s);
 
             _restartNeeded = restartNeeded;
