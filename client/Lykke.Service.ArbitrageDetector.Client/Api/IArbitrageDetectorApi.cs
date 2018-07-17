@@ -42,10 +42,10 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
         Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitrages(string basePair, string crossPair);
 
         [Get("/matrixHistory/stamps")]
-        Task<IEnumerable<DateTime>> MatrixHistoryStamps(string assetPair, DateTime date, decimal? maxSpread = null, IReadOnlyCollection<string> exchanges = null);
+        Task<IEnumerable<DateTime>> MatrixHistoryStamps(string assetPair, DateTime date, bool lykkeArbitragesOnly);
 
         [Get("/matrixHistory/assetPairs")]
-        Task<IEnumerable<string>> MatrixHistoryAssetPairs(DateTime date, decimal? maxSpread = null, IReadOnlyCollection<string> exchanges = null);
+        Task<IEnumerable<string>> MatrixHistoryAssetPairs(DateTime date, bool lykkeArbitragesOnly);
 
         [Get("/matrixHistory/matrix")]
         Task<Matrix> MatrixHistory(string assetPair, DateTime dateTime);
