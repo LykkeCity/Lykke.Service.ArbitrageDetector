@@ -10,8 +10,8 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
 {
     public class MatrixEntity : AzureTableEntity
     {
-        public const string LykkeExchangeMustContain = "LYKKE";
-        public string AssetPair => PartitionKey.Split(" - ")[0];
+        public const string LykkeExchangeMustContain = "lykke";
+        public string AssetPair => PartitionKey.Split(" - ")[1];
 
         /// <summary>
         /// Timestamp for current matrix.
@@ -34,7 +34,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
             PartitionKey = GeneratePartitionKey(matrix.AssetPair, matrix.DateTime);
             RowKey = GenerateRowKey(matrix.DateTime);
 
-            var lykkeExchanges = matrix.Exchanges.Where(x => x.Name.ToUpper().Contains(LykkeExchangeMustContain)).ToList();
+            var lykkeExchanges = matrix.Exchanges.Where(x => x.Name.ToUpper().Contains(LykkeExchangeMustContain.ToUpper())).ToList();
             foreach (var lykkeExchange in lykkeExchanges)
             {
                 var minSpread = matrix.GetLowestSpread(lykkeExchange.Name);
@@ -44,7 +44,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
 
         public static string GeneratePartitionKey(string assetPair, DateTime date)
         {
-            return $"{assetPair} - {date.ToIsoDate()}";
+            return $"{date.ToIsoDate()} - {assetPair}";
         }
 
         public static string GenerateRowKey(DateTime dateTime)
@@ -59,7 +59,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
 
         public static string GenerateBlobId(string assetPair, DateTime dateTime)
         {
-            return $"{assetPair} - {dateTime.ToIsoDateTime()}";
+            return $"{dateTime.ToIsoDateTime()} - {assetPair}";
         }
     }
 }
