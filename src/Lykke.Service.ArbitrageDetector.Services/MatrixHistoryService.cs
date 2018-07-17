@@ -77,16 +77,16 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public Task<IEnumerable<DateTime>> GetStampsAsync(string assetPair, DateTime date, bool lykkeArbitragesOnly)
         {
-            GetAlertSpreadAndLykkeName(lykkeArbitragesOnly, out var matrixAlertSpread, out var lykkeName);
+            GetSignificantSpreadAndLykkeName(lykkeArbitragesOnly, out var matrixSignificantSpread, out var lykkeName);
 
-            return _matrixHistoryRepository.GetDateTimeStampsAsync(assetPair, date, matrixAlertSpread, lykkeName);
+            return _matrixHistoryRepository.GetDateTimeStampsAsync(assetPair, date, matrixSignificantSpread, lykkeName);
         }
 
         public Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date, bool lykkeArbitragesOnly)
         {
-            GetAlertSpreadAndLykkeName(lykkeArbitragesOnly, out var matrixAlertSpread, out var lykkeName);
+            GetSignificantSpreadAndLykkeName(lykkeArbitragesOnly, out var matrixSignificantSpread, out var lykkeName);
 
-            return _matrixHistoryRepository.GetAssetPairsAsync(date, matrixAlertSpread, lykkeName);
+            return _matrixHistoryRepository.GetAssetPairsAsync(date, matrixSignificantSpread, lykkeName);
         }
 
         public Task<Matrix> GetAsync(string assetPair, DateTime date)
@@ -94,14 +94,14 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return _matrixHistoryRepository.GetAsync(assetPair, date);
         }
 
-        private void GetAlertSpreadAndLykkeName(bool lykkeArbitragesOnly, out decimal? matrixAlertSpread, out IReadOnlyCollection<string> lykkeName)
+        private void GetSignificantSpreadAndLykkeName(bool lykkeArbitragesOnly, out decimal? matrixSignificantSpread, out IReadOnlyCollection<string> lykkeName)
         {
-            matrixAlertSpread = null;
+            matrixSignificantSpread = null;
             lykkeName = null;
             if (lykkeArbitragesOnly)
             {
                 var settings = _arbitrageDetectorService.GetSettings();
-                matrixAlertSpread = settings.MatrixAlertSpread;
+                matrixSignificantSpread = settings.MatrixSignificantSpread;
                 lykkeName = new[] { settings.MatrixHistoryLykkeName };
             }
         }

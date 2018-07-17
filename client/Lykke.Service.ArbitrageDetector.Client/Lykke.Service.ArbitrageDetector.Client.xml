@@ -859,7 +859,7 @@
             Internal matrix asset pairs.
             </summary>
         </member>
-        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.MatrixAlertSpread">
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.MatrixSignificantSpread">
             <summary>
             Alert spread (highlighted with a color).
             </summary>
