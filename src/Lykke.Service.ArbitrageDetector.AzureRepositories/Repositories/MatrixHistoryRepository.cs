@@ -87,22 +87,39 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
         {
             if (string.IsNullOrWhiteSpace(assetPair)) { throw new ArgumentException(nameof(assetPair)); }
 
-            var pKeyFrom = MatrixEntity.GeneratePartitionKey(assetPair, from);
-            var pKeyTo = MatrixEntity.GeneratePartitionKey(assetPair, to);
+            var partitionKeyFrom = MatrixEntity.GeneratePartitionKey(assetPair, from);
+            var partitionKeyTo = MatrixEntity.GeneratePartitionKey(assetPair, to);
             var rowKeyFrom = MatrixEntity.GenerateRowKey(from);
             var rowKeyTo = MatrixEntity.GenerateRowKey(to);
 
             var query = new TableQuery<MatrixEntity>();
 
-            var pkeyCondFrom = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThanOrEqual, pKeyFrom);
-            var pkeyCondTo = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.LessThanOrEqual, pKeyTo);
-            var pkeyFilter = TableQuery.CombineFilters(pkeyCondFrom, TableOperators.And, pkeyCondTo);
+            // PartitionKey by range
+            var partitionKeyRangeFrom = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThanOrEqual, partitionKeyFrom);
+            var partitionKeyRangeTo = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.LessThan, partitionKeyTo);
+            var partitionKeyRangeFilter = TableQuery.CombineFilters(partitionKeyRangeFrom, TableOperators.And, partitionKeyRangeTo);
 
+            // PartitionKey by equals
+            var partitionKeyEqualsFilter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKeyFrom);
+            var currentDate = from.Date.AddDays(1);
+            while (currentDate < to)
+            {
+                var partitionKey = MatrixEntity.GeneratePartitionKey(assetPair, currentDate);
+                var partitionKeyCondEquals = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey);
+                partitionKeyEqualsFilter = TableQuery.CombineFilters(partitionKeyEqualsFilter, TableOperators.Or, partitionKeyCondEquals);
+
+                currentDate = currentDate.AddDays(1);
+            }
+            // PartitionKey both range and equals
+            var partitionKeyFilter = TableQuery.CombineFilters(partitionKeyRangeFilter, TableOperators.And, partitionKeyEqualsFilter);
+
+            // RowKey by range
             var rowkeyCondFrom = TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.GreaterThanOrEqual, rowKeyFrom);
-            var rowkeyCondTo = TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.LessThanOrEqual, rowKeyTo);
+            var rowkeyCondTo = TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.LessThan, rowKeyTo);
             var rowkeyFilter = TableQuery.CombineFilters(rowkeyCondFrom, TableOperators.And, rowkeyCondTo);
 
-            query.FilterString = TableQuery.CombineFilters(pkeyFilter, TableOperators.And, rowkeyFilter);
+            // Result filter
+            query.FilterString = TableQuery.CombineFilters(partitionKeyFilter, TableOperators.And, rowkeyFilter);
 
             return await _storage.WhereAsync(query);
         }
