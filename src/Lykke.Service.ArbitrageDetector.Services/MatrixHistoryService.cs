@@ -77,14 +77,30 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public Task<IEnumerable<DateTime>> GetStampsAsync(string assetPair, DateTime date, bool lykkeArbitragesOnly)
         {
-            var settings = _arbitrageDetectorService.GetSettings();
-            return _matrixHistoryRepository.GetDateTimeStampsAsync(assetPair, date, settings.MatrixAlertSpread, new [] { settings.MatrixHistoryLykkeName });
+            decimal? matrixAlertSpread = null;
+            IReadOnlyCollection<string> lykkeName = null;
+            if (lykkeArbitragesOnly)
+            {
+                var settings = _arbitrageDetectorService.GetSettings();
+                matrixAlertSpread = settings.MatrixAlertSpread;
+                lykkeName = new[] {settings.MatrixHistoryLykkeName};
+            }
+            
+            return _matrixHistoryRepository.GetDateTimeStampsAsync(assetPair, date, matrixAlertSpread, lykkeName);
         }
 
         public Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date, bool lykkeArbitragesOnly)
         {
-            var settings = _arbitrageDetectorService.GetSettings();
-            return _matrixHistoryRepository.GetAssetPairsAsync(date, settings.MatrixAlertSpread, new[] { settings.MatrixHistoryLykkeName });
+            decimal? matrixAlertSpread = null;
+            IReadOnlyCollection<string> lykkeName = null;
+            if (lykkeArbitragesOnly)
+            {
+                var settings = _arbitrageDetectorService.GetSettings();
+                matrixAlertSpread = settings.MatrixAlertSpread;
+                lykkeName = new[] { settings.MatrixHistoryLykkeName };
+            }
+            
+            return _matrixHistoryRepository.GetAssetPairsAsync(date, matrixAlertSpread, lykkeName);
         }
 
         public Task<Matrix> GetAsync(string assetPair, DateTime date)
