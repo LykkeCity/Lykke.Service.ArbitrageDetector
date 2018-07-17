@@ -75,13 +75,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         #region IMatrixHistoryService
 
-        public Task<IEnumerable<DateTime>> GetStampsAsync(string assetPair, DateTime date, bool arbitragesOnly)
+        public Task<IEnumerable<DateTime>> GetStampsAsync(string assetPair, DateTime date, bool lykkeArbitragesOnly)
         {
             var settings = _arbitrageDetectorService.GetSettings();
             return _matrixHistoryRepository.GetDateTimeStampsAsync(assetPair, date, settings.MatrixAlertSpread, new [] { settings.MatrixHistoryLykkeName });
         }
 
-        public Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date, bool arbitragesOnly)
+        public Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date, bool lykkeArbitragesOnly)
         {
             var settings = _arbitrageDetectorService.GetSettings();
             return _matrixHistoryRepository.GetAssetPairsAsync(date, settings.MatrixAlertSpread, new[] { settings.MatrixHistoryLykkeName });
