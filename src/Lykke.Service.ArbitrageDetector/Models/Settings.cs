@@ -32,7 +32,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
 
         public IEnumerable<string> MatrixAssetPairs { get; set; }
 
-        public decimal? MatrixAlertSpread { get; set; }
+        public decimal? MatrixSignificantSpread { get; set; }
 
         // Public Matrix
 
@@ -72,7 +72,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
             MatrixAssetPairs = matrixAssetPairs ?? new List<string>();
             MatrixHistoryInterval = matrixHistoryInterval;
             MatrixHistoryAssetPairs = matrixHistoryAssetPairs;
-            MatrixAlertSpread = matrixMinimumSpread;
+            MatrixSignificantSpread = matrixMinimumSpread;
             MatrixHistoryLykkeName = matrixHistoryLykkeName;
         }
 
@@ -80,7 +80,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
             : this(settings.HistoryMaxSize, settings.ExpirationTimeInSeconds, settings.BaseAssets,
                 settings.IntermediateAssets, settings.QuoteAsset, settings.MinSpread, settings.Exchanges, settings.MinimumPnL, settings.MinimumVolume,
                 settings.PublicMatrixAssetPairs, settings.PublicMatrixExchanges, settings.MatrixAssetPairs,
-                settings.MatrixHistoryInterval, settings.MatrixHistoryAssetPairs, settings.MatrixAlertSpread, settings.MatrixHistoryLykkeName)
+                settings.MatrixHistoryInterval, settings.MatrixHistoryAssetPairs, settings.MatrixSignificantSpread, settings.MatrixHistoryLykkeName)
         {
         }
 
@@ -88,7 +88,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         {
             var domain = new Core.Domain.Settings(HistoryMaxSize, ExpirationTimeInSeconds, BaseAssets, IntermediateAssets, QuoteAsset,
                 MinSpread, Exchanges, MinimumPnL, MinimumVolume, PublicMatrixAssetPairs, PublicMatrixExchanges, MatrixAssetPairs,
-                MatrixHistoryInterval, MatrixHistoryAssetPairs, MatrixAlertSpread, MatrixHistoryLykkeName);
+                MatrixHistoryInterval, MatrixHistoryAssetPairs, MatrixSignificantSpread, MatrixHistoryLykkeName);
 
             return domain;
         }

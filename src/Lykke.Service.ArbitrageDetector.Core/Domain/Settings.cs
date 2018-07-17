@@ -31,7 +31,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public IEnumerable<string> MatrixAssetPairs { get; set; }
 
-        public decimal? MatrixAlertSpread { get; set; }
+        public decimal? MatrixSignificantSpread { get; set; }
 
         // Public Matrix
 
@@ -71,7 +71,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             MatrixAssetPairs = matrixAssetPairs;
             MatrixHistoryInterval = matrixHistoryInterval;
             MatrixHistoryAssetPairs = matrixHistoryAssetPairs;
-            MatrixAlertSpread = matrixMinimumSpread;
+            MatrixSignificantSpread = matrixMinimumSpread;
             MatrixHistoryLykkeName = matrixHistoryLykkeName;
         }
 
@@ -89,7 +89,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             PublicMatrixAssetPairs = new List<string>(),
             PublicMatrixExchanges = new Dictionary<string, string>(),
             MatrixAssetPairs = new List<string>(),
-            MatrixAlertSpread = -1,
+            MatrixSignificantSpread = -1,
             MatrixHistoryInterval = new TimeSpan(0, 0, 5, 0),
             MatrixHistoryAssetPairs = new List<string>(),
             MatrixHistoryLykkeName = "lykke"

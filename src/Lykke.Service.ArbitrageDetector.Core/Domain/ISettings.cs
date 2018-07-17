@@ -67,9 +67,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         IEnumerable<string> MatrixAssetPairs { get; set; }
 
         /// <summary>
-        /// Alert spread (highlighted with a color).
+        /// Significant spread (highlighted with a color, used in MatrixHistory -> "Lykke arbitrages only").
         /// </summary>
-        decimal? MatrixAlertSpread { get; set; }
+        decimal? MatrixSignificantSpread { get; set; }
 
 
         // Public Matrix

@@ -59,9 +59,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             var isDirty = false;
 
-            if (dbSettings.MatrixAlertSpread == null)
+            if (dbSettings.MatrixSignificantSpread == null)
             {
-                dbSettings.MatrixAlertSpread = -1;
+                dbSettings.MatrixSignificantSpread = -1;
                 isDirty = true;
             }
 
@@ -646,10 +646,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 _s.MatrixAssetPairs = settings.MatrixAssetPairs.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
             }
 
-            settings.MatrixAlertSpread = settings.MatrixAlertSpread >= 0 || settings.MatrixAlertSpread < -100 ? null : settings.MatrixAlertSpread;
-            if (_s.MatrixAlertSpread != settings.MatrixAlertSpread)
+            settings.MatrixSignificantSpread = settings.MatrixSignificantSpread >= 0 || settings.MatrixSignificantSpread < -100 ? null : settings.MatrixSignificantSpread;
+            if (_s.MatrixSignificantSpread != settings.MatrixSignificantSpread)
             {
-                _s.MatrixAlertSpread = settings.MatrixAlertSpread;
+                _s.MatrixSignificantSpread = settings.MatrixSignificantSpread;
                 restartNeeded = true;
             }
 
