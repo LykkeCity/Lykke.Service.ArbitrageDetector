@@ -371,6 +371,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             {
                 _restartNeeded = false;
 
+                _orderBooks.Clear();
                 _crossRates.Clear();
                 _arbitrages.Clear();
                 _arbitrageHistory.Clear();
