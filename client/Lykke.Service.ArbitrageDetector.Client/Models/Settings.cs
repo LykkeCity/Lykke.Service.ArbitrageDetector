@@ -82,7 +82,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Alert spread (highlighted with a color).
         /// </summary>
-        public decimal? MatrixAlertSpread { get; set; }
+        public decimal? MatrixSignificantSpread { get; set; }
 
 
         // Matrix History
@@ -147,7 +147,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             MatrixAssetPairs = matrixAssetPairs;
             MatrixHistoryInterval = matrixHistoryInterval;
             MatrixHistoryAssetPairs = matrixHistoryAssetPairs;
-            MatrixAlertSpread = matrixMinimumSpread;
+            MatrixSignificantSpread = matrixMinimumSpread;
             MatrixHistoryLykkeName = matrixHistoryLykkeName;
         }
     }

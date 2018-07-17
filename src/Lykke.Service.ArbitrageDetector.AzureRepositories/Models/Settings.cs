@@ -38,7 +38,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
         [JsonValueSerializer]
         public IEnumerable<string> MatrixAssetPairs { get; set; }
 
-        public decimal? MatrixAlertSpread { get; set; }
+        public decimal? MatrixSignificantSpread { get; set; }
 
         // Public Matrix
 
@@ -79,7 +79,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
             MatrixAssetPairs = domain.MatrixAssetPairs;
             MatrixHistoryInterval = domain.MatrixHistoryInterval;
             MatrixHistoryAssetPairs = domain.MatrixHistoryAssetPairs;
-            MatrixAlertSpread = domain.MatrixAlertSpread;
+            MatrixSignificantSpread = domain.MatrixSignificantSpread;
             MatrixHistoryLykkeName = domain.MatrixHistoryLykkeName;
         }
     }
