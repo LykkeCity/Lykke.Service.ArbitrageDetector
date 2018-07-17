@@ -22,7 +22,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
         /// Our exchanges (like "lykke" or "lykke(e)") with minimum spread.
         /// </summary>
         [JsonValueSerializer]
-        public Dictionary<string, decimal?> OurExchangesMinSpreads { get; set; } = new Dictionary<string, decimal?>();
+        public Dictionary<string, decimal?> LykkeExchangesMinSpreads { get; set; } = new Dictionary<string, decimal?>();
 
 
         public MatrixEntity()
@@ -38,7 +38,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
             foreach (var lykkeExchange in lykkeExchanges)
             {
                 var minSpread = matrix.GetLowestSpread(lykkeExchange.Name);
-                OurExchangesMinSpreads.Add(lykkeExchange.Name, minSpread);
+                LykkeExchangesMinSpreads.Add(lykkeExchange.Name, minSpread);
             }
         }
 

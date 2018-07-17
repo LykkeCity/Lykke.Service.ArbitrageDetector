@@ -154,7 +154,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 
             // Filter by maxSpread for selected exchanges
             var result = (from matrix in input
-                          from exchangeMinSpread in matrix.OurExchangesMinSpreads
+                          from exchangeMinSpread in matrix.LykkeExchangesMinSpreads
                           from exchange in exchanges
                           where exchangeMinSpread.Key.Equals(exchange, StringComparison.OrdinalIgnoreCase)
                           where exchangeMinSpread.Value.HasValue && exchangeMinSpread.Value.Value < maxSpread.Value
