@@ -61,5 +61,10 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
         {
             return $"{dateTime.ToIsoDateTime()} - {assetPair}";
         }
+
+        public override string ToString()
+        {
+            return $"{AssetPair} - {DateTime.ToIsoDateTime()}";
+        }
     }
 }
