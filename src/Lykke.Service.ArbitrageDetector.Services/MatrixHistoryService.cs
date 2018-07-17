@@ -77,35 +77,33 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public Task<IEnumerable<DateTime>> GetStampsAsync(string assetPair, DateTime date, bool lykkeArbitragesOnly)
         {
-            decimal? matrixAlertSpread = null;
-            IReadOnlyCollection<string> lykkeName = null;
-            if (lykkeArbitragesOnly)
-            {
-                var settings = _arbitrageDetectorService.GetSettings();
-                matrixAlertSpread = settings.MatrixAlertSpread;
-                lykkeName = new[] {settings.MatrixHistoryLykkeName};
-            }
-            
+            GetAlertSpreadAndLykkeName(lykkeArbitragesOnly, out var matrixAlertSpread, out var lykkeName);
+
             return _matrixHistoryRepository.GetDateTimeStampsAsync(assetPair, date, matrixAlertSpread, lykkeName);
         }
 
         public Task<IEnumerable<string>> GetAssetPairsAsync(DateTime date, bool lykkeArbitragesOnly)
         {
-            decimal? matrixAlertSpread = null;
-            IReadOnlyCollection<string> lykkeName = null;
-            if (lykkeArbitragesOnly)
-            {
-                var settings = _arbitrageDetectorService.GetSettings();
-                matrixAlertSpread = settings.MatrixAlertSpread;
-                lykkeName = new[] { settings.MatrixHistoryLykkeName };
-            }
-            
+            GetAlertSpreadAndLykkeName(lykkeArbitragesOnly, out var matrixAlertSpread, out var lykkeName);
+
             return _matrixHistoryRepository.GetAssetPairsAsync(date, matrixAlertSpread, lykkeName);
         }
 
         public Task<Matrix> GetAsync(string assetPair, DateTime date)
         {
             return _matrixHistoryRepository.GetAsync(assetPair, date);
+        }
+
+        private void GetAlertSpreadAndLykkeName(bool lykkeArbitragesOnly, out decimal? matrixAlertSpread, out IReadOnlyCollection<string> lykkeName)
+        {
+            matrixAlertSpread = null;
+            lykkeName = null;
+            if (lykkeArbitragesOnly)
+            {
+                var settings = _arbitrageDetectorService.GetSettings();
+                matrixAlertSpread = settings.MatrixAlertSpread;
+                lykkeName = new[] { settings.MatrixHistoryLykkeName };
+            }
         }
 
         #endregion
