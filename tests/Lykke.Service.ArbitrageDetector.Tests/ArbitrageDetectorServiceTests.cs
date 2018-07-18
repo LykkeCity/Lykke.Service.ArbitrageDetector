@@ -18,7 +18,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
     {
         private const bool performance = false;
 
-        // [Fact]
+        [Fact]
         public async Task From2OrderBooks_0_0_Test()
         {
             // BTCEUR * EURUSD
@@ -111,7 +111,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(10, arbitrage2.Ask.Volume, 8);
         }
 
-        // [Fact]
+        [Fact]
         public async Task From2OrderBooks_0_1_Test()
         {
             // BTCEUR * USDEUR
@@ -203,7 +203,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(10, arbitrage2.Ask.Volume, 8);
         }
 
-        // [Fact]
+        [Fact]
         public async Task From2OrderBooks_1_0_Test()
         {
             // EURBTC * EURUSD
@@ -295,7 +295,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(10, arbitrage2.Ask.Volume, 8);
         }
 
-        // [Fact]
+        [Fact]
         public async Task From2OrderBooks_1_1_Test()
         {
             // EURBTC * USDEUR
@@ -1215,7 +1215,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
 
 
-        // [Fact]
+        [Fact]
         public async Task ArbitragesTest()
         {
             var baseAssets = new List<string> { "BTC" };
@@ -1273,7 +1273,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(arbitrage3.PnL, (arbitrage3.Bid.Price - arbitrage3.Ask.Price) * arbitrage3.Volume);
         }
 
-        // [Fact]
+        [Fact]
         public async Task ArbitrageHistoryTest()
         {
             var baseAssets = new List<string> { "BTC" };
@@ -1317,7 +1317,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         }
 
 
-        // [Fact]
+        [Fact]
         public async Task ManySynthOrderBooksPerformanceTest()
         {
             var baseAssets = new List<string> { "BTC" };
@@ -1384,7 +1384,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(12, arbitrages.Count());
         }
 
-        // [Fact]
+        [Fact]
         public async Task ManyArbitragesInHistoryPerformanceTest()
         {
             var baseAssets = new List<string> { "BTC" };
@@ -1438,13 +1438,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         }
 
 
-        // [Fact]
+        [Fact]
         public async Task MatrixTest()
         {
             // TODO: Must be implemented
         }
 
-        // [Fact]
+        [Fact]
         public async Task SettingsSetAllTest()
         {
             var startupSettings = new Settings(50, 10, new List<string> { "BTC", "ETH" }, new List<string> { "EUR", "CHF" }, "USD", -20, new List<string> { "GDAX" }, 0,
@@ -1470,7 +1470,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(settings.MinimumVolume, newSettings.MinimumVolume);
         }
 
-        // [Fact]
+        [Fact]
         public async Task SettingsMinimumPnLTest()
         {
             var baseAssets = new List<string> { "BTC" };
@@ -1501,7 +1501,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(0, arbitrages.Count);
         }
 
-        // [Fact]
+        [Fact]
         public async Task SettingsMinimumVolumeTest()
         {
             var baseAssets = new List<string> { "BTC" };
@@ -1532,7 +1532,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(0, arbitrages.Count);
         }
 
-        // [Fact]
+        [Fact]
         public async Task SettingsExchangesTest()
         {
             var baseAssets = new List<string> { "BTC" };
