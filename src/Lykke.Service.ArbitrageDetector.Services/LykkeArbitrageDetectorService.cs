@@ -51,19 +51,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
             RefreshArbitrages(lykkeArbitrages);
         }
 
-        private void RefreshArbitrages(IEnumerable<LykkeArbitrageRow> lykkeArbitrages)
-        {
-            lock (_lockArbitrages)
-            {
-                _arbitrages.Clear();
-                _arbitrages.AddRange(lykkeArbitrages);
-            }
-        }
-
         private IReadOnlyCollection<LykkeArbitrageRow> GetArbitrages(IReadOnlyCollection<OrderBook> orderBooks)
         {
             var result = new List<LykkeArbitrageRow>();
 
+            // O( (n^2)/2 )
             for (var i = 0; i < orderBooks.Count; i++)
             {
                 if (i == orderBooks.Count - 1)
@@ -74,12 +66,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 {
                     var crossPair = orderBooks.ElementAt(j);
 
-                    // Calculate all cross pairs between base order book and current order book
-                    var crossRates = new Dictionary<AssetPairSource, CrossRate>();
-                    var crossRateFrom1Or2Pairs = CrossRate.GetCrossRatesFrom1Or2Pairs(basePair.AssetPair, crossPair, orderBooks);
-                    crossRates.AddRange(crossRateFrom1Or2Pairs);
-                    var crossRateFrom3Pairs = CrossRate.GetCrossRatesFrom3Pairs(basePair.AssetPair, crossPair, orderBooks);
-                    crossRates.AddRange(crossRateFrom3Pairs);
+                    // Calculate all cross rates between base order book and current order book
+                    var crossRates = CrossRate.GetAll(basePair.AssetPair, crossPair, orderBooks);
 
                     // Compare each cross pair with base pair
                     foreach (var crossRate in crossRates.Values)
@@ -87,7 +75,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var spread = decimal.MaxValue;
                         decimal volume = 0;
                         string baseSide = null;
-                        
+
                         if (basePair.BestBid?.Price > crossRate.BestAsk?.Price)
                         {
                             spread = Arbitrage.GetSpread(basePair.BestBid.Value.Price, crossRate.BestAsk.Value.Price);
@@ -113,6 +101,15 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
 
             return result.OrderBy(x => x.BaseAssetPair).ThenBy(x => x.CrossAssetPair).ToList();
+        }
+
+        private void RefreshArbitrages(IEnumerable<LykkeArbitrageRow> lykkeArbitrages)
+        {
+            lock (_lockArbitrages)
+            {
+                _arbitrages.Clear();
+                _arbitrages.AddRange(lykkeArbitrages);
+            }
         }
 
         public IEnumerable<LykkeArbitrageRow> GetArbitrages(string basePair, string crossPair)
