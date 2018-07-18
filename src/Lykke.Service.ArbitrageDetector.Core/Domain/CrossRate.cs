@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Lykke.Service.ArbitrageDetector.Core.Utils;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
@@ -346,6 +347,44 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         }
 
 
+
+        /// <summary>
+        /// Get synthetic from 1, 2 or 3 asset pairs.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="orderBooks"></param>
+        /// <returns></returns>
+        public static Dictionary<AssetPairSource, CrossRate> GetAll(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
+        {
+            return GetAll(target, orderBooks, orderBooks);
+        }
+
+        /// <summary>
+        /// Get synthetic from 1, 2 or 3 asset pairs.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="allOrderBooks"></param>
+        /// <returns></returns>
+        public static Dictionary<AssetPairSource, CrossRate> GetAll(AssetPair target, OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks)
+        {
+            return GetAll(target, new List<OrderBook> { source }, allOrderBooks);
+        }
+
+        public static Dictionary<AssetPairSource, CrossRate> GetAll(AssetPair target,
+            IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks)
+        {
+            var result = new Dictionary<AssetPairSource, CrossRate>();
+
+            var crossRateFrom1Or2Pairs = GetCrossRatesFrom1Or2Pairs(target, sourceOrderBooks, allOrderBooks);
+            result.AddRange(crossRateFrom1Or2Pairs);
+            var crossRateFrom3Pairs = GetCrossRatesFrom3Pairs(target, sourceOrderBooks, allOrderBooks);
+            result.AddRange(crossRateFrom3Pairs);
+
+            return result;
+        }
+
+
+
         /// <summary>
         /// Get cross rates from 1 or 2 asset pairs.
         /// </summary>
@@ -361,6 +400,19 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// Get cross rates from 1 or 2 asset pairs.
         /// </summary>
         /// <param name="target"></param
+        /// <param name="source"></param>
+        /// <param name="allOrderBooks"></param>
+        /// <returns></returns>
+        public static Dictionary<AssetPairSource, CrossRate> GetCrossRatesFrom1Or2Pairs(AssetPair target,
+            OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks)
+        {
+            return GetCrossRatesFrom1Or2Pairs(target, new List<OrderBook> { source }, allOrderBooks);
+        }
+
+        /// <summary>
+        /// Get cross rates from 1 or 2 asset pairs.
+        /// </summary>
+        /// <param name="target"></param
         /// <param name="sourceOrderBooks"></param>
         /// <param name="allOrderBooks"></param>
         /// <returns></returns>
@@ -369,7 +421,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         {
             var result = new Dictionary<AssetPairSource, CrossRate>();
 
-            // Trying to find base asset in current orderBook's asset pair
+            // Trying to find base asset in current source's asset pair
             var withBaseOrQuoteOrderBooks = sourceOrderBooks.Where(x => x.AssetPair.ContainsAsset(target.Base) ||
                                                                         x.AssetPair.ContainsAsset(target.Quote)).ToList();
 
@@ -438,18 +490,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return result;
         }
 
-        /// <summary>
-        /// Get cross rates from 1 or 2 asset pairs.
-        /// </summary>
-        /// <param name="target"></param
-        /// <param name="orderBook"></param>
-        /// <param name="allOrderBooks"></param>
-        /// <returns></returns>
-        public static Dictionary<AssetPairSource, CrossRate> GetCrossRatesFrom1Or2Pairs(AssetPair target,
-            OrderBook orderBook, IReadOnlyCollection<OrderBook> allOrderBooks)
-        {
-            return GetCrossRatesFrom1Or2Pairs(target, new List<OrderBook> { orderBook }, allOrderBooks);
-        }
 
 
         /// <summary>
@@ -461,6 +501,19 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public static Dictionary<AssetPairSource, CrossRate> GetCrossRatesFrom3Pairs(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
         {
             return GetCrossRatesFrom3Pairs(target, orderBooks, orderBooks);
+        }
+
+        /// <summary>
+        /// Get cross rates from 3 asset pairs.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="source"></param>
+        /// <param name="allOrderBooks"></param>
+        /// <returns></returns>
+        public static Dictionary<AssetPairSource, CrossRate> GetCrossRatesFrom3Pairs(AssetPair target,
+            OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks)
+        {
+            return GetCrossRatesFrom3Pairs(target, new List<OrderBook> { source }, allOrderBooks);
         }
 
         /// <summary>
@@ -517,18 +570,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return result;
         }
 
-        /// <summary>
-        /// Get cross rates from 3 asset pairs.
-        /// </summary>
-        /// <param name="target"></param>
-        /// <param name="orderBook"></param>
-        /// <param name="allOrderBooks"></param>
-        /// <returns></returns>
-        public static Dictionary<AssetPairSource, CrossRate> GetCrossRatesFrom3Pairs(AssetPair target,
-            OrderBook orderBook, IReadOnlyCollection<OrderBook> allOrderBooks)
-        {
-            return GetCrossRatesFrom3Pairs(target, new List<OrderBook> { orderBook }, allOrderBooks);
-        }
 
 
         /// <summary>
