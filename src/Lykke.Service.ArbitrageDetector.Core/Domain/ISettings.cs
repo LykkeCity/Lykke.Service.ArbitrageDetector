@@ -11,7 +11,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         // Common
 
         /// <summary>
-        /// Expiration time in milliseconds for order books and cross rates.
+        /// Expiration time in milliseconds for order books and synthetic order books.
         /// </summary>
         int ExpirationTimeInSeconds { get; set; }
 

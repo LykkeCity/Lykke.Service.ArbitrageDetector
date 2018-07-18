@@ -166,9 +166,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair = new AssetPair("BTC", "USD");
             var orderBook = new OrderBook("FE", assetPair.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
             orderBook.SetAssetPair(assetPair);
-            var crossRate = new CrossRate("FE", assetPair, new List<VolumePrice>(), new List<VolumePrice>(), "None", new List<OrderBook> {orderBook}, DateTime.UtcNow);
+            var synthOrderBook = new SynthOrderBook("FE", assetPair, new List<VolumePrice>(), new List<VolumePrice>(), "None", new List<OrderBook> {orderBook}, DateTime.UtcNow);
 
-            var result = Arbitrage.GetChainedOrderBooks(crossRate, assetPair);
+            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, assetPair);
             Assert.Single(result);
             Assert.True(result.Single().AssetPair.Equals(assetPair));
         }
@@ -180,9 +180,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var reversed = assetPair.Reverse();
             var orderBook = new OrderBook("FE", reversed.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
             orderBook.SetAssetPair(reversed);
-            var crossRate = new CrossRate("FE", assetPair, new List<VolumePrice>(), new List<VolumePrice>(), "None", new List<OrderBook> { orderBook }, DateTime.UtcNow);
+            var synthOrderBook = new SynthOrderBook("FE", assetPair, new List<VolumePrice>(), new List<VolumePrice>(), "None", new List<OrderBook> { orderBook }, DateTime.UtcNow);
 
-            var result = Arbitrage.GetChainedOrderBooks(crossRate, assetPair);
+            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, assetPair);
             Assert.Single(result);
             Assert.True(result.Single().AssetPair.Equals(assetPair));
         }
@@ -196,9 +196,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair2 = new AssetPair("EUR", "USD");
             // result = EUR/USD, BTC/EUR
 
-            var crossRate = GetCrossRate(assetPair1, assetPair2, target);
+            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, target);
 
-            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
 
             AssertChained2(result);
         }
@@ -211,9 +211,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair2 = new AssetPair("USD", "EUR");
             // result = EUR/USD, BTC/EUR
 
-            var crossRate = GetCrossRate(assetPair1, assetPair2, target);
+            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, target);
 
-            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
 
             AssertChained2(result);
         }
@@ -226,9 +226,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair2 = new AssetPair("EUR", "USD");
             // result = EUR/USD, BTC/EUR
 
-            var crossRate = GetCrossRate(assetPair1, assetPair2, target);
+            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, target);
 
-            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
 
             AssertChained2(result);
         }
@@ -241,9 +241,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair2 = new AssetPair("USD", "EUR");
             // result = EUR/USD, BTC/EUR
 
-            var crossRate = GetCrossRate(assetPair1, assetPair2, target);
+            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, target);
 
-            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
 
             AssertChained2(result);
         }
@@ -258,9 +258,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair3 = new AssetPair("CHF", "USD");
             // result = CHF/USD, EUR/CHF, BTC/EUR
 
-            var crossRate = GetCrossRate(assetPair1, assetPair2, assetPair3, target);
+            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
 
-            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
 
             AssertChained3(result);
         }
@@ -274,9 +274,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair3 = new AssetPair("USD", "CHF");
             // result = CHF/USD, EUR/CHF, BTC/EUR
 
-            var crossRate = GetCrossRate(assetPair1, assetPair2, assetPair3, target);
+            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
 
-            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
 
             AssertChained3(result);
         }
@@ -290,9 +290,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair3 = new AssetPair("CHF", "USD");
             // result = CHF/USD, EUR/CHF, BTC/EUR
 
-            var crossRate = GetCrossRate(assetPair1, assetPair2, assetPair3, target);
+            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
 
-            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
 
             AssertChained3(result);
         }
@@ -306,9 +306,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair3 = new AssetPair("CHF", "USD");
             // result = CHF/USD, EUR/CHF, BTC/EUR
 
-            var crossRate = GetCrossRate(assetPair1, assetPair2, assetPair3, target);
+            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
 
-            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
 
             AssertChained3(result);
         }
@@ -322,9 +322,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair3 = new AssetPair("USD", "CHF");
             // result = CHF/USD, EUR/CHF, BTC/EUR
 
-            var crossRate = GetCrossRate(assetPair1, assetPair2, assetPair3, target);
+            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
 
-            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
 
             AssertChained3(result);
         }
@@ -338,9 +338,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair3 = new AssetPair("CHF", "USD");
             // result = CHF/USD, EUR/CHF, BTC/EUR
 
-            var crossRate = GetCrossRate(assetPair1, assetPair2, assetPair3, target);
+            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
 
-            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
 
             AssertChained3(result);
         }
@@ -354,9 +354,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair3 = new AssetPair("USD", "CHF");
             // result = CHF/USD, EUR/CHF, BTC/EUR
 
-            var crossRate = GetCrossRate(assetPair1, assetPair2, assetPair3, target);
+            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
 
-            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
 
             AssertChained3(result);
         }
@@ -370,25 +370,25 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair3 = new AssetPair("USD", "CHF");
             // result = CHF/USD, EUR/CHF, BTC/EUR
 
-            var crossRate = GetCrossRate(assetPair1, assetPair2, assetPair3, target);
+            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
 
-            var result = Arbitrage.GetChainedOrderBooks(crossRate, target);
+            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
 
             AssertChained3(result);
         }
 
 
-        private CrossRate GetCrossRate(AssetPair assetPair1, AssetPair assetPair2, AssetPair target)
+        private SynthOrderBook GetSynthOrderBook(AssetPair assetPair1, AssetPair assetPair2, AssetPair target)
         {
             var orderBook1 = new OrderBook("FE", assetPair1.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
             orderBook1.SetAssetPair(assetPair1);
             var orderBook2 = new OrderBook("FE", assetPair2.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
             orderBook2.SetAssetPair(assetPair2);
 
-            return new CrossRate("FE", target, new List<VolumePrice>(), new List<VolumePrice>(), "None", new List<OrderBook> { orderBook1, orderBook2 }, DateTime.UtcNow);
+            return new SynthOrderBook("FE", target, new List<VolumePrice>(), new List<VolumePrice>(), "None", new List<OrderBook> { orderBook1, orderBook2 }, DateTime.UtcNow);
         }
 
-        private CrossRate GetCrossRate(AssetPair assetPair1, AssetPair assetPair2, AssetPair assetPair3, AssetPair target)
+        private SynthOrderBook GetSynthOrderBook(AssetPair assetPair1, AssetPair assetPair2, AssetPair assetPair3, AssetPair target)
         {
             var orderBook1 = new OrderBook("FE", assetPair1.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
             orderBook1.SetAssetPair(assetPair1);
@@ -397,7 +397,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var orderBook3 = new OrderBook("FE", assetPair3.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
             orderBook3.SetAssetPair(assetPair3);
 
-            return new CrossRate("FE", target, new List<VolumePrice>(), new List<VolumePrice>(), "None", new List<OrderBook> { orderBook1, orderBook2, orderBook3 }, DateTime.UtcNow);
+            return new SynthOrderBook("FE", target, new List<VolumePrice>(), new List<VolumePrice>(), "None", new List<OrderBook> { orderBook1, orderBook2, orderBook3 }, DateTime.UtcNow);
         }
 
         private void AssertChained2(IReadOnlyCollection<OrderBook> result)

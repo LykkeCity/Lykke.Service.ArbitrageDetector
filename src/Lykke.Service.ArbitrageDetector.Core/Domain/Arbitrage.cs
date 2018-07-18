@@ -15,9 +15,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public AssetPair AssetPair { get; }
 
         /// <summary>
-        /// Cross rete with high bid.
+        /// Synthetic order book with high bid.
         /// </summary>
-        public CrossRate BidCrossRate { get; }
+        public SynthOrderBook BidSynth { get; }
 
         /// <summary>
         /// Price and volume of high bid.
@@ -25,9 +25,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public VolumePrice Bid { get; }
 
         /// <summary>
-        /// Cross rete with low ask.
+        /// Synthetic order book with low ask.
         /// </summary>
-        public CrossRate AskCrossRate { get; }
+        public SynthOrderBook AskSynth { get; }
 
         /// <summary>
         /// Price and volume of low ask.
@@ -73,21 +73,21 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// Constructor.
         /// </summary>
         /// <param name="assetPair"></param>
-        /// <param name="bidCrossRate"></param>
+        /// <param name="bidSynth"></param>
         /// <param name="bid"></param>
-        /// <param name="askCrossRate"></param>
+        /// <param name="askSynth"></param>
         /// <param name="ask"></param>
-        public Arbitrage(AssetPair assetPair, CrossRate bidCrossRate, VolumePrice bid, CrossRate askCrossRate, VolumePrice ask)
+        public Arbitrage(AssetPair assetPair, SynthOrderBook bidSynth, VolumePrice bid, SynthOrderBook askSynth, VolumePrice ask)
         {
             AssetPair = assetPair;
-            BidCrossRate = bidCrossRate ?? throw new ArgumentNullException(nameof(bidCrossRate));
-            AskCrossRate = askCrossRate ?? throw new ArgumentNullException(nameof(askCrossRate));
+            BidSynth = bidSynth ?? throw new ArgumentNullException(nameof(bidSynth));
+            AskSynth = askSynth ?? throw new ArgumentNullException(nameof(askSynth));
             Bid = bid;
             Ask = ask;
             Spread = GetSpread(Bid.Price, Ask.Price);
             Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
             PnL = GetPnL(Bid.Price, Ask.Price, Volume);
-            ConversionPath = FormatConversionPath(BidCrossRate.ConversionPath, AskCrossRate.ConversionPath);
+            ConversionPath = FormatConversionPath(BidSynth.ConversionPath, AskSynth.ConversionPath);
             StartedAt = DateTime.UtcNow;
         }
 
@@ -100,12 +100,12 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Formats conversion path.
         /// </summary>
-        /// <param name="bidCrossRateConversionPath"></param>
-        /// <param name="askCrossRateConversionPath"></param>
+        /// <param name="bidSynthOrderBookConversionPath"></param>
+        /// <param name="askSynthOrderBookConversionPath"></param>
         /// <returns></returns>
-        public static string FormatConversionPath(string bidCrossRateConversionPath, string askCrossRateConversionPath)
+        public static string FormatConversionPath(string bidSynthOrderBookConversionPath, string askSynthOrderBookConversionPath)
         {
-            return "(" + bidCrossRateConversionPath + ") > (" + askCrossRateConversionPath + ")";
+            return "(" + bidSynthOrderBookConversionPath + ") > (" + askSynthOrderBookConversionPath + ")";
         }
 
         /// <summary>
@@ -208,15 +208,15 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Returns chained order books for arbitrage execution.
         /// </summary>
-        /// <param name="crossRate"></param>
+        /// <param name="synthOrderBook"></param>
         /// <param name="target"></param>
         /// <returns></returns>
-        public static IReadOnlyCollection<OrderBook> GetChainedOrderBooks(CrossRate crossRate, AssetPair target)
+        public static IReadOnlyCollection<OrderBook> GetChainedOrderBooks(SynthOrderBook synthOrderBook, AssetPair target)
         {
-            if (crossRate == null)
-                throw new NullReferenceException(nameof(crossRate));
+            if (synthOrderBook == null)
+                throw new NullReferenceException(nameof(synthOrderBook));
 
-            var orderBooks = crossRate.OriginalOrderBooks;
+            var orderBooks = synthOrderBook.OriginalOrderBooks;
 
             var result = new List<OrderBook>();
 

@@ -19,7 +19,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
     public class ArbitrageDetectorService : TimerPeriod, IArbitrageDetectorService
     {
         private readonly ConcurrentDictionary<AssetPairSource, OrderBook> _orderBooks;
-        private readonly ConcurrentDictionary<AssetPairSource, CrossRate> _crossRates;
+        private readonly ConcurrentDictionary<AssetPairSource, SynthOrderBook> _synthOrderBooks;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrages;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrageHistory;
         private bool _restartNeeded;
@@ -34,7 +34,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             shutdownManager?.Register(this);
 
             _orderBooks = new ConcurrentDictionary<AssetPairSource, OrderBook>();
-            _crossRates = new ConcurrentDictionary<AssetPairSource, CrossRate>();
+            _synthOrderBooks = new ConcurrentDictionary<AssetPairSource, SynthOrderBook>();
             _arbitrages = new ConcurrentDictionary<string, Arbitrage>();
             _arbitrageHistory = new ConcurrentDictionary<string, Arbitrage>();
 
@@ -83,65 +83,65 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public override async Task Execute()
         {
-            await CalculateCrossRates();
+            await CalculateSynthOrderBooks();
             await RefreshArbitrages();
 
             await RestartIfNeeded();
         }
 
-        public async Task<IEnumerable<CrossRate>> CalculateCrossRates()
+        public async Task<IEnumerable<SynthOrderBook>> CalculateSynthOrderBooks()
         {
             var watch = Stopwatch.StartNew();
 
-            var newActualCrossRates = new Dictionary<AssetPairSource, CrossRate>();
+            var newActualSynthOrderBooks = new Dictionary<AssetPairSource, SynthOrderBook>();
             var orderBooks = GetWantedActualOrderBooks().Values;
 
             foreach (var @base in _s.BaseAssets)
             {
                 var target = new AssetPair(@base, _s.QuoteAsset);
-                var newActualCrossRatesFrom1Or2OrderBooks = CrossRate.GetCrossRatesFrom1Or2Pairs(target, orderBooks);
-                newActualCrossRates.AddRange(newActualCrossRatesFrom1Or2OrderBooks);
-                //var newActualCrossRatesFrom3OrderBooks = CrossRate.GetCrossRatesFrom3Pairs(orderBooks, target);
-                //newActualCrossRates.AddRange(newActualCrossRatesFrom3OrderBooks);
+                var newActualSynthOrderBooksFrom1Or2OrderBooks = SynthOrderBook.GetSynthOrderBooksFrom1Or2Pairs(target, orderBooks);
+                newActualSynthOrderBooks.AddRange(newActualSynthOrderBooksFrom1Or2OrderBooks);
+                //var newActualSynthOrderBooksFrom3OrderBooks = SynthOrderBook.GetSynthOrderBooksFrom3Pairs(orderBooks, target);
+                //newActualSynthOrderBooks.AddRange(newActualSynthOrderBooksFrom3OrderBooks);
             }
 
-            _crossRates.AddOrUpdateRange(newActualCrossRates);
+            _synthOrderBooks.AddOrUpdateRange(newActualSynthOrderBooks);
 
             watch.Stop();
             if (watch.ElapsedMilliseconds > 500)
-                await _log.WriteInfoAsync(GetType().Name, nameof(CalculateCrossRates), $"{watch.ElapsedMilliseconds} ms, {_crossRates.Count} cross rates, {orderBooks.Count} order books.");
+                await _log.WriteInfoAsync(GetType().Name, nameof(CalculateSynthOrderBooks), $"{watch.ElapsedMilliseconds} ms, {_synthOrderBooks.Count} synthetic order books, {orderBooks.Count} order books.");
 
-            return _crossRates.Select(x => x.Value).ToList().AsReadOnly();
+            return _synthOrderBooks.Select(x => x.Value).ToList().AsReadOnly();
         }
 
-        private (IList<CrossRateLine> bids, IList<CrossRateLine> asks)? CalculateCrossRateLines(IList<CrossRate> crossRates)
+        private (IList<SynthOrderBookLine> bids, IList<SynthOrderBookLine> asks)? CalculateSynthOrderBookLines(IList<SynthOrderBook> synthOrderBooks)
         {
             // If no asks or bids then return empty list
-            if (!crossRates.SelectMany(x => x.Bids).Any() || !crossRates.SelectMany(x => x.Asks).Any())
+            if (!synthOrderBooks.SelectMany(x => x.Bids).Any() || !synthOrderBooks.SelectMany(x => x.Asks).Any())
                 return null;
 
             // 1. Calculate minAsk and maxBid
-            var maxBid = crossRates.SelectMany(x => x.Bids).Max(x => x.Price);
-            var minAsk = crossRates.SelectMany(x => x.Asks).Min(x => x.Price);
+            var maxBid = synthOrderBooks.SelectMany(x => x.Bids).Max(x => x.Price);
+            var minAsk = synthOrderBooks.SelectMany(x => x.Asks).Min(x => x.Price);
 
             // No arbitrages
             if (minAsk >= maxBid)
                 return null;
 
             // 2. Collect only arbitrages lines
-            var bids = new List<CrossRateLine>();
-            var asks = new List<CrossRateLine>();
-            foreach (var crossRate in crossRates)
+            var bids = new List<SynthOrderBookLine>();
+            var asks = new List<SynthOrderBookLine>();
+            foreach (var synthOrderBook in synthOrderBooks)
             {
                 bids.AddRange(
-                    crossRate.Bids
+                    synthOrderBook.Bids
                         .Where(x => x.Price > minAsk && (_s.MinimumVolume == 0 || x.Volume >= _s.MinimumVolume))
-                        .Select(x => new CrossRateLine(crossRate, x)));
+                        .Select(x => new SynthOrderBookLine(synthOrderBook, x)));
 
                 asks.AddRange(
-                    crossRate.Asks
+                    synthOrderBook.Asks
                         .Where(x => x.Price < maxBid && (_s.MinimumVolume == 0 || x.Volume >= _s.MinimumVolume))
-                        .Select(x => new CrossRateLine(crossRate, x)));
+                        .Select(x => new SynthOrderBookLine(synthOrderBook, x)));
             }
 
             // 3. Order by Price
@@ -154,18 +154,18 @@ namespace Lykke.Service.ArbitrageDetector.Services
         public async Task<Dictionary<string, Arbitrage>> CalculateArbitrages()
         {
             var newArbitrages = new Dictionary<string, Arbitrage>();
-            var actualCrossRates = GetActualCrossRates();
+            var actualSynthOrderBooks = GetActualSynthOrderBooks();
 
             // For each asset pair
-            var uniqueAssetPairs = actualCrossRates.Select(x => x.AssetPair).Distinct().ToList();
+            var uniqueAssetPairs = actualSynthOrderBooks.Select(x => x.AssetPair).Distinct().ToList();
             foreach (var assetPair in uniqueAssetPairs)
             {
                 var watch = Stopwatch.StartNew();
 
-                var assetPairCrossRates = actualCrossRates.Where(x => x.AssetPair.Equals(assetPair)).ToList();
+                var assetPairSynthOrderBooks = actualSynthOrderBooks.Where(x => x.AssetPair.Equals(assetPair)).ToList();
 
-                // For each cross rate make a line for every ask and every bid
-                var bidsAndAsks = CalculateCrossRateLines(assetPairCrossRates);
+                // For each synthetic order book make a line for every ask and every bid
+                var bidsAndAsks = CalculateSynthOrderBookLines(assetPairSynthOrderBooks);
                 var bidsAndAsksMs = watch.ElapsedMilliseconds;
 
                 if (!bidsAndAsks.HasValue)
@@ -208,7 +208,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         if (_s.MinimumPnL > 0 && pnL < _s.MinimumPnL)
                             continue;
 
-                        var key = Arbitrage.FormatConversionPath(bid.CrossRate.ConversionPath, ask.CrossRate.ConversionPath);
+                        var key = Arbitrage.FormatConversionPath(bid.SynthOrderBook.ConversionPath, ask.SynthOrderBook.ConversionPath);
                         if (newArbitrages.TryGetValue(key, out var existed))
                         {
                             var newpnL = Arbitrage.GetPnL(bidPrice, askPrice, volume);
@@ -216,12 +216,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             if (newpnL <= existed.PnL)
                                 continue;
 
-                            var arbitrage = new Arbitrage(assetPair, bid.CrossRate, new VolumePrice(bid.Price, bid.Volume), ask.CrossRate, new VolumePrice(ask.Price, ask.Volume));
+                            var arbitrage = new Arbitrage(assetPair, bid.SynthOrderBook, new VolumePrice(bid.Price, bid.Volume), ask.SynthOrderBook, new VolumePrice(ask.Price, ask.Volume));
                             newArbitrages[key] = arbitrage;
                         }
                         else
                         {
-                            var arbitrage = new Arbitrage(assetPair, bid.CrossRate, new VolumePrice(bid.Price, bid.Volume), ask.CrossRate, new VolumePrice(ask.Price, ask.Volume));
+                            var arbitrage = new Arbitrage(assetPair, bid.SynthOrderBook, new VolumePrice(bid.Price, bid.Volume), ask.SynthOrderBook, new VolumePrice(ask.Price, ask.Volume));
                             newArbitrages.Add(key, arbitrage);
                         }
                     }
@@ -229,7 +229,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 watch.Stop();
                 if (watch.ElapsedMilliseconds > 1000)
-                    await _log.WriteInfoAsync(GetType().Name, nameof(CalculateArbitrages), $"{watch.ElapsedMilliseconds} ms, {newArbitrages.Count} arbitrages, {actualCrossRates.Count} actual cross rates, {bidsAndAsksMs} ms for bids and asks, {bids.Count} bids, {asks.Count} asks, {totalItarations} iterations, {possibleArbitrages} possible arbitrages.");
+                    await _log.WriteInfoAsync(GetType().Name, nameof(CalculateArbitrages), $"{watch.ElapsedMilliseconds} ms, {newArbitrages.Count} arbitrages, {actualSynthOrderBooks.Count} actual synthetic order books, {bidsAndAsksMs} ms for bids and asks, {bids.Count} bids, {asks.Count} asks, {totalItarations} iterations, {possibleArbitrages} possible arbitrages.");
             }
 
             return newArbitrages;
@@ -333,15 +333,15 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return result;
         }
 
-        private IList<CrossRate> GetActualCrossRates()
+        private IList<SynthOrderBook> GetActualSynthOrderBooks()
         {
-            var result = new List<CrossRate>();
+            var result = new List<SynthOrderBook>();
 
-            foreach (var crossRate in _crossRates)
+            foreach (var synthOrderBook in _synthOrderBooks)
             {
-                if (DateTime.UtcNow - crossRate.Value.Timestamp < new TimeSpan(0, 0, 0, _s.ExpirationTimeInSeconds))
+                if (DateTime.UtcNow - synthOrderBook.Value.Timestamp < new TimeSpan(0, 0, 0, _s.ExpirationTimeInSeconds))
                 {
-                    result.Add(crossRate.Value);
+                    result.Add(synthOrderBook.Value);
                 }
             }
 
@@ -372,7 +372,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 _restartNeeded = false;
 
                 _orderBooks.Clear();
-                _crossRates.Clear();
+                _synthOrderBooks.Clear();
                 _arbitrages.Clear();
                 _arbitrageHistory.Clear();
 
@@ -415,12 +415,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return result.OrderByDescending(x => x.Timestamp).ToList();
         }
 
-        public IEnumerable<CrossRate> GetCrossRates()
+        public IEnumerable<SynthOrderBook> GetSynthOrderBooks()
         {
-            if (!_crossRates.Any())
-                return new List<CrossRate>();
+            if (!_synthOrderBooks.Any())
+                return new List<SynthOrderBook>();
 
-            var result = _crossRates.Select(x => x.Value)
+            var result = _synthOrderBooks.Select(x => x.Value)
                 .OrderByDescending(x => x.Timestamp)
                 .ToList();
 

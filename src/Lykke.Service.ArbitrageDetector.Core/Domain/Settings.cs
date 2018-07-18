@@ -9,7 +9,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public int ExpirationTimeInSeconds { get; set; }
 
-        // Arbitrages, Synthetics
+        // Arbitrages, Synthetic
 
         public int HistoryMaxSize { get; set; }
 
@@ -21,9 +21,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public IEnumerable<string> BaseAssets { get; set; }
 
-        public IEnumerable<string> IntermediateAssets { get; set; }
-
         public string QuoteAsset { get; set; }
+
+        public IEnumerable<string> IntermediateAssets { get; set; }
 
         public IEnumerable<string> Exchanges { get; set; }
 

@@ -5,52 +5,59 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
     /// <summary>
     /// Represents an arbitrage situation.
     /// </summary>
+    /// TODO: Return to getters only with a constructor.
     public sealed class Arbitrage
     {
         /// <summary>
         /// Asset pair.
         /// </summary>
-        public AssetPair AssetPair { get; }
+        public AssetPair AssetPair { get; set; }
 
         /// <summary>
-        /// Cross rete with high bid.
+        /// Synthetic order book with high bid.
         /// </summary>
-        public CrossRate BidCrossRate { get; }
+        public SynthOrderBook BidSynth { get; set; }
+
+        [Obsolete]
+        public CrossRate BidCrossRate { get; set; }
 
         /// <summary>
         /// Price and volume of high bid.
         /// </summary>
-        public VolumePrice Bid { get; }
+        public VolumePrice Bid { get; set; }
 
         /// <summary>
-        /// Cross rete with low ask.
+        /// Synthetic order book with low ask.
         /// </summary>
-        public CrossRate AskCrossRate { get; }
+        public SynthOrderBook AskSynth { get; set; }
+
+        [Obsolete]
+        public CrossRate AskCrossRate { get; set; }
 
         /// <summary>
         /// Price and volume of low ask.
         /// </summary>
-        public VolumePrice Ask { get; }
+        public VolumePrice Ask { get; set; }
 
         /// <summary>
         /// Spread between ask and bid.
         /// </summary>
-        public decimal Spread { get; }
+        public decimal Spread { get; set; }
 
         /// <summary>
         /// The smallest volume of ask or bid.
         /// </summary>
-        public decimal Volume { get; }
+        public decimal Volume { get; set; }
 
         /// <summary>
         /// Potential profit or loss.
         /// </summary>
-        public decimal PnL { get; }
+        public decimal PnL { get; set; }
 
         /// <summary>
         /// The time when it first appeared.
         /// </summary>
-        public DateTime StartedAt { get; }
+        public DateTime StartedAt { get; set; }
 
         /// <summary>
         /// The time when it disappeared.
@@ -65,29 +72,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Conversion path.
         /// </summary>
-        public string ConversionPath => FormatConversionPath(BidCrossRate.ConversionPath, AskCrossRate.ConversionPath);
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="assetPair"></param>
-        /// <param name="bidCrossRate"></param>
-        /// <param name="bid"></param>
-        /// <param name="askCrossRate"></param>
-        /// <param name="ask"></param>
-        public Arbitrage(AssetPair assetPair, CrossRate bidCrossRate, VolumePrice bid, CrossRate askCrossRate, VolumePrice ask, DateTime startedAt, DateTime endedAt)
-        {
-            AssetPair = assetPair;
-            BidCrossRate = bidCrossRate ?? throw new ArgumentNullException(nameof(bidCrossRate));
-            AskCrossRate = askCrossRate ?? throw new ArgumentNullException(nameof(askCrossRate));
-            Bid = bid;
-            Ask = ask;
-            Spread = GetSpread(Bid.Price, Ask.Price);
-            Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
-            PnL = GetPnL(Bid.Price, Ask.Price, Volume);
-            StartedAt = startedAt;
-            EndedAt = endedAt;
-        }
+        public string ConversionPath => FormatConversionPath(BidSynth.ConversionPath, AskSynth.ConversionPath);
 
         /// <inheritdoc />
         public override string ToString()
@@ -98,12 +83,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Formats conversion path.
         /// </summary>
-        /// <param name="bidCrossRateConversionPath"></param>
-        /// <param name="askCrossRateConversionPath"></param>
+        /// <param name="bidSynthOrderBookConversionPath"></param>
+        /// <param name="askSynthOrderBookConversionPath"></param>
         /// <returns></returns>
-        public static string FormatConversionPath(string bidCrossRateConversionPath, string askCrossRateConversionPath)
+        public static string FormatConversionPath(string bidSynthOrderBookConversionPath, string askSynthOrderBookConversionPath)
         {
-            return "(" + bidCrossRateConversionPath + ") > (" + askCrossRateConversionPath + ")";
+            return "(" + bidSynthOrderBookConversionPath + ") > (" + askSynthOrderBookConversionPath + ")";
         }
 
         /// <summary>

@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Lykke.Service.ArbitrageDetector.Core.Utils;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
     /// <summary>
-    /// Represents a cross rate.
+    /// Represents a synthetic order book.
     /// </summary>
-    public class CrossRate : OrderBook
+    public class SynthOrderBook : OrderBook
     {
         /// <summary>
         /// Conversion path.
@@ -30,7 +31,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <param name="conversionPath"></param>
         /// <param name="originalOrderBooks"></param>
         /// <param name="timestamp"></param>
-        public CrossRate(string source, AssetPair assetPair,
+        public SynthOrderBook(string source, AssetPair assetPair,
             IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks,
             string conversionPath, IList<OrderBook> originalOrderBooks, DateTime timestamp)
             : base(source, assetPair.Name, bids, asks, timestamp)
@@ -54,7 +55,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <param name="orderBook"></param>
         /// <param name="targetAssetPair"></param>
         /// <returns></returns>
-        public static CrossRate FromOrderBook(OrderBook orderBook, AssetPair targetAssetPair)
+        public static SynthOrderBook FromOrderBook(OrderBook orderBook, AssetPair targetAssetPair)
         {
             #region Checking arguments
 
@@ -95,7 +96,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             if (orderBookResult == null)
                 throw new InvalidOperationException("AssetPairs must be the same or reversed)");
 
-            var result = new CrossRate(orderBookResult.Source, targetAssetPair, orderBookResult.Bids, orderBookResult.Asks, conversionPath, originalOrderBooks, orderBook.Timestamp);
+            var result = new SynthOrderBook(orderBookResult.Source, targetAssetPair, orderBookResult.Bids, orderBookResult.Asks, conversionPath, originalOrderBooks, orderBook.Timestamp);
 
             return result;
         }
@@ -107,7 +108,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <param name="another"></param>
         /// <param name="targetAssetPair"></param>
         /// <returns></returns>
-        public static CrossRate FromOrderBooks(OrderBook one, OrderBook another, AssetPair targetAssetPair)
+        public static SynthOrderBook FromOrderBooks(OrderBook one, OrderBook another, AssetPair targetAssetPair)
         {
             #region Checking arguments 
 
@@ -204,7 +205,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             var originalOrderBooks = new List<OrderBook> { one, another };
             var timestamp = left.Timestamp < right.Timestamp ? left.Timestamp : right.Timestamp;
 
-            var result = new CrossRate(source, targetAssetPair, bids, asks, conversionPath, originalOrderBooks, timestamp);
+            var result = new SynthOrderBook(source, targetAssetPair, bids, asks, conversionPath, originalOrderBooks, timestamp);
 
             return result;
         }
@@ -217,7 +218,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <param name="third"></param>
         /// <param name="targetAssetPair"></param>
         /// <returns></returns>
-        public static CrossRate FromOrderBooks(OrderBook one, OrderBook second, OrderBook third, AssetPair targetAssetPair)
+        public static SynthOrderBook FromOrderBooks(OrderBook one, OrderBook second, OrderBook third, AssetPair targetAssetPair)
         {
             #region Checking arguments 
 
@@ -340,36 +341,87 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             var interimTimestamp = left.Timestamp < middle.Timestamp ? left.Timestamp : middle.Timestamp;
             var timestamp = interimTimestamp < right.Timestamp ? interimTimestamp : right.Timestamp;
 
-            var result = new CrossRate(source, targetAssetPair, bids, asks, conversionPath, originalOrderBooks, timestamp);
+            var result = new SynthOrderBook(source, targetAssetPair, bids, asks, conversionPath, originalOrderBooks, timestamp);
 
             return result;
         }
 
 
+
         /// <summary>
-        /// Get cross rates from 1 or 2 asset pairs.
+        /// Get synthetic from 1, 2 or 3 asset pairs.
         /// </summary>
         /// <param name="target"></param>
         /// <param name="orderBooks"></param>
         /// <returns></returns>
-        public static Dictionary<AssetPairSource, CrossRate> GetCrossRatesFrom1Or2Pairs(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetAll(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
         {
-            return GetCrossRatesFrom1Or2Pairs(target, orderBooks, orderBooks);
+            return GetAll(target, orderBooks, orderBooks);
         }
 
         /// <summary>
-        /// Get cross rates from 1 or 2 asset pairs.
+        /// Get synthetic from 1, 2 or 3 asset pairs.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="allOrderBooks"></param>
+        /// <returns></returns>
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetAll(AssetPair target, OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks)
+        {
+            return GetAll(target, new List<OrderBook> { source }, allOrderBooks);
+        }
+
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetAll(AssetPair target,
+            IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks)
+        {
+            var result = new Dictionary<AssetPairSource, SynthOrderBook>();
+
+            var synthOrderBookFrom1Or2Pairs = GetSynthOrderBooksFrom1Or2Pairs(target, sourceOrderBooks, allOrderBooks);
+            result.AddRange(synthOrderBookFrom1Or2Pairs);
+            var synthOrderBookFrom3Pairs = GetSynthOrderBooksFrom3Pairs(target, sourceOrderBooks, allOrderBooks);
+            result.AddRange(synthOrderBookFrom3Pairs);
+
+            return result;
+        }
+
+
+
+        /// <summary>
+        /// Get synthetic order books from 1 or 2 asset pairs.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="orderBooks"></param>
+        /// <returns></returns>
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthOrderBooksFrom1Or2Pairs(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
+        {
+            return GetSynthOrderBooksFrom1Or2Pairs(target, orderBooks, orderBooks);
+        }
+
+        /// <summary>
+        /// Get synthetic order books from 1 or 2 asset pairs.
+        /// </summary>
+        /// <param name="target"></param
+        /// <param name="source"></param>
+        /// <param name="allOrderBooks"></param>
+        /// <returns></returns>
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthOrderBooksFrom1Or2Pairs(AssetPair target,
+            OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks)
+        {
+            return GetSynthOrderBooksFrom1Or2Pairs(target, new List<OrderBook> { source }, allOrderBooks);
+        }
+
+        /// <summary>
+        /// Get synthetic order books from 1 or 2 asset pairs.
         /// </summary>
         /// <param name="target"></param
         /// <param name="sourceOrderBooks"></param>
         /// <param name="allOrderBooks"></param>
         /// <returns></returns>
-        public static Dictionary<AssetPairSource, CrossRate> GetCrossRatesFrom1Or2Pairs(AssetPair target,
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthOrderBooksFrom1Or2Pairs(AssetPair target,
             IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks)
         {
-            var result = new Dictionary<AssetPairSource, CrossRate>();
+            var result = new Dictionary<AssetPairSource, SynthOrderBook>();
 
-            // Trying to find base asset in current orderBook's asset pair
+            // Trying to find base asset in current source's asset pair
             var withBaseOrQuoteOrderBooks = sourceOrderBooks.Where(x => x.AssetPair.ContainsAsset(target.Base) ||
                                                                         x.AssetPair.ContainsAsset(target.Quote)).ToList();
 
@@ -384,10 +436,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 // 1 Pair - if target or reversed then just use it
                 if (intermediate == target.Base || intermediate == target.Quote)
                 {
-                    var crossRate = FromOrderBook(withBaseOrQuoteOrderBook, target);
+                    var synthOrderBook = FromOrderBook(withBaseOrQuoteOrderBook, target);
 
-                    var key = new AssetPairSource(crossRate.ConversionPath, crossRate.AssetPair);
-                    result[key] = crossRate;
+                    var key = new AssetPairSource(synthOrderBook.ConversionPath, synthOrderBook.AssetPair);
+                    result[key] = synthOrderBook;
 
                     continue;
                 }
@@ -407,9 +459,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                         if (result.ContainsKey(key))
                             continue;
 
-                        var crossRate = FromOrderBooks(baseAndIntermediate, intermediateQuoteOrderBook, target);
+                        var synthOrderBook = FromOrderBooks(baseAndIntermediate, intermediateQuoteOrderBook, target);
 
-                        result[key] = crossRate;
+                        result[key] = synthOrderBook;
                     }
                 }
 
@@ -428,9 +480,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                         if (result.ContainsKey(key))
                             continue;
 
-                        var crossRate = FromOrderBooks(intermediateBaseOrderBook, quoteAndIntermediate, target);
+                        var synthOrderBook = FromOrderBooks(intermediateBaseOrderBook, quoteAndIntermediate, target);
 
-                        result[key] = crossRate;
+                        result[key] = synthOrderBook;
                     }
                 }
             }
@@ -438,42 +490,43 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return result;
         }
 
-        /// <summary>
-        /// Get cross rates from 1 or 2 asset pairs.
-        /// </summary>
-        /// <param name="target"></param
-        /// <param name="orderBook"></param>
-        /// <param name="allOrderBooks"></param>
-        /// <returns></returns>
-        public static Dictionary<AssetPairSource, CrossRate> GetCrossRatesFrom1Or2Pairs(AssetPair target,
-            OrderBook orderBook, IReadOnlyCollection<OrderBook> allOrderBooks)
-        {
-            return GetCrossRatesFrom1Or2Pairs(target, new List<OrderBook> { orderBook }, allOrderBooks);
-        }
 
 
         /// <summary>
-        /// Get cross rates from 3 asset pairs.
+        /// Get synthetic order books from 3 asset pairs.
         /// </summary>
         /// <param name="target"></param>
         /// <param name="orderBooks"></param>
         /// <returns></returns>
-        public static Dictionary<AssetPairSource, CrossRate> GetCrossRatesFrom3Pairs(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthOrderBooksFrom3Pairs(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
         {
-            return GetCrossRatesFrom3Pairs(target, orderBooks, orderBooks);
+            return GetSynthOrderBooksFrom3Pairs(target, orderBooks, orderBooks);
         }
 
         /// <summary>
-        /// Get cross rates from 3 asset pairs.
+        /// Get synthetic order books from 3 asset pairs.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="source"></param>
+        /// <param name="allOrderBooks"></param>
+        /// <returns></returns>
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthOrderBooksFrom3Pairs(AssetPair target,
+            OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks)
+        {
+            return GetSynthOrderBooksFrom3Pairs(target, new List<OrderBook> { source }, allOrderBooks);
+        }
+
+        /// <summary>
+        /// Get synthetic order books from 3 asset pairs.
         /// </summary>
         /// <param name="target"></param>
         /// <param name="sourceOrderBooks"></param>
         /// <param name="allOrderBooks"></param>
         /// <returns></returns>
-        public static Dictionary<AssetPairSource, CrossRate> GetCrossRatesFrom3Pairs(AssetPair target,
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthOrderBooksFrom3Pairs(AssetPair target,
             IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks)
         {
-            var result = new Dictionary<AssetPairSource, CrossRate>();
+            var result = new Dictionary<AssetPairSource, SynthOrderBook>();
 
             var woBaseAndQuoteOrderBooks = sourceOrderBooks
                 .Where(x => !x.AssetPair.ContainsAsset(target.Base)
@@ -492,10 +545,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                     var quoteTargetQuoteOrderBooks = allOrderBooks.Where(x => x.AssetPair.ContainsAssets(quote, target.Quote)).ToList();
                     foreach (var quoteTargetQuoteOrderBook in quoteTargetQuoteOrderBooks)
                     {
-                        var crossRate = FromOrderBooks(baseTargetBaseOrderBook, woBaseAndQuoteOrderBook, quoteTargetQuoteOrderBook, target);
+                        var synthOrderBook = FromOrderBooks(baseTargetBaseOrderBook, woBaseAndQuoteOrderBook, quoteTargetQuoteOrderBook, target);
 
-                        var key = new AssetPairSource(crossRate.ConversionPath, crossRate.AssetPair);
-                        result[key] = crossRate;
+                        var key = new AssetPairSource(synthOrderBook.ConversionPath, synthOrderBook.AssetPair);
+                        result[key] = synthOrderBook;
                     }
                 }
 
@@ -506,10 +559,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                     var quoteTargetBaseOrderBooks = allOrderBooks.Where(x => x.AssetPair.ContainsAssets(quote, target.Base)).ToList();
                     foreach (var quoteTargetBaseOrderBook in quoteTargetBaseOrderBooks)
                     {
-                        var crossRate = FromOrderBooks(quoteTargetBaseOrderBook, woBaseAndQuoteOrderBook, baseTargetQuoteOrderBook, target);
+                        var synthOrderBook = FromOrderBooks(quoteTargetBaseOrderBook, woBaseAndQuoteOrderBook, baseTargetQuoteOrderBook, target);
 
-                        var key = new AssetPairSource(crossRate.ConversionPath, crossRate.AssetPair);
-                        result[key] = crossRate;
+                        var key = new AssetPairSource(synthOrderBook.ConversionPath, synthOrderBook.AssetPair);
+                        result[key] = synthOrderBook;
                     }
                 }
             }
@@ -517,18 +570,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return result;
         }
 
-        /// <summary>
-        /// Get cross rates from 3 asset pairs.
-        /// </summary>
-        /// <param name="target"></param>
-        /// <param name="orderBook"></param>
-        /// <param name="allOrderBooks"></param>
-        /// <returns></returns>
-        public static Dictionary<AssetPairSource, CrossRate> GetCrossRatesFrom3Pairs(AssetPair target,
-            OrderBook orderBook, IReadOnlyCollection<OrderBook> allOrderBooks)
-        {
-            return GetCrossRatesFrom3Pairs(target, new List<OrderBook> { orderBook }, allOrderBooks);
-        }
 
 
         /// <summary>
