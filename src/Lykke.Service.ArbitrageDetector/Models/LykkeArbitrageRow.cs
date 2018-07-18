@@ -1,5 +1,4 @@
 ﻿using System;
-using Lykke.Service.ArbitrageDetector.Core.Domain;
 
 namespace Lykke.Service.ArbitrageDetector.Models
 {
@@ -24,8 +23,14 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public int CrossPairsCount { get; }
 
         /// <summary>
-        /// Count of cross rates.
+        /// Count of synthetic order books.
         /// </summary>
+        public int SynthOrderBooksCount { get; }
+
+        /// <summary>
+        /// Count of synthetic order books.
+        /// </summary>
+        [Obsolete]
         public int CrossRatesCount { get; }
 
         /// <summary>
@@ -68,23 +73,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// </summary>
         public decimal? CrossBid { get; }
 
-        public LykkeArbitrageRow(AssetPair baseAssetPair, AssetPair crossAssetPair, int crossPairsCount, int crossRatesCount, decimal spread, string baseSide,
-            string conversionPath, decimal volume, decimal? baseBid, decimal? baseAsk, decimal? crossBid, decimal? crossAsk)
-        {
-            BaseAssetPair = baseAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(baseAssetPair)) : baseAssetPair;
-            CrossAssetPair = crossAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(crossAssetPair)) : crossAssetPair;
-            CrossPairsCount = crossPairsCount;
-            CrossRatesCount = crossRatesCount;
-            Spread = Math.Round(spread, 8);
-            BaseSide = string.IsNullOrWhiteSpace(baseSide) ? throw new ArgumentNullException(nameof(baseSide)) : baseSide;
-            ConversionPath = string.IsNullOrWhiteSpace(conversionPath) ? throw new ArgumentNullException(nameof(conversionPath)) : conversionPath.Replace("lykke-", "");
-            Volume = Math.Round(volume, 8);
-            BaseAsk = baseAsk.HasValue ? Math.Round(baseAsk.Value, 8) : (decimal?)null;
-            BaseBid = baseBid.HasValue ? Math.Round(baseBid.Value, 8) : (decimal?)null;
-            CrossAsk = crossAsk.HasValue ? Math.Round(crossAsk.Value, 8) : (decimal?)null;
-            CrossBid = crossBid.HasValue ? Math.Round(crossBid.Value, 8) : (decimal?)null;
-        }
-
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -94,7 +82,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
             BaseAssetPair = new AssetPair(domain.BaseAssetPair);
             CrossAssetPair = new AssetPair(domain.CrossAssetPair);
             CrossPairsCount = domain.CrossPairsCount;
-            CrossRatesCount = domain.CrossRatesCount;
+            SynthOrderBooksCount = domain.SynthOrderBooksCount;
             Spread = Math.Round(domain.Spread, 8);
             BaseSide = domain.BaseSide;
             ConversionPath = domain.ConversionPath.Replace("lykke-", "");
@@ -103,6 +91,8 @@ namespace Lykke.Service.ArbitrageDetector.Models
             BaseBid = domain.BaseBid.HasValue ? Math.Round(domain.BaseBid.Value, 8) : (decimal?)null;
             CrossAsk = domain.CrossAsk.HasValue ? Math.Round(domain.CrossAsk.Value, 8) : (decimal?)null;
             CrossBid = domain.CrossBid.HasValue ? Math.Round(domain.CrossBid.Value, 8) : (decimal?)null;
+
+            CrossRatesCount = domain.SynthOrderBooksCount;
         }
 
         /// <inheritdoc />

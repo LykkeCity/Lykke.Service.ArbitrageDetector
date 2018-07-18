@@ -137,23 +137,23 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             || syn2OrderBook.BestAsk == null || syn2OrderBook.BestAsk.Value.Price == 0)
                             continue;
 
-                        // Create cross rate from both order books
-                        var crossRate = CrossRate.FromOrderBooks(syn1OrderBook, syn2OrderBook, mainAmainB);
+                        // Create synthetic order book from both order books
+                        var synthOrderBook = SynthOrderBook.FromOrderBooks(syn1OrderBook, syn2OrderBook, mainAmainB);
 
                         // Detecting arbitrages
                         var arbitrage1 = "";
                         var arbitrage2 = "";
-                        var conversionPath = crossRate.ConversionPath.Replace("lykke-", "");
+                        var conversionPath = synthOrderBook.ConversionPath.Replace("lykke-", "");
 
-                        if (crossRate.BestBid.HasValue
-                            && (decimal)mainAmainBTickPrice.Ask < crossRate.BestBid.Value.Price
-                            && crossRate.BestBid.Value.Price != 0)
-                            arbitrage1 = $"{mainAmainBTickPrice.Asset}.Ask < ({conversionPath}).Bid = {mainAmainBTickPrice.Ask.ToString("0.######")} < {crossRate.BestBid.Value.Price.ToString("0.######")}, {mainAmainBTickPrice.DateTime}, {syn1TP.DateTime}, {syn2TP.DateTime}";
+                        if (synthOrderBook.BestBid.HasValue
+                            && (decimal)mainAmainBTickPrice.Ask < synthOrderBook.BestBid.Value.Price
+                            && synthOrderBook.BestBid.Value.Price != 0)
+                            arbitrage1 = $"{mainAmainBTickPrice.Asset}.Ask < ({conversionPath}).Bid = {mainAmainBTickPrice.Ask.ToString("0.######")} < {synthOrderBook.BestBid.Value.Price.ToString("0.######")}, {mainAmainBTickPrice.DateTime}, {syn1TP.DateTime}, {syn2TP.DateTime}";
 
-                        if (crossRate.BestAsk.HasValue
-                            && (decimal)mainAmainBTickPrice.Bid > crossRate.BestAsk.Value.Price
-                            && crossRate.BestAsk.Value.Price != 0)
-                            arbitrage2 = $"{mainAmainBTickPrice.Asset}.Bid > ({conversionPath}).Ask = {mainAmainBTickPrice.Bid.ToString("0.######")} > {crossRate.BestAsk.Value.Price.ToString("0.######")}, {mainAmainBTickPrice.DateTime}, {syn1TP.DateTime}, {syn2TP.DateTime}";
+                        if (synthOrderBook.BestAsk.HasValue
+                            && (decimal)mainAmainBTickPrice.Bid > synthOrderBook.BestAsk.Value.Price
+                            && synthOrderBook.BestAsk.Value.Price != 0)
+                            arbitrage2 = $"{mainAmainBTickPrice.Asset}.Bid > ({conversionPath}).Ask = {mainAmainBTickPrice.Bid.ToString("0.######")} > {synthOrderBook.BestAsk.Value.Price.ToString("0.######")}, {mainAmainBTickPrice.DateTime}, {syn1TP.DateTime}, {syn2TP.DateTime}";
 
                         if (!string.IsNullOrWhiteSpace(arbitrage1))
                             result.Add(arbitrage1);

@@ -8,7 +8,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Utils
         public static void AddOrUpdate<TValue>(this HashSet<TValue> hashSet, TValue value)
         {
             if (value == null)
-                throw new NullReferenceException($"intermediateWantedCrossRate is null");
+                throw new NullReferenceException($"intermediateWantedSynthOrderBook is null");
 
             if (hashSet.Contains(value))
                 hashSet.Remove(value);

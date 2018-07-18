@@ -14,7 +14,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
 
         // Cross Rates
 
-        IEnumerable<CrossRate> GetCrossRates();
+        IEnumerable<SynthOrderBook> GetSynthOrderBooks();
 
         // Arbitrages
 

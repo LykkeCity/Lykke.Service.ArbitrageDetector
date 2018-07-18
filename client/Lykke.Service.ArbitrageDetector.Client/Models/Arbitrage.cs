@@ -13,8 +13,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public AssetPair AssetPair { get; }
 
         /// <summary>
-        /// Cross rete with high bid.
+        /// Synthetic order book with high bid.
         /// </summary>
+        public SynthOrderBook BidSynthOrderBook { get; }
+
+        [Obsolete]
         public CrossRate BidCrossRate { get; }
 
         /// <summary>
@@ -23,8 +26,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public VolumePrice Bid { get; }
 
         /// <summary>
-        /// Cross rete with low ask.
+        /// Synthetic order book with low ask.
         /// </summary>
+        public SynthOrderBook AskSynthOrderBook { get; }
+
+        [Obsolete]
         public CrossRate AskCrossRate { get; }
 
         /// <summary>
@@ -65,29 +71,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Conversion path.
         /// </summary>
-        public string ConversionPath => FormatConversionPath(BidCrossRate.ConversionPath, AskCrossRate.ConversionPath);
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="assetPair"></param>
-        /// <param name="bidCrossRate"></param>
-        /// <param name="bid"></param>
-        /// <param name="askCrossRate"></param>
-        /// <param name="ask"></param>
-        public Arbitrage(AssetPair assetPair, CrossRate bidCrossRate, VolumePrice bid, CrossRate askCrossRate, VolumePrice ask, DateTime startedAt, DateTime endedAt)
-        {
-            AssetPair = assetPair;
-            BidCrossRate = bidCrossRate ?? throw new ArgumentNullException(nameof(bidCrossRate));
-            AskCrossRate = askCrossRate ?? throw new ArgumentNullException(nameof(askCrossRate));
-            Bid = bid;
-            Ask = ask;
-            Spread = GetSpread(Bid.Price, Ask.Price);
-            Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
-            PnL = GetPnL(Bid.Price, Ask.Price, Volume);
-            StartedAt = startedAt;
-            EndedAt = endedAt;
-        }
+        public string ConversionPath => FormatConversionPath(BidSynthOrderBook.ConversionPath, AskSynthOrderBook.ConversionPath);
 
         /// <inheritdoc />
         public override string ToString()
@@ -98,12 +82,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Formats conversion path.
         /// </summary>
-        /// <param name="bidCrossRateConversionPath"></param>
-        /// <param name="askCrossRateConversionPath"></param>
+        /// <param name="bidSynthOrderBookConversionPath"></param>
+        /// <param name="askSynthOrderBookConversionPath"></param>
         /// <returns></returns>
-        public static string FormatConversionPath(string bidCrossRateConversionPath, string askCrossRateConversionPath)
+        public static string FormatConversionPath(string bidSynthOrderBookConversionPath, string askSynthOrderBookConversionPath)
         {
-            return "(" + bidCrossRateConversionPath + ") > (" + askCrossRateConversionPath + ")";
+            return "(" + bidSynthOrderBookConversionPath + ") > (" + askSynthOrderBookConversionPath + ")";
         }
 
         /// <summary>

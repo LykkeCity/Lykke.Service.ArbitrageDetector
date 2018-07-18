@@ -17,15 +17,17 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// </summary>
         public AssetPair CrossAssetPair { get; }
 
-
         /// <summary>
         /// Count of cross pairs.
         /// </summary>
         public int CrossPairsCount { get; }
 
         /// <summary>
-        /// Count of cross rates.
+        /// Count of synthetic order books.
         /// </summary>
+        public int SynthOrderBooksCount { get; }
+
+        [Obsolete]
         public int CrossRatesCount { get; }
 
         /// <summary>
@@ -67,23 +69,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// Cross bid
         /// </summary>
         public decimal? CrossBid { get; }
-
-        public LykkeArbitrageRow(AssetPair baseAssetPair, AssetPair crossAssetPair, int crossPairsCount, int crossRatesCount, decimal spread, string baseSide,
-            string conversionPath, decimal volume, decimal? baseBid, decimal? baseAsk, decimal? crossBid, decimal? crossAsk)
-        {
-            BaseAssetPair = baseAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(baseAssetPair)) : baseAssetPair;
-            CrossAssetPair = crossAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(crossAssetPair)) : crossAssetPair;
-            CrossPairsCount = crossPairsCount;
-            CrossRatesCount = crossRatesCount;
-            Spread = Math.Round(spread, 8);
-            BaseSide = string.IsNullOrWhiteSpace(baseSide) ? throw new ArgumentNullException(nameof(baseSide)) : baseSide;
-            ConversionPath = string.IsNullOrWhiteSpace(conversionPath) ? throw new ArgumentNullException(nameof(conversionPath)) : conversionPath;
-            Volume = Math.Round(volume, 8);
-            BaseAsk = baseAsk.HasValue ? Math.Round(baseAsk.Value, 8) : (decimal?)null;
-            BaseBid = baseBid.HasValue ? Math.Round(baseBid.Value, 8) : (decimal?)null;
-            CrossAsk = crossAsk.HasValue ? Math.Round(crossAsk.Value, 8) : (decimal?)null;
-            CrossBid = crossBid.HasValue ? Math.Round(crossBid.Value, 8) : (decimal?)null;
-        }
 
         /// <inheritdoc />
         public override string ToString()
