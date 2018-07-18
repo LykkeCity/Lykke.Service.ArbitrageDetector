@@ -349,36 +349,57 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
 
         /// <summary>
-        /// Get synthetic from 1, 2 or 3 asset pairs.
+        /// Get synthetic order books from 1 order book (the same or reverted).
         /// </summary>
         /// <param name="target"></param>
         /// <param name="orderBooks"></param>
         /// <returns></returns>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetAll(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom1(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
         {
-            return GetAll(target, orderBooks, orderBooks);
+            return GetSynthsFrom1(target, orderBooks, orderBooks);
         }
 
         /// <summary>
-        /// Get synthetic from 1, 2 or 3 asset pairs.
+        /// Get synthetic order books from 1 order book (the same or reverted).
         /// </summary>
-        /// <param name="target"></param>
+        /// <param name="target"></param
+        /// <param name="source"></param>
         /// <param name="allOrderBooks"></param>
         /// <returns></returns>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetAll(AssetPair target, OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks)
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom1(AssetPair target,
+            OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks)
         {
-            return GetAll(target, new List<OrderBook> { source }, allOrderBooks);
+            return GetSynthsFrom1(target, new List<OrderBook> { source }, allOrderBooks);
         }
 
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetAll(AssetPair target,
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom1(AssetPair target,
             IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks)
         {
             var result = new Dictionary<AssetPairSource, SynthOrderBook>();
 
-            var synthOrderBookFrom1Or2Pairs = GetSynthOrderBooksFrom1Or2Pairs(target, sourceOrderBooks, allOrderBooks);
-            result.AddRange(synthOrderBookFrom1Or2Pairs);
-            var synthOrderBookFrom3Pairs = GetSynthOrderBooksFrom3Pairs(target, sourceOrderBooks, allOrderBooks);
-            result.AddRange(synthOrderBookFrom3Pairs);
+            // Trying to find base asset in current source's asset pair
+            var withBaseOrQuoteOrderBooks = sourceOrderBooks.Where(x => x.AssetPair.ContainsAsset(target.Base) ||
+                                                                        x.AssetPair.ContainsAsset(target.Quote)).ToList();
+
+            foreach (var withBaseOrQuoteOrderBook in withBaseOrQuoteOrderBooks)
+            {
+                var withBaseOrQuoteAssetPair = withBaseOrQuoteOrderBook.AssetPair;
+
+                // Get intermediate asset
+                var intermediate = withBaseOrQuoteAssetPair.GetOtherAsset(target.Base)
+                                   ?? withBaseOrQuoteAssetPair.GetOtherAsset(target.Quote);
+
+                // If current is target or reversed then just use it
+                if (intermediate == target.Base || intermediate == target.Quote)
+                {
+                    var synthOrderBook = FromOrderBook(withBaseOrQuoteOrderBook, target);
+
+                    var key = new AssetPairSource(synthOrderBook.ConversionPath, synthOrderBook.AssetPair);
+                    result[key] = synthOrderBook;
+
+                    continue;
+                }
+            }
 
             return result;
         }
@@ -386,37 +407,37 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
 
         /// <summary>
-        /// Get synthetic order books from 1 or 2 asset pairs.
+        /// Get synthetic order books from 2 original order books.
         /// </summary>
         /// <param name="target"></param>
         /// <param name="orderBooks"></param>
         /// <returns></returns>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthOrderBooksFrom1Or2Pairs(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom2(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
         {
-            return GetSynthOrderBooksFrom1Or2Pairs(target, orderBooks, orderBooks);
+            return GetSynthsFrom2(target, orderBooks, orderBooks);
         }
 
         /// <summary>
-        /// Get synthetic order books from 1 or 2 asset pairs.
+        /// Get synthetic order books from 2 original order books.
         /// </summary>
         /// <param name="target"></param
         /// <param name="source"></param>
         /// <param name="allOrderBooks"></param>
         /// <returns></returns>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthOrderBooksFrom1Or2Pairs(AssetPair target,
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom2(AssetPair target,
             OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks)
         {
-            return GetSynthOrderBooksFrom1Or2Pairs(target, new List<OrderBook> { source }, allOrderBooks);
+            return GetSynthsFrom2(target, new List<OrderBook> { source }, allOrderBooks);
         }
 
         /// <summary>
-        /// Get synthetic order books from 1 or 2 asset pairs.
+        /// Get synthetic order books from 2 original order books.
         /// </summary>
         /// <param name="target"></param
         /// <param name="sourceOrderBooks"></param>
         /// <param name="allOrderBooks"></param>
         /// <returns></returns>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthOrderBooksFrom1Or2Pairs(AssetPair target,
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom2(AssetPair target,
             IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks)
         {
             var result = new Dictionary<AssetPairSource, SynthOrderBook>();
@@ -433,18 +454,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 var intermediate = withBaseOrQuoteAssetPair.GetOtherAsset(target.Base)
                                 ?? withBaseOrQuoteAssetPair.GetOtherAsset(target.Quote);
 
-                // 1 Pair - if target or reversed then just use it
+                // 1. If current is target or reversed then just use it
                 if (intermediate == target.Base || intermediate == target.Quote)
-                {
-                    var synthOrderBook = FromOrderBook(withBaseOrQuoteOrderBook, target);
+                    continue; // The pairs are the same or reversed (it is from 1 order book)
 
-                    var key = new AssetPairSource(synthOrderBook.ConversionPath, synthOrderBook.AssetPair);
-                    result[key] = synthOrderBook;
-
-                    continue;
-                }
-
-                // 2 Pairs - if current is base&intermediate then find quote&intermediate&
+                // 1. If current is base&intermediate then find quote&intermediate&
                 if (withBaseOrQuoteAssetPair.ContainsAsset(target.Base))
                 {
                     var baseAndIntermediate = withBaseOrQuoteOrderBook;
@@ -465,7 +479,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                     }
                 }
 
-                // 2 Pairs - if current is quote&intermediate then find base&intermediate
+                // 2. If current is quote&intermediate then find base&intermediate
                 if (withBaseOrQuoteAssetPair.ContainsAsset(target.Quote))
                 {
                     var quoteAndIntermediate = withBaseOrQuoteOrderBook;
@@ -498,9 +512,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <param name="target"></param>
         /// <param name="orderBooks"></param>
         /// <returns></returns>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthOrderBooksFrom3Pairs(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom3(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
         {
-            return GetSynthOrderBooksFrom3Pairs(target, orderBooks, orderBooks);
+            return GetSynthsFrom3(target, orderBooks, orderBooks);
         }
 
         /// <summary>
@@ -510,10 +524,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <param name="source"></param>
         /// <param name="allOrderBooks"></param>
         /// <returns></returns>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthOrderBooksFrom3Pairs(AssetPair target,
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom3(AssetPair target,
             OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks)
         {
-            return GetSynthOrderBooksFrom3Pairs(target, new List<OrderBook> { source }, allOrderBooks);
+            return GetSynthsFrom3(target, new List<OrderBook> { source }, allOrderBooks);
         }
 
         /// <summary>
@@ -523,7 +537,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <param name="sourceOrderBooks"></param>
         /// <param name="allOrderBooks"></param>
         /// <returns></returns>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthOrderBooksFrom3Pairs(AssetPair target,
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom3(AssetPair target,
             IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks)
         {
             var result = new Dictionary<AssetPairSource, SynthOrderBook>();
@@ -566,6 +580,43 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                     }
                 }
             }
+
+            return result;
+        }
+
+
+
+        /// <summary>
+        /// Get synthetic from 1, 2 or 3 asset pairs.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="orderBooks"></param>
+        /// <returns></returns>
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFromAll(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
+        {
+            return GetSynthsFromAll(target, orderBooks, orderBooks);
+        }
+
+        /// <summary>
+        /// Get synthetic from 1, 2 or 3 asset pairs.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="allOrderBooks"></param>
+        /// <returns></returns>
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFromAll(AssetPair target, OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks)
+        {
+            return GetSynthsFromAll(target, new List<OrderBook> { source }, allOrderBooks);
+        }
+
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFromAll(AssetPair target,
+            IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks)
+        {
+            var result = new Dictionary<AssetPairSource, SynthOrderBook>();
+
+            var synthOrderBookFrom1Or2Pairs = GetSynthsFrom2(target, sourceOrderBooks, allOrderBooks);
+            result.AddRange(synthOrderBookFrom1Or2Pairs);
+            var synthOrderBookFrom3Pairs = GetSynthsFrom3(target, sourceOrderBooks, allOrderBooks);
+            result.AddRange(synthOrderBookFrom3Pairs);
 
             return result;
         }
