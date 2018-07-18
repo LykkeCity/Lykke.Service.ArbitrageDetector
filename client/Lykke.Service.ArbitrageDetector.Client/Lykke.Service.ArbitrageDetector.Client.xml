@@ -130,6 +130,7 @@
             <summary>
             Represents an arbitrage situation.
             </summary>
+            TODO: Return to getters only with a constructor.
         </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.AssetPair">
             <summary>
@@ -549,6 +550,7 @@
             <summary>
             Represents an arbitrage situation.
             </summary>
+            TODO: Return to getters only with a constructor.
         </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.BaseAssetPair">
             <summary>

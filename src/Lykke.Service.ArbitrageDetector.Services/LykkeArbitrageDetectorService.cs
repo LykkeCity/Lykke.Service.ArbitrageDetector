@@ -67,7 +67,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     var crossPair = orderBooks.ElementAt(j);
 
                     // Calculate all synthetic order books between base order book and current order book
-                    var synthOrderBooks = SynthOrderBook.GetAll(basePair.AssetPair, crossPair, orderBooks);
+                    var synthOrderBooks = SynthOrderBook.GetSynthsFromAll(basePair.AssetPair, crossPair, orderBooks);
 
                     // Compare each cross pair with base pair
                     foreach (var synthOrderBook in synthOrderBooks.Values)
