@@ -17,7 +17,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Synthetic order book with high bid.
         /// </summary>
-        public SynthOrderBook BidSynthOrderBook { get; }
+        public SynthOrderBook BidSynth { get; }
 
         /// <summary>
         /// Price and volume of high bid.
@@ -27,7 +27,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Synthetic order book with low ask.
         /// </summary>
-        public SynthOrderBook AskSynthOrderBook { get; }
+        public SynthOrderBook AskSynth { get; }
 
         /// <summary>
         /// Price and volume of low ask.
@@ -73,21 +73,21 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// Constructor.
         /// </summary>
         /// <param name="assetPair"></param>
-        /// <param name="bidSynthOrderBook"></param>
+        /// <param name="bidSynth"></param>
         /// <param name="bid"></param>
-        /// <param name="askSynthOrderBook"></param>
+        /// <param name="askSynth"></param>
         /// <param name="ask"></param>
-        public Arbitrage(AssetPair assetPair, SynthOrderBook bidSynthOrderBook, VolumePrice bid, SynthOrderBook askSynthOrderBook, VolumePrice ask)
+        public Arbitrage(AssetPair assetPair, SynthOrderBook bidSynth, VolumePrice bid, SynthOrderBook askSynth, VolumePrice ask)
         {
             AssetPair = assetPair;
-            BidSynthOrderBook = bidSynthOrderBook ?? throw new ArgumentNullException(nameof(bidSynthOrderBook));
-            AskSynthOrderBook = askSynthOrderBook ?? throw new ArgumentNullException(nameof(askSynthOrderBook));
+            BidSynth = bidSynth ?? throw new ArgumentNullException(nameof(bidSynth));
+            AskSynth = askSynth ?? throw new ArgumentNullException(nameof(askSynth));
             Bid = bid;
             Ask = ask;
             Spread = GetSpread(Bid.Price, Ask.Price);
             Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
             PnL = GetPnL(Bid.Price, Ask.Price, Volume);
-            ConversionPath = FormatConversionPath(BidSynthOrderBook.ConversionPath, AskSynthOrderBook.ConversionPath);
+            ConversionPath = FormatConversionPath(BidSynth.ConversionPath, AskSynth.ConversionPath);
             StartedAt = DateTime.UtcNow;
         }
 

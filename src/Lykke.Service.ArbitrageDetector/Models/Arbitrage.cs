@@ -65,11 +65,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public DateTime EndedAt { get; set; }
 
         /// <summary>
-        /// How log the arbitrage lasted.
-        /// </summary>
-        public TimeSpan Lasted => EndedAt == default ? DateTime.UtcNow - StartedAt : EndedAt - StartedAt;
-
-        /// <summary>
         /// Conversion path.
         /// </summary>
         public string ConversionPath => FormatConversionPath(BidSynth.ConversionPath, AskSynth.ConversionPath);
@@ -78,17 +73,17 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// Constructor.
         /// </summary>
         /// <param name="assetPair"></param>
-        /// <param name="bidSynthOrderBook"></param>
+        /// <param name="bidSynth"></param>
         /// <param name="bid"></param>
-        /// <param name="askSynthOrderBook"></param>
+        /// <param name="askSynth"></param>
         /// <param name="ask"></param>
         /// <param name="startedAt"></param>
         /// <param name="endedAt"></param>
-        public Arbitrage(AssetPair assetPair, SynthOrderBook bidSynthOrderBook, VolumePrice bid, SynthOrderBook askSynthOrderBook, VolumePrice ask, DateTime startedAt, DateTime endedAt)
+        public Arbitrage(AssetPair assetPair, SynthOrderBook bidSynth, VolumePrice bid, SynthOrderBook askSynth, VolumePrice ask, DateTime startedAt, DateTime endedAt)
         {
             AssetPair = assetPair;
-            BidSynth = bidSynthOrderBook ?? throw new ArgumentNullException(nameof(bidSynthOrderBook));
-            AskSynth = askSynthOrderBook ?? throw new ArgumentNullException(nameof(askSynthOrderBook));
+            BidSynth = bidSynth ?? throw new ArgumentNullException(nameof(bidSynth));
+            AskSynth = askSynth ?? throw new ArgumentNullException(nameof(askSynth));
             Bid = bid;
             Ask = ask;
             Spread = GetSpread(Bid.Price, Ask.Price);
@@ -106,8 +101,8 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// </summary>
         /// <param name="domain"></param>
         public Arbitrage(DomainArbitrage domain)
-        : this(new AssetPair(domain.AssetPair), new SynthOrderBook(domain.BidSynthOrderBook), new VolumePrice(domain.Bid),
-            new SynthOrderBook(domain.AskSynthOrderBook), new VolumePrice(domain.Ask), domain.StartedAt, domain.EndedAt)
+        : this(new AssetPair(domain.AssetPair), new SynthOrderBook(domain.BidSynth), new VolumePrice(domain.Bid),
+            new SynthOrderBook(domain.AskSynth), new VolumePrice(domain.Ask), domain.StartedAt, domain.EndedAt)
         {
         }
 

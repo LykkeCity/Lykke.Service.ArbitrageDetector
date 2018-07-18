@@ -13,7 +13,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         [Fact]
         public async Task OrderBooksTest()
         {
-            var orderBooks = (await Client.NewOrderBooksAsync(string.Empty, string.Empty)).ToList();
+            var orderBooks = (await Client.OrderBooksAsync(string.Empty, string.Empty)).ToList();
             Assert.NotNull(orderBooks);
             Assert.NotEmpty(orderBooks);
 
@@ -24,7 +24,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         [Fact]
         public async Task OrderBooksFilterExchangeTest()
         {
-            var orderBooks = (await Client.NewOrderBooksAsync("lykke", string.Empty)).ToList();
+            var orderBooks = (await Client.OrderBooksAsync("lykke", string.Empty)).ToList();
             Assert.NotNull(orderBooks);
             Assert.NotEmpty(orderBooks);
 
@@ -36,7 +36,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         [Fact]
         public async Task OrderBooksFilterAssetPairTest()
         {
-            var orderBooks = (await Client.NewOrderBooksAsync(string.Empty, "USD")).ToList();
+            var orderBooks = (await Client.OrderBooksAsync(string.Empty, "USD")).ToList();
             Assert.NotNull(orderBooks);
             Assert.NotEmpty(orderBooks);
 
@@ -442,8 +442,8 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         private void AssertArbitrage(Arbitrage arbitrage, bool isActive)
         {
             Assert.False(arbitrage.AssetPair.IsEmpty());
-            AssertSynthOrderBook(arbitrage.AskSynthOrderBook);
-            AssertSynthOrderBook(arbitrage.BidSynthOrderBook);
+            AssertSynthOrderBook(arbitrage.AskSynth);
+            AssertSynthOrderBook(arbitrage.BidSynth);
             Assert.NotEqual(default, arbitrage.Bid.Price);
             Assert.NotEqual(default, arbitrage.Bid.Volume);
             Assert.NotEqual(default, arbitrage.Ask.Price);

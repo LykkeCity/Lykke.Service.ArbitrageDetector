@@ -19,15 +19,6 @@ namespace Lykke.Service.ArbitrageDetector.Client
         Task<IEnumerable<OrderBookRow>> OrderBooksAsync(string exchange, string assetPair);
 
         /// <summary>
-        /// Returns a collection of OrderBook entities by exchange and instrument.
-        /// </summary>
-        /// <param name="exchange">Name of an exchange.</param>
-        /// <param name="assetPair">Name of an instrument</param>
-        /// <returns>A collection of OrderBook entities.</returns>
-        [Obsolete]
-        Task<IEnumerable<OrderBookRow>> NewOrderBooksAsync(string exchange, string assetPair);
-
-        /// <summary>
         /// Returns a collection of SynthOrderBook entities.
         /// </summary>
         /// <returns>A collection of SynthOrderBook entities.</returns>
