@@ -55,8 +55,8 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         }
 
         [HttpGet]
-        [Route("synthOrderBooks")]
-        [SwaggerOperation("SynthOrderBooks")]
+        [Route("crossRates")]
+        [SwaggerOperation("CrossRates")]
         [ProducesResponseType(typeof(IEnumerable<CrossRateRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ResponseCache(Duration = 1)]
