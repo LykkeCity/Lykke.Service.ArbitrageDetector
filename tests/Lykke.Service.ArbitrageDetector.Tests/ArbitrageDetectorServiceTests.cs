@@ -1257,19 +1257,19 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(3, synthOrderBooks.Count);
             Assert.Equal(3, arbitrages.Count);
 
-            var arbitrage1 = arbitrages.First(x => x.BidSynthOrderBook.Source == "GDAX" && x.AskSynthOrderBook.Source == "Quoine-Binance");
-            Assert.Equal(11000, arbitrage1.BidSynthOrderBook.Bids.Max(x => x.Price));
-            Assert.Equal(10982.9089835m, arbitrage1.AskSynthOrderBook.Asks.Max(x => x.Price), 8);
+            var arbitrage1 = arbitrages.First(x => x.BidSynth.Source == "GDAX" && x.AskSynth.Source == "Quoine-Binance");
+            Assert.Equal(11000, arbitrage1.BidSynth.Bids.Max(x => x.Price));
+            Assert.Equal(10982.9089835m, arbitrage1.AskSynth.Asks.Max(x => x.Price), 8);
             Assert.Equal(arbitrage1.PnL, (arbitrage1.Bid.Price - arbitrage1.Ask.Price) * arbitrage1.Volume);
 
-            var arbitrage2 = arbitrages.First(x => x.BidSynthOrderBook.Source == "Bitfinex" && x.AskSynthOrderBook.Source == "Quoine-Binance");
-            Assert.Equal(11100, arbitrage2.BidSynthOrderBook.Bids.Max(x => x.Price));
-            Assert.Equal(10982.9089835m, arbitrage2.AskSynthOrderBook.Asks.Max(x => x.Price), 8);
+            var arbitrage2 = arbitrages.First(x => x.BidSynth.Source == "Bitfinex" && x.AskSynth.Source == "Quoine-Binance");
+            Assert.Equal(11100, arbitrage2.BidSynth.Bids.Max(x => x.Price));
+            Assert.Equal(10982.9089835m, arbitrage2.AskSynth.Asks.Max(x => x.Price), 8);
             Assert.Equal(arbitrage2.PnL, (arbitrage2.Bid.Price - arbitrage2.Ask.Price) * arbitrage2.Volume);
 
-            var arbitrage3 = arbitrages.First(x => x.BidSynthOrderBook.Source == "Bitfinex" && x.AskSynthOrderBook.Source == "GDAX");
-            Assert.Equal(11100, arbitrage3.BidSynthOrderBook.Bids.Max(x => x.Price));
-            Assert.Equal(11050m, arbitrage3.AskSynthOrderBook.Asks.Max(x => x.Price));
+            var arbitrage3 = arbitrages.First(x => x.BidSynth.Source == "Bitfinex" && x.AskSynth.Source == "GDAX");
+            Assert.Equal(11100, arbitrage3.BidSynth.Bids.Max(x => x.Price));
+            Assert.Equal(11050m, arbitrage3.AskSynth.Asks.Max(x => x.Price));
             Assert.Equal(arbitrage3.PnL, (arbitrage3.Bid.Price - arbitrage3.Ask.Price) * arbitrage3.Volume);
         }
 
