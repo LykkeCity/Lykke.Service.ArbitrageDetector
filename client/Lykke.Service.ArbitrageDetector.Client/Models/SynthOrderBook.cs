@@ -6,8 +6,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
     /// <summary>
     /// Represents a synthetic order book.
     /// </summary>
-    [Obsolete]
-    public class CrossRate : OrderBook
+    public class SynthOrderBook : OrderBook
     {
         /// <summary>
         /// Conversion path.
@@ -29,7 +28,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <param name="conversionPath"></param>
         /// <param name="originalOrderBooks"></param>
         /// <param name="timestamp"></param>
-        public CrossRate(string source, AssetPair assetPair,
+        public SynthOrderBook(string source, AssetPair assetPair,
             IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks,
             string conversionPath, IList<OrderBook> originalOrderBooks, DateTime timestamp)
             : base(source, new AssetPair(assetPair.Base, assetPair.Quote), bids, asks, timestamp)

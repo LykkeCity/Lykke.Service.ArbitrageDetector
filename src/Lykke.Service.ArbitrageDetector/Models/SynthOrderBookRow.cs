@@ -1,11 +1,12 @@
 ﻿using System;
+using DomainSynthOrderBook = Lykke.Service.ArbitrageDetector.Core.Domain.SynthOrderBook;
 
-namespace Lykke.Service.ArbitrageDetector.Client.Models
+namespace Lykke.Service.ArbitrageDetector.Models
 {
     /// <summary>
     /// Represents a synthetic order book.
     /// </summary>
-    public class OrderBookRow
+    public class SynthOrderBookRow
     {
         /// <summary>
         /// Conversion path.
@@ -28,19 +29,14 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public VolumePrice? BestAsk { get; }
 
         /// <summary>
-        /// Comulative volume of all bids.
+        /// Conversion path.
         /// </summary>
-        public decimal BidsVolume { get; }
-
-        /// <summary>
-        /// Comulative volume of all asks.
-        /// </summary>
-        public decimal AsksVolume { get; }
+        public string ConversionPath { get; }
 
         /// <summary>
         /// Timestamp.
         /// </summary>
-        public DateTime Timestamp { get; }
+        public DateTime Timestamp{ get; }
 
         /// <summary>
         /// Constructor.
@@ -49,18 +45,30 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <param name="assetPair"></param>
         /// <param name="bestBid"></param>
         /// <param name="bestAsk"></param>
-        /// <param name="bidsVolume"></param>
-        /// <param name="asksVolume"></param>
+        /// <param name="conversionPath"></param>
         /// <param name="timestamp"></param>
-        public OrderBookRow(string source, AssetPair assetPair, VolumePrice? bestBid, VolumePrice? bestAsk, decimal bidsVolume, decimal asksVolume, DateTime timestamp)
+        public SynthOrderBookRow(string source, AssetPair assetPair, VolumePrice? bestBid, VolumePrice? bestAsk, string conversionPath, DateTime timestamp)
         {
             Source = string.IsNullOrWhiteSpace(source) ? throw new ArgumentNullException(nameof(source)) : source;
             AssetPair = assetPair;
             BestBid = bestBid;
             BestAsk = bestAsk;
-            BidsVolume = bidsVolume;
-            AsksVolume = asksVolume;
+            ConversionPath = string.IsNullOrWhiteSpace(conversionPath) ? throw new ArgumentNullException(nameof(conversionPath)) : conversionPath;
             Timestamp = timestamp;
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="domain"></param>
+        public SynthOrderBookRow(DomainSynthOrderBook domain)
+        {
+            Source = domain.Source;
+            AssetPair = new AssetPair(domain.AssetPair);
+            BestBid = VolumePrice.FromDomain(domain.BestBid);
+            BestAsk = VolumePrice.FromDomain(domain.BestAsk);
+            ConversionPath = domain.ConversionPath;
+            Timestamp = domain.Timestamp;
         }
     }
 }

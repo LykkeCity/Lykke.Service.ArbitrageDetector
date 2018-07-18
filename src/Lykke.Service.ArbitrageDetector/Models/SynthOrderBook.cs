@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using DomainSynthOrderBook = Lykke.Service.ArbitrageDetector.Core.Domain.SynthOrderBook;
 
-namespace Lykke.Service.ArbitrageDetector.Client.Models
+namespace Lykke.Service.ArbitrageDetector.Models
 {
     /// <summary>
     /// Represents a synthetic order book.
     /// </summary>
-    [Obsolete]
-    public class CrossRate : OrderBook
+    public class SynthOrderBook : OrderBook
     {
         /// <summary>
         /// Conversion path.
@@ -29,7 +30,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <param name="conversionPath"></param>
         /// <param name="originalOrderBooks"></param>
         /// <param name="timestamp"></param>
-        public CrossRate(string source, AssetPair assetPair,
+        public SynthOrderBook(string source, AssetPair assetPair,
             IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks,
             string conversionPath, IList<OrderBook> originalOrderBooks, DateTime timestamp)
             : base(source, new AssetPair(assetPair.Base, assetPair.Quote), bids, asks, timestamp)
@@ -47,36 +48,14 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         }
 
         /// <summary>
-        /// Formats conversion path.
+        /// Constructor from domain object.
         /// </summary>
-        /// <param name="left"></param>
-        /// <param name="right"></param>
-        public static string GetConversionPath(OrderBook left, OrderBook right)
+        /// <param name="domain"></param>
+        public SynthOrderBook(DomainSynthOrderBook domain)
+            : this(domain.Source, new AssetPair(domain.AssetPair),
+                domain.Bids.Select(x => new VolumePrice(x)).ToList(), domain.Asks.Select(x => new VolumePrice(x)).ToList(),
+                domain.ConversionPath, domain.OriginalOrderBooks.Select(x => new OrderBook(x)).ToList(), domain.Timestamp)
         {
-            return left + " * " + right;
-        }
-
-        /// <summary>
-        /// Formats conversion path.
-        /// </summary>
-        /// <param name="leftSource"></param>
-        /// <param name="leftAssetPair"></param>
-        /// <param name="rightSource"></param>
-        /// <param name="rightAssetPair"></param>
-        public static string GetConversionPath(string leftSource, string leftAssetPair, string rightSource, string rightAssetPair)
-        {
-            return leftSource + "-" + leftAssetPair + " * " + rightSource + "-" + rightAssetPair;
-        }
-
-        /// <summary>
-        /// Formats source - source path.
-        /// </summary>
-        /// <param name="leftSource"></param>
-        /// <param name="rightSource"></param>
-        /// <returns></returns>]
-        public static string GetSourcesPath(string leftSource, string rightSource)
-        {
-            return leftSource + "-" + rightSource;
         }
 
         /// <inheritdoc />

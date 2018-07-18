@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Lykke.Service.ArbitrageDetector.Tests
 {
-    public class CrossRateTests
+    public class SynthOrderBookTests
     {
         [Fact]
         public void ConstructorTest()
@@ -28,19 +28,19 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 new VolumePrice(8900.12345677m, 3)
             };
 
-            void Construct1() => new CrossRate("", assetPair, bids, asks, conversionPath, new List<OrderBook>(), timestamp);
+            void Construct1() => new SynthOrderBook("", assetPair, bids, asks, conversionPath, new List<OrderBook>(), timestamp);
             Assert.Throws<ArgumentException>((Action)Construct1);
 
-            void Construct2() => new CrossRate(null, assetPair, bids, asks, conversionPath, new List<OrderBook>(), timestamp);
+            void Construct2() => new SynthOrderBook(null, assetPair, bids, asks, conversionPath, new List<OrderBook>(), timestamp);
             Assert.Throws<ArgumentException>((Action)Construct2);
 
-            void Construct3() => new CrossRate(exchangeName, assetPair, bids, asks, "", new List<OrderBook>(), timestamp);
+            void Construct3() => new SynthOrderBook(exchangeName, assetPair, bids, asks, "", new List<OrderBook>(), timestamp);
             Assert.Throws<ArgumentException>((Action)Construct3);
 
-            void Construct4() => new CrossRate(exchangeName, assetPair, bids, asks, null, new List<OrderBook>(), timestamp);
+            void Construct4() => new SynthOrderBook(exchangeName, assetPair, bids, asks, null, new List<OrderBook>(), timestamp);
             Assert.Throws<ArgumentException>((Action)Construct4);
 
-            void Construct5() => new CrossRate(exchangeName, assetPair, bids, asks, conversionPath, null, timestamp);
+            void Construct5() => new SynthOrderBook(exchangeName, assetPair, bids, asks, conversionPath, null, timestamp);
             Assert.Throws<ArgumentNullException>((Action)Construct5);
         }
 
@@ -54,11 +54,11 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var orderBookWithEmptyAssetPair = new OrderBook(exchange, "BTCEUR", new List<VolumePrice>(), new List<VolumePrice>(), timestamp);
 
             // AssetPair is not set in order book
-            Assert.Throws<ArgumentException>(() => CrossRate.FromOrderBook(orderBookWithEmptyAssetPair, assetPair));
+            Assert.Throws<ArgumentException>(() => SynthOrderBook.FromOrderBook(orderBookWithEmptyAssetPair, assetPair));
 
             orderBookWithEmptyAssetPair.SetAssetPair("EUR");
 
-            Assert.Throws<ArgumentException>(() => CrossRate.FromOrderBook(orderBookWithEmptyAssetPair, new AssetPair()));
+            Assert.Throws<ArgumentException>(() => SynthOrderBook.FromOrderBook(orderBookWithEmptyAssetPair, new AssetPair()));
         }
 
         [Fact]
@@ -81,23 +81,23 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 timestamp);
             btcEurOrderBook.SetAssetPair("EUR");
 
-            var crossRate = CrossRate.FromOrderBook(btcEurOrderBook, assetPair);
-            Assert.Equal(exchange, crossRate.Source);
-            Assert.Equal(btceur, crossRate.AssetPairStr);
-            Assert.Equal(assetPair, crossRate.AssetPair);
-            Assert.Equal(OrderBook.FormatSourceAssetPair(exchange, btceur), crossRate.ConversionPath);
-            Assert.Equal(2, crossRate.Bids.Count);
-            Assert.Equal(3, crossRate.Asks.Count);
-            Assert.Equal(8825m, crossRate.Bids.Max(x => x.Price));
-            Assert.Equal(9000m, crossRate.Asks.Max(x => x.Price));
-            Assert.Equal(8823m, crossRate.Bids.Min(x => x.Price));
-            Assert.Equal(8900.12345677m, crossRate.Asks.Min(x => x.Price));
-            Assert.Equal(9, crossRate.Bids.Max(x => x.Volume));
-            Assert.Equal(10, crossRate.Asks.Max(x => x.Volume));
-            Assert.Equal(5, crossRate.Bids.Min(x => x.Volume));
-            Assert.Equal(3, crossRate.Asks.Min(x => x.Volume));
-            Assert.Equal(timestamp, crossRate.Timestamp);
-            Assert.Equal(1, crossRate.OriginalOrderBooks.Count);
+            var synthOrderBook = SynthOrderBook.FromOrderBook(btcEurOrderBook, assetPair);
+            Assert.Equal(exchange, synthOrderBook.Source);
+            Assert.Equal(btceur, synthOrderBook.AssetPairStr);
+            Assert.Equal(assetPair, synthOrderBook.AssetPair);
+            Assert.Equal(OrderBook.FormatSourceAssetPair(exchange, btceur), synthOrderBook.ConversionPath);
+            Assert.Equal(2, synthOrderBook.Bids.Count);
+            Assert.Equal(3, synthOrderBook.Asks.Count);
+            Assert.Equal(8825m, synthOrderBook.Bids.Max(x => x.Price));
+            Assert.Equal(9000m, synthOrderBook.Asks.Max(x => x.Price));
+            Assert.Equal(8823m, synthOrderBook.Bids.Min(x => x.Price));
+            Assert.Equal(8900.12345677m, synthOrderBook.Asks.Min(x => x.Price));
+            Assert.Equal(9, synthOrderBook.Bids.Max(x => x.Volume));
+            Assert.Equal(10, synthOrderBook.Asks.Max(x => x.Volume));
+            Assert.Equal(5, synthOrderBook.Bids.Min(x => x.Volume));
+            Assert.Equal(3, synthOrderBook.Asks.Min(x => x.Volume));
+            Assert.Equal(timestamp, synthOrderBook.Timestamp);
+            Assert.Equal(1, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
@@ -121,23 +121,23 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 timestamp);
             btcUsdOrderBook.SetAssetPair("USD");
 
-            var crossRate = CrossRate.FromOrderBook(btcUsdOrderBook, reversed);
-            Assert.Equal(exchange, crossRate.Source);
-            Assert.Equal(reversed.Name, crossRate.AssetPairStr);
-            Assert.Equal(reversed, crossRate.AssetPair);
-            Assert.Equal(OrderBook.FormatSourceAssetPair(exchange, btcusd), crossRate.ConversionPath);
-            Assert.Equal(3, crossRate.Bids.Count);
-            Assert.Equal(2, crossRate.Asks.Count);
-            Assert.Equal(9000m, crossRate.Bids.Max(x => x.Price), 8);
-            Assert.Equal(8825m, crossRate.Asks.Max(x => x.Price), 8);
-            Assert.Equal(8900.12345677m, crossRate.Bids.Min(x => x.Price), 8);
-            Assert.Equal(8823m, crossRate.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00111111m, crossRate.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00101983m, crossRate.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00033707m, crossRate.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00056670m, crossRate.Asks.Min(x => x.Volume), 8);
-            Assert.Equal(timestamp, crossRate.Timestamp);
-            Assert.Equal(1, crossRate.OriginalOrderBooks.Count);
+            var synthOrderBook = SynthOrderBook.FromOrderBook(btcUsdOrderBook, reversed);
+            Assert.Equal(exchange, synthOrderBook.Source);
+            Assert.Equal(reversed.Name, synthOrderBook.AssetPairStr);
+            Assert.Equal(reversed, synthOrderBook.AssetPair);
+            Assert.Equal(OrderBook.FormatSourceAssetPair(exchange, btcusd), synthOrderBook.ConversionPath);
+            Assert.Equal(3, synthOrderBook.Bids.Count);
+            Assert.Equal(2, synthOrderBook.Asks.Count);
+            Assert.Equal(9000m, synthOrderBook.Bids.Max(x => x.Price), 8);
+            Assert.Equal(8825m, synthOrderBook.Asks.Max(x => x.Price), 8);
+            Assert.Equal(8900.12345677m, synthOrderBook.Bids.Min(x => x.Price), 8);
+            Assert.Equal(8823m, synthOrderBook.Asks.Min(x => x.Price), 8);
+            Assert.Equal(0.00111111m, synthOrderBook.Bids.Max(x => x.Volume), 8);
+            Assert.Equal(0.00101983m, synthOrderBook.Asks.Max(x => x.Volume), 8);
+            Assert.Equal(0.00033707m, synthOrderBook.Bids.Min(x => x.Volume), 8);
+            Assert.Equal(0.00056670m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            Assert.Equal(timestamp, synthOrderBook.Timestamp);
+            Assert.Equal(1, synthOrderBook.OriginalOrderBooks.Count);
         }
 
 
@@ -152,12 +152,12 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var goodOrderBook = new OrderBook(exchange, "BTCCHF", new List<VolumePrice>(), new List<VolumePrice>(), timestamp);
 
             // AssetPair is not set in order book
-            Assert.Throws<ArgumentException>(() => CrossRate.FromOrderBooks(orderBookWithEmptyAssetPair, goodOrderBook, target));
-            Assert.Throws<ArgumentException>(() => CrossRate.FromOrderBooks(goodOrderBook, orderBookWithEmptyAssetPair, target));
+            Assert.Throws<ArgumentException>(() => SynthOrderBook.FromOrderBooks(orderBookWithEmptyAssetPair, goodOrderBook, target));
+            Assert.Throws<ArgumentException>(() => SynthOrderBook.FromOrderBooks(goodOrderBook, orderBookWithEmptyAssetPair, target));
 
             orderBookWithEmptyAssetPair.SetAssetPair("EUR");
 
-            Assert.Throws<ArgumentException>(() => CrossRate.FromOrderBooks(goodOrderBook, orderBookWithEmptyAssetPair, new AssetPair()));
+            Assert.Throws<ArgumentException>(() => SynthOrderBook.FromOrderBooks(goodOrderBook, orderBookWithEmptyAssetPair, new AssetPair()));
         }
 
         [Fact]
@@ -200,23 +200,23 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 timestamp2);
             eurUsdOrderBook.SetAssetPair("EUR");
 
-            var crossRate = CrossRate.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, targetAssetPair);
-            Assert.Equal(CrossRate.GetSourcesPath(exchange, exchange), crossRate.Source);
-            Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
-            Assert.Equal(targetAssetPair, crossRate.AssetPair);
-            Assert.Equal(CrossRate.GetConversionPath(exchange, btceur, exchange, eurusd), crossRate.ConversionPath);
-            Assert.Equal(4, crossRate.Bids.Count);
-            Assert.Equal(9, crossRate.Asks.Count);
-            Assert.Equal(9795.75m, crossRate.Bids.Max(x => x.Price), 8);
-            Assert.Equal(10260m, crossRate.Asks.Max(x => x.Price), 8);
-            Assert.Equal(9705.3m, crossRate.Bids.Min(x => x.Price), 8);
-            Assert.Equal(9968.1382715824m, crossRate.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00102006m, crossRate.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00112358m, crossRate.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00056657m, crossRate.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00033333m, crossRate.Asks.Min(x => x.Volume), 8);
-            Assert.Equal(timestamp1, crossRate.Timestamp);
-            Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, targetAssetPair);
+            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange, exchange), synthOrderBook.Source);
+            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
+            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
+            Assert.Equal(SynthOrderBook.GetConversionPath(exchange, btceur, exchange, eurusd), synthOrderBook.ConversionPath);
+            Assert.Equal(4, synthOrderBook.Bids.Count);
+            Assert.Equal(9, synthOrderBook.Asks.Count);
+            Assert.Equal(9795.75m, synthOrderBook.Bids.Max(x => x.Price), 8);
+            Assert.Equal(10260m, synthOrderBook.Asks.Max(x => x.Price), 8);
+            Assert.Equal(9705.3m, synthOrderBook.Bids.Min(x => x.Price), 8);
+            Assert.Equal(9968.1382715824m, synthOrderBook.Asks.Min(x => x.Price), 8);
+            Assert.Equal(0.00102006m, synthOrderBook.Bids.Max(x => x.Volume), 8);
+            Assert.Equal(0.00112358m, synthOrderBook.Asks.Max(x => x.Volume), 8);
+            Assert.Equal(0.00056657m, synthOrderBook.Bids.Min(x => x.Volume), 8);
+            Assert.Equal(0.00033333m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            Assert.Equal(timestamp1, synthOrderBook.Timestamp);
+            Assert.Equal(2, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
@@ -259,23 +259,23 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 timestamp2);
             eurUsdOrderBook.SetAssetPair("EUR");
 
-            var crossRate = CrossRate.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, targetAssetPair);
-            Assert.Equal(CrossRate.GetSourcesPath(exchange, exchange), crossRate.Source);
-            Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
-            Assert.Equal(targetAssetPair, crossRate.AssetPair);
-            Assert.Equal(CrossRate.GetConversionPath(exchange, btceur, exchange, usdeur), crossRate.ConversionPath);
-            Assert.Equal(6, crossRate.Bids.Count);
-            Assert.Equal(6, crossRate.Asks.Count);
-            Assert.Equal(10060.5m, crossRate.Bids.Max(x => x.Price), 8);
-            Assert.Equal(9990m, crossRate.Asks.Max(x => x.Price), 8);
-            Assert.Equal(9881.76m, crossRate.Bids.Min(x => x.Price), 8);
-            Assert.Equal(9790.135802447m, crossRate.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00101197m, crossRate.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00091101m, crossRate.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00029820m, crossRate.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00050505m, crossRate.Asks.Min(x => x.Volume), 8);
-            Assert.Equal(timestamp1, crossRate.Timestamp);
-            Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, targetAssetPair);
+            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange, exchange), synthOrderBook.Source);
+            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
+            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
+            Assert.Equal(SynthOrderBook.GetConversionPath(exchange, btceur, exchange, usdeur), synthOrderBook.ConversionPath);
+            Assert.Equal(6, synthOrderBook.Bids.Count);
+            Assert.Equal(6, synthOrderBook.Asks.Count);
+            Assert.Equal(10060.5m, synthOrderBook.Bids.Max(x => x.Price), 8);
+            Assert.Equal(9990m, synthOrderBook.Asks.Max(x => x.Price), 8);
+            Assert.Equal(9881.76m, synthOrderBook.Bids.Min(x => x.Price), 8);
+            Assert.Equal(9790.135802447m, synthOrderBook.Asks.Min(x => x.Price), 8);
+            Assert.Equal(0.00101197m, synthOrderBook.Bids.Max(x => x.Volume), 8);
+            Assert.Equal(0.00091101m, synthOrderBook.Asks.Max(x => x.Volume), 8);
+            Assert.Equal(0.00029820m, synthOrderBook.Bids.Min(x => x.Volume), 8);
+            Assert.Equal(0.00050505m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            Assert.Equal(timestamp1, synthOrderBook.Timestamp);
+            Assert.Equal(2, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
@@ -318,23 +318,23 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 timestamp2);
             eurUsdOrderBook.SetAssetPair("EUR");
 
-            var crossRate = CrossRate.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, targetAssetPair);
-            Assert.Equal(CrossRate.GetSourcesPath(exchange, exchange), crossRate.Source);
-            Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
-            Assert.Equal(targetAssetPair, crossRate.AssetPair);
-            Assert.Equal(CrossRate.GetConversionPath(exchange, eurbtc, exchange, eurusd), crossRate.ConversionPath);
-            Assert.Equal(6, crossRate.Bids.Count);
-            Assert.Equal(6, crossRate.Asks.Count);
-            Assert.Equal(9990m, crossRate.Bids.Max(x => x.Price), 8);
-            Assert.Equal(10060.5m, crossRate.Asks.Max(x => x.Price), 8);
-            Assert.Equal(9790.13580245m, crossRate.Bids.Min(x => x.Price), 8);
-            Assert.Equal(9881.76m, crossRate.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.001m, crossRate.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00101983m, crossRate.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00033707m, crossRate.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00033994m, crossRate.Asks.Min(x => x.Volume), 8);
-            Assert.Equal(timestamp1, crossRate.Timestamp);
-            Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, targetAssetPair);
+            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange, exchange), synthOrderBook.Source);
+            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
+            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
+            Assert.Equal(SynthOrderBook.GetConversionPath(exchange, eurbtc, exchange, eurusd), synthOrderBook.ConversionPath);
+            Assert.Equal(6, synthOrderBook.Bids.Count);
+            Assert.Equal(6, synthOrderBook.Asks.Count);
+            Assert.Equal(9990m, synthOrderBook.Bids.Max(x => x.Price), 8);
+            Assert.Equal(10060.5m, synthOrderBook.Asks.Max(x => x.Price), 8);
+            Assert.Equal(9790.13580245m, synthOrderBook.Bids.Min(x => x.Price), 8);
+            Assert.Equal(9881.76m, synthOrderBook.Asks.Min(x => x.Price), 8);
+            Assert.Equal(0.001m, synthOrderBook.Bids.Max(x => x.Volume), 8);
+            Assert.Equal(0.00101983m, synthOrderBook.Asks.Max(x => x.Volume), 8);
+            Assert.Equal(0.00033707m, synthOrderBook.Bids.Min(x => x.Volume), 8);
+            Assert.Equal(0.00033994m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            Assert.Equal(timestamp1, synthOrderBook.Timestamp);
+            Assert.Equal(2, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
@@ -377,23 +377,23 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 timestamp2);
             eurUsdOrderBook.SetAssetPair("EUR");
 
-            var crossRate = CrossRate.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, targetAssetPair);
-            Assert.Equal(CrossRate.GetSourcesPath(exchange, exchange), crossRate.Source);
-            Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
-            Assert.Equal(targetAssetPair, crossRate.AssetPair);
-            Assert.Equal(CrossRate.GetConversionPath(exchange, eurbtc, exchange, usdeur), crossRate.ConversionPath);
-            Assert.Equal(9, crossRate.Bids.Count);
-            Assert.Equal(4, crossRate.Asks.Count);
-            Assert.Equal(10260m, crossRate.Bids.Max(x => x.Price), 8);
-            Assert.Equal(9795.75m, crossRate.Asks.Max(x => x.Price), 8);
-            Assert.Equal(9968.13827158m, crossRate.Bids.Min(x => x.Price), 8);
-            Assert.Equal(9705.30m, crossRate.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00099206m, crossRate.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00091877m, crossRate.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00029240m, crossRate.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00051507m, crossRate.Asks.Min(x => x.Volume), 8);
-            Assert.Equal(timestamp1, crossRate.Timestamp);
-            Assert.Equal(2, crossRate.OriginalOrderBooks.Count);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, targetAssetPair);
+            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange, exchange), synthOrderBook.Source);
+            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
+            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
+            Assert.Equal(SynthOrderBook.GetConversionPath(exchange, eurbtc, exchange, usdeur), synthOrderBook.ConversionPath);
+            Assert.Equal(9, synthOrderBook.Bids.Count);
+            Assert.Equal(4, synthOrderBook.Asks.Count);
+            Assert.Equal(10260m, synthOrderBook.Bids.Max(x => x.Price), 8);
+            Assert.Equal(9795.75m, synthOrderBook.Asks.Max(x => x.Price), 8);
+            Assert.Equal(9968.13827158m, synthOrderBook.Bids.Min(x => x.Price), 8);
+            Assert.Equal(9705.30m, synthOrderBook.Asks.Min(x => x.Price), 8);
+            Assert.Equal(0.00099206m, synthOrderBook.Bids.Max(x => x.Volume), 8);
+            Assert.Equal(0.00091877m, synthOrderBook.Asks.Max(x => x.Volume), 8);
+            Assert.Equal(0.00029240m, synthOrderBook.Bids.Min(x => x.Volume), 8);
+            Assert.Equal(0.00051507m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            Assert.Equal(timestamp1, synthOrderBook.Timestamp);
+            Assert.Equal(2, synthOrderBook.OriginalOrderBooks.Count);
         }
 
 
@@ -409,13 +409,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var goodOrderBook2 = new OrderBook(exchange, "BTCJPY", new List<VolumePrice>(), new List<VolumePrice>(), timestamp);
 
             // AssetPair is not set in order book
-            Assert.Throws<ArgumentException>(() => CrossRate.FromOrderBooks(orderBookWithEmptyAssetPair, goodOrderBook1, goodOrderBook2, assetPair));
-            Assert.Throws<ArgumentException>(() => CrossRate.FromOrderBooks(goodOrderBook1, orderBookWithEmptyAssetPair, goodOrderBook2, assetPair));
-            Assert.Throws<ArgumentException>(() => CrossRate.FromOrderBooks(goodOrderBook1, goodOrderBook2, orderBookWithEmptyAssetPair, assetPair));
+            Assert.Throws<ArgumentException>(() => SynthOrderBook.FromOrderBooks(orderBookWithEmptyAssetPair, goodOrderBook1, goodOrderBook2, assetPair));
+            Assert.Throws<ArgumentException>(() => SynthOrderBook.FromOrderBooks(goodOrderBook1, orderBookWithEmptyAssetPair, goodOrderBook2, assetPair));
+            Assert.Throws<ArgumentException>(() => SynthOrderBook.FromOrderBooks(goodOrderBook1, goodOrderBook2, orderBookWithEmptyAssetPair, assetPair));
 
             orderBookWithEmptyAssetPair.SetAssetPair("EUR");
 
-            Assert.Throws<ArgumentException>(() => CrossRate.FromOrderBooks(orderBookWithEmptyAssetPair, goodOrderBook1, goodOrderBook2, new AssetPair()));
+            Assert.Throws<ArgumentException>(() => SynthOrderBook.FromOrderBooks(orderBookWithEmptyAssetPair, goodOrderBook1, goodOrderBook2, new AssetPair()));
         }
 
         [Fact]
@@ -468,23 +468,23 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 timestamp3);
             jpyUsdOrderBook.SetAssetPair("JPY");
 
-            var crossRate = CrossRate.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
-            Assert.Equal(CrossRate.GetSourcesPath(exchange1, exchange2, exchange3), crossRate.Source);
-            Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
-            Assert.Equal(targetAssetPair, crossRate.AssetPair);
-            Assert.Equal(CrossRate.GetConversionPath(exchange1, btcEur, exchange2, eurJpy, exchange3, jpyUsd), crossRate.ConversionPath);
-            Assert.Equal(8, crossRate.Bids.Count);
-            Assert.Equal(27, crossRate.Asks.Count);
-            Assert.Equal(8744.894520m, crossRate.Bids.Max(x => x.Price), 8);
-            Assert.Equal(8984.820600m, crossRate.Asks.Max(x => x.Price), 8);
-            Assert.Equal(8665.319000m, crossRate.Bids.Min(x => x.Price), 8);
-            Assert.Equal(8824.669920m, crossRate.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00000948m, crossRate.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00001242m, crossRate.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00000522m, crossRate.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00000305m, crossRate.Asks.Min(x => x.Volume), 8);
-            Assert.Equal(timestamp1, crossRate.Timestamp);
-            Assert.Equal(3, crossRate.OriginalOrderBooks.Count);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
+            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange1, exchange2, exchange3), synthOrderBook.Source);
+            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
+            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
+            Assert.Equal(SynthOrderBook.GetConversionPath(exchange1, btcEur, exchange2, eurJpy, exchange3, jpyUsd), synthOrderBook.ConversionPath);
+            Assert.Equal(8, synthOrderBook.Bids.Count);
+            Assert.Equal(27, synthOrderBook.Asks.Count);
+            Assert.Equal(8744.894520m, synthOrderBook.Bids.Max(x => x.Price), 8);
+            Assert.Equal(8984.820600m, synthOrderBook.Asks.Max(x => x.Price), 8);
+            Assert.Equal(8665.319000m, synthOrderBook.Bids.Min(x => x.Price), 8);
+            Assert.Equal(8824.669920m, synthOrderBook.Asks.Min(x => x.Price), 8);
+            Assert.Equal(0.00000948m, synthOrderBook.Bids.Max(x => x.Volume), 8);
+            Assert.Equal(0.00001242m, synthOrderBook.Asks.Max(x => x.Volume), 8);
+            Assert.Equal(0.00000522m, synthOrderBook.Bids.Min(x => x.Volume), 8);
+            Assert.Equal(0.00000305m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            Assert.Equal(timestamp1, synthOrderBook.Timestamp);
+            Assert.Equal(3, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
@@ -537,23 +537,23 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 timestamp3);
             jpyUsdOrderBook.SetAssetPair("JPY");
 
-            var crossRate = CrossRate.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
-            Assert.Equal(CrossRate.GetSourcesPath(exchange1, exchange2, exchange3), crossRate.Source);
-            Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
-            Assert.Equal(targetAssetPair, crossRate.AssetPair);
-            Assert.Equal(CrossRate.GetConversionPath(exchange1, btcEur, exchange2, eurJpy, exchange3, usdJpy), crossRate.ConversionPath);
-            Assert.Equal(12, crossRate.Bids.Count);
-            Assert.Equal(18, crossRate.Asks.Count);
-            Assert.Equal(8747.767350m, crossRate.Bids.Max(x => x.Price), 8);
-            Assert.Equal(8981.869920m, crossRate.Asks.Max(x => x.Price), 8);
-            Assert.Equal(8667.217000m, crossRate.Bids.Min(x => x.Price), 8);
-            Assert.Equal(8822.737440m, crossRate.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00123288m, crossRate.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00101998m, crossRate.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00034294m, crossRate.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00040872m, crossRate.Asks.Min(x => x.Volume), 8);
-            Assert.Equal(timestamp1, crossRate.Timestamp);
-            Assert.Equal(3, crossRate.OriginalOrderBooks.Count);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
+            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange1, exchange2, exchange3), synthOrderBook.Source);
+            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
+            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
+            Assert.Equal(SynthOrderBook.GetConversionPath(exchange1, btcEur, exchange2, eurJpy, exchange3, usdJpy), synthOrderBook.ConversionPath);
+            Assert.Equal(12, synthOrderBook.Bids.Count);
+            Assert.Equal(18, synthOrderBook.Asks.Count);
+            Assert.Equal(8747.767350m, synthOrderBook.Bids.Max(x => x.Price), 8);
+            Assert.Equal(8981.869920m, synthOrderBook.Asks.Max(x => x.Price), 8);
+            Assert.Equal(8667.217000m, synthOrderBook.Bids.Min(x => x.Price), 8);
+            Assert.Equal(8822.737440m, synthOrderBook.Asks.Min(x => x.Price), 8);
+            Assert.Equal(0.00123288m, synthOrderBook.Bids.Max(x => x.Volume), 8);
+            Assert.Equal(0.00101998m, synthOrderBook.Asks.Max(x => x.Volume), 8);
+            Assert.Equal(0.00034294m, synthOrderBook.Bids.Min(x => x.Volume), 8);
+            Assert.Equal(0.00040872m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            Assert.Equal(timestamp1, synthOrderBook.Timestamp);
+            Assert.Equal(3, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
@@ -606,23 +606,23 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 timestamp3);
             jpyUsdOrderBook.SetAssetPair("JPY");
 
-            var crossRate = CrossRate.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
-            Assert.Equal(CrossRate.GetSourcesPath(exchange1, exchange2, exchange3), crossRate.Source);
-            Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
-            Assert.Equal(targetAssetPair, crossRate.AssetPair);
-            Assert.Equal(CrossRate.GetConversionPath(exchange1, btcEur, exchange2, eurJpy, exchange3, jpyUsd), crossRate.ConversionPath);
-            Assert.Equal(8, crossRate.Bids.Count);
-            Assert.Equal(27, crossRate.Asks.Count);
-            Assert.Equal(8744.894520m, crossRate.Bids.Max(x => x.Price));
-            Assert.Equal(8984.820600m, crossRate.Asks.Max(x => x.Price));
-            Assert.Equal(8665.319000m, crossRate.Bids.Min(x => x.Price));
-            Assert.Equal(8824.669920m, crossRate.Asks.Min(x => x.Price));
-            Assert.Equal(0.00000948m, crossRate.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00001242m, crossRate.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00000522m, crossRate.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00000305m, crossRate.Asks.Min(x => x.Volume), 8);
-            Assert.Equal(timestamp1, crossRate.Timestamp);
-            Assert.Equal(3, crossRate.OriginalOrderBooks.Count);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
+            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange1, exchange2, exchange3), synthOrderBook.Source);
+            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
+            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
+            Assert.Equal(SynthOrderBook.GetConversionPath(exchange1, btcEur, exchange2, eurJpy, exchange3, jpyUsd), synthOrderBook.ConversionPath);
+            Assert.Equal(8, synthOrderBook.Bids.Count);
+            Assert.Equal(27, synthOrderBook.Asks.Count);
+            Assert.Equal(8744.894520m, synthOrderBook.Bids.Max(x => x.Price));
+            Assert.Equal(8984.820600m, synthOrderBook.Asks.Max(x => x.Price));
+            Assert.Equal(8665.319000m, synthOrderBook.Bids.Min(x => x.Price));
+            Assert.Equal(8824.669920m, synthOrderBook.Asks.Min(x => x.Price));
+            Assert.Equal(0.00000948m, synthOrderBook.Bids.Max(x => x.Volume), 8);
+            Assert.Equal(0.00001242m, synthOrderBook.Asks.Max(x => x.Volume), 8);
+            Assert.Equal(0.00000522m, synthOrderBook.Bids.Min(x => x.Volume), 8);
+            Assert.Equal(0.00000305m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            Assert.Equal(timestamp1, synthOrderBook.Timestamp);
+            Assert.Equal(3, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
@@ -675,23 +675,23 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 timestamp3);
             jpyUsdOrderBook.SetAssetPair("JPY");
 
-            var crossRate = CrossRate.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
-            Assert.Equal(CrossRate.GetSourcesPath(exchange1, exchange2, exchange3), crossRate.Source);
-            Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
-            Assert.Equal(targetAssetPair, crossRate.AssetPair);
-            Assert.Equal(CrossRate.GetConversionPath(exchange1, eurBtc, exchange2, eurJpy, exchange3, jpyUsd), crossRate.ConversionPath);
-            Assert.Equal(12, crossRate.Bids.Count);
-            Assert.Equal(18, crossRate.Asks.Count);
-            Assert.Equal(8780.78328m, crossRate.Bids.Max(x => x.Price), 8);
-            Assert.Equal(8948.0979m, crossRate.Asks.Max(x => x.Price), 8);
-            Assert.Equal(8689.0596m, crossRate.Bids.Min(x => x.Price), 8);
-            Assert.Equal(8800.5588m, crossRate.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00000946m, crossRate.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00001245m, crossRate.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.0000052m, crossRate.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00000306m, crossRate.Asks.Min(x => x.Volume), 8);
-            Assert.Equal(timestamp1, crossRate.Timestamp);
-            Assert.Equal(3, crossRate.OriginalOrderBooks.Count);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
+            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange1, exchange2, exchange3), synthOrderBook.Source);
+            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
+            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
+            Assert.Equal(SynthOrderBook.GetConversionPath(exchange1, eurBtc, exchange2, eurJpy, exchange3, jpyUsd), synthOrderBook.ConversionPath);
+            Assert.Equal(12, synthOrderBook.Bids.Count);
+            Assert.Equal(18, synthOrderBook.Asks.Count);
+            Assert.Equal(8780.78328m, synthOrderBook.Bids.Max(x => x.Price), 8);
+            Assert.Equal(8948.0979m, synthOrderBook.Asks.Max(x => x.Price), 8);
+            Assert.Equal(8689.0596m, synthOrderBook.Bids.Min(x => x.Price), 8);
+            Assert.Equal(8800.5588m, synthOrderBook.Asks.Min(x => x.Price), 8);
+            Assert.Equal(0.00000946m, synthOrderBook.Bids.Max(x => x.Volume), 8);
+            Assert.Equal(0.00001245m, synthOrderBook.Asks.Max(x => x.Volume), 8);
+            Assert.Equal(0.0000052m, synthOrderBook.Bids.Min(x => x.Volume), 8);
+            Assert.Equal(0.00000306m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            Assert.Equal(timestamp1, synthOrderBook.Timestamp);
+            Assert.Equal(3, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
@@ -744,23 +744,23 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 timestamp3);
             jpyUsdOrderBook.SetAssetPair("JPY");
 
-            var crossRate = CrossRate.FromOrderBooks(btcEurOrderBook, jpyEurOrderBook, jpyUsdOrderBook, targetAssetPair);
-            Assert.Equal(CrossRate.GetSourcesPath(exchange1, exchange2, exchange3), crossRate.Source);
-            Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
-            Assert.Equal(targetAssetPair, crossRate.AssetPair);
-            Assert.Equal(CrossRate.GetConversionPath(exchange1, btcEur, exchange2, jpyEur, exchange3, usdJpy), crossRate.ConversionPath);
-            Assert.Equal(12, crossRate.Bids.Count);
-            Assert.Equal(18, crossRate.Asks.Count);
-            Assert.Equal(8747.76735m, crossRate.Bids.Max(x => x.Price), 8);
-            Assert.Equal(8981.86992m, crossRate.Asks.Max(x => x.Price), 8);
-            Assert.Equal(8667.217m, crossRate.Bids.Min(x => x.Price), 8);
-            Assert.Equal(8822.73744m, crossRate.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00000941m, crossRate.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00001138m, crossRate.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00000526m, crossRate.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00000305m, crossRate.Asks.Min(x => x.Volume), 8);
-            Assert.Equal(timestamp1, crossRate.Timestamp);
-            Assert.Equal(3, crossRate.OriginalOrderBooks.Count);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, jpyEurOrderBook, jpyUsdOrderBook, targetAssetPair);
+            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange1, exchange2, exchange3), synthOrderBook.Source);
+            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
+            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
+            Assert.Equal(SynthOrderBook.GetConversionPath(exchange1, btcEur, exchange2, jpyEur, exchange3, usdJpy), synthOrderBook.ConversionPath);
+            Assert.Equal(12, synthOrderBook.Bids.Count);
+            Assert.Equal(18, synthOrderBook.Asks.Count);
+            Assert.Equal(8747.76735m, synthOrderBook.Bids.Max(x => x.Price), 8);
+            Assert.Equal(8981.86992m, synthOrderBook.Asks.Max(x => x.Price), 8);
+            Assert.Equal(8667.217m, synthOrderBook.Bids.Min(x => x.Price), 8);
+            Assert.Equal(8822.73744m, synthOrderBook.Asks.Min(x => x.Price), 8);
+            Assert.Equal(0.00000941m, synthOrderBook.Bids.Max(x => x.Volume), 8);
+            Assert.Equal(0.00001138m, synthOrderBook.Asks.Max(x => x.Volume), 8);
+            Assert.Equal(0.00000526m, synthOrderBook.Bids.Min(x => x.Volume), 8);
+            Assert.Equal(0.00000305m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            Assert.Equal(timestamp1, synthOrderBook.Timestamp);
+            Assert.Equal(3, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
@@ -813,23 +813,23 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 timestamp3);
             jpyUsdOrderBook.SetAssetPair("JPY");
 
-            var crossRate = CrossRate.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
-            Assert.Equal(CrossRate.GetSourcesPath(exchange1, exchange2, exchange3), crossRate.Source);
-            Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
-            Assert.Equal(targetAssetPair, crossRate.AssetPair);
-            Assert.Equal(CrossRate.GetConversionPath(exchange1, eurBtc, exchange2, eurJpy, exchange3, usdJpy), crossRate.ConversionPath);
-            Assert.Equal(18, crossRate.Bids.Count);
-            Assert.Equal(12, crossRate.Asks.Count);
-            Assert.Equal(8783.6679m, crossRate.Bids.Max(x => x.Price), 8);
-            Assert.Equal(8945.15928m, crossRate.Asks.Max(x => x.Price), 8);
-            Assert.Equal(8690.9628m, crossRate.Bids.Min(x => x.Price), 8);
-            Assert.Equal(8798.6316m, crossRate.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00122951m, crossRate.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00102138m, crossRate.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00034154m, crossRate.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00041040m, crossRate.Asks.Min(x => x.Volume), 8);
-            Assert.Equal(timestamp1, crossRate.Timestamp);
-            Assert.Equal(3, crossRate.OriginalOrderBooks.Count);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
+            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange1, exchange2, exchange3), synthOrderBook.Source);
+            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
+            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
+            Assert.Equal(SynthOrderBook.GetConversionPath(exchange1, eurBtc, exchange2, eurJpy, exchange3, usdJpy), synthOrderBook.ConversionPath);
+            Assert.Equal(18, synthOrderBook.Bids.Count);
+            Assert.Equal(12, synthOrderBook.Asks.Count);
+            Assert.Equal(8783.6679m, synthOrderBook.Bids.Max(x => x.Price), 8);
+            Assert.Equal(8945.15928m, synthOrderBook.Asks.Max(x => x.Price), 8);
+            Assert.Equal(8690.9628m, synthOrderBook.Bids.Min(x => x.Price), 8);
+            Assert.Equal(8798.6316m, synthOrderBook.Asks.Min(x => x.Price), 8);
+            Assert.Equal(0.00122951m, synthOrderBook.Bids.Max(x => x.Volume), 8);
+            Assert.Equal(0.00102138m, synthOrderBook.Asks.Max(x => x.Volume), 8);
+            Assert.Equal(0.00034154m, synthOrderBook.Bids.Min(x => x.Volume), 8);
+            Assert.Equal(0.00041040m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            Assert.Equal(timestamp1, synthOrderBook.Timestamp);
+            Assert.Equal(3, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
@@ -882,23 +882,23 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 timestamp3);
             jpyUsdOrderBook.SetAssetPair("JPY");
 
-            var crossRate = CrossRate.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
-            Assert.Equal(CrossRate.GetSourcesPath(exchange1, exchange2, exchange3), crossRate.Source);
-            Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
-            Assert.Equal(targetAssetPair, crossRate.AssetPair);
-            Assert.Equal(CrossRate.GetConversionPath(exchange1, eurBtc, exchange2, jpyEur, exchange3, jpyUsd), crossRate.ConversionPath);
-            Assert.Equal(18, crossRate.Bids.Count);
-            Assert.Equal(12, crossRate.Asks.Count);
-            Assert.Equal(8981.86992m, crossRate.Bids.Max(x => x.Price), 8);
-            Assert.Equal(8747.76735m, crossRate.Asks.Max(x => x.Price), 8);
-            Assert.Equal(8822.73744m, crossRate.Bids.Min(x => x.Price), 8);
-            Assert.Equal(8667.217m, crossRate.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00000931m, crossRate.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00000941m, crossRate.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00000305m, crossRate.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00000313m, crossRate.Asks.Min(x => x.Volume), 8);
-            Assert.Equal(timestamp1, crossRate.Timestamp);
-            Assert.Equal(3, crossRate.OriginalOrderBooks.Count);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
+            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange1, exchange2, exchange3), synthOrderBook.Source);
+            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
+            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
+            Assert.Equal(SynthOrderBook.GetConversionPath(exchange1, eurBtc, exchange2, jpyEur, exchange3, jpyUsd), synthOrderBook.ConversionPath);
+            Assert.Equal(18, synthOrderBook.Bids.Count);
+            Assert.Equal(12, synthOrderBook.Asks.Count);
+            Assert.Equal(8981.86992m, synthOrderBook.Bids.Max(x => x.Price), 8);
+            Assert.Equal(8747.76735m, synthOrderBook.Asks.Max(x => x.Price), 8);
+            Assert.Equal(8822.73744m, synthOrderBook.Bids.Min(x => x.Price), 8);
+            Assert.Equal(8667.217m, synthOrderBook.Asks.Min(x => x.Price), 8);
+            Assert.Equal(0.00000931m, synthOrderBook.Bids.Max(x => x.Volume), 8);
+            Assert.Equal(0.00000941m, synthOrderBook.Asks.Max(x => x.Volume), 8);
+            Assert.Equal(0.00000305m, synthOrderBook.Bids.Min(x => x.Volume), 8);
+            Assert.Equal(0.00000313m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            Assert.Equal(timestamp1, synthOrderBook.Timestamp);
+            Assert.Equal(3, synthOrderBook.OriginalOrderBooks.Count);
         }
         
         [Fact]
@@ -951,23 +951,23 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 timestamp3);
             jpyUsdOrderBook.SetAssetPair("JPY");
 
-            var crossRate = CrossRate.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
-            Assert.Equal(CrossRate.GetSourcesPath(exchange1, exchange2, exchange3), crossRate.Source);
-            Assert.Equal(targetAssetPair.Name, crossRate.AssetPairStr);
-            Assert.Equal(targetAssetPair, crossRate.AssetPair);
-            Assert.Equal(CrossRate.GetConversionPath(exchange1, eurBtc, exchange2, jpyEur, exchange3, usdJpy), crossRate.ConversionPath);
-            Assert.Equal(27, crossRate.Bids.Count);
-            Assert.Equal(8, crossRate.Asks.Count);
-            Assert.Equal(8984.8206m, crossRate.Bids.Max(x => x.Price), 8);
-            Assert.Equal(8744.89452m, crossRate.Asks.Max(x => x.Price), 8);
-            Assert.Equal(8824.66992m, crossRate.Bids.Min(x => x.Price), 8);
-            Assert.Equal(8665.319m, crossRate.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00001138m, crossRate.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00000941m, crossRate.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00000305m, crossRate.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00000526m, crossRate.Asks.Min(x => x.Volume), 8);
-            Assert.Equal(timestamp1, crossRate.Timestamp);
-            Assert.Equal(3, crossRate.OriginalOrderBooks.Count);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
+            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange1, exchange2, exchange3), synthOrderBook.Source);
+            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
+            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
+            Assert.Equal(SynthOrderBook.GetConversionPath(exchange1, eurBtc, exchange2, jpyEur, exchange3, usdJpy), synthOrderBook.ConversionPath);
+            Assert.Equal(27, synthOrderBook.Bids.Count);
+            Assert.Equal(8, synthOrderBook.Asks.Count);
+            Assert.Equal(8984.8206m, synthOrderBook.Bids.Max(x => x.Price), 8);
+            Assert.Equal(8744.89452m, synthOrderBook.Asks.Max(x => x.Price), 8);
+            Assert.Equal(8824.66992m, synthOrderBook.Bids.Min(x => x.Price), 8);
+            Assert.Equal(8665.319m, synthOrderBook.Asks.Min(x => x.Price), 8);
+            Assert.Equal(0.00001138m, synthOrderBook.Bids.Max(x => x.Volume), 8);
+            Assert.Equal(0.00000941m, synthOrderBook.Asks.Max(x => x.Volume), 8);
+            Assert.Equal(0.00000305m, synthOrderBook.Bids.Min(x => x.Volume), 8);
+            Assert.Equal(0.00000526m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            Assert.Equal(timestamp1, synthOrderBook.Timestamp);
+            Assert.Equal(3, synthOrderBook.OriginalOrderBooks.Count);
         }
     }
 }

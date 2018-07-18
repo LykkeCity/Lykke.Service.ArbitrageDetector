@@ -42,14 +42,28 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         }
 
         [HttpGet]
-        [Route("crossRates")]
-        [SwaggerOperation("CrossRates")]
+        [Route("synthOrderBooks")]
+        [SwaggerOperation("SynthOrderBooks")]
+        [ProducesResponseType(typeof(IEnumerable<SynthOrderBookRow>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ResponseCache(Duration = 1)]
+        public IActionResult SynthOrderBooks()
+        {
+            var result = _arbitrageDetectorService.GetSynthOrderBooks().Select(x => new SynthOrderBookRow(x)).ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("synthOrderBooks")]
+        [SwaggerOperation("SynthOrderBooks")]
         [ProducesResponseType(typeof(IEnumerable<CrossRateRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ResponseCache(Duration = 1)]
+        [Obsolete]
         public IActionResult CrossRates()
         {
-            var result = _arbitrageDetectorService.GetCrossRates().Select(x => new CrossRateRow(x)).ToList();
+            var result = _arbitrageDetectorService.GetSynthOrderBooks().Select(x => new CrossRateRow(x)).ToList();
 
             return Ok(result);
         }

@@ -24,12 +24,21 @@ namespace Lykke.Service.ArbitrageDetector.Client
         /// <param name="exchange">Name of an exchange.</param>
         /// <param name="assetPair">Name of an instrument</param>
         /// <returns>A collection of OrderBook entities.</returns>
+        [Obsolete]
         Task<IEnumerable<OrderBookRow>> NewOrderBooksAsync(string exchange, string assetPair);
 
         /// <summary>
-        /// Returns a collection of CrossRate entities.
+        /// Returns a collection of SynthOrderBook entities.
         /// </summary>
-        /// <returns>A collection of CrossRate entities.</returns>
+        /// <returns>A collection of SynthOrderBook entities.</returns>
+        Task<IEnumerable<SynthOrderBookRow>> SynthOrderBooksAsync();
+
+
+        /// <summary>
+        /// Returns a collection of SynthOrderBook entities.
+        /// </summary>
+        /// <returns>A collection of SynthOrderBook entities.</returns>
+        [Obsolete]
         Task<IEnumerable<CrossRateRow>> CrossRatesAsync();
 
         /// <summary> 

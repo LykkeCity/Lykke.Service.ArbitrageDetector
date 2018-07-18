@@ -23,9 +23,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public int CrossPairsCount { get; set; }
 
         /// <summary>
-        /// Count of cross rates.
+        /// Count of synthetic order books.
         /// </summary>
-        public int CrossRatesCount { get; set; }
+        public int SynthOrderBooksCount { get; set; }
 
         /// <summary>
         /// Spread

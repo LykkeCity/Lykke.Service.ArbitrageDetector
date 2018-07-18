@@ -46,14 +46,14 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         }
 
         [Fact]
-        public async Task CrossRatesTest()
+        public async Task SynthOrderBooksTest()
         {
-            var crossRates = (await Client.CrossRatesAsync()).ToList();
-            Assert.NotNull(crossRates);
-            Assert.NotEmpty(crossRates);
+            var synthOrderBooks = (await Client.SynthOrderBooksAsync()).ToList();
+            Assert.NotNull(synthOrderBooks);
+            Assert.NotEmpty(synthOrderBooks);
 
-            var crossRate = crossRates.First();
-            AssertCrossRateRow(crossRate);
+            var synthOrderBook = synthOrderBooks.First();
+            AssertSynthOrderBookRow(synthOrderBook);
         }
 
         [Fact]
@@ -410,40 +410,40 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             Assert.NotEqual(default, orderBookRow.Timestamp);
         }
 
-        private void AssertCrossRate(CrossRate crossRate)
+        private void AssertSynthOrderBook(SynthOrderBook synthOrderBook)
         {
-            AssertOrderBook(crossRate);
-            Assert.NotEmpty(crossRate.ConversionPath);
-            Assert.NotEmpty(crossRate.OriginalOrderBooks);
-            foreach (var orderBook in crossRate.OriginalOrderBooks)
+            AssertOrderBook(synthOrderBook);
+            Assert.NotEmpty(synthOrderBook.ConversionPath);
+            Assert.NotEmpty(synthOrderBook.OriginalOrderBooks);
+            foreach (var orderBook in synthOrderBook.OriginalOrderBooks)
                 AssertOrderBook(orderBook);
         }
 
-        private void AssertCrossRateRow(CrossRateRow crossRate)
+        private void AssertSynthOrderBookRow(SynthOrderBookRow synthOrderBook)
         {
-            Assert.NotEmpty(crossRate.Source);
-            Assert.False(crossRate.AssetPair.IsEmpty());
-            if (crossRate.BestBid.HasValue)
+            Assert.NotEmpty(synthOrderBook.Source);
+            Assert.False(synthOrderBook.AssetPair.IsEmpty());
+            if (synthOrderBook.BestBid.HasValue)
             {
-                Assert.NotEqual(default, crossRate.BestBid.Value.Price);
-                Assert.NotEqual(default, crossRate.BestBid.Value.Volume);
+                Assert.NotEqual(default, synthOrderBook.BestBid.Value.Price);
+                Assert.NotEqual(default, synthOrderBook.BestBid.Value.Volume);
             }
 
-            if (crossRate.BestAsk.HasValue)
+            if (synthOrderBook.BestAsk.HasValue)
             {
-                Assert.NotEqual(default, crossRate.BestAsk.Value.Price);
-                Assert.NotEqual(default, crossRate.BestAsk.Value.Volume);
+                Assert.NotEqual(default, synthOrderBook.BestAsk.Value.Price);
+                Assert.NotEqual(default, synthOrderBook.BestAsk.Value.Volume);
             }
 
-            Assert.NotEmpty(crossRate.ConversionPath);
-            Assert.NotEqual(default, crossRate.Timestamp);
+            Assert.NotEmpty(synthOrderBook.ConversionPath);
+            Assert.NotEqual(default, synthOrderBook.Timestamp);
         }
 
         private void AssertArbitrage(Arbitrage arbitrage, bool isActive)
         {
             Assert.False(arbitrage.AssetPair.IsEmpty());
-            AssertCrossRate(arbitrage.AskCrossRate);
-            AssertCrossRate(arbitrage.BidCrossRate);
+            AssertSynthOrderBook(arbitrage.AskSynthOrderBook);
+            AssertSynthOrderBook(arbitrage.BidSynthOrderBook);
             Assert.NotEqual(default, arbitrage.Bid.Price);
             Assert.NotEqual(default, arbitrage.Bid.Volume);
             Assert.NotEqual(default, arbitrage.Ask.Price);
