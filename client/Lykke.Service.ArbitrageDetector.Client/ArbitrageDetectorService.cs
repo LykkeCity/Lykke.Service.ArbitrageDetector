@@ -116,21 +116,9 @@ namespace Lykke.Service.ArbitrageDetector.Client
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync(string basePair, string crossPair)
+        public async Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync(string basePair, string crossPair, decimal minVolumeInUsd = 0)
         {
             return await _runner.RunAsync(() => _arbitrageDetectorApi.LykkeArbitrages(basePair, crossPair));
-        }
-
-        /// <inheritdoc />
-        public async Task<Settings> GetSettingsAsync()
-        {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.GetSettings());
-        }
-
-        /// <inheritdoc />
-        public async Task SetSettingsAsync(Settings settings)
-        {
-            await _runner.RunAsync(() => _arbitrageDetectorApi.SetSettings(settings));
         }
 
         /// <inheritdoc />
@@ -149,6 +137,18 @@ namespace Lykke.Service.ArbitrageDetector.Client
         public async Task<Matrix> MatrixHistory(string assetPair, DateTime dateTime)
         {
             return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixHistory(assetPair, dateTime));
+        }
+
+        /// <inheritdoc />
+        public async Task<Settings> GetSettingsAsync()
+        {
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.GetSettings());
+        }
+
+        /// <inheritdoc />
+        public async Task SetSettingsAsync(Settings settings)
+        {
+            await _runner.RunAsync(() => _arbitrageDetectorApi.SetSettings(settings));
         }
 
         /// <inheritdoc />

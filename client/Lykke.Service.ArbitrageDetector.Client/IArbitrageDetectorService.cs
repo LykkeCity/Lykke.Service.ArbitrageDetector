@@ -83,7 +83,7 @@ namespace Lykke.Service.ArbitrageDetector.Client
         /// Returns a collection of LykkeArbitrageRow entities.
         /// </summary>
         /// <returns>A collection of Lykke Arbitrage entities.</returns>
-        Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync(string basePair, string crossPair);
+        Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync(string basePair, string crossPair, decimal minVolumeInUsd = 0);
 
         /// <summary>
         /// Get matrix datetime stamps by date.
