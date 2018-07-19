@@ -170,9 +170,9 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ProducesResponseType(typeof(IEnumerable<LykkeArbitrageRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "*" })]
-        public IActionResult LykkeArbitrages(string basePair, string crossPair)
+        public IActionResult LykkeArbitrages(string basePair, string crossPair, decimal minVolumeInUsd = 0)
         {
-            var result = _lykkeArbitrageDetectorService.GetArbitrages(basePair, crossPair)
+            var result = _lykkeArbitrageDetectorService.GetArbitrages(basePair, crossPair, minVolumeInUsd)
                 .Select(x => new LykkeArbitrageRow(x))
                 .OrderBy(x => x.BaseAssetPair.Name)
                 .ToList();
