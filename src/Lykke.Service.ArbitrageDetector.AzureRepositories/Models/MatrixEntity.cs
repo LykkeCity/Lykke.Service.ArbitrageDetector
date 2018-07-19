@@ -11,7 +11,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
     public class MatrixEntity : AzureTableEntity
     {
         public const string LykkeExchangeMustContain = "lykke";
-        public string AssetPair => PartitionKey.Split(" - ")[1];
+        public string AssetPair => PartitionKey.Split(" - ")[0];
 
         /// <summary>
         /// Timestamp for current matrix.
@@ -44,7 +44,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
 
         public static string GeneratePartitionKey(string assetPair, DateTime date)
         {
-            return $"{date.ToIsoDate()} - {assetPair}";
+            return $"{assetPair} - {date.ToIsoDate()}";
         }
 
         public static string GenerateRowKey(DateTime dateTime)
@@ -59,7 +59,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
 
         public static string GenerateBlobId(string assetPair, DateTime dateTime)
         {
-            return $"{dateTime.ToIsoDateTime()} - {assetPair}";
+            return $"{assetPair} - {dateTime.ToIsoDateTime()}";
         }
 
         public override string ToString()

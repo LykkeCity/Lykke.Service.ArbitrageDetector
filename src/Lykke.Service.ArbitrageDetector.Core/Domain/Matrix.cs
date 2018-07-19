@@ -32,10 +32,27 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
             var lykkeIndex = Exchanges.IndexOf(lykkeExchange);
             var lykkeRow = Cells.ElementAt(lykkeIndex);
-            var minSpreadInRow = lykkeRow.Where(x => x?.Spread != null).Select(x => x.Spread.Value).Min(x => x);
+            var spreadsInRow = lykkeRow.Where(x => x?.Spread != null).Select(x => x.Spread.Value).ToList();
+            decimal? minSpreadInRow = null;
+            if (spreadsInRow.Any())
+                minSpreadInRow = spreadsInRow.Min();
+
             var lykkeColumn = Cells.Select(x => x.ElementAt(lykkeIndex));
-            var minSpreadInColumn = lykkeColumn.Where(x => x?.Spread != null).Select(x => x.Spread.Value).Min(x => x);
-            var result = Math.Min(minSpreadInRow, minSpreadInColumn);
+            decimal? minSpreadInColumn = null;
+            var sreadsInColumn = lykkeColumn.Where(x => x?.Spread != null).Select(x => x.Spread.Value).ToList();
+            if (sreadsInColumn.Any())
+                minSpreadInColumn = sreadsInColumn.Min();
+
+            if (!minSpreadInRow.HasValue && !minSpreadInColumn.HasValue)
+                return null;
+
+            if (minSpreadInRow.HasValue && !minSpreadInColumn.HasValue)
+                return minSpreadInRow;
+
+            if (!minSpreadInRow.HasValue && minSpreadInColumn.HasValue)
+                return minSpreadInColumn;
+
+            var result = Math.Min(minSpreadInRow.Value, minSpreadInColumn.Value);
 
             return result;
         }
