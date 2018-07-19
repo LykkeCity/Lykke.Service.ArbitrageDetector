@@ -592,6 +592,11 @@
             Volume
             </summary>
         </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.VolumeInUsd">
+            <summary>
+            Volume in USD
+            </summary>
+        </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.BaseAsk">
             <summary>
             Base ask

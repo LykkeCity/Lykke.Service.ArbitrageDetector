@@ -54,6 +54,11 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public decimal Volume { get; }
 
         /// <summary>
+        /// Volume in USD
+        /// </summary>
+        public decimal? VolumeInUsd { get; }
+
+        /// <summary>
         /// Base ask
         /// </summary>
         public decimal? BaseAsk { get; }
@@ -87,6 +92,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
             BaseSide = domain.BaseSide;
             ConversionPath = domain.ConversionPath.Replace("lykke-", "");
             Volume = Math.Round(domain.Volume, 8);
+            VolumeInUsd = domain.VolumeInUsd.HasValue ? Math.Round(domain.VolumeInUsd.Value, 8) : (decimal?)null;
             BaseAsk = domain.BaseAsk.HasValue ? Math.Round(domain.BaseAsk.Value, 8) : (decimal?)null;
             BaseBid = domain.BaseBid.HasValue ? Math.Round(domain.BaseBid.Value, 8) : (decimal?)null;
             CrossAsk = domain.CrossAsk.HasValue ? Math.Round(domain.CrossAsk.Value, 8) : (decimal?)null;
