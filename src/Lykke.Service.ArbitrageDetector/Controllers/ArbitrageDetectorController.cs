@@ -185,7 +185,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("MatrixHistoryStamps")]
         [ProducesResponseType(typeof(IEnumerable<DateTime>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ResponseCache(Duration = 60 * 1, VaryByQueryKeys = new[] { "*" })] // 1 minute
+        //[ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "*" })]
         public async Task<IActionResult> MatrixHistoryStamps(string assetPair, DateTime date, bool arbitragesOnly)
         {
             var result = (await _matrixHistoryService.GetStampsAsync(assetPair, date, arbitragesOnly)).ToList();
@@ -198,7 +198,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [SwaggerOperation("MatrixHistoryAssetPairs")]
         [ProducesResponseType(typeof(IEnumerable<string>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ResponseCache(Duration = 60 * 1, VaryByQueryKeys = new[] { "*" })] // 1 minute
+        //ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "*" })]
         public async Task<IActionResult> MatrixHistoryAssetPairs(DateTime date, bool lykkeArbitragesOnly)
         {
             var result = (await _matrixHistoryService.GetAssetPairsAsync(date, lykkeArbitragesOnly)).ToList();
