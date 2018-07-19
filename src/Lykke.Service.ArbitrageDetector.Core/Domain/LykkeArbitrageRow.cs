@@ -48,6 +48,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public decimal Volume { get; }
 
         /// <summary>
+        /// Volume in USD
+        /// </summary>
+        public decimal? VolumeInUsd { get; }
+
+        /// <summary>
         /// Base ask
         /// </summary>
         public decimal? BaseAsk { get; }
@@ -68,7 +73,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public decimal? CrossBid { get; }
 
         public LykkeArbitrageRow(AssetPair baseAssetPair, AssetPair crossAssetPair, decimal spread, string baseSide,
-            string conversionPath, decimal volume, decimal? baseBid, decimal? baseAsk, decimal? crossBid, decimal? crossAsk)
+            string conversionPath, decimal volume, decimal? baseBid, decimal? baseAsk, decimal? crossBid, decimal? crossAsk, decimal? volumeInUsd)
         {
             BaseAssetPair = baseAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(baseAssetPair)) : baseAssetPair;
             CrossAssetPair = crossAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(crossAssetPair)) : crossAssetPair;
@@ -80,6 +85,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             BaseBid = baseBid;
             CrossAsk = crossAsk;
             CrossBid = crossBid;
+            VolumeInUsd = volumeInUsd;
         }
 
         /// <inheritdoc />

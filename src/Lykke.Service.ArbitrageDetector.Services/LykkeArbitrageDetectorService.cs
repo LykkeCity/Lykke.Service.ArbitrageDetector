@@ -93,8 +93,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         if (string.IsNullOrWhiteSpace(baseSide)) // no arbitrages
                             continue;
 
+                        var baseToUsd = Convert(basePair.AssetPair.Base, "USD", _orderBooks.Values.ToList());
+                        var volumeInUsd = volume * baseToUsd;
+
                         var lykkeArbitrage = new LykkeArbitrageRow(basePair.AssetPair, crossPair.AssetPair, spread, baseSide, synthOrderBook.ConversionPath,
-                            volume, basePair.BestBid?.Price, basePair.BestAsk?.Price, synthOrderBook.BestBid?.Price, synthOrderBook.BestAsk?.Price);
+                            volume, basePair.BestBid?.Price, basePair.BestAsk?.Price, synthOrderBook.BestBid?.Price, synthOrderBook.BestAsk?.Price, volumeInUsd);
                         result.Add(lykkeArbitrage);
                     }
                 }
@@ -174,6 +177,38 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     }
                 }
             }
+
+            return result;
+        }
+
+
+        private decimal? Convert(string sourceAsset, string targetAsset, IReadOnlyCollection<OrderBook> orderBooks)
+        {
+            var targetAssetPair = new AssetPair(sourceAsset, targetAsset);
+
+            var synths1 = SynthOrderBook.GetSynthsFrom1(targetAssetPair, orderBooks);
+            if (synths1.Any())
+                return GetMedianAskPrice(synths1.Values);
+
+            var synths2 = SynthOrderBook.GetSynthsFrom2(targetAssetPair, orderBooks);
+            if (synths2.Any())
+                return GetMedianAskPrice(synths2.Values);
+
+            var synths3 = SynthOrderBook.GetSynthsFrom3(targetAssetPair, orderBooks);
+            if (synths3.Any())
+                return GetMedianAskPrice(synths3.Values);
+
+            return null;
+        }
+
+        private decimal? GetMedianAskPrice(IEnumerable<SynthOrderBook> synths)
+        {
+            decimal? result = null;
+
+            var bestAsks = synths.Where(x => x.BestAsk.HasValue).Select(x => x.BestAsk.Value.Price).OrderBy(x => x).ToList();
+
+            if (bestAsks.Any())
+                result = bestAsks.ElementAt(bestAsks.Count / 2);
 
             return result;
         }
