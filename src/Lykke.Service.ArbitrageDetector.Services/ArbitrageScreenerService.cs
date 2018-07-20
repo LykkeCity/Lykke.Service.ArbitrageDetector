@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Autofac;
 using Common;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
@@ -14,40 +16,48 @@ using AssetsAssetPair = Lykke.Service.Assets.Client.Models.AssetPair;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
-    public class ArbitrageScreenerService : TimerPeriod
+    public class ArbitrageScreenerService : IStartable, IStopable
     {
+        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 1, 0);
+        private readonly TimerTrigger _trigger;
         private readonly IAssetsService _assetsService;
         private readonly IRateCalculatorClient _rateCalculatorClient;
         private readonly ILog _log;
 
         public ArbitrageScreenerService(IAssetsService assetsService, IRateCalculatorClient rateCalculatorClient, ILog log, IShutdownManager shutdownManager)
-            : base(60 * 1000, log)
         {
+            shutdownManager?.Register(this);
+
             _assetsService = assetsService ?? throw new ArgumentNullException(nameof(assetsService));
             _rateCalculatorClient = rateCalculatorClient ?? throw new ArgumentNullException(nameof(rateCalculatorClient));
             _log = log ?? throw new ArgumentNullException(nameof(log));
-            shutdownManager?.Register(this);
+
+            _trigger = new TimerTrigger(nameof(ArbitrageDetectorService), DefaultInterval, log, Execute);
         }
 
-        public override async Task Execute()
+        public async Task Execute(ITimerTrigger timer, TimerTriggeredHandlerArgs args, CancellationToken cancellationtoken)
         {
-            IEnumerable<string> arbitragesFrom2Syn = null;
             try
             {
-                var allAssetPirs = await _assetsService.AssetPairGetAllWithHttpMessagesAsync();
-                var allTickPrices = await _rateCalculatorClient.GetMarketProfileAsync();
-
-                var main = GetMain(allAssetPirs.Body);
-                var assets = GetAssets(main);
-
-                arbitragesFrom2Syn = GetArbitragesFrom2SyntheticLists(main, assets, allTickPrices.Profile);
+                await Execute();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine(e);
-                throw;
+                await _log.WriteErrorAsync(GetType().Name, nameof(Execute), ex);
             }
-            
+        }
+        
+        public async Task Execute()
+        {
+            IEnumerable<string> arbitragesFrom2Syn = null;
+
+            var allAssetPirs = await _assetsService.AssetPairGetAllWithHttpMessagesAsync();
+            var allTickPrices = await _rateCalculatorClient.GetMarketProfileAsync();
+
+            var main = GetMain(allAssetPirs.Body);
+            var assets = GetAssets(main);
+
+            arbitragesFrom2Syn = GetArbitragesFrom2SyntheticLists(main, assets, allTickPrices.Profile);
         }
 
         private IList<AssetPair> GetMain(IEnumerable<AssetsAssetPair> assetPairs)
@@ -166,5 +176,24 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             return result;
         }
+
+        #region IStartable, IStopable
+
+        public void Start()
+        {
+            _trigger.Start();
+        }
+
+        public void Stop()
+        {
+            _trigger.Stop();
+        }
+
+        public void Dispose()
+        {
+            _trigger?.Dispose();
+        }
+
+        #endregion
     }
 }

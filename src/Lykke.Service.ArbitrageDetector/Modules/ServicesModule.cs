@@ -1,10 +1,7 @@
 ﻿using System;
 using Autofac;
-using AzureStorage.Tables;
 using Common;
 using Common.Log;
-using Lykke.Service.ArbitrageDetector.AzureRepositories.Models;
-using Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.OrderBookHandlers;
 using Lykke.Service.ArbitrageDetector.RabbitSubscribers;
@@ -32,11 +29,15 @@ namespace Lykke.Service.ArbitrageDetector.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
-            // TODO: must be moved into particular service after Common.TimerPeriod change
-            var settingsRepository = new SettingsRepository(
-                AzureTableStorage<AzureRepositories.Models.Settings>.Create(
-                    _settings.ConnectionString(x => x.ArbitrageDetector.Db.DataConnectionString), nameof(AzureRepositories.Models.Settings), _log));
-            var dbSetings = settingsRepository.GetAsync().GetAwaiter().GetResult();
+            // OutProc Services
+
+            builder.RegisterInstance(new LykkeAssetsService(new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl)))
+                .As<ILykkeAssetsService>()
+                .SingleInstance();
+
+            builder.RegisterInstance(new RateCalculatorClient(_settings.CurrentValue.RateCalculatorServiceClient.ServiceUrl, _log))
+                .As<IRateCalculatorClient>()
+                .SingleInstance();
 
             // Order Book Handlers
 
@@ -46,7 +47,7 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             builder.RegisterType<OrderBookValidator>()
                 .SingleInstance();
 
-            // Services
+            // InProc Services
 
             builder.RegisterType<AssetsService>()
                 .As<IAssetsService>()
@@ -70,17 +71,8 @@ namespace Lykke.Service.ArbitrageDetector.Modules
                 .As<IStopable>()
                 .SingleInstance();
 
-            builder.RegisterInstance(new LykkeAssetsService(new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl)))
-                .As<ILykkeAssetsService>()
-                .SingleInstance();
-
-            builder.RegisterInstance(new RateCalculatorClient(_settings.CurrentValue.RateCalculatorServiceClient.ServiceUrl, _log))
-                .As<IRateCalculatorClient>()
-                .SingleInstance();
-
             builder.RegisterType<MatrixHistoryService>()
                 .As<IMatrixHistoryService>()
-                .WithParameter("interval", dbSetings.MatrixHistoryInterval)
                 .As<IStartable>()
                 .As<IStopable>()
                 .SingleInstance();

@@ -3,7 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Autofac;
 using Common;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Utils;
@@ -16,20 +18,21 @@ using MoreLinq;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
-    public class ArbitrageDetectorService : TimerPeriod, IArbitrageDetectorService
+    public class ArbitrageDetectorService : IArbitrageDetectorService, IStartable, IStopable
     {
+        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 0, 2);
         private readonly ConcurrentDictionary<AssetPairSource, OrderBook> _orderBooks;
         private readonly ConcurrentDictionary<AssetPairSource, SynthOrderBook> _synthOrderBooks;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrages;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrageHistory;
         private bool _restartNeeded;
         private ISettings _s;
+        private readonly TimerTrigger _trigger;
         private readonly ISettingsRepository _settingsRepository;
         private readonly IAssetsService _assetsService;
         private readonly ILog _log;
 
         public ArbitrageDetectorService(ILog log, IShutdownManager shutdownManager, ISettingsRepository settingsRepository, IAssetsService assetsService)
-            : base(2*1000, log)
         {
             shutdownManager?.Register(this);
 
@@ -43,6 +46,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _log = log ?? throw new ArgumentNullException(nameof(log));
 
             InitSettings();
+
+            _trigger = new TimerTrigger(nameof(ArbitrageDetectorService), DefaultInterval, log, Execute);
         }
 
         private void InitSettings()
@@ -81,7 +86,19 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
         }
 
-        public override async Task Execute()
+        public async Task Execute(ITimerTrigger timer, TimerTriggeredHandlerArgs args, CancellationToken cancellationtoken)
+        {
+            try
+            {
+                await Execute();
+            }
+            catch (Exception ex)
+            {
+                await _log.WriteErrorAsync(GetType().Name, nameof(Execute), ex);
+            }
+        }
+
+        public async Task Execute()
         {
             await CalculateSynthOrderBooks();
             await RefreshArbitrages();
@@ -536,8 +553,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     MatrixCell cell;
                     if (row == col)
                     {
-                        cell = null;
-                        cellsRow.Add(cell);
+                        cellsRow.Add(null);
                         continue;
                     }
 
@@ -673,6 +689,25 @@ namespace Lykke.Service.ArbitrageDetector.Services
             await _settingsRepository.InsertOrReplaceAsync(_s);
 
             _restartNeeded = restartNeeded;
+        }
+
+        #endregion
+
+        #region IStartable, IStopable
+
+        public void Start()
+        {
+            _trigger.Start();
+        }
+
+        public void Stop()
+        {
+            _trigger.Stop();
+        }
+
+        public void Dispose()
+        {
+            _trigger?.Dispose();
         }
 
         #endregion

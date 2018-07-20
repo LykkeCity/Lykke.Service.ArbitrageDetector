@@ -1,28 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using Autofac;
 using Common;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
+using Lykke.Service.ArbitrageDetector.Core.Services.Infrastructure;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
-    public class MatrixHistoryService : TimerPeriod, IMatrixHistoryService
+    public class MatrixHistoryService : IMatrixHistoryService, IStartable, IStopable
     {
         private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 5, 0);
+        private readonly TimerTrigger _trigger;
         private readonly IMatrixHistoryRepository _matrixHistoryRepository;
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
+        private readonly ILog _log;
 
-        public MatrixHistoryService(TimeSpan interval, ILog log, IMatrixHistoryRepository matrixHistoryRepository, IArbitrageDetectorService arbitrageDetectorService)
-            // TODO: must be changed after Common.TimerPeriod change
-            : base((int)interval.TotalMilliseconds == 0 ? (int)DefaultInterval.TotalMilliseconds : (int)interval.TotalMilliseconds, log)
+        public MatrixHistoryService(ILog log, IShutdownManager shutdownManager, IMatrixHistoryRepository matrixHistoryRepository, IArbitrageDetectorService arbitrageDetectorService)
         {
+            shutdownManager?.Register(this);
+
             _matrixHistoryRepository = matrixHistoryRepository;
             _arbitrageDetectorService = arbitrageDetectorService;
+            _log = log ?? throw new ArgumentNullException(nameof(log));
 
             InitSettings();
+
+            var settings = _arbitrageDetectorService.GetSettings();
+            _trigger = new TimerTrigger(nameof(MatrixHistoryService), settings.MatrixHistoryInterval, log, Execute);
         }
 
         private void InitSettings()
@@ -41,7 +50,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             if (settings.MatrixHistoryInterval == default)
             {
-                settings.MatrixHistoryInterval = new TimeSpan(0, 0, 5, 0);
+                settings.MatrixHistoryInterval = DefaultInterval;
                 isDirty = true;
             }
 
@@ -55,7 +64,19 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 _arbitrageDetectorService.SetSettings(settings);
         }
 
-        public override async Task Execute()
+        public async Task Execute(ITimerTrigger timer, TimerTriggeredHandlerArgs args, CancellationToken cancellationtoken)
+        {
+            try
+            {
+                await Execute();
+            }
+            catch (Exception ex)
+            {
+                await _log.WriteErrorAsync(GetType().Name, nameof(Execute), ex);
+            }
+        }
+
+        public async Task Execute()
         {
             await SaveMatrixToDatabase();
         }
@@ -104,6 +125,24 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 matrixSignificantSpread = settings.MatrixSignificantSpread;
                 lykkeName = new[] { settings.MatrixHistoryLykkeName };
             }
+        }
+
+        #endregion
+
+        #region IStartable, IStopable
+
+        public void Start()
+        {
+            _trigger.Start();
+        }
+        public void Stop()
+        {
+            _trigger.Stop();
+        }
+
+        public void Dispose()
+        {
+            _trigger?.Dispose();
         }
 
         #endregion
