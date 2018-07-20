@@ -2,7 +2,9 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Autofac;
 using Common;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Utils;
@@ -13,18 +15,19 @@ using MoreLinq;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
-    public class LykkeArbitrageDetectorService : TimerPeriod, ILykkeArbitrageDetectorService
+    public class LykkeArbitrageDetectorService : ILykkeArbitrageDetectorService, IStartable, IStopable
     {
+        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 0, 2);
         private const string LykkeExchangeName = "lykke";
 
         private readonly ConcurrentDictionary<AssetPairSource, OrderBook> _orderBooks;
         private readonly object _lockArbitrages = new object();
         private readonly List<LykkeArbitrageRow> _arbitrages;
+        private readonly TimerTrigger _trigger;
         private readonly IAssetsService _assetsService;
         private readonly ILog _log;
         
         public LykkeArbitrageDetectorService(ILog log, IShutdownManager shutdownManager, IAssetsService assetsService)
-            : base(2*1000, log)
         {
             shutdownManager?.Register(this);
 
@@ -33,6 +36,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             _assetsService = assetsService ?? throw new ArgumentNullException(nameof(assetsService));
             _log = log ?? throw new ArgumentNullException(nameof(log));
+
+            _trigger = new TimerTrigger(nameof(LykkeArbitrageDetectorService), DefaultInterval, log, Execute);
         }
 
         public void Process(OrderBook orderBook)
@@ -45,7 +50,19 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
         }
 
-        public override async Task Execute()
+        public async Task Execute(ITimerTrigger timer, TimerTriggeredHandlerArgs args, CancellationToken cancellationtoken)
+        {
+            try
+            {
+                Execute();
+            }
+            catch (Exception ex)
+            {
+                await _log.WriteErrorAsync(GetType().Name, nameof(Execute), ex);
+            }
+        }
+
+        public void Execute()
         {
             var lykkeArbitrages = GetArbitrages(_orderBooks.Values.ToList());
             RefreshArbitrages(lykkeArbitrages);
@@ -215,5 +232,24 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             return result;
         }
+
+        #region IStartable, IStopable
+
+        public void Start()
+        {
+            _trigger.Start();
+        }
+
+        public void Stop()
+        {
+            _trigger.Stop();
+        }
+
+        public void Dispose()
+        {
+            _trigger?.Dispose();
+        }
+
+        #endregion
     }
 }
