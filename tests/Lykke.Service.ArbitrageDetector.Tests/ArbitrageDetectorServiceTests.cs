@@ -1577,11 +1577,11 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             return settingsRepository.Object;
         }
 
-        private IAssetsService AssetsService()
+        private ILykkeExchangeService AssetsService()
         {
-            var assetsRepository = new Mock<IAssetsService>();
+            var assetsRepository = new Mock<ILykkeExchangeService>();
             assetsRepository.Setup(x => x.GetAccuracy(It.IsAny<AssetPair>()))
-                .Returns<AssetPair>(assetPair => new AssetPairAccuracy(assetPair, 5, 3));
+                .Returns<AssetPair>(assetPair => (5, 3));
             assetsRepository.Setup(x => x.InferBaseAndQuoteAssets(It.IsAny<OrderBook>()))
                 .Returns<OrderBook>(orderBook =>
                 {

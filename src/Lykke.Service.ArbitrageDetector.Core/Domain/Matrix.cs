@@ -27,7 +27,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         {
             var lykkeExchange = Exchanges.SingleOrDefault(x => x.Name.Equals(exchangeName, StringComparison.OrdinalIgnoreCase));
 
-            if (lykkeExchange == null) //|| !lykkeExchange.IsActual)
+            if (lykkeExchange == null)
                 return null;
 
             var lykkeIndex = Exchanges.IndexOf(lykkeExchange);

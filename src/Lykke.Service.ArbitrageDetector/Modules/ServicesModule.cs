@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using Autofac;
 using Common;
 using Common.Log;
+using Lykke.Job.OrderBooksCacheProvider.Client;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.OrderBookHandlers;
 using Lykke.Service.ArbitrageDetector.RabbitSubscribers;
@@ -11,8 +13,6 @@ using Lykke.Service.RateCalculator.Client;
 using Lykke.SettingsReader;
 using ILykkeAssetsService = Lykke.Service.Assets.Client.IAssetsService;
 using LykkeAssetsService = Lykke.Service.Assets.Client.AssetsService;
-using IAssetsService = Lykke.Service.ArbitrageDetector.Core.Services.IAssetsService;
-using AssetsService = Lykke.Service.ArbitrageDetector.Services.AssetsService;
 
 namespace Lykke.Service.ArbitrageDetector.Modules
 {
@@ -35,8 +35,8 @@ namespace Lykke.Service.ArbitrageDetector.Modules
                 .As<ILykkeAssetsService>()
                 .SingleInstance();
 
-            builder.RegisterInstance(new RateCalculatorClient(_settings.CurrentValue.RateCalculatorServiceClient.ServiceUrl, _log))
-                .As<IRateCalculatorClient>()
+            builder.RegisterInstance(new OrderBookProviderClient(_settings.CurrentValue.OrderBooksCacheProviderClient.ServiceUrl))
+                .As<IOrderBookProviderClient>()
                 .SingleInstance();
 
             // Order Book Handlers
@@ -49,8 +49,10 @@ namespace Lykke.Service.ArbitrageDetector.Modules
 
             // InProc Services
 
-            builder.RegisterType<AssetsService>()
-                .As<IAssetsService>()
+            builder.RegisterType<LykkeExchangeService>()
+                .As<ILykkeExchangeService>()
+                .As<IStartable>()
+                .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies)
                 .SingleInstance();
 
             builder.RegisterType<ArbitrageDetectorService>()
@@ -58,12 +60,6 @@ namespace Lykke.Service.ArbitrageDetector.Modules
                 .As<IStartable>()
                 .As<IStopable>()
                 .SingleInstance();
-
-            //builder.RegisterType<ArbitrageScreenerService>()
-            //    .As<IStartable>()
-            //    .As<IStopable>()
-            //    .AutoActivate()
-            //    .SingleInstance();
 
             builder.RegisterType<LykkeArbitrageDetectorService>()
                 .As<ILykkeArbitrageDetectorService>()
