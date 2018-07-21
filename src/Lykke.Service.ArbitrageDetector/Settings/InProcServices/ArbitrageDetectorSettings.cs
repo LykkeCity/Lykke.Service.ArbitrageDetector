@@ -1,4 +1,4 @@
-﻿namespace Lykke.Service.ArbitrageDetector.Settings.ServiceSettings
+﻿namespace Lykke.Service.ArbitrageDetector.Settings.InProcServices
 {
     public class ArbitrageDetectorSettings
     {
