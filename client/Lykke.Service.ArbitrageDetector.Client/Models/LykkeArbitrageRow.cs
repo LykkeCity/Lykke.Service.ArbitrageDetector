@@ -39,7 +39,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Base side
         /// </summary>
-        public string BaseSide { get; set; }
+        public string TargetSide { get; set; }
 
         /// <summary>
         /// Conversion path.
