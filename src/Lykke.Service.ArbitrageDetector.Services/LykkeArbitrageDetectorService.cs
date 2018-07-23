@@ -71,7 +71,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             var result = new List<LykkeArbitrageRow>();
 
-            // O( (n^2)/2 )
+            // O( (n^2) )
             for (var i = 0; i < orderBooks.Count; i++)
             {
                 if (i == orderBooks.Count - 1)
@@ -79,7 +79,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 var basePair = orderBooks.ElementAt(i);
 
-                for (var j = 0/*i + 1*/; j < orderBooks.Count; j++)
+                // Can be "var j = i + 1" to decrease uneccessary (dublicated, swaped base and cross) comparisons
+                for (var j = 0; j < orderBooks.Count; j++)
                 {
                     var crossPair = orderBooks.ElementAt(j);
 
