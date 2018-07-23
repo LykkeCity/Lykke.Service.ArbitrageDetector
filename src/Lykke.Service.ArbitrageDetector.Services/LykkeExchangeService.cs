@@ -50,7 +50,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 }
             }
 
-            Log.WriteInfoAsync(GetType().Name, nameof(InitializeAssets), $"Initialized {_assets.Count} assets of {lykkeAssets.Count} Lykke assets.");
+            Log.WriteInfoAsync(GetType().Name, nameof(InitializeAssets), $"Initialized {_assets.Count} of {lykkeAssets.Count} Lykke assets.");
         }
 
         private void InitializeAssetPairs()
@@ -90,7 +90,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 _assetPairs.Add(assetPair, lykkeAssetPair);
             }
 
-            Log.WriteInfoAsync(GetType().Name, nameof(InitializeAssetPairs), $"Initialized {_assetPairs.Count} asset pairs of {lykkeAssetPairs.Count} Lykke asset pairs.");
+            Log.WriteInfoAsync(GetType().Name, nameof(InitializeAssetPairs), $"Initialized {_assetPairs.Count} of {lykkeAssetPairs.Count} Lykke asset pairs.");
         }
 
         private void InitializeAccuracies()
@@ -107,7 +107,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         private void InitializeOrderBooks()
         {
-            Log.WriteInfoAsync(GetType().Name, nameof(InitializeOrderBooks), $"Initializing order books...");
+            Log.WriteInfoAsync(GetType().Name, nameof(InitializeOrderBooks), $"Initializing Lykke order books...");
 
             foreach (var assetPairlykkeAssetPair in _assetPairs)
             {
@@ -132,7 +132,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 _orderBooks.Add(assetPair, orderBook);
             }
 
-            Log.WriteInfoAsync(GetType().Name, nameof(InitializeOrderBooks), $"Initialized {_orderBooks.Count} order books.");
+            Log.WriteInfoAsync(GetType().Name, nameof(InitializeOrderBooks), $"Initialized {_orderBooks.Count} Lykke order books.");
         }
 
         private void InitializeServicesWithOrderBooks()

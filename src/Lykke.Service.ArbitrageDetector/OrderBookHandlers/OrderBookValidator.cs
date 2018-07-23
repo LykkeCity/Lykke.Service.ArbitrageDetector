@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using Common;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 

@@ -20,7 +20,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 0, 2);
         private const string LykkeExchangeName = "lykke";
 
-        private readonly ConcurrentDictionary<AssetPairSource, OrderBook> _orderBooks;
+        private readonly ConcurrentDictionary<AssetPair, OrderBook> _orderBooks;
         private readonly object _lockArbitrages = new object();
         private readonly List<LykkeArbitrageRow> _arbitrages;
         private readonly TimerTrigger _trigger;
@@ -31,7 +31,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             shutdownManager?.Register(this);
 
-            _orderBooks = new ConcurrentDictionary<AssetPairSource, OrderBook>();
+            _orderBooks = new ConcurrentDictionary<AssetPair, OrderBook>();
             _arbitrages = new List<LykkeArbitrageRow>();
 
             _lykkeExchangeService = lykkeExchangeService ?? throw new ArgumentNullException(nameof(lykkeExchangeService));
@@ -45,8 +45,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var isLykkeExchange = string.Equals(orderBook.Source, LykkeExchangeName, StringComparison.OrdinalIgnoreCase);
             if (isLykkeExchange && _lykkeExchangeService.InferBaseAndQuoteAssets(orderBook) > 0)
             {
-                var key = new AssetPairSource(orderBook.Source, orderBook.AssetPair);
-                _orderBooks.AddOrUpdate(key, orderBook);
+                _orderBooks.AddOrUpdate(orderBook.AssetPair, orderBook);
             }
         }
 
@@ -79,6 +78,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     break;
 
                 var basePair = orderBooks.ElementAt(i);
+
                 for (var j = i + 1; j < orderBooks.Count; j++)
                 {
                     var crossPair = orderBooks.ElementAt(j);
