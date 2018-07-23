@@ -599,7 +599,12 @@
         </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.PnL">
             <summary>
-            Volume
+            PnL
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.PnLInUsd">
+            <summary>
+            PnL in USD
             </summary>
         </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.BaseAsk">
