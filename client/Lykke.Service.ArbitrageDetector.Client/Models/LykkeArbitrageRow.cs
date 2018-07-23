@@ -11,22 +11,22 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Base asset pair.
         /// </summary>
-        public AssetPair BaseAssetPair { get; set; }
+        public AssetPair Target { get; set; }
 
         /// <summary>
         /// Cross asset pair.
         /// </summary>
-        public AssetPair CrossAssetPair { get; set; }
+        public AssetPair Source { get; set; }
 
         /// <summary>
         /// Count of cross pairs.
         /// </summary>
-        public int CrossPairsCount { get; set; }
+        public int SourcesCount { get; set; }
 
         /// <summary>
         /// Count of synthetic order books.
         /// </summary>
-        public int SynthOrderBooksCount { get; set; }
+        public int SynthsCount { get; set; }
 
         [Obsolete]
         public int CrossRatesCount { get; set; }
@@ -57,6 +57,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public decimal? VolumeInUsd { get; set; }
 
         /// <summary>
+        /// Volume
+        /// </summary>
+        public decimal PnL { get; set; }
+
+        /// <summary>
         /// Base ask
         /// </summary>
         public decimal? BaseAsk { get; set; }
@@ -69,12 +74,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Cross ask
         /// </summary>
-        public decimal? CrossAsk { get; set; }
+        public decimal? SynthAsk { get; set; }
 
         /// <summary>
         /// Cross bid
         /// </summary>
-        public decimal? CrossBid { get; set; }
+        public decimal? SynthBid { get; set; }
 
         /// <inheritdoc />
         public override string ToString()

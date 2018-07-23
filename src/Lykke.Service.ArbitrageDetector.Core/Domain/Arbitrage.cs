@@ -137,7 +137,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <param name="sourceBids">OrderBook with bids.</param>
         /// <param name="sourceAsks">OrderBook with asks.</param>
         /// <returns></returns>
-        public static decimal? GetArbitrageVolume(IReadOnlyCollection<VolumePrice> sourceBids, IReadOnlyCollection<VolumePrice> sourceAsks)
+        public static (decimal? Volume, decimal? PnL)? GetArbitrageVolumePnL(IReadOnlyCollection<VolumePrice> sourceBids, IReadOnlyCollection<VolumePrice> sourceAsks)
         {
             if (sourceBids == null)
                 throw new ArgumentException($"{nameof(sourceBids)}");
@@ -154,7 +154,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             bids.AddRange(sourceBids);
             asks.AddRange(sourceAsks);
 
-            decimal result = 0;
+            decimal volume = 0;
+            decimal pnl = 0;
             do
             {
                 // Recalculate best bid and best ask
@@ -170,9 +171,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 var ask = asks.First();
 
                 // Calculate volume for current step and remove it
+                decimal currentVolume = 0; 
                 if (bid.Volume > ask.Volume)
                 {
-                    result += ask.Volume;
+                    currentVolume = ask.Volume;
                     var newBidVolume = bid.Volume - ask.Volume;
                     var newBid = new VolumePrice(bid.Price, newBidVolume);
                     bids.Remove(bid);
@@ -183,7 +185,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
                 if (bid.Volume < ask.Volume)
                 {
-                    result += bid.Volume;
+                    currentVolume = bid.Volume;
                     var newAskVolume = ask.Volume - bid.Volume;
                     var newAsk = new VolumePrice(ask.Price, newAskVolume);
                     asks.Remove(ask);
@@ -194,14 +196,17 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
                 if (bid.Volume == ask.Volume)
                 {
-                    result += bid.Volume;
+                    currentVolume = bid.Volume;
                     bids.Remove(bid);
                     asks.Remove(ask);
                 }
+
+                volume += currentVolume;
+                pnl += currentVolume * (bid.Price - ask.Price);
             }
             while (bids.Any() && asks.Any());
 
-            return result == 0 ? (decimal?)null : result;
+            return volume == 0 ? ((decimal?, decimal?)?)null : (volume, pnl);
         }
 
 
