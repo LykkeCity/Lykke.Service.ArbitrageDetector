@@ -512,9 +512,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             // Filter by exchanges
             if (isPublic && _s.PublicMatrixExchanges.Any())
-            {
                 orderBooks = orderBooks.Where(x => _s.PublicMatrixExchanges.Keys.Contains(x.Source)).ToList();
-            }
 
             // Order by exchange name
             orderBooks = orderBooks.OrderBy(x => x.Source).ToList();
@@ -523,9 +521,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             // Raplace exchange names
             if (isPublic && _s.PublicMatrixExchanges.Any())
-            {
                 uniqueExchanges = uniqueExchanges.Select(x => x.Replace(x, _s.PublicMatrixExchanges[x])).ToList();
-            }
 
             var matrixSide = uniqueExchanges.Count;
             for (var row = 0; row < matrixSide; row++)

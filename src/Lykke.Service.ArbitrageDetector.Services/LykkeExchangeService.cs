@@ -21,7 +21,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 {
     public class LykkeExchangeService : ILykkeExchangeService, IStartable
     {
-        private readonly ConcurrentDictionary<string, Asset> _assets = new ConcurrentDictionary<string, Asset>();
+        private readonly ConcurrentDictionary<string, IList<Asset>> _assets = new ConcurrentDictionary<string, IList<Asset>>();
         private readonly ConcurrentDictionary<AssetPair, LykkeAssetPair> _assetPairs = new ConcurrentDictionary<AssetPair, LykkeAssetPair>();
         private readonly ConcurrentDictionary<AssetPair, (int Price, int Volume)> _accuracies = new ConcurrentDictionary<AssetPair, (int Price, int Volume)>();
         private readonly ConcurrentDictionary<AssetPair, OrderBook> _orderBooks = new ConcurrentDictionary<AssetPair, OrderBook>();
@@ -35,7 +35,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private void InitializeAssets()
         {
             var lykkeAssets = AssetsService.AssetGetAll();
-
+            
             foreach (var lykkeAsset in lykkeAssets)
             {
                 if (lykkeAsset != null)
@@ -46,26 +46,24 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                     var shortestName = getShortestName(id, name, displayId);
                     if (!_assets.ContainsKey(shortestName))
-                        _assets.Add(shortestName, lykkeAsset);
+                        _assets.Add(shortestName, new List<Asset> { lykkeAsset } );
+                    else
+                        _assets[shortestName].Add(lykkeAsset);
                 }
             }
 
-            Log.WriteInfoAsync(GetType().Name, nameof(InitializeAssets), $"Initialized {_assets.Count} of {lykkeAssets.Count} Lykke assets.");
+            Log.WriteInfoAsync(GetType().Name, nameof(InitializeAssets), $"Initialized {_assets.SelectMany(x => x.Value).Count()} of {lykkeAssets.Count} Lykke assets.");
         }
 
         private void InitializeAssetPairs()
         {
             var lykkeAssetPairs = AssetsService.AssetPairGetAll();
 
-            foreach (var lykkeAssetPair in lykkeAssetPairs.Where(x => !x.IsDisabled))
+            foreach (var lykkeAssetPair in lykkeAssetPairs)
             {
-                if (lykkeAssetPair.IsDisabled
-                    || lykkeAssetPair.Id.ToUpper().Contains("TEST")
-                    || lykkeAssetPair.Id.ToUpper().Contains("DEV_"))
-                    continue;
-
-                var baseAsset = _assets.Values.SingleOrDefault(x => x.Id == lykkeAssetPair.BaseAssetId);
-                var quoteAsset = _assets.Values.SingleOrDefault(x => x.Id == lykkeAssetPair.QuotingAssetId);
+                var allAssets = _assets.Values.SelectMany(x => x).ToList();
+                var baseAsset = allAssets.SingleOrDefault(x => x.Id == lykkeAssetPair.BaseAssetId);
+                var quoteAsset = allAssets.SingleOrDefault(x => x.Id == lykkeAssetPair.QuotingAssetId);
 
                 if (baseAsset == null || quoteAsset == null)
                     continue;
