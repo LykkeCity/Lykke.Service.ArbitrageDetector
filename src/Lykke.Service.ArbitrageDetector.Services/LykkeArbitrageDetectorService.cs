@@ -79,7 +79,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 var basePair = orderBooks.ElementAt(i);
 
-                for (var j = i + 1; j < orderBooks.Count; j++)
+                for (var j = 0/*i + 1*/; j < orderBooks.Count; j++)
                 {
                     var crossPair = orderBooks.ElementAt(j);
 
