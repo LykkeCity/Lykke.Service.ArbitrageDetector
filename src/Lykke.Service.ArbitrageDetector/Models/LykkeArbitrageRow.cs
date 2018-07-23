@@ -83,6 +83,16 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public decimal? VolumeInUsd { get; }
 
         /// <summary>
+        /// PnL
+        /// </summary>
+        public decimal PnL { get; }
+
+        /// <summary>
+        /// PnL in USD
+        /// </summary>
+        public decimal? PnLInUsd { get; }
+
+        /// <summary>
         /// Base ask
         /// </summary>
         public decimal? BaseAsk { get; }
@@ -129,7 +139,8 @@ namespace Lykke.Service.ArbitrageDetector.Models
             CrossRatesCount = domain.SynthsCount;
             SynthsCount = domain.SynthsCount;
             Spread = Math.Round(domain.Spread, 8);
-            BaseSide = domain.BaseSide;
+            BaseSide = domain.TargetSide;
+            TargetSide = domain.TargetSide;
             ConversionPath = domain.ConversionPath.Replace("lykke-", "");
             Volume = Math.Round(domain.Volume, 8);
             VolumeInUsd = domain.VolumeInUsd.HasValue ? Math.Round(domain.VolumeInUsd.Value, 8) : (decimal?)null;
@@ -139,6 +150,8 @@ namespace Lykke.Service.ArbitrageDetector.Models
             CrossBid = domain.SynthBid.HasValue ? Math.Round(domain.SynthBid.Value, 8) : (decimal?)null;
             SynthAsk = domain.SynthAsk.HasValue ? Math.Round(domain.SynthAsk.Value, 8) : (decimal?)null;
             SynthBid = domain.SynthBid.HasValue ? Math.Round(domain.SynthBid.Value, 8) : (decimal?)null;
+            PnL = domain.PnL;
+            PnLInUsd = domain.PnLInUsd;
         }
 
         /// <inheritdoc />

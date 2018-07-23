@@ -77,48 +77,52 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 if (i == orderBooks.Count - 1)
                     break;
 
-                var basePair = orderBooks.ElementAt(i);
+                var target = orderBooks.ElementAt(i);
 
                 // Can be "var j = i + 1" to decrease uneccessary (dublicated, swaped base and cross) comparisons
                 for (var j = 0; j < orderBooks.Count; j++)
                 {
-                    var crossPair = orderBooks.ElementAt(j);
+                    var source = orderBooks.ElementAt(j);
 
                     // Calculate all synthetic order books between base order book and current order book
-                    var synthOrderBooks = SynthOrderBook.GetSynthsFromAll(basePair.AssetPair, crossPair, orderBooks);
+                    var synthOrderBooks = SynthOrderBook.GetSynthsFromAll(target.AssetPair, source, orderBooks);
 
                     // Compare each cross pair with base pair
                     foreach (var synthOrderBook in synthOrderBooks.Values)
                     {
-                        var spread = decimal.MaxValue;
+                        decimal spread = 0;
                         decimal volume = 0;
                         decimal pnL = 0;
-                        string baseSide = null;
+                        string targetSide = null;
 
-                        if (basePair.BestBid?.Price > synthOrderBook.BestAsk?.Price)
+                        if (target.BestBid?.Price > synthOrderBook.BestAsk?.Price)
                         {
-                            spread = Arbitrage.GetSpread(basePair.BestBid.Value.Price, synthOrderBook.BestAsk.Value.Price);
-                            volume = Arbitrage.GetArbitrageVolumePnL(basePair.Bids, synthOrderBook.Asks)?.Volume ?? throw new InvalidOperationException("Every arbitrage must have volume");
-                            pnL = Arbitrage.GetArbitrageVolumePnL(basePair.Bids, synthOrderBook.Asks)?.PnL ?? throw new InvalidOperationException("Every arbitrage must have PnL");
-                            baseSide = "Bid";
+                            var volumePnL = Arbitrage.GetArbitrageVolumePnL(target.Bids, synthOrderBook.Asks);
+                            spread = Arbitrage.GetSpread(target.BestBid.Value.Price, synthOrderBook.BestAsk.Value.Price);
+                            volume = volumePnL?.Volume ?? throw new InvalidOperationException("Every arbitrage must have volume");
+                            pnL = volumePnL?.PnL ?? throw new InvalidOperationException("Every arbitrage must have PnL");
+                            targetSide = "Bid";
                         }
 
-                        if (synthOrderBook.BestBid?.Price > basePair.BestAsk?.Price)
+                        if (synthOrderBook.BestBid?.Price > target.BestAsk?.Price)
                         {
-                            spread = Arbitrage.GetSpread(synthOrderBook.BestBid.Value.Price, basePair.BestAsk.Value.Price);
-                            volume = Arbitrage.GetArbitrageVolumePnL(synthOrderBook.Bids, basePair.Asks)?.Volume ?? throw new InvalidOperationException("Every arbitrage must have volume");
-                            pnL = Arbitrage.GetArbitrageVolumePnL(synthOrderBook.Bids, basePair.Asks)?.PnL ?? throw new InvalidOperationException("Every arbitrage must have PnL");
-                            baseSide = "Ask";
+                            var volumePnL = Arbitrage.GetArbitrageVolumePnL(synthOrderBook.Bids, target.Asks);
+                            spread = Arbitrage.GetSpread(synthOrderBook.BestBid.Value.Price, target.BestAsk.Value.Price);
+                            volume = volumePnL?.Volume ?? throw new InvalidOperationException("Every arbitrage must have volume");
+                            pnL = volumePnL?.PnL ?? throw new InvalidOperationException("Every arbitrage must have PnL");
+                            targetSide = "Ask";
                         }
 
-                        if (string.IsNullOrWhiteSpace(baseSide)) // no arbitrages
+                        if (string.IsNullOrWhiteSpace(targetSide)) // no arbitrages
                             continue;
 
-                        var baseToUsd = Convert(basePair.AssetPair.Base, "USD", _orderBooks.Values.ToList());
+                        var baseToUsd = Convert(target.AssetPair.Base, "USD", _orderBooks.Values.ToList());
+                        var quoteToUsd = Convert(target.AssetPair.Quote, "USD", _orderBooks.Values.ToList());
                         var volumeInUsd = volume * baseToUsd;
+                        var pnLInUsd = pnL * quoteToUsd;
 
-                        var lykkeArbitrage = new LykkeArbitrageRow(basePair.AssetPair, crossPair.AssetPair, spread, baseSide, synthOrderBook.ConversionPath,
-                            volume, basePair.BestBid?.Price, basePair.BestAsk?.Price, synthOrderBook.BestBid?.Price, synthOrderBook.BestAsk?.Price, volumeInUsd, pnL);
+                        var lykkeArbitrage = new LykkeArbitrageRow(target.AssetPair, source.AssetPair, spread, targetSide, synthOrderBook.ConversionPath,
+                            volume, target.BestBid?.Price, target.BestAsk?.Price, synthOrderBook.BestBid?.Price, synthOrderBook.BestAsk?.Price, volumeInUsd, pnL, pnLInUsd);
                         result.Add(lykkeArbitrage);
                     }
                 }

@@ -35,7 +35,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Base side
         /// </summary>
-        public string BaseSide { get; }
+        public string TargetSide { get; }
 
         /// <summary>
         /// Conversion path.
@@ -58,6 +58,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public decimal PnL { get; }
 
         /// <summary>
+        /// PnL in USD
+        /// </summary>
+        public decimal? PnLInUsd { get; }
+
+        /// <summary>
         /// Base ask
         /// </summary>
         public decimal? BaseAsk { get; }
@@ -78,12 +83,13 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public decimal? SynthBid { get; }
 
         public LykkeArbitrageRow(AssetPair baseAssetPair, AssetPair crossAssetPair, decimal spread, string baseSide,
-            string conversionPath, decimal volume, decimal? baseBid, decimal? baseAsk, decimal? synthBid, decimal? synthAsk, decimal? volumeInUsd, decimal pnL)
+            string conversionPath, decimal volume, decimal? baseBid, decimal? baseAsk, decimal? synthBid, decimal? synthAsk, decimal? volumeInUsd,
+            decimal pnL, decimal? pnLInUsd)
         {
             Target = baseAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(baseAssetPair)) : baseAssetPair;
             Source = crossAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(crossAssetPair)) : crossAssetPair;
             Spread = spread;
-            BaseSide = string.IsNullOrWhiteSpace(baseSide) ? throw new ArgumentNullException(nameof(baseSide)) : baseSide;
+            TargetSide = string.IsNullOrWhiteSpace(baseSide) ? throw new ArgumentNullException(nameof(baseSide)) : baseSide;
             ConversionPath = string.IsNullOrWhiteSpace(conversionPath) ? throw new ArgumentNullException(nameof(conversionPath)) : conversionPath;
             Volume = volume;
             BaseAsk = baseAsk;
@@ -92,6 +98,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             SynthBid = synthBid;
             VolumeInUsd = volumeInUsd;
             PnL = pnL;
+            PnLInUsd = pnLInUsd;
         }
 
         /// <inheritdoc />

@@ -57,9 +57,14 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public decimal? VolumeInUsd { get; set; }
 
         /// <summary>
-        /// Volume
+        /// PnL
         /// </summary>
         public decimal PnL { get; set; }
+
+        /// <summary>
+        /// PnL in USD
+        /// </summary>
+        public decimal? PnLInUsd { get; set; }
 
         /// <summary>
         /// Base ask

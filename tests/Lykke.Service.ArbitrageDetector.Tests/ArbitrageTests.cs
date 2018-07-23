@@ -52,7 +52,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         }
 
         [Fact]
-        public void ArbitrageVolume_Simple1_Test()
+        public void ArbitrageVolumePnL_Simple1_Test()
         {
             const string exchangeName = "FE";
             const string assetPair = "BTCUSD";
@@ -74,12 +74,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var bidsOrderBook = new OrderBook(exchangeName, assetPair, bids, new List<VolumePrice>(), timestamp);
             var asksOrderBook = new OrderBook(exchangeName, assetPair, new List<VolumePrice>(), asks, timestamp);
 
-            var volume = Arbitrage.GetArbitrageVolumePnL(bidsOrderBook.Bids, asksOrderBook.Asks)?.Volume;
-            Assert.Equal(9, volume);
+            var volumePnL = Arbitrage.GetArbitrageVolumePnL(bidsOrderBook.Bids, asksOrderBook.Asks);
+            Assert.Equal(9, volumePnL?.Volume);
+            Assert.Equal(299.92962969m, volumePnL?.PnL);
         }
 
         [Fact]
-        public void ArbitrageVolume_Complex1_Test()
+        public void ArbitrageVolumePnL_Complex1_Test()
         {
             // https://docs.google.com/spreadsheets/d/1plnbQSS-WP6ykTv8wIi_hbAhk_aSz_tllXFIE3jhFpU/edit#gid=0
 
@@ -110,12 +111,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var bidsOrderBook = new OrderBook(exchangeName, assetPair, bids, new List<VolumePrice>(), timestamp);
             var asksOrderBook = new OrderBook(exchangeName, assetPair, new List<VolumePrice>(), asks, timestamp);
             
-            var volume = Arbitrage.GetArbitrageVolumePnL(bidsOrderBook.Bids, asksOrderBook.Asks)?.Volume;
-            Assert.Equal(41, volume);
+            var volumePnL = Arbitrage.GetArbitrageVolumePnL(bidsOrderBook.Bids, asksOrderBook.Asks);
+            Assert.Equal(41, volumePnL?.Volume);
+            Assert.Equal(6450, volumePnL?.PnL);
         }
 
         [Fact]
-        public void ArbitrageVolume_Complex2_Test()
+        public void ArbitrageVolumePnL_Complex2_Test()
         {
             // https://docs.google.com/spreadsheets/d/1plnbQSS-WP6ykTv8wIi_hbAhk_aSz_tllXFIE3jhFpU/edit#gid=2011486790
             const string exchangeName = "FE";
@@ -155,8 +157,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var bidsOrderBook = new OrderBook(exchangeName, assetPair, bids, new List<VolumePrice>(), timestamp);
             var asksOrderBook = new OrderBook(exchangeName, assetPair, new List<VolumePrice>(), asks, timestamp);
 
-            var volume = Arbitrage.GetArbitrageVolumePnL(bidsOrderBook.Bids, asksOrderBook.Asks)?.Volume;
-            Assert.Equal(70, volume);
+            var volumePnL = Arbitrage.GetArbitrageVolumePnL(bidsOrderBook.Bids, asksOrderBook.Asks);
+            Assert.Equal(70, volumePnL?.Volume);
+            Assert.Equal(40.4m, volumePnL?.PnL);
         }
 
 
