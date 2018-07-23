@@ -116,10 +116,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
             foreach (var @base in _s.BaseAssets)
             {
                 var target = new AssetPair(@base, _s.QuoteAsset);
-                var newActualSynthsFrom1 = SynthOrderBook.GetSynthsFrom1(target, orderBooks);
-                newActualSynthOrderBooks.AddRange(newActualSynthsFrom1);
-                var newActualSynthsFrom2 = SynthOrderBook.GetSynthsFrom2(target, orderBooks);
-                newActualSynthOrderBooks.AddRange(newActualSynthsFrom2);
+                var newActualSynthsFromAll = SynthOrderBook.GetSynthsFromAll(target, orderBooks);
+                newActualSynthOrderBooks.AddRange(newActualSynthsFromAll);
             }
 
             _synthOrderBooks.AddOrUpdateRange(newActualSynthOrderBooks);
