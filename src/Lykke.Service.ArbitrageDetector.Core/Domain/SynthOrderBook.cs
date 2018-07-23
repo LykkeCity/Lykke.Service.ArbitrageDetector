@@ -601,6 +601,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// Get synthetic from 1, 2 or 3 asset pairs.
         /// </summary>
         /// <param name="target"></param>
+        /// <param name="source"></param>
         /// <param name="allOrderBooks"></param>
         /// <returns></returns>
         public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFromAll(AssetPair target, OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks)
@@ -613,8 +614,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         {
             var result = new Dictionary<AssetPairSource, SynthOrderBook>();
 
-            var synthOrderBookFrom1Or2Pairs = GetSynthsFrom2(target, sourceOrderBooks, allOrderBooks);
-            result.AddRange(synthOrderBookFrom1Or2Pairs);
+            var synthOrderBookFrom1Pair = GetSynthsFrom1(target, sourceOrderBooks, allOrderBooks);
+            result.AddRange(synthOrderBookFrom1Pair);
+            var synthOrderBookFrom2Pairs = GetSynthsFrom2(target, sourceOrderBooks, allOrderBooks);
+            result.AddRange(synthOrderBookFrom2Pairs);
             var synthOrderBookFrom3Pairs = GetSynthsFrom3(target, sourceOrderBooks, allOrderBooks);
             result.AddRange(synthOrderBookFrom3Pairs);
 
