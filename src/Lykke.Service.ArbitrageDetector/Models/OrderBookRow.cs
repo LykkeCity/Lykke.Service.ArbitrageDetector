@@ -75,8 +75,8 @@ namespace Lykke.Service.ArbitrageDetector.Models
             AssetPair = new AssetPair(domain.AssetPair);
             BestBid = VolumePrice.FromDomain(domain.BestBid);
             BestAsk = VolumePrice.FromDomain(domain.BestAsk);
-            BidsVolume = domain.Bids.Sum(x => x.Volume);
-            AsksVolume = domain.Asks.Sum(x => x.Volume);
+            BidsVolume = domain.BidsVolume;
+            AsksVolume = domain.AsksVolume;
             Timestamp = domain.Timestamp;
         }
     }

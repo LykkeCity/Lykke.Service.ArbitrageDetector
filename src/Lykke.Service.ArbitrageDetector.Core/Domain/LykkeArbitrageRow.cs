@@ -10,22 +10,22 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Base asset pair.
         /// </summary>
-        public AssetPair BaseAssetPair { get; }
+        public AssetPair Target { get; }
 
         /// <summary>
         /// Cross asset pair.
         /// </summary>
-        public AssetPair CrossAssetPair { get; }
+        public AssetPair Source { get; }
 
         /// <summary>
         /// Count of cross pairs.
         /// </summary>
-        public int CrossPairsCount { get; set; }
+        public int SourcesCount { get; set; }
 
         /// <summary>
         /// Count of synthetic order books.
         /// </summary>
-        public int SynthOrderBooksCount { get; set; }
+        public int SynthsCount { get; set; }
 
         /// <summary>
         /// Spread
@@ -53,6 +53,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public decimal? VolumeInUsd { get; }
 
         /// <summary>
+        /// PnL
+        /// </summary>
+        public decimal PnL { get; }
+
+        /// <summary>
         /// Base ask
         /// </summary>
         public decimal? BaseAsk { get; }
@@ -65,33 +70,34 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Cross ask
         /// </summary>
-        public decimal? CrossAsk { get; }
+        public decimal? SynthAsk { get; }
 
         /// <summary>
         /// Cross bid
         /// </summary>
-        public decimal? CrossBid { get; }
+        public decimal? SynthBid { get; }
 
         public LykkeArbitrageRow(AssetPair baseAssetPair, AssetPair crossAssetPair, decimal spread, string baseSide,
-            string conversionPath, decimal volume, decimal? baseBid, decimal? baseAsk, decimal? crossBid, decimal? crossAsk, decimal? volumeInUsd)
+            string conversionPath, decimal volume, decimal? baseBid, decimal? baseAsk, decimal? synthBid, decimal? synthAsk, decimal? volumeInUsd, decimal pnL)
         {
-            BaseAssetPair = baseAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(baseAssetPair)) : baseAssetPair;
-            CrossAssetPair = crossAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(crossAssetPair)) : crossAssetPair;
+            Target = baseAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(baseAssetPair)) : baseAssetPair;
+            Source = crossAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(crossAssetPair)) : crossAssetPair;
             Spread = spread;
             BaseSide = string.IsNullOrWhiteSpace(baseSide) ? throw new ArgumentNullException(nameof(baseSide)) : baseSide;
             ConversionPath = string.IsNullOrWhiteSpace(conversionPath) ? throw new ArgumentNullException(nameof(conversionPath)) : conversionPath;
             Volume = volume;
             BaseAsk = baseAsk;
             BaseBid = baseBid;
-            CrossAsk = crossAsk;
-            CrossBid = crossBid;
+            SynthAsk = synthAsk;
+            SynthBid = synthBid;
             VolumeInUsd = volumeInUsd;
+            PnL = pnL;
         }
 
         /// <inheritdoc />
         public override string ToString()
         {
-            return BaseAssetPair + "-" + CrossAssetPair + " : " + ConversionPath;
+            return Target + "-" + Source + " : " + ConversionPath;
         }
     }
 }

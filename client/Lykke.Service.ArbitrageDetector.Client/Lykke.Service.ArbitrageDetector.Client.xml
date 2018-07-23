@@ -552,22 +552,22 @@
             </summary>
             TODO: Return to getters only with a constructor.
         </member>
-        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.BaseAssetPair">
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.Target">
             <summary>
             Base asset pair.
             </summary>
         </member>
-        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.CrossAssetPair">
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.Source">
             <summary>
             Cross asset pair.
             </summary>
         </member>
-        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.CrossPairsCount">
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.SourcesCount">
             <summary>
             Count of cross pairs.
             </summary>
         </member>
-        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.SynthOrderBooksCount">
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.SynthsCount">
             <summary>
             Count of synthetic order books.
             </summary>
@@ -597,6 +597,11 @@
             Volume in USD
             </summary>
         </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.PnL">
+            <summary>
+            Volume
+            </summary>
+        </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.BaseAsk">
             <summary>
             Base ask
@@ -607,12 +612,12 @@
             Base bid
             </summary>
         </member>
-        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.CrossAsk">
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.SynthAsk">
             <summary>
             Cross ask
             </summary>
         </member>
-        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.CrossBid">
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow.SynthBid">
             <summary>
             Cross bid
             </summary>
@@ -705,6 +710,16 @@
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.BestAsk">
             <summary>
             Best ask.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.BidsVolume">
+            <summary>
+            All bids volume.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.AsksVolume">
+            <summary>
+            All asks volume.
             </summary>
         </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.Timestamp">

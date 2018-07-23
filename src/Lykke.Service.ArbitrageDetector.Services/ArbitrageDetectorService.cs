@@ -566,7 +566,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     spread = Math.Round(spread, 2);
                     decimal? volume = null;
                     if (spread < 0)
-                        volume = GetVolumeWithAccuracy(Arbitrage.GetArbitrageVolume(orderBookCol.Bids, orderBookRow.Asks), assetPairObj);
+                        volume = GetVolumeWithAccuracy(Arbitrage.GetArbitrageVolumePnL(orderBookCol.Bids, orderBookRow.Asks)?.Volume, assetPairObj);
 
                     cell = new MatrixCell(spread, volume);
                     cellsRow.Add(cell);
