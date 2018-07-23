@@ -109,7 +109,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             var bidsOrderBook = new OrderBook(exchangeName, assetPair, bids, new List<VolumePrice>(), timestamp);
             var asksOrderBook = new OrderBook(exchangeName, assetPair, new List<VolumePrice>(), asks, timestamp);
-
+            
             var volume = Arbitrage.GetArbitrageVolumePnL(bidsOrderBook.Bids, asksOrderBook.Asks)?.Volume;
             Assert.Equal(41, volume);
         }

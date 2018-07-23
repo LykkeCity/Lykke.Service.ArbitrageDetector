@@ -134,41 +134,41 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Calculates best volume (biggest spread strategy).
         /// </summary>
-        /// <param name="sourceBids">OrderBook with bids.</param>
-        /// <param name="sourceAsks">OrderBook with asks.</param>
+        /// <param name="bids">Bids.</param>
+        /// <param name="asks">Asks.</param>
         /// <returns></returns>
-        public static (decimal? Volume, decimal? PnL)? GetArbitrageVolumePnL(IReadOnlyCollection<VolumePrice> sourceBids, IReadOnlyCollection<VolumePrice> sourceAsks)
+        public static (decimal? Volume, decimal? PnL)? GetArbitrageVolumePnL(IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks)
         {
-            if (sourceBids == null)
-                throw new ArgumentException($"{nameof(sourceBids)}");
+            if (bids == null)
+                throw new ArgumentException($"{nameof(bids)}");
 
-            if (sourceAsks == null)
-                throw new ArgumentException($"{nameof(sourceAsks)}");
+            if (asks == null)
+                throw new ArgumentException($"{nameof(asks)}");
 
-            if (!sourceBids.Any() || !sourceAsks.Any() || sourceBids.Max(x => x.Price) <= sourceAsks.Min(x => x.Price))
+            if (!bids.Any() || !asks.Any() || bids.Max(x => x.Price) <= asks.Min(x => x.Price))
                 return null; // no arbitrage
 
             // Clone bids and asks (that in arbitrage only)
-            var bids = new List<VolumePrice>();
-            var asks = new List<VolumePrice>();
-            bids.AddRange(sourceBids);
-            asks.AddRange(sourceAsks);
+            var currentBids = new List<VolumePrice>();
+            var currentAsks = new List<VolumePrice>();
+            currentBids.AddRange(bids);
+            currentAsks.AddRange(asks);
 
             decimal volume = 0;
             decimal pnl = 0;
             do
             {
                 // Recalculate best bid and best ask
-                var bestBidPrice = bids.Max(x => x.Price);
-                var bestAskPrice = asks.Min(x => x.Price);
-                bids = bids.Where(x => x.Price > bestAskPrice).OrderByDescending(x => x.Price).ToList();
-                asks = asks.Where(x => x.Price < bestBidPrice).OrderBy(x => x.Price).ToList();
+                var bestBidPrice = currentBids.Max(x => x.Price);
+                var bestAskPrice = currentAsks.Min(x => x.Price);
+                currentBids = currentBids.Where(x => x.Price > bestAskPrice).OrderByDescending(x => x.Price).ToList();
+                currentAsks = currentAsks.Where(x => x.Price < bestBidPrice).OrderBy(x => x.Price).ToList();
 
-                if (!bids.Any() || !asks.Any()) // no more arbitrage
+                if (!currentBids.Any() || !currentAsks.Any()) // no more arbitrage
                     break;
 
-                var bid = bids.First();
-                var ask = asks.First();
+                var bid = currentBids.First();
+                var ask = currentAsks.First();
 
                 // Calculate volume for current step and remove it
                 decimal currentVolume = 0; 
@@ -177,10 +177,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                     currentVolume = ask.Volume;
                     var newBidVolume = bid.Volume - ask.Volume;
                     var newBid = new VolumePrice(bid.Price, newBidVolume);
-                    bids.Remove(bid);
-                    bids.Insert(0, newBid);
-                    asks.Remove(ask);
-                    continue;
+                    currentBids.Remove(bid);
+                    currentBids.Insert(0, newBid);
+                    currentAsks.Remove(ask);
                 }
 
                 if (bid.Volume < ask.Volume)
@@ -188,23 +187,22 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                     currentVolume = bid.Volume;
                     var newAskVolume = ask.Volume - bid.Volume;
                     var newAsk = new VolumePrice(ask.Price, newAskVolume);
-                    asks.Remove(ask);
-                    asks.Insert(0, newAsk);
-                    bids.Remove(bid);
-                    continue;
+                    currentAsks.Remove(ask);
+                    currentAsks.Insert(0, newAsk);
+                    currentBids.Remove(bid);
                 }
 
                 if (bid.Volume == ask.Volume)
                 {
                     currentVolume = bid.Volume;
-                    bids.Remove(bid);
-                    asks.Remove(ask);
+                    currentBids.Remove(bid);
+                    currentAsks.Remove(ask);
                 }
 
                 volume += currentVolume;
                 pnl += currentVolume * (bid.Price - ask.Price);
             }
-            while (bids.Any() && asks.Any());
+            while (currentBids.Any() && currentAsks.Any());
 
             return volume == 0 ? ((decimal?, decimal?)?)null : (volume, pnl);
         }
