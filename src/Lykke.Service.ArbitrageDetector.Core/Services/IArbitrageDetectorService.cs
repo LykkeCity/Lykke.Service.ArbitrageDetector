@@ -10,7 +10,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
 
         // Order Books
 
-        IEnumerable<OrderBook> GetOrderBooks(string exchange, string instrument);
+        IEnumerable<OrderBook> GetOrderBooks(string exchange, string assetPair);
+
+        OrderBook GetOrderBook(string exchange, string assetPair);
 
         // Cross Rates
 

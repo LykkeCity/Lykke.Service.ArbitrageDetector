@@ -49,11 +49,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "*" })]
         public virtual IActionResult OrderBook(string exchange, string assetPair)
         {
-            var orderBooks = _arbitrageDetectorService.GetOrderBooks(exchange, assetPair).ToList();
-            if (orderBooks.Count != 1)
-                return null;
-
-            var result = orderBooks.Select(x => new OrderBook(x)).FirstOrDefault();
+            var result = _arbitrageDetectorService.GetOrderBook(exchange, assetPair);
 
             return Ok(result);
         }
