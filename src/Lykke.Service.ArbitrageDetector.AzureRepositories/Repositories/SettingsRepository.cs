@@ -1,9 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using AzureStorage;
-using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
+using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
+using Settings = Lykke.Service.ArbitrageDetector.AzureRepositories.Models.Settings;
 
-namespace Lykke.Service.ArbitrageDetector.AzureRepositories
+namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 {
     public class SettingsRepository : ISettingsRepository
     {
@@ -16,7 +18,9 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories
 
         public async Task<ISettings> GetAsync()
         {
-            return await _storage.GetDataAsync("", "");
+            var settings = await _storage.GetDataAsync("", "");
+
+            return settings;
         }
 
         public async Task InsertOrReplaceAsync(ISettings settings)

@@ -117,10 +117,10 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public ArbitrageRow(DomainArbitrage domain)
         {
             AssetPair = new AssetPair(domain.AssetPair);
-            BidSource = domain.BidCrossRate.Source;
-            AskSource = domain.AskCrossRate.Source;
-            BidConversionPath = domain.BidCrossRate.ConversionPath;
-            AskConversionPath = domain.AskCrossRate.ConversionPath;
+            BidSource = domain.BidSynth.Source;
+            AskSource = domain.AskSynth.Source;
+            BidConversionPath = domain.BidSynth.ConversionPath;
+            AskConversionPath = domain.AskSynth.ConversionPath;
             Bid = new VolumePrice(domain.Bid);
             Ask = new VolumePrice(domain.Ask);
             Spread = domain.Spread;

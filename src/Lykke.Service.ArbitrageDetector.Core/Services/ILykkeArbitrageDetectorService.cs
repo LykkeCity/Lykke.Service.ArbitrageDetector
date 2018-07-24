@@ -7,6 +7,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
     {
         void Process(OrderBook orderBook);
 
-        IEnumerable<LykkeArbitrageRow> GetArbitrages(string basePair, string crossPair);
+        IEnumerable<LykkeArbitrageRow> GetArbitrages(string basePair, string crossPair, decimal minVolumeInUsd = 0);
     }
 }

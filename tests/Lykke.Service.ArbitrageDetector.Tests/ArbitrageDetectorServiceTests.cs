@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
-using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Services;
@@ -81,10 +80,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             await arbitrageCalculator.Execute();
 
-            var crossRates = arbitrageCalculator.GetCrossRates().ToList();
+            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
             var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
 
-            Assert.Equal(2, crossRates.Count);
+            Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(2, arbitrages.Count);
 
             var arbitrage1 = arbitrages.Single(x => x.ConversionPath == "(FE-BTCUSD) > (FE-BTCUSD)");
@@ -173,10 +172,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             await arbitrageCalculator.Execute();
 
-            var crossRates = arbitrageCalculator.GetCrossRates().ToList();
+            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
             var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
 
-            Assert.Equal(2, crossRates.Count);
+            Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(2, arbitrages.Count);
 
             var arbitrage1 = arbitrages.Single(x => x.ConversionPath == "(FE-BTCUSD) > (FE-BTCUSD)");
@@ -265,10 +264,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             await arbitrageCalculator.Execute();
 
-            var crossRates = arbitrageCalculator.GetCrossRates().ToList();
+            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
             var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
 
-            Assert.Equal(2, crossRates.Count);
+            Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(2, arbitrages.Count);
 
             var arbitrage1 = arbitrages.Single(x => x.ConversionPath == "(FE-BTCUSD) > (FE-BTCUSD)");
@@ -357,10 +356,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             await arbitrageCalculator.Execute();
 
-            var crossRates = arbitrageCalculator.GetCrossRates().ToList();
+            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
             var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
 
-            Assert.Equal(2, crossRates.Count);
+            Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(2, arbitrages.Count);
 
             var arbitrage1 = arbitrages.Single(x => x.ConversionPath == "(FE-BTCUSD) > (FE-BTCUSD)");
@@ -474,10 +473,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             await arbitrageCalculator.Execute();
 
-            var crossRates = arbitrageCalculator.GetCrossRates().ToList();
+            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
             var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
 
-            Assert.Equal(2, crossRates.Count);
+            Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(1, arbitrages.Count);
 
             var arbitrage1 = arbitrages.Single(x => x.ConversionPath == "(TEST1-BTCEUR * TEST2-EURJPY * TEST3-JPYUSD) > (TEST4-BTCUSD)");
@@ -577,10 +576,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             await arbitrageCalculator.Execute();
 
-            var crossRates = arbitrageCalculator.GetCrossRates().ToList();
+            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
             var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
 
-            Assert.Equal(2, crossRates.Count);
+            Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(1, arbitrages.Count);
 
             var arbitrage1 = arbitrages.Single(x => x.ConversionPath == "(TEST1-BTCEUR * TEST2-EURJPY * TEST3-USDJPY) > (TEST4-BTCUSD)");
@@ -680,10 +679,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             await arbitrageCalculator.Execute();
 
-            var crossRates = arbitrageCalculator.GetCrossRates().ToList();
+            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
             var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
 
-            Assert.Equal(2, crossRates.Count);
+            Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(1, arbitrages.Count);
 
             var arbitrage1 = arbitrages.Single(x => x.ConversionPath == "(TEST1-BTCEUR * TEST2-JPYEUR * TEST3-JPYUSD) > (TEST4-BTCUSD)");
@@ -783,10 +782,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             await arbitrageCalculator.Execute();
 
-            var crossRates = arbitrageCalculator.GetCrossRates().ToList();
+            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
             var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
 
-            Assert.Equal(2, crossRates.Count);
+            Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(1, arbitrages.Count);
 
             var arbitrage1 = arbitrages.Single(x => x.ConversionPath == "(TEST1-EURBTC * TEST2-EURJPY * TEST3-JPYUSD) > (TEST4-BTCUSD)");
@@ -886,10 +885,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             await arbitrageCalculator.Execute();
 
-            var crossRates = arbitrageCalculator.GetCrossRates().ToList();
+            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
             var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
 
-            Assert.Equal(2, crossRates.Count);
+            Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(1, arbitrages.Count);
 
             var arbitrage1 = arbitrages.Single(x => x.ConversionPath == "(TEST1-BTCEUR * TEST2-JPYEUR * TEST3-USDJPY) > (TEST4-BTCUSD)");
@@ -989,10 +988,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             await arbitrageCalculator.Execute();
 
-            var crossRates = arbitrageCalculator.GetCrossRates().ToList();
+            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
             var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
 
-            Assert.Equal(2, crossRates.Count);
+            Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(1, arbitrages.Count);
 
             var arbitrage1 = arbitrages.Single(x => x.ConversionPath == "(TEST1-EURBTC * TEST2-EURJPY * TEST3-USDJPY) > (TEST4-BTCUSD)");
@@ -1092,10 +1091,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             await arbitrageCalculator.Execute();
 
-            var crossRates = arbitrageCalculator.GetCrossRates().ToList();
+            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
             var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
 
-            Assert.Equal(2, crossRates.Count);
+            Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(1, arbitrages.Count);
 
             var arbitrage1 = arbitrages.Single(x => x.ConversionPath == "(TEST1-EURBTC * TEST2-JPYEUR * TEST3-JPYUSD) > (TEST4-BTCUSD)");
@@ -1195,10 +1194,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             await arbitrageCalculator.Execute();
 
-            var crossRates = arbitrageCalculator.GetCrossRates().ToList();
+            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
             var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
 
-            Assert.Equal(2, crossRates.Count);
+            Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(1, arbitrages.Count);
 
             var arbitrage1 = arbitrages.Single(x => x.ConversionPath == "(TEST1-EURBTC * TEST2-JPYEUR * TEST3-USDJPY) > (TEST4-BTCUSD)");
@@ -1252,25 +1251,25 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             await arbitrageDetector.Execute();
 
-            var crossRates = arbitrageDetector.GetCrossRates().ToList();
+            var synthOrderBooks = arbitrageDetector.GetSynthOrderBooks().ToList();
             var arbitrages = arbitrageDetector.GetArbitrages().ToList();
 
-            Assert.Equal(3, crossRates.Count);
+            Assert.Equal(3, synthOrderBooks.Count);
             Assert.Equal(3, arbitrages.Count);
 
-            var arbitrage1 = arbitrages.First(x => x.BidCrossRate.Source == "GDAX" && x.AskCrossRate.Source == "Quoine-Binance");
-            Assert.Equal(11000, arbitrage1.BidCrossRate.Bids.Max(x => x.Price));
-            Assert.Equal(10982.9089835m, arbitrage1.AskCrossRate.Asks.Max(x => x.Price), 8);
+            var arbitrage1 = arbitrages.First(x => x.BidSynth.Source == "GDAX" && x.AskSynth.Source == "Quoine-Binance");
+            Assert.Equal(11000, arbitrage1.BidSynth.Bids.Max(x => x.Price));
+            Assert.Equal(10982.9089835m, arbitrage1.AskSynth.Asks.Max(x => x.Price), 8);
             Assert.Equal(arbitrage1.PnL, (arbitrage1.Bid.Price - arbitrage1.Ask.Price) * arbitrage1.Volume);
 
-            var arbitrage2 = arbitrages.First(x => x.BidCrossRate.Source == "Bitfinex" && x.AskCrossRate.Source == "Quoine-Binance");
-            Assert.Equal(11100, arbitrage2.BidCrossRate.Bids.Max(x => x.Price));
-            Assert.Equal(10982.9089835m, arbitrage2.AskCrossRate.Asks.Max(x => x.Price), 8);
+            var arbitrage2 = arbitrages.First(x => x.BidSynth.Source == "Bitfinex" && x.AskSynth.Source == "Quoine-Binance");
+            Assert.Equal(11100, arbitrage2.BidSynth.Bids.Max(x => x.Price));
+            Assert.Equal(10982.9089835m, arbitrage2.AskSynth.Asks.Max(x => x.Price), 8);
             Assert.Equal(arbitrage2.PnL, (arbitrage2.Bid.Price - arbitrage2.Ask.Price) * arbitrage2.Volume);
 
-            var arbitrage3 = arbitrages.First(x => x.BidCrossRate.Source == "Bitfinex" && x.AskCrossRate.Source == "GDAX");
-            Assert.Equal(11100, arbitrage3.BidCrossRate.Bids.Max(x => x.Price));
-            Assert.Equal(11050m, arbitrage3.AskCrossRate.Asks.Max(x => x.Price));
+            var arbitrage3 = arbitrages.First(x => x.BidSynth.Source == "Bitfinex" && x.AskSynth.Source == "GDAX");
+            Assert.Equal(11100, arbitrage3.BidSynth.Bids.Max(x => x.Price));
+            Assert.Equal(11050m, arbitrage3.AskSynth.Asks.Max(x => x.Price));
             Assert.Equal(arbitrage3.PnL, (arbitrage3.Bid.Price - arbitrage3.Ask.Price) * arbitrage3.Volume);
         }
 
@@ -1280,7 +1279,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
 
-            var settings = new Settings(50, 1, baseAssets, new List<string>(), quoteAsset, -20, new List<string>(), 0, 0, new List<string>(), new Dictionary<string, string>(), new List<string>());
+            var settings = new Settings(50, 1, baseAssets, new List<string>(), quoteAsset, -20, new List<string>(), 0, 0, new List<string>(), new Dictionary<string, string>(), new List<string>(), new TimeSpan(0, 0, 5, 0), new List<string>(), -1, "lykke");
             var arbitrageDetector = GetArbitrageDetector(settings);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
@@ -1309,7 +1308,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             arbitrageDetector.Process(eurUsdOrderBook);
 
             await arbitrageDetector.Execute();
-            Thread.Sleep(1000); // Wait until cross rate expire and arbitrage appears in history
+            Thread.Sleep(1000); // Wait until synthetic order book expire and arbitrage appears in history
             await arbitrageDetector.Execute();
 
             var arbitrageHistory = arbitrageDetector.GetArbitrageHistory(DateTime.MinValue, short.MaxValue);
@@ -1319,7 +1318,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
 
         [Fact]
-        public async Task ManyCrossRatesPerformanceTest()
+        public async Task ManySynthOrderBooksPerformanceTest()
         {
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
@@ -1328,23 +1327,23 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var arbitrageDetector = GetArbitrageDetector(settings);
 
             var orderBooks = new List<OrderBook>();
-            orderBooks.AddRange(Generate2OrderBooksForCrossRates(500, "GDAX", new AssetPair("BTC", "USD"), 10, 11000, 10000, 10, 11500, 11000));
-            orderBooks.AddRange(Generate2OrderBooksForCrossRates(500, "Bitfinex", new AssetPair("BTC", "USD"), 10, 11000, 10200, 10, 11600, 11000));
+            orderBooks.AddRange(Generate2OrderBooksForSynthOrderBooks(500, "GDAX", new AssetPair("BTC", "USD"), 10, 11000, 10000, 10, 11500, 11000));
+            orderBooks.AddRange(Generate2OrderBooksForSynthOrderBooks(500, "Bitfinex", new AssetPair("BTC", "USD"), 10, 11000, 10200, 10, 11600, 11000));
             Assert.Equal(2000, orderBooks.Count);
 
             foreach (var orderBook in orderBooks)
                 arbitrageDetector.Process(orderBook);
 
             var watch = Stopwatch.StartNew();
-            await arbitrageDetector.CalculateCrossRates();
+            await arbitrageDetector.CalculateSynthOrderBooks();
             watch.Stop();
             if (performance)
                 Assert.InRange(watch.ElapsedMilliseconds, 400, 500);
 
-            var crossRates = arbitrageDetector.GetCrossRates().ToList();
+            var synthOrderBooks = arbitrageDetector.GetSynthOrderBooks().ToList();
             var arbitrages = arbitrageDetector.GetArbitrages().ToList();
 
-            Assert.InRange(crossRates.Count, 1000, 1048); // because of sqrt
+            Assert.InRange(synthOrderBooks.Count, 1000, 1048); // because of sqrt
             Assert.Empty(arbitrages);
         }
 
@@ -1373,7 +1372,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 arbitrageDetector.Process(orderBook);
 
             var watch = Stopwatch.StartNew();
-            var crossRates = await arbitrageDetector.CalculateCrossRates();
+            var synthOrderBooks = await arbitrageDetector.CalculateSynthOrderBooks();
             if (performance)
                 Assert.InRange(watch.ElapsedMilliseconds, 5, 50);
             var arbitrages = await arbitrageDetector.CalculateArbitrages();
@@ -1381,7 +1380,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             if (performance)
                 Assert.InRange(watch.ElapsedMilliseconds, 600, 700);
 
-            Assert.Equal(6, crossRates.Count());
+            Assert.Equal(6, synthOrderBooks.Count());
             Assert.Equal(12, arbitrages.Count());
         }
 
@@ -1409,10 +1408,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             if (performance)
                 Assert.InRange(watch.ElapsedMilliseconds, 350, 450);
 
-            var crossRates = arbitrageDetector.GetCrossRates();
+            var synthOrderBooks = arbitrageDetector.GetSynthOrderBooks();
             var arbitrages = arbitrageDetector.GetArbitrages();
 
-            Assert.Equal(63, crossRates.Count());
+            Assert.Equal(63, synthOrderBooks.Count());
             Assert.Equal(735, arbitrages.Count());
 
 
@@ -1431,10 +1430,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             if (performance)
                 Assert.InRange(watch.ElapsedMilliseconds, 300, 400); // Second time may be faster
 
-            crossRates = arbitrageDetector.GetCrossRates();
+            synthOrderBooks = arbitrageDetector.GetSynthOrderBooks();
             arbitrages = arbitrageDetector.GetArbitrages();
 
-            Assert.Equal(63, crossRates.Count());
+            Assert.Equal(63, synthOrderBooks.Count());
             Assert.Equal(735, arbitrages.Count());
         }
 
@@ -1449,12 +1448,14 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         public async Task SettingsSetAllTest()
         {
             var startupSettings = new Settings(50, 10, new List<string> { "BTC", "ETH" }, new List<string> { "EUR", "CHF" }, "USD", -20, new List<string> { "GDAX" }, 0,
-                10.00000001m, new List<string> { "ABC" }, new Dictionary<string, string> { { "Bitfinex(e)", "Bitfinex" } }, new List<string>{ "BTCUSD" });
+                10.00000001m, new List<string> { "ABC" }, new Dictionary<string, string> { { "Bitfinex(e)", "Bitfinex" } }, new List<string>{ "BTCUSD" }, new TimeSpan(0, 0, 5, 0),
+                new List<string> { "BTCUSD" }, -1, "lykke");
 
             var arbitrageCalculator = new ArbitrageDetectorService(new LogToConsole(), null, SettingsRepository(startupSettings), AssetsService());
 
             var settings = new Settings(30, 5, new List<string> { "EUR", "USD" }, new List<string> { "BTC", "ETH" }, "BTC", -20, new List<string> { "Bitfinex" }, 0,
-                10.00000001m, new List<string> { "XYZ" }, new Dictionary<string, string> { { "Kucoin(e)", "Kucoin" } }, new List<string> { "ETHUSD" });
+                10.00000001m, new List<string> { "XYZ" }, new Dictionary<string, string> { { "Kucoin(e)", "Kucoin" } }, new List<string> { "ETHUSD" }, new TimeSpan(0, 0, 3, 0),
+                new List<string> { "ETHUSD" }, -2, "lykke(e)");
 
             arbitrageCalculator.SetSettings(settings);
 
@@ -1475,8 +1476,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
 
-            
-            var settings = new Settings(50, 10, baseAssets, new List<string>(), quoteAsset, -20, new List<string>(), 0, 500.00000001m, new List<string>(), new Dictionary<string, string>(), new List<string>());
+            var settings = new Settings(50, 10, baseAssets, new List<string>(), quoteAsset, -20, new List<string>(), 0, 500.00000001m, new List<string>(), new Dictionary<string, string>(), new List<string>(), new TimeSpan(0, 0, 5, 0), new List<string>(), -1, "lykke");
             var arbitrageDetector = GetArbitrageDetector(settings);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
@@ -1494,10 +1494,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             await arbitrageDetector.Execute();
 
-            var crossRates = arbitrageDetector.GetCrossRates().ToList();
+            var synthOrderBooks = arbitrageDetector.GetSynthOrderBooks().ToList();
             var arbitrages = arbitrageDetector.GetArbitrages().ToList();
 
-            Assert.Equal(2, crossRates.Count);
+            Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(0, arbitrages.Count);
         }
 
@@ -1507,7 +1507,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
 
-            var settings = new Settings(50, 10, baseAssets, new List<string>(), quoteAsset, -20, new List<string>(), 0, 10.00000001m, new List<string>(), new Dictionary<string, string>(), new List<string>());
+            var settings = new Settings(50, 10, baseAssets, new List<string>(), quoteAsset, -20, new List<string>(), 0, 10.00000001m, new List<string>(), new Dictionary<string, string>(), new List<string>(), new TimeSpan(0, 0, 5, 0), new List<string>(), -1, "lykke");
             var arbitrageDetector = GetArbitrageDetector(settings);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
@@ -1525,10 +1525,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             await arbitrageDetector.Execute();
 
-            var crossRates = arbitrageDetector.GetCrossRates().ToList();
+            var synthOrderBooks = arbitrageDetector.GetSynthOrderBooks().ToList();
             var arbitrages = arbitrageDetector.GetArbitrages().ToList();
 
-            Assert.Equal(2, crossRates.Count);
+            Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(0, arbitrages.Count);
         }
 
@@ -1538,7 +1538,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
 
-            var settings = new Settings(50, 10, baseAssets, new List<string>(), quoteAsset, -20, new List<string> { "GDAX" }, 0, 0, new List<string>(), new Dictionary<string, string>(), new List<string>());
+            var settings = new Settings(50, 10, baseAssets, new List<string>(), quoteAsset, -20, new List<string> { "GDAX" }, 0, 0, new List<string>(), new Dictionary<string, string>(), new List<string>(), new TimeSpan(0, 0, 5, 0), new List<string>(), -1, "lykke");
             var arbitrageDetector = GetArbitrageDetector(settings);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
@@ -1556,10 +1556,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             await arbitrageDetector.Execute();
 
-            var crossRates = arbitrageDetector.GetCrossRates().ToList();
+            var synthOrderBooks = arbitrageDetector.GetSynthOrderBooks().ToList();
             var arbitrages = arbitrageDetector.GetArbitrages().ToList();
 
-            Assert.Equal(1, crossRates.Count);
+            Assert.Equal(1, synthOrderBooks.Count);
             Assert.Equal(0, arbitrages.Count);
         }
 
@@ -1577,11 +1577,11 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             return settingsRepository.Object;
         }
 
-        private IAssetsService AssetsService()
+        private ILykkeExchangeService AssetsService()
         {
-            var assetsRepository = new Mock<IAssetsService>();
+            var assetsRepository = new Mock<ILykkeExchangeService>();
             assetsRepository.Setup(x => x.GetAccuracy(It.IsAny<AssetPair>()))
-                .Returns<AssetPair>(assetPair => new AssetPairAccuracy(assetPair, 5, 3));
+                .Returns<AssetPair>(assetPair => (5, 3));
             assetsRepository.Setup(x => x.InferBaseAndQuoteAssets(It.IsAny<OrderBook>()))
                 .Returns<OrderBook>(orderBook =>
                 {
@@ -1600,7 +1600,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
         private Settings GetSettings(IEnumerable<string> baseAssets, string quoteAsset, int minSpread)
         {
-            var result = new Settings(50, 10, baseAssets, new List<string>(), quoteAsset, minSpread, new List<string>(), 0, 0, new List<string>(), new Dictionary<string, string>(), new List<string>());
+            var result = new Settings(50, 10, baseAssets, new List<string>(), quoteAsset, minSpread, new List<string>(), 0, 0, new List<string>(), new Dictionary<string, string>(), new List<string>(), new TimeSpan(0, 0, 5, 0), new List<string>(), -1, "lykke");
 
             return result;
         }
@@ -1663,7 +1663,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             return result;
         }
 
-        private IEnumerable<OrderBook> Generate2OrderBooksForCrossRates(int count, string source, AssetPair assetPair, int bidCount, decimal maxBid, decimal minBid, int askCount, decimal maxAsk, decimal minAsk)
+        private IEnumerable<OrderBook> Generate2OrderBooksForSynthOrderBooks(int count, string source, AssetPair assetPair, int bidCount, decimal maxBid, decimal minBid, int askCount, decimal maxAsk, decimal minAsk)
         {
             #region Arguments checking
 
@@ -1679,8 +1679,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             for (var i = 0; i < count; i++)
             {
-                var bids = GenerateVolumePricesForCrossRates(bidCount, minBid, maxBid);
-                var asks = GenerateVolumePricesForCrossRates(askCount, minAsk, maxAsk);
+                var bids = GenerateVolumePricesForSynthOrderBooks(bidCount, minBid, maxBid);
+                var asks = GenerateVolumePricesForSynthOrderBooks(askCount, minAsk, maxAsk);
 
                 var intermediateAsset = RandomString(3);
                 var orderBook1 = new OrderBook(source + i, assetPair.Base + intermediateAsset, bids, asks, DateTime.UtcNow);
@@ -1703,7 +1703,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             return result;
         }
 
-        private IEnumerable<OrderBook> Generate3OrderBooksForCrossRates(int count, string source, AssetPair assetPair, int bidCount, decimal maxBid, decimal minBid, int askCount, decimal maxAsk, decimal minAsk)
+        private IEnumerable<OrderBook> Generate3OrderBooksForSynthOrderBooks(int count, string source, AssetPair assetPair, int bidCount, decimal maxBid, decimal minBid, int askCount, decimal maxAsk, decimal minAsk)
         {
             #region Arguments checking
 
@@ -1719,8 +1719,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             for (var i = 0; i < count; i++)
             {
-                var bids = GenerateVolumePricesForCrossRates(bidCount, minBid, maxBid);
-                var asks = GenerateVolumePricesForCrossRates(askCount, minAsk, maxAsk);
+                var bids = GenerateVolumePricesForSynthOrderBooks(bidCount, minBid, maxBid);
+                var asks = GenerateVolumePricesForSynthOrderBooks(askCount, minAsk, maxAsk);
 
                 var intermediate1Asset = RandomString(3);
                 var orderBook1 = new OrderBook(source + i, assetPair.Base + intermediate1Asset, bids, asks, DateTime.UtcNow);
@@ -1748,7 +1748,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             return result;
         }
 
-        private IReadOnlyCollection<VolumePrice> GenerateVolumePricesForCrossRates(int count, decimal min, decimal max)
+        private IReadOnlyCollection<VolumePrice> GenerateVolumePricesForSynthOrderBooks(int count, decimal min, decimal max)
         {
             var result = new List<VolumePrice>();
 

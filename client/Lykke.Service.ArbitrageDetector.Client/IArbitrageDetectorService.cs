@@ -19,17 +19,24 @@ namespace Lykke.Service.ArbitrageDetector.Client
         Task<IEnumerable<OrderBookRow>> OrderBooksAsync(string exchange, string assetPair);
 
         /// <summary>
-        /// Returns a collection of OrderBook entities by exchange and instrument.
+        /// Returns an order book by exchange and instrument.
         /// </summary>
         /// <param name="exchange">Name of an exchange.</param>
         /// <param name="assetPair">Name of an instrument</param>
         /// <returns>A collection of OrderBook entities.</returns>
-        Task<IEnumerable<OrderBookRow>> NewOrderBooksAsync(string exchange, string assetPair);
+        Task<OrderBook> OrderBookAsync(string exchange, string assetPair);
 
         /// <summary>
-        /// Returns a collection of CrossRate entities.
+        /// Returns a collection of SynthOrderBook entities.
         /// </summary>
-        /// <returns>A collection of CrossRate entities.</returns>
+        /// <returns>A collection of SynthOrderBook entities.</returns>
+        Task<IEnumerable<SynthOrderBookRow>> SynthOrderBooksAsync();
+
+        /// <summary>
+        /// Returns a collection of SynthOrderBook entities.
+        /// </summary>
+        /// <returns>A collection of SynthOrderBook entities.</returns>
+        [Obsolete]
         Task<IEnumerable<CrossRateRow>> CrossRatesAsync();
 
         /// <summary> 
@@ -83,7 +90,32 @@ namespace Lykke.Service.ArbitrageDetector.Client
         /// Returns a collection of LykkeArbitrageRow entities.
         /// </summary>
         /// <returns>A collection of Lykke Arbitrage entities.</returns>
-        Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync(string basePair, string crossPair);
+        Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync(string basePair, string crossPair, decimal minVolumeInUsd = 0);
+
+        /// <summary>
+        /// Get matrix datetime stamps by date.
+        /// </summary>
+        /// <param name="assetPair"></param>
+        /// <param name="date"></param>
+        /// <param name="lykkeArbitragesOnly"></param>
+        /// <returns></returns>
+        Task<IEnumerable<DateTime>> MatrixHistoryStamps(string assetPair, DateTime date, bool lykkeArbitragesOnly);
+
+        /// <summary>
+        /// Get available asset pairs by date.
+        /// </summary>
+        /// <param name="date"></param>
+        /// <param name="lykkeArbitragesOnly"></param>
+        /// <returns></returns>
+        Task<IEnumerable<string>> MatrixHistoryAssetPairs(DateTime date, bool lykkeArbitragesOnly);
+
+        /// <summary>
+        /// Get matrix snapshot.
+        /// </summary>
+        /// <param name="assetPair"></param>
+        /// <param name="dateTime"></param>
+        /// <returns></returns>
+        Task<Matrix> MatrixHistory(string assetPair, DateTime dateTime);
 
         /// <summary>
         /// Get settings.

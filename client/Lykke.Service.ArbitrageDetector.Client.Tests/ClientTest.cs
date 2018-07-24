@@ -13,7 +13,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         [Fact]
         public async Task OrderBooksTest()
         {
-            var orderBooks = (await Client.NewOrderBooksAsync(string.Empty, string.Empty)).ToList();
+            var orderBooks = (await Client.OrderBooksAsync(string.Empty, string.Empty)).ToList();
             Assert.NotNull(orderBooks);
             Assert.NotEmpty(orderBooks);
 
@@ -24,7 +24,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         [Fact]
         public async Task OrderBooksFilterExchangeTest()
         {
-            var orderBooks = (await Client.NewOrderBooksAsync("lykke", string.Empty)).ToList();
+            var orderBooks = (await Client.OrderBooksAsync("lykke", string.Empty)).ToList();
             Assert.NotNull(orderBooks);
             Assert.NotEmpty(orderBooks);
 
@@ -36,7 +36,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         [Fact]
         public async Task OrderBooksFilterAssetPairTest()
         {
-            var orderBooks = (await Client.NewOrderBooksAsync(string.Empty, "USD")).ToList();
+            var orderBooks = (await Client.OrderBooksAsync(string.Empty, "USD")).ToList();
             Assert.NotNull(orderBooks);
             Assert.NotEmpty(orderBooks);
 
@@ -46,14 +46,14 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         }
 
         [Fact]
-        public async Task CrossRatesTest()
+        public async Task SynthOrderBooksTest()
         {
-            var crossRates = (await Client.CrossRatesAsync()).ToList();
-            Assert.NotNull(crossRates);
-            Assert.NotEmpty(crossRates);
+            var synthOrderBooks = (await Client.SynthOrderBooksAsync()).ToList();
+            Assert.NotNull(synthOrderBooks);
+            Assert.NotEmpty(synthOrderBooks);
 
-            var crossRate = crossRates.First();
-            AssertCrossRateRow(crossRate);
+            var synthOrderBook = synthOrderBooks.First();
+            AssertSynthOrderBookRow(synthOrderBook);
         }
 
         [Fact]
@@ -176,17 +176,17 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         {
             var oldSettings = await Client.GetSettingsAsync();
 
-            var settings = new Settings(150, 0, new List<string> { "AUD", "CHF" }, new List<string> { "EUR" }, "BTC", -97, new List<string> { "GDAX" }, 13, 17, new List<string> {"BTCUSD"}, new Dictionary<string, string>{ {"", ""} }, new List<string>{ "BTCUSD" });
+            var settings = new Settings(150, 0, new List<string> { "AUD", "CHF" }, new List<string> { "EUR" }, "BTC", -97, new List<string> { "GDAX" }, 13, 17, new List<string> {"BTCUSD"}, new Dictionary<string, string>{ {"", ""} }, new List<string>{ "BTCUSD" }, new TimeSpan(0, 0, 5, 0), new List<string> { "BTCUSD" }, -1, "lykke");
 
             await Client.SetSettingsAsync(settings);
 
             var newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(settings, newSettings);
+            AssertSettings(settings, newSettings);
 
             await Client.SetSettingsAsync(oldSettings);
 
             newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(oldSettings, newSettings);
+            AssertSettings(oldSettings, newSettings);
         }
 
         [Fact]
@@ -199,12 +199,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             await Client.SetSettingsAsync(settings);
 
             var newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(settings, newSettings);
+            AssertSettings(settings, newSettings);
 
             await Client.SetSettingsAsync(oldSettings);
 
             newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(oldSettings, newSettings);
+            AssertSettings(oldSettings, newSettings);
         }
 
         [Fact]
@@ -217,12 +217,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             await Client.SetSettingsAsync(settings);
 
             var newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(settings, newSettings);
+            AssertSettings(settings, newSettings);
 
             await Client.SetSettingsAsync(oldSettings);
 
             newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(oldSettings, newSettings);
+            AssertSettings(oldSettings, newSettings);
         }
 
         [Fact]
@@ -235,12 +235,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             await Client.SetSettingsAsync(settings);
 
             var newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(settings, newSettings);
+            AssertSettings(settings, newSettings);
 
             await Client.SetSettingsAsync(oldSettings);
 
             newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(oldSettings, newSettings);
+            AssertSettings(oldSettings, newSettings);
         }
 
         [Fact]
@@ -253,12 +253,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             await Client.SetSettingsAsync(settings);
 
             var newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(settings, newSettings);
+            AssertSettings(settings, newSettings);
 
             await Client.SetSettingsAsync(oldSettings);
 
             newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(oldSettings, newSettings);
+            AssertSettings(oldSettings, newSettings);
         }
 
         [Fact]
@@ -271,12 +271,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             await Client.SetSettingsAsync(settings);
 
             var newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(settings, newSettings);
+            AssertSettings(settings, newSettings);
 
             await Client.SetSettingsAsync(oldSettings);
 
             newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(oldSettings, newSettings);
+            AssertSettings(oldSettings, newSettings);
         }
 
         [Fact]
@@ -289,12 +289,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             await Client.SetSettingsAsync(settings);
 
             var newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(settings, newSettings);
+            AssertSettings(settings, newSettings);
 
             await Client.SetSettingsAsync(oldSettings);
 
             newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(oldSettings, newSettings);
+            AssertSettings(oldSettings, newSettings);
         }
 
         [Fact]
@@ -307,12 +307,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             await Client.SetSettingsAsync(settings);
 
             var newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(settings, newSettings);
+            AssertSettings(settings, newSettings);
 
             await Client.SetSettingsAsync(oldSettings);
 
             newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(oldSettings, newSettings);
+            AssertSettings(oldSettings, newSettings);
         }
 
         [Fact]
@@ -325,12 +325,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             await Client.SetSettingsAsync(settings);
 
             var newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(settings, newSettings);
+            AssertSettings(settings, newSettings);
 
             await Client.SetSettingsAsync(oldSettings);
 
             newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(oldSettings, newSettings);
+            AssertSettings(oldSettings, newSettings);
         }
 
         [Fact]
@@ -343,12 +343,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             await Client.SetSettingsAsync(settings);
 
             var newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(settings, newSettings);
+            AssertSettings(settings, newSettings);
 
             await Client.SetSettingsAsync(oldSettings);
 
             newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(oldSettings, newSettings);
+            AssertSettings(oldSettings, newSettings);
         }
 
         [Fact]
@@ -361,12 +361,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             await Client.SetSettingsAsync(settings);
 
             var newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(settings, newSettings);
+            AssertSettings(settings, newSettings);
 
             await Client.SetSettingsAsync(oldSettings);
 
             newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(oldSettings, newSettings);
+            AssertSettings(oldSettings, newSettings);
         }
 
         [Fact]
@@ -379,12 +379,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             await Client.SetSettingsAsync(settings);
 
             var newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(settings, newSettings);
+            AssertSettings(settings, newSettings);
 
             await Client.SetSettingsAsync(oldSettings);
 
             newSettings = await Client.GetSettingsAsync();
-            AssertSettigns(oldSettings, newSettings);
+            AssertSettings(oldSettings, newSettings);
         }
 
 
@@ -410,40 +410,40 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             Assert.NotEqual(default, orderBookRow.Timestamp);
         }
 
-        private void AssertCrossRate(CrossRate crossRate)
+        private void AssertSynthOrderBook(SynthOrderBook synthOrderBook)
         {
-            AssertOrderBook(crossRate);
-            Assert.NotEmpty(crossRate.ConversionPath);
-            Assert.NotEmpty(crossRate.OriginalOrderBooks);
-            foreach (var orderBook in crossRate.OriginalOrderBooks)
+            AssertOrderBook(synthOrderBook);
+            Assert.NotEmpty(synthOrderBook.ConversionPath);
+            Assert.NotEmpty(synthOrderBook.OriginalOrderBooks);
+            foreach (var orderBook in synthOrderBook.OriginalOrderBooks)
                 AssertOrderBook(orderBook);
         }
 
-        private void AssertCrossRateRow(CrossRateRow crossRate)
+        private void AssertSynthOrderBookRow(SynthOrderBookRow synthOrderBook)
         {
-            Assert.NotEmpty(crossRate.Source);
-            Assert.False(crossRate.AssetPair.IsEmpty());
-            if (crossRate.BestBid.HasValue)
+            Assert.NotEmpty(synthOrderBook.Source);
+            Assert.False(synthOrderBook.AssetPair.IsEmpty());
+            if (synthOrderBook.BestBid.HasValue)
             {
-                Assert.NotEqual(default, crossRate.BestBid.Value.Price);
-                Assert.NotEqual(default, crossRate.BestBid.Value.Volume);
+                Assert.NotEqual(default, synthOrderBook.BestBid.Value.Price);
+                Assert.NotEqual(default, synthOrderBook.BestBid.Value.Volume);
             }
 
-            if (crossRate.BestAsk.HasValue)
+            if (synthOrderBook.BestAsk.HasValue)
             {
-                Assert.NotEqual(default, crossRate.BestAsk.Value.Price);
-                Assert.NotEqual(default, crossRate.BestAsk.Value.Volume);
+                Assert.NotEqual(default, synthOrderBook.BestAsk.Value.Price);
+                Assert.NotEqual(default, synthOrderBook.BestAsk.Value.Volume);
             }
 
-            Assert.NotEmpty(crossRate.ConversionPath);
-            Assert.NotEqual(default, crossRate.Timestamp);
+            Assert.NotEmpty(synthOrderBook.ConversionPath);
+            Assert.NotEqual(default, synthOrderBook.Timestamp);
         }
 
         private void AssertArbitrage(Arbitrage arbitrage, bool isActive)
         {
             Assert.False(arbitrage.AssetPair.IsEmpty());
-            AssertCrossRate(arbitrage.AskCrossRate);
-            AssertCrossRate(arbitrage.BidCrossRate);
+            AssertSynthOrderBook(arbitrage.AskSynth);
+            AssertSynthOrderBook(arbitrage.BidSynth);
             Assert.NotEqual(default, arbitrage.Bid.Price);
             Assert.NotEqual(default, arbitrage.Bid.Volume);
             Assert.NotEqual(default, arbitrage.Ask.Price);
@@ -477,13 +477,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             Assert.Equal(ended, arbitrage.EndedAt != default);
         }
 
-        private void AssertSettigns(Settings one, Settings another)
+        private void AssertSettings(Settings one, Settings another)
         {
-            if (one.ExpirationTimeInSeconds != null && another.ExpirationTimeInSeconds != null)
-                Assert.Equal(one.ExpirationTimeInSeconds, another.ExpirationTimeInSeconds);
+            Assert.Equal(one.ExpirationTimeInSeconds, another.ExpirationTimeInSeconds);
 
-            if (one.MinSpread != null && another.MinSpread != null)
-                Assert.Equal(one.MinSpread, another.MinSpread);
+            Assert.Equal(one.MinSpread, another.MinSpread);
 
             if (one.BaseAssets != null && another.BaseAssets != null)
                 Assert.Equal(one.BaseAssets, another.BaseAssets);
@@ -497,11 +495,9 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
             if (one.Exchanges != null && another.Exchanges != null)
                 Assert.Equal(one.Exchanges, another.Exchanges);
 
-            if (one.MinimumPnL != null && another.MinimumPnL != null)
-                Assert.Equal(one.MinimumPnL, another.MinimumPnL);
+            Assert.Equal(one.MinimumPnL, another.MinimumPnL);
 
-            if (one.MinimumVolume != null && another.MinimumVolume != null)
-                Assert.Equal(one.MinimumVolume, another.MinimumVolume);
+            Assert.Equal(one.MinimumVolume, another.MinimumVolume);
         }
     }
 }

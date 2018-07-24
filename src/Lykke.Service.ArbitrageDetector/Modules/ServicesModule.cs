@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using Autofac;
 using Common;
 using Common.Log;
+using Lykke.Job.OrderBooksCacheProvider.Client;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.OrderBookHandlers;
 using Lykke.Service.ArbitrageDetector.RabbitSubscribers;
@@ -11,8 +13,6 @@ using Lykke.Service.RateCalculator.Client;
 using Lykke.SettingsReader;
 using ILykkeAssetsService = Lykke.Service.Assets.Client.IAssetsService;
 using LykkeAssetsService = Lykke.Service.Assets.Client.AssetsService;
-using IAssetsService = Lykke.Service.ArbitrageDetector.Core.Services.IAssetsService;
-using AssetsService = Lykke.Service.ArbitrageDetector.Services.AssetsService;
 
 namespace Lykke.Service.ArbitrageDetector.Modules
 {
@@ -29,6 +29,16 @@ namespace Lykke.Service.ArbitrageDetector.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
+            // OutProc Services
+
+            builder.RegisterInstance(new LykkeAssetsService(new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl)))
+                .As<ILykkeAssetsService>()
+                .SingleInstance();
+
+            builder.RegisterInstance(new OrderBookProviderClient(_settings.CurrentValue.OrderBooksCacheProviderClient.ServiceUrl))
+                .As<IOrderBookProviderClient>()
+                .SingleInstance();
+
             // Order Book Handlers
 
             builder.RegisterType<OrderBookParser>()
@@ -37,38 +47,30 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             builder.RegisterType<OrderBookValidator>()
                 .SingleInstance();
 
-            // Services
+            // InProc Services
 
-            builder.RegisterType<AssetsService>()
-                .As<IAssetsService>()
+            builder.RegisterType<LykkeExchangeService>()
+                .As<ILykkeExchangeService>()
+                .As<IStartable>()
+                .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies)
                 .SingleInstance();
 
             builder.RegisterType<ArbitrageDetectorService>()
                 .As<IArbitrageDetectorService>()
                 .As<IStartable>()
                 .As<IStopable>()
-                .AutoActivate()
                 .SingleInstance();
-
-            //builder.RegisterType<ArbitrageScreenerService>()
-            //    .As<IStartable>()
-            //    .As<IStopable>()
-            //    .AutoActivate()
-            //    .SingleInstance();
 
             builder.RegisterType<LykkeArbitrageDetectorService>()
                 .As<ILykkeArbitrageDetectorService>()
                 .As<IStartable>()
                 .As<IStopable>()
-                .AutoActivate()
                 .SingleInstance();
 
-            builder.RegisterInstance(new LykkeAssetsService(new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl)))
-                .As<ILykkeAssetsService>()
-                .SingleInstance();
-
-            builder.RegisterInstance(new RateCalculatorClient(_settings.CurrentValue.RateCalculatorServiceClient.ServiceUrl, _log))
-                .As<IRateCalculatorClient>()
+            builder.RegisterType<MatrixHistoryService>()
+                .As<IMatrixHistoryService>()
+                .As<IStartable>()
+                .As<IStopable>()
                 .SingleInstance();
 
             // RabbitMessageSubscribers

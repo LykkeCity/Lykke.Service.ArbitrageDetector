@@ -62,9 +62,15 @@ namespace Lykke.Service.ArbitrageDetector.Client
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<OrderBookRow>> NewOrderBooksAsync(string exchange, string assetPair)
+        public async Task<OrderBook> OrderBookAsync(string exchange, string assetPair)
         {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.NewOrderBooksAsync(exchange, assetPair));
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.OrderBookAsync(exchange, assetPair));
+        }
+
+        /// <inheritdoc />
+        public async Task<IEnumerable<SynthOrderBookRow>> SynthOrderBooksAsync()
+        {
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.SynthOrderBooksAsync());
         }
 
         /// <inheritdoc />
@@ -116,9 +122,27 @@ namespace Lykke.Service.ArbitrageDetector.Client
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync(string basePair, string crossPair)
+        public async Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync(string basePair, string crossPair, decimal minVolumeInUsd = 0)
         {
             return await _runner.RunAsync(() => _arbitrageDetectorApi.LykkeArbitrages(basePair, crossPair));
+        }
+
+        /// <inheritdoc />
+        public async Task<IEnumerable<DateTime>> MatrixHistoryStamps(string assetPair, DateTime date, bool lykkeArbitragesOnly)
+        {
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixHistoryStamps(assetPair, date, lykkeArbitragesOnly));
+        }
+
+        /// <inheritdoc />
+        public async Task<IEnumerable<string>> MatrixHistoryAssetPairs(DateTime date, bool lykkeArbitragesOnly)
+        {
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixHistoryAssetPairs(date, lykkeArbitragesOnly));
+        }
+
+        /// <inheritdoc />
+        public async Task<Matrix> MatrixHistory(string assetPair, DateTime dateTime)
+        {
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.MatrixHistory(assetPair, dateTime));
         }
 
         /// <inheritdoc />

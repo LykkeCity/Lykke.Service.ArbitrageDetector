@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
-using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Services
 {
@@ -11,11 +10,13 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
 
         // Order Books
 
-        IEnumerable<OrderBook> GetOrderBooks(string exchange, string instrument);
+        IEnumerable<OrderBook> GetOrderBooks(string exchange, string assetPair);
+
+        OrderBook GetOrderBook(string exchange, string assetPair);
 
         // Cross Rates
 
-        IEnumerable<CrossRate> GetCrossRates();
+        IEnumerable<SynthOrderBook> GetSynthOrderBooks();
 
         // Arbitrages
 

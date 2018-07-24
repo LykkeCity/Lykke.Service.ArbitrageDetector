@@ -41,6 +41,16 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public VolumePrice? BestAsk { get; }
 
         /// <summary>
+        /// All bids volume.
+        /// </summary>
+        public decimal BidsVolume => Bids.Sum(x => x.Volume);
+
+        /// <summary>
+        /// All asks volume.
+        /// </summary>
+        public decimal AsksVolume => Asks.Sum(x => x.Volume);
+
+        /// <summary>
         /// Timestamp.
         /// </summary>
         public DateTime Timestamp { get; protected set; }

@@ -5,85 +5,86 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
     /// <summary>
     /// Represents an arbitrage situation.
     /// </summary>
+    /// TODO: Return to getters only with a constructor.
     public sealed class LykkeArbitrageRow
     {
         /// <summary>
         /// Base asset pair.
         /// </summary>
-        public AssetPair BaseAssetPair { get; }
+        public AssetPair Target { get; set; }
 
         /// <summary>
         /// Cross asset pair.
         /// </summary>
-        public AssetPair CrossAssetPair { get; }
-
+        public AssetPair Source { get; set; }
 
         /// <summary>
         /// Count of cross pairs.
         /// </summary>
-        public int CrossPairsCount { get; }
+        public int SourcesCount { get; set; }
 
         /// <summary>
-        /// Count of cross rates.
+        /// Count of synthetic order books.
         /// </summary>
-        public int CrossRatesCount { get; }
+        public int SynthsCount { get; set; }
+
+        [Obsolete]
+        public int CrossRatesCount { get; set; }
 
         /// <summary>
         /// Spread
         /// </summary>
-        public decimal Spread { get; }
+        public decimal Spread { get; set; }
 
         /// <summary>
         /// Base side
         /// </summary>
-        public string BaseSide { get; }
+        public string TargetSide { get; set; }
 
         /// <summary>
         /// Conversion path.
         /// </summary>
-        public string ConversionPath { get; }
+        public string ConversionPath { get; set; }
 
         /// <summary>
         /// Volume
         /// </summary>
-        public decimal Volume { get; }
+        public decimal Volume { get; set; }
+
+        /// <summary>
+        /// Volume in USD
+        /// </summary>
+        public decimal? VolumeInUsd { get; set; }
+
+        /// <summary>
+        /// PnL
+        /// </summary>
+        public decimal PnL { get; set; }
+
+        /// <summary>
+        /// PnL in USD
+        /// </summary>
+        public decimal? PnLInUsd { get; set; }
 
         /// <summary>
         /// Base ask
         /// </summary>
-        public decimal? BaseAsk { get; }
+        public decimal? BaseAsk { get; set; }
 
         /// <summary>
         /// Base bid
         /// </summary>
-        public decimal? BaseBid { get; }
+        public decimal? BaseBid { get; set; }
 
         /// <summary>
         /// Cross ask
         /// </summary>
-        public decimal? CrossAsk { get; }
+        public decimal? SynthAsk { get; set; }
 
         /// <summary>
         /// Cross bid
         /// </summary>
-        public decimal? CrossBid { get; }
-
-        public LykkeArbitrageRow(AssetPair baseAssetPair, AssetPair crossAssetPair, int crossPairsCount, int crossRatesCount, decimal spread, string baseSide,
-            string conversionPath, decimal volume, decimal? baseBid, decimal? baseAsk, decimal? crossBid, decimal? crossAsk)
-        {
-            BaseAssetPair = baseAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(baseAssetPair)) : baseAssetPair;
-            CrossAssetPair = crossAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(crossAssetPair)) : crossAssetPair;
-            CrossPairsCount = crossPairsCount;
-            CrossRatesCount = crossRatesCount;
-            Spread = Math.Round(spread, 8);
-            BaseSide = string.IsNullOrWhiteSpace(baseSide) ? throw new ArgumentNullException(nameof(baseSide)) : baseSide;
-            ConversionPath = string.IsNullOrWhiteSpace(conversionPath) ? throw new ArgumentNullException(nameof(conversionPath)) : conversionPath;
-            Volume = Math.Round(volume, 8);
-            BaseAsk = baseAsk.HasValue ? Math.Round(baseAsk.Value, 8) : (decimal?)null;
-            BaseBid = baseBid.HasValue ? Math.Round(baseBid.Value, 8) : (decimal?)null;
-            CrossAsk = crossAsk.HasValue ? Math.Round(crossAsk.Value, 8) : (decimal?)null;
-            CrossBid = crossBid.HasValue ? Math.Round(crossBid.Value, 8) : (decimal?)null;
-        }
+        public decimal? SynthBid { get; set; }
 
         /// <inheritdoc />
         public override string ToString()

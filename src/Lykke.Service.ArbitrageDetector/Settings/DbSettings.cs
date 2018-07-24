@@ -1,6 +1,6 @@
 ﻿using Lykke.SettingsReader.Attributes;
 
-namespace Lykke.Service.ArbitrageDetector.Settings.ServiceSettings
+namespace Lykke.Service.ArbitrageDetector.Settings
 {
     public class DbSettings
     {

@@ -16,6 +16,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Lykke.Service.ArbitrageDetector.AzureRepositories.csproj.DotSettings" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Lykke.AzureStorage" Version="8.3.0" />
   </ItemGroup>
 

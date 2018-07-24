@@ -15,9 +15,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public AssetPair AssetPair { get; }
 
         /// <summary>
-        /// Cross rete with high bid.
+        /// Synthetic order book with high bid.
         /// </summary>
-        public CrossRate BidCrossRate { get; }
+        public SynthOrderBook BidSynth { get; }
 
         /// <summary>
         /// Price and volume of high bid.
@@ -25,9 +25,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public VolumePrice Bid { get; }
 
         /// <summary>
-        /// Cross rete with low ask.
+        /// Synthetic order book with low ask.
         /// </summary>
-        public CrossRate AskCrossRate { get; }
+        public SynthOrderBook AskSynth { get; }
 
         /// <summary>
         /// Price and volume of low ask.
@@ -73,21 +73,21 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// Constructor.
         /// </summary>
         /// <param name="assetPair"></param>
-        /// <param name="bidCrossRate"></param>
+        /// <param name="bidSynth"></param>
         /// <param name="bid"></param>
-        /// <param name="askCrossRate"></param>
+        /// <param name="askSynth"></param>
         /// <param name="ask"></param>
-        public Arbitrage(AssetPair assetPair, CrossRate bidCrossRate, VolumePrice bid, CrossRate askCrossRate, VolumePrice ask)
+        public Arbitrage(AssetPair assetPair, SynthOrderBook bidSynth, VolumePrice bid, SynthOrderBook askSynth, VolumePrice ask)
         {
             AssetPair = assetPair;
-            BidCrossRate = bidCrossRate ?? throw new ArgumentNullException(nameof(bidCrossRate));
-            AskCrossRate = askCrossRate ?? throw new ArgumentNullException(nameof(askCrossRate));
+            BidSynth = bidSynth ?? throw new ArgumentNullException(nameof(bidSynth));
+            AskSynth = askSynth ?? throw new ArgumentNullException(nameof(askSynth));
             Bid = bid;
             Ask = ask;
             Spread = GetSpread(Bid.Price, Ask.Price);
             Volume = Ask.Volume < Bid.Volume ? Ask.Volume : Bid.Volume;
             PnL = GetPnL(Bid.Price, Ask.Price, Volume);
-            ConversionPath = FormatConversionPath(BidCrossRate.ConversionPath, AskCrossRate.ConversionPath);
+            ConversionPath = FormatConversionPath(BidSynth.ConversionPath, AskSynth.ConversionPath);
             StartedAt = DateTime.UtcNow;
         }
 
@@ -100,12 +100,12 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Formats conversion path.
         /// </summary>
-        /// <param name="bidCrossRateConversionPath"></param>
-        /// <param name="askCrossRateConversionPath"></param>
+        /// <param name="bidSynthOrderBookConversionPath"></param>
+        /// <param name="askSynthOrderBookConversionPath"></param>
         /// <returns></returns>
-        public static string FormatConversionPath(string bidCrossRateConversionPath, string askCrossRateConversionPath)
+        public static string FormatConversionPath(string bidSynthOrderBookConversionPath, string askSynthOrderBookConversionPath)
         {
-            return "(" + bidCrossRateConversionPath + ") > (" + askCrossRateConversionPath + ")";
+            return "(" + bidSynthOrderBookConversionPath + ") > (" + askSynthOrderBookConversionPath + ")";
         }
 
         /// <summary>
@@ -134,89 +134,92 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Calculates best volume (biggest spread strategy).
         /// </summary>
-        /// <param name="sourceBids">OrderBook with bids.</param>
-        /// <param name="sourceAsks">OrderBook with asks.</param>
+        /// <param name="bids">Bids.</param>
+        /// <param name="asks">Asks.</param>
         /// <returns></returns>
-        public static decimal? GetArbitrageVolume(IReadOnlyCollection<VolumePrice> sourceBids, IReadOnlyCollection<VolumePrice> sourceAsks)
+        public static (decimal? Volume, decimal? PnL)? GetArbitrageVolumePnL(IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks)
         {
-            if (sourceBids == null)
-                throw new ArgumentException($"{nameof(sourceBids)}");
+            if (bids == null)
+                throw new ArgumentException($"{nameof(bids)}");
 
-            if (sourceAsks == null)
-                throw new ArgumentException($"{nameof(sourceAsks)}");
+            if (asks == null)
+                throw new ArgumentException($"{nameof(asks)}");
 
-            if (!sourceBids.Any() || !sourceAsks.Any() || sourceBids.Max(x => x.Price) <= sourceAsks.Min(x => x.Price))
+            if (!bids.Any() || !asks.Any() || bids.Max(x => x.Price) <= asks.Min(x => x.Price))
                 return null; // no arbitrage
 
             // Clone bids and asks (that in arbitrage only)
-            var bids = new List<VolumePrice>();
-            var asks = new List<VolumePrice>();
-            bids.AddRange(sourceBids);
-            asks.AddRange(sourceAsks);
+            var currentBids = new List<VolumePrice>();
+            var currentAsks = new List<VolumePrice>();
+            currentBids.AddRange(bids);
+            currentAsks.AddRange(asks);
 
-            decimal result = 0;
+            decimal volume = 0;
+            decimal pnl = 0;
             do
             {
                 // Recalculate best bid and best ask
-                var bestBidPrice = bids.Max(x => x.Price);
-                var bestAskPrice = asks.Min(x => x.Price);
-                bids = bids.Where(x => x.Price > bestAskPrice).OrderByDescending(x => x.Price).ToList();
-                asks = asks.Where(x => x.Price < bestBidPrice).OrderBy(x => x.Price).ToList();
+                var bestBidPrice = currentBids.Max(x => x.Price);
+                var bestAskPrice = currentAsks.Min(x => x.Price);
+                currentBids = currentBids.Where(x => x.Price > bestAskPrice).OrderByDescending(x => x.Price).ToList();
+                currentAsks = currentAsks.Where(x => x.Price < bestBidPrice).OrderBy(x => x.Price).ToList();
 
-                if (!bids.Any() || !asks.Any()) // no more arbitrage
+                if (!currentBids.Any() || !currentAsks.Any()) // no more arbitrage
                     break;
 
-                var bid = bids.First();
-                var ask = asks.First();
+                var bid = currentBids.First();
+                var ask = currentAsks.First();
 
                 // Calculate volume for current step and remove it
+                decimal currentVolume = 0; 
                 if (bid.Volume > ask.Volume)
                 {
-                    result += ask.Volume;
+                    currentVolume = ask.Volume;
                     var newBidVolume = bid.Volume - ask.Volume;
                     var newBid = new VolumePrice(bid.Price, newBidVolume);
-                    bids.Remove(bid);
-                    bids.Insert(0, newBid);
-                    asks.Remove(ask);
-                    continue;
+                    currentBids.Remove(bid);
+                    currentBids.Insert(0, newBid);
+                    currentAsks.Remove(ask);
                 }
 
                 if (bid.Volume < ask.Volume)
                 {
-                    result += bid.Volume;
+                    currentVolume = bid.Volume;
                     var newAskVolume = ask.Volume - bid.Volume;
                     var newAsk = new VolumePrice(ask.Price, newAskVolume);
-                    asks.Remove(ask);
-                    asks.Insert(0, newAsk);
-                    bids.Remove(bid);
-                    continue;
+                    currentAsks.Remove(ask);
+                    currentAsks.Insert(0, newAsk);
+                    currentBids.Remove(bid);
                 }
 
                 if (bid.Volume == ask.Volume)
                 {
-                    result += bid.Volume;
-                    bids.Remove(bid);
-                    asks.Remove(ask);
+                    currentVolume = bid.Volume;
+                    currentBids.Remove(bid);
+                    currentAsks.Remove(ask);
                 }
-            }
-            while (bids.Any() && asks.Any());
 
-            return result == 0 ? (decimal?)null : result;
+                volume += currentVolume;
+                pnl += currentVolume * (bid.Price - ask.Price);
+            }
+            while (currentBids.Any() && currentAsks.Any());
+
+            return volume == 0 ? ((decimal?, decimal?)?)null : (volume, pnl);
         }
 
 
         /// <summary>
         /// Returns chained order books for arbitrage execution.
         /// </summary>
-        /// <param name="crossRate"></param>
+        /// <param name="synthOrderBook"></param>
         /// <param name="target"></param>
         /// <returns></returns>
-        public static IReadOnlyCollection<OrderBook> GetChainedOrderBooks(CrossRate crossRate, AssetPair target)
+        public static IReadOnlyCollection<OrderBook> GetChainedOrderBooks(SynthOrderBook synthOrderBook, AssetPair target)
         {
-            if (crossRate == null)
-                throw new NullReferenceException(nameof(crossRate));
+            if (synthOrderBook == null)
+                throw new NullReferenceException(nameof(synthOrderBook));
 
-            var orderBooks = crossRate.OriginalOrderBooks;
+            var orderBooks = synthOrderBook.OriginalOrderBooks;
 
             var result = new List<OrderBook>();
 

@@ -11,10 +11,14 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
         [Get("/orderBooks")]
         Task<IEnumerable<OrderBookRow>> OrderBooksAsync(string exchange, string assetPair);
 
-        [Get("/newOrderBooks")]
-        Task<IEnumerable<OrderBookRow>> NewOrderBooksAsync(string exchange, string assetPair);
+        [Get("/orderBook")]
+        Task<OrderBook> OrderBookAsync(string exchange, string assetPair);
+
+        [Get("/synthOrderBooks")]
+        Task<IEnumerable<SynthOrderBookRow>> SynthOrderBooksAsync();
 
         [Get("/crossRates")]
+        [Obsolete]
         Task<IEnumerable<CrossRateRow>> CrossRatesAsync();
 
         [Get("/arbitrages")]
@@ -39,7 +43,16 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
         Task<IEnumerable<string>> PublicMatrixAssetPairs();
 
         [Get("/lykkeArbitrages")]
-        Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitrages(string basePair, string crossPair);
+        Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitrages(string basePair, string crossPair, decimal minVolumeInUsd = 0);
+
+        [Get("/matrixHistory/stamps")]
+        Task<IEnumerable<DateTime>> MatrixHistoryStamps(string assetPair, DateTime date, bool lykkeArbitragesOnly);
+
+        [Get("/matrixHistory/assetPairs")]
+        Task<IEnumerable<string>> MatrixHistoryAssetPairs(DateTime date, bool lykkeArbitragesOnly);
+
+        [Get("/matrixHistory/matrix")]
+        Task<Matrix> MatrixHistory(string assetPair, DateTime dateTime);
 
         [Get("/getSettings")]
         Task<Settings> GetSettings();

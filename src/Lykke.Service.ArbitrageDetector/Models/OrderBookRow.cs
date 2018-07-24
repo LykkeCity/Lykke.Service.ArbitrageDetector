@@ -5,7 +5,7 @@ using DomainOrderBook = Lykke.Service.ArbitrageDetector.Core.Domain.OrderBook;
 namespace Lykke.Service.ArbitrageDetector.Models
 {
     /// <summary>
-    /// Represents a cross rate.
+    /// Represents a synthetic order book.
     /// </summary>
     public class OrderBookRow
     {
@@ -75,8 +75,8 @@ namespace Lykke.Service.ArbitrageDetector.Models
             AssetPair = new AssetPair(domain.AssetPair);
             BestBid = VolumePrice.FromDomain(domain.BestBid);
             BestAsk = VolumePrice.FromDomain(domain.BestAsk);
-            BidsVolume = domain.Bids.Sum(x => x.Volume);
-            AsksVolume = domain.Asks.Sum(x => x.Volume);
+            BidsVolume = domain.BidsVolume;
+            AsksVolume = domain.AsksVolume;
             Timestamp = domain.Timestamp;
         }
     }

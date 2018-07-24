@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="ArbitrageDetectorTests.cs~RF1ea2422.TMP" />
+    <None Remove="Lykke.Service.ArbitrageDetector.Tests.csproj.DotSettings" />
   </ItemGroup>
 
   <ItemGroup>

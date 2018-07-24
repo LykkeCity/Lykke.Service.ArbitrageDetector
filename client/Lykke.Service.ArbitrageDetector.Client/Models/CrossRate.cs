@@ -4,8 +4,9 @@ using System.Collections.Generic;
 namespace Lykke.Service.ArbitrageDetector.Client.Models
 {
     /// <summary>
-    /// Represents a cross rate.
+    /// Represents a synthetic order book.
     /// </summary>
+    [Obsolete]
     public class CrossRate : OrderBook
     {
         /// <summary>

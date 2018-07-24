@@ -1,16 +1,15 @@
 ﻿using Lykke.Service.ArbitrageDetector.Core.Domain;
-using Lykke.Service.ArbitrageDetector.Core.Domain.Interfaces;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Services
 {
-    public interface IAssetsService
+    public interface ILykkeExchangeService
     {
         /// <summary>
         /// Get price and volume accuracy for assetPair.
         /// </summary>
         /// <param name="assetPair"></param>
         /// <returns></returns>
-        IAssetPairAccuracy GetAccuracy(AssetPair assetPair);
+        (int Price, int Volume)? GetAccuracy(AssetPair assetPair);
 
         /// <summary>
         /// Try to infer assets in AssetPairStr.

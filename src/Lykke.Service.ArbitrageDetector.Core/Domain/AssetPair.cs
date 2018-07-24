@@ -3,7 +3,7 @@
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
     /// <summary>
-    /// represents an asset pair aka instrument.
+    /// Represents an asset pair (an instrument).
     /// </summary>
     public struct AssetPair : IComparable
     {

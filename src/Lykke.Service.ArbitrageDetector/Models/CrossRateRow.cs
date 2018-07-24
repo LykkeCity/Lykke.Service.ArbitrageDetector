@@ -1,11 +1,12 @@
 ﻿using System;
-using DomainCrossRate = Lykke.Service.ArbitrageDetector.Core.Domain.CrossRate;
+using DomainSynthOrderBook = Lykke.Service.ArbitrageDetector.Core.Domain.SynthOrderBook;
 
 namespace Lykke.Service.ArbitrageDetector.Models
 {
     /// <summary>
-    /// Represents a cross rate.
+    /// Represents a synthetic order book.
     /// </summary>
+    [Obsolete]
     public class CrossRateRow
     {
         /// <summary>
@@ -61,7 +62,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// Constructor.
         /// </summary>
         /// <param name="domain"></param>
-        public CrossRateRow(DomainCrossRate domain)
+        public CrossRateRow(DomainSynthOrderBook domain)
         {
             Source = domain.Source;
             AssetPair = new AssetPair(domain.AssetPair);
