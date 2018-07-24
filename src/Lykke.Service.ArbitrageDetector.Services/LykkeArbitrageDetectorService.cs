@@ -142,21 +142,28 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         private decimal? Convert(string sourceAsset, string targetAsset, IReadOnlyCollection<OrderBook> orderBooks)
         {
-            var targetAssetPair = new AssetPair(sourceAsset, targetAsset);
+            var target = new AssetPair(sourceAsset, targetAsset);
 
-            var synths1 = SynthOrderBook.GetSynthsFrom1(targetAssetPair, orderBooks);
+            decimal? result = null;
+            var synths1 = SynthOrderBook.GetSynthsFrom1(target, orderBooks);
             if (synths1.Any())
-                return GetMedianAskPrice(synths1.Values);
+                result = GetMedianAskPrice(synths1.Values);
 
-            var synths2 = SynthOrderBook.GetSynthsFrom2(targetAssetPair, orderBooks);
+            if (result.HasValue)
+                return result;
+
+            var synths2 = SynthOrderBook.GetSynthsFrom2(target, orderBooks);
             if (synths2.Any())
-                return GetMedianAskPrice(synths2.Values);
+                result = GetMedianAskPrice(synths2.Values);
 
-            var synths3 = SynthOrderBook.GetSynthsFrom3(targetAssetPair, orderBooks);
+            if (result.HasValue)
+                return result;
+
+            var synths3 = SynthOrderBook.GetSynthsFrom3(target, orderBooks);
             if (synths3.Any())
-                return GetMedianAskPrice(synths3.Values);
+                result = GetMedianAskPrice(synths3.Values);
 
-            return null;
+            return result;
         }
 
         private decimal? GetMedianAskPrice(IEnumerable<SynthOrderBook> synths)

@@ -392,12 +392,15 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 // If current is target or reversed then just use it
                 if (intermediate == target.Base || intermediate == target.Quote)
                 {
+                    if (withBaseOrQuoteOrderBook.Asks.Count == 0 && withBaseOrQuoteOrderBook.Bids.Count == 0)
+                        continue;
+
+                    var key = new AssetPairSource(withBaseOrQuoteOrderBook.ToString(), target);
+                    if (result.ContainsKey(key))
+                        continue;
+
                     var synthOrderBook = FromOrderBook(withBaseOrQuoteOrderBook, target);
-
-                    var key = new AssetPairSource(synthOrderBook.ConversionPath, synthOrderBook.AssetPair);
                     result[key] = synthOrderBook;
-
-                    continue;
                 }
             }
 
@@ -469,12 +472,15 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
                     foreach (var intermediateQuoteOrderBook in intermediateQuoteOrderBooks)
                     {
+                        if (baseAndIntermediate.Asks.Count == 0 && baseAndIntermediate.Bids.Count == 0
+                            || intermediateQuoteOrderBook.Asks.Count == 0 && intermediateQuoteOrderBook.Bids.Count == 0)
+                            continue;
+
                         var key = new AssetPairSource(GetConversionPath(baseAndIntermediate, intermediateQuoteOrderBook), target);
                         if (result.ContainsKey(key))
                             continue;
 
                         var synthOrderBook = FromOrderBooks(baseAndIntermediate, intermediateQuoteOrderBook, target);
-
                         result[key] = synthOrderBook;
                     }
                 }
@@ -490,12 +496,15 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
                     foreach (var intermediateBaseOrderBook in intermediateBaseOrderBooks)
                     {
+                        if (intermediateBaseOrderBook.Asks.Count == 0 && intermediateBaseOrderBook.Bids.Count == 0
+                            || quoteAndIntermediate.Asks.Count == 0 && quoteAndIntermediate.Bids.Count == 0)
+                            continue;
+
                         var key = new AssetPairSource(GetConversionPath(intermediateBaseOrderBook, quoteAndIntermediate), target);
                         if (result.ContainsKey(key))
                             continue;
 
                         var synthOrderBook = FromOrderBooks(intermediateBaseOrderBook, quoteAndIntermediate, target);
-
                         result[key] = synthOrderBook;
                     }
                 }
@@ -559,9 +568,16 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                     var quoteTargetQuoteOrderBooks = allOrderBooks.Where(x => x.AssetPair.ContainsAssets(quote, target.Quote)).ToList();
                     foreach (var quoteTargetQuoteOrderBook in quoteTargetQuoteOrderBooks)
                     {
-                        var synthOrderBook = FromOrderBooks(baseTargetBaseOrderBook, woBaseAndQuoteOrderBook, quoteTargetQuoteOrderBook, target);
+                        if (baseTargetBaseOrderBook.Asks.Count == 0 && baseTargetBaseOrderBook.Bids.Count == 0
+                            || woBaseAndQuoteOrderBook.Asks.Count == 0 && woBaseAndQuoteOrderBook.Bids.Count == 0
+                            || quoteTargetQuoteOrderBook.Asks.Count == 0 && quoteTargetQuoteOrderBook.Bids.Count == 0)
+                            continue;
 
-                        var key = new AssetPairSource(synthOrderBook.ConversionPath, synthOrderBook.AssetPair);
+                        var key = new AssetPairSource(GetConversionPath(baseTargetBaseOrderBook, woBaseAndQuoteOrderBook, quoteTargetQuoteOrderBook), target);
+                        if (result.ContainsKey(key))
+                            continue;
+
+                        var synthOrderBook = FromOrderBooks(baseTargetBaseOrderBook, woBaseAndQuoteOrderBook, quoteTargetQuoteOrderBook, target);
                         result[key] = synthOrderBook;
                     }
                 }
@@ -573,9 +589,16 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                     var quoteTargetBaseOrderBooks = allOrderBooks.Where(x => x.AssetPair.ContainsAssets(quote, target.Base)).ToList();
                     foreach (var quoteTargetBaseOrderBook in quoteTargetBaseOrderBooks)
                     {
-                        var synthOrderBook = FromOrderBooks(quoteTargetBaseOrderBook, woBaseAndQuoteOrderBook, baseTargetQuoteOrderBook, target);
+                        if (quoteTargetBaseOrderBook.Asks.Count == 0 && quoteTargetBaseOrderBook.Bids.Count == 0
+                            || woBaseAndQuoteOrderBook.Asks.Count == 0 && woBaseAndQuoteOrderBook.Bids.Count == 0
+                            || baseTargetQuoteOrderBook.Asks.Count == 0 && baseTargetQuoteOrderBook.Bids.Count == 0)
+                            continue;
 
-                        var key = new AssetPairSource(synthOrderBook.ConversionPath, synthOrderBook.AssetPair);
+                        var key = new AssetPairSource(GetConversionPath(quoteTargetBaseOrderBook, woBaseAndQuoteOrderBook, baseTargetQuoteOrderBook), target);
+                        if (result.ContainsKey(key))
+                            continue;
+
+                        var synthOrderBook = FromOrderBooks(quoteTargetBaseOrderBook, woBaseAndQuoteOrderBook, baseTargetQuoteOrderBook, target);
                         result[key] = synthOrderBook;
                     }
                 }
