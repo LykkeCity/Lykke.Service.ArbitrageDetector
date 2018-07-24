@@ -414,7 +414,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         #region IArbitrageDetectorService
 
-        public IEnumerable<OrderBook> GetOrderBooks(string exchange, string instrument)
+        public IEnumerable<OrderBook> GetOrderBooks(string exchange, string assetPair)
         {
             if (!_orderBooks.Any())
                 return new List<OrderBook>();
@@ -424,10 +424,29 @@ namespace Lykke.Service.ArbitrageDetector.Services
             if (!string.IsNullOrWhiteSpace(exchange))
                 result = result.Where(x => x.Source.ToUpper().Trim().Contains(exchange.ToUpper().Trim())).ToList();
 
-            if (!string.IsNullOrWhiteSpace(instrument))
-                result = result.Where(x => x.AssetPairStr.ToUpper().Trim().Contains(instrument.ToUpper().Trim())).ToList();
+            if (!string.IsNullOrWhiteSpace(assetPair))
+                result = result.Where(x => x.AssetPairStr.ToUpper().Trim().Contains(assetPair.ToUpper().Trim())).ToList();
 
             return result.OrderByDescending(x => x.Timestamp).ToList();
+        }
+
+        public OrderBook GetOrderBook(string exchange, string assetPair)
+        {
+            if (string.IsNullOrWhiteSpace(exchange))
+                throw new ArgumentException($"{nameof(exchange)} must be set.");
+
+            if (string.IsNullOrWhiteSpace(assetPair))
+                throw new ArgumentException($"{nameof(assetPair)} must be set.");
+
+            if (!_orderBooks.Any())
+                return null;
+
+            var allOrderBooks = _orderBooks.Values;
+            
+            var result = allOrderBooks.SingleOrDefault(x => x.Source.Equals(exchange, StringComparison.OrdinalIgnoreCase)
+                                                  && x.AssetPair.Name.Equals(assetPair, StringComparison.OrdinalIgnoreCase));
+
+            return result;
         }
 
         public IEnumerable<SynthOrderBook> GetSynthOrderBooks()
