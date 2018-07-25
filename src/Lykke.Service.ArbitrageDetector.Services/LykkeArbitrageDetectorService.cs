@@ -17,23 +17,26 @@ namespace Lykke.Service.ArbitrageDetector.Services
 {
     public class LykkeArbitrageDetectorService : ILykkeArbitrageDetectorService, IStartable, IStopable
     {
-        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 0, 2);
+        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 0, 10);
         private const string LykkeExchangeName = "lykke";
 
         private readonly ConcurrentDictionary<AssetPair, OrderBook> _orderBooks;
         private readonly object _lockArbitrages = new object();
         private readonly List<LykkeArbitrageRow> _arbitrages;
         private readonly TimerTrigger _trigger;
+        private readonly IArbitrageDetectorService _arbitrageDetectorService;
         private readonly ILykkeExchangeService _lykkeExchangeService;
         private readonly ILog _log;
-        
-        public LykkeArbitrageDetectorService(ILog log, IShutdownManager shutdownManager, ILykkeExchangeService lykkeExchangeService)
+
+        public LykkeArbitrageDetectorService(ILog log, IShutdownManager shutdownManager,
+            ILykkeExchangeService lykkeExchangeService, IArbitrageDetectorService arbitrageDetectorService)
         {
             shutdownManager?.Register(this);
 
             _orderBooks = new ConcurrentDictionary<AssetPair, OrderBook>();
             _arbitrages = new List<LykkeArbitrageRow>();
 
+            _arbitrageDetectorService = arbitrageDetectorService ?? throw new ArgumentNullException(nameof(arbitrageDetectorService));
             _lykkeExchangeService = lykkeExchangeService ?? throw new ArgumentNullException(nameof(lykkeExchangeService));
             _log = log ?? throw new ArgumentNullException(nameof(log));
 
@@ -71,6 +74,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             var result = new List<LykkeArbitrageRow>();
 
+            var minSpread = _arbitrageDetectorService.GetSettings().MinSpread;
+
             // O( (n^2) )
             for (var i = 0; i < orderBooks.Count; i++)
             {
@@ -97,8 +102,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                         if (target.BestBid?.Price > synthOrderBook.BestAsk?.Price)
                         {
-                            var volumePnL = Arbitrage.GetArbitrageVolumePnL(target.Bids, synthOrderBook.Asks);
                             spread = Arbitrage.GetSpread(target.BestBid.Value.Price, synthOrderBook.BestAsk.Value.Price);
+                            if (minSpread < 0 && spread < minSpread)
+                                continue;
+                            var volumePnL = Arbitrage.GetArbitrageVolumePnL(target.Bids, synthOrderBook.Asks);
                             volume = volumePnL?.Volume ?? throw new InvalidOperationException("Every arbitrage must have volume");
                             pnL = volumePnL?.PnL ?? throw new InvalidOperationException("Every arbitrage must have PnL");
                             targetSide = "Bid";
@@ -106,8 +113,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                         if (synthOrderBook.BestBid?.Price > target.BestAsk?.Price)
                         {
-                            var volumePnL = Arbitrage.GetArbitrageVolumePnL(synthOrderBook.Bids, target.Asks);
                             spread = Arbitrage.GetSpread(synthOrderBook.BestBid.Value.Price, target.BestAsk.Value.Price);
+                            if (minSpread < 0 && spread < minSpread)
+                                continue;
+                            var volumePnL = Arbitrage.GetArbitrageVolumePnL(synthOrderBook.Bids, target.Asks);
                             volume = volumePnL?.Volume ?? throw new InvalidOperationException("Every arbitrage must have volume");
                             pnL = volumePnL?.PnL ?? throw new InvalidOperationException("Every arbitrage must have PnL");
                             targetSide = "Ask";
