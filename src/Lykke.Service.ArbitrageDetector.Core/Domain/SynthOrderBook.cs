@@ -618,8 +618,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             result.AddRange(synthOrderBookFrom1Pair);
             var synthOrderBookFrom2Pairs = GetSynthsFrom2(target, sourceOrderBooks, allOrderBooks);
             result.AddRange(synthOrderBookFrom2Pairs);
-            var synthOrderBookFrom3Pairs = GetSynthsFrom3(target, sourceOrderBooks, allOrderBooks);
-            result.AddRange(synthOrderBookFrom3Pairs);
+            //var synthOrderBookFrom3Pairs = GetSynthsFrom3(target, sourceOrderBooks, allOrderBooks);
+            //result.AddRange(synthOrderBookFrom3Pairs);
 
             return result;
         }
