@@ -527,7 +527,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             // Filter by asset pair
             var orderBooks = _orderBooks.Values.Where(x => 
-                string.Equals(x.AssetPair.Name, assetPair, StringComparison.OrdinalIgnoreCase)).ToList();
+                string.Equals(x.AssetPair.Name, assetPair.Replace("/", ""), StringComparison.OrdinalIgnoreCase)).ToList();
 
             // Filter by exchanges
             if (isPublic && _s.PublicMatrixExchanges.Any())

@@ -210,6 +210,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                     var @base = assetPairStr.ToUpper().StartsWith(asset.ToUpper()) ? asset : otherAsset;
                     var quote = string.Equals(@base, asset, StringComparison.OrdinalIgnoreCase) ? otherAsset : asset;
+
+                    if (string.IsNullOrWhiteSpace(@base) || string.IsNullOrWhiteSpace(quote))
+                    {
+                        Log.WriteInfoAsync(GetType().Name, nameof(InferBaseAndQuoteAssets), $"Strange situation with asset inference - assetPairStr: {orderBook.AssetPairStr}, found base: '{@base}', found quote: '{quote}', assets: {string.Join(", ", assets.Select(x => $"'{x}'"))}");
+                        continue;
+                    }
+
                     assetPair = new AssetPair(@base, quote);
 
                     if (infered == 1)
