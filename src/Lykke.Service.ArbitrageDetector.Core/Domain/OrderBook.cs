@@ -74,8 +74,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         {
             Source = string.IsNullOrEmpty(source) ? throw new ArgumentException(nameof(source)) : source;
             AssetPairStr = string.IsNullOrEmpty(asset) ? throw new ArgumentException(nameof(asset)) : asset;
-            Bids = bids.OrderByDescending(x => x.Price).ToList();
-            Asks = asks.OrderBy(x => x.Price).ToList();
+            Bids = bids.Where(x => x.Price != 0 && x.Volume != 0)
+                       .OrderByDescending(x => x.Price).ToList();
+            Asks = asks.Where(x => x.Price != 0 && x.Volume != 0)
+                       .OrderBy(x => x.Price).ToList();
             BestBid = Bids.Any() ? Bids.MaxBy(x => x.Price) : (VolumePrice?)null;
             BestAsk = Asks.Any() ? Asks.MinBy(x => x.Price) : (VolumePrice?)null;
             Timestamp = timestamp;
