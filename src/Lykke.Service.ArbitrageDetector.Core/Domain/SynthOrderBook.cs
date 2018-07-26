@@ -175,6 +175,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             // Calculating new bids
             foreach (var leftBid in left.Bids)
             {
+                if (leftBid.Price == 0)
+                    continue;
+
                 foreach (var rightBid in right.Bids)
                 {
                     var newBidPrice = leftBid.Price * rightBid.Price;
@@ -189,6 +192,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             // Calculating new asks
             foreach (var leftAsk in left.Asks)
             {
+                if (leftAsk.Price == 0)
+                    continue;
+
                 foreach (var rightAsk in right.Asks)
                 {
                     var newAskPrice = leftAsk.Price * rightAsk.Price;
@@ -299,8 +305,14 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             // Calculating new bids
             foreach (var leftBid in left.Bids)
             {
+                if (leftBid.Price == 0)
+                    continue;
+
                 foreach (var middleBid in middle.Bids)
                 {
+                    if (middleBid.Price == 0)
+                        continue;
+
                     foreach (var rightBid in right.Bids)
                     {
                         var newBidPrice = leftBid.Price * middleBid.Price * rightBid.Price;
@@ -318,8 +330,14 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             // Calculating new asks
             foreach (var leftAsk in left.Asks)
             {
+                if (leftAsk.Price == 0)
+                    continue;
+
                 foreach (var middleAsk in middle.Asks)
                 {
+                    if (middleAsk.Price == 0)
+                        continue;
+
                     foreach (var rightAsk in right.Asks)
                     {
                         var newAskPrice = leftAsk.Price * middleAsk.Price * rightAsk.Price;
