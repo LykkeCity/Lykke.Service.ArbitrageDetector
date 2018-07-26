@@ -18,7 +18,6 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
         private RabbitMqSubscriber<byte[]> _subscriber;
 
         private readonly OrderBookParser _orderBookParser;
-        private readonly OrderBookValidator _orderBookValidator;
         
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
         private readonly ILykkeArbitrageDetectorService _lykkeArbitrageDetectorService;
@@ -29,7 +28,6 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
             string exchangeName,
             IShutdownManager shutdownManager,
             OrderBookParser orderBookParser,
-            OrderBookValidator orderBookValidator,
             IArbitrageDetectorService arbitrageDetectorService,
             ILykkeArbitrageDetectorService lykkeArbitrageDetectorService,
             ILog log)
@@ -39,7 +37,6 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
 
             shutdownManager.Register(this);
             _orderBookParser = orderBookParser ?? throw new ArgumentNullException(nameof(orderBookParser));
-            _orderBookValidator = orderBookValidator ?? throw new ArgumentNullException(nameof(orderBookValidator));
             _arbitrageDetectorService = arbitrageDetectorService ?? throw new ArgumentNullException(nameof(arbitrageDetectorService));
             _lykkeArbitrageDetectorService = lykkeArbitrageDetectorService ?? throw new ArgumentNullException(nameof(lykkeArbitrageDetectorService));
             _log = log ?? throw new ArgumentNullException(nameof(log));
@@ -71,12 +68,9 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
             try
             {
                 var orderBook = _orderBookParser.Parse(item);
-                var isValid = _orderBookValidator.IsValid(orderBook);
-                if (isValid)
-                {
-                    _arbitrageDetectorService.Process(orderBook);
-                    _lykkeArbitrageDetectorService.Process(orderBook);                        
-                }
+
+                _arbitrageDetectorService.Process(orderBook);
+                _lykkeArbitrageDetectorService.Process(orderBook);                        
             }
             catch (Exception ex)
             {

@@ -44,9 +44,6 @@ namespace Lykke.Service.ArbitrageDetector.Modules
             builder.RegisterType<OrderBookParser>()
                 .SingleInstance();
 
-            builder.RegisterType<OrderBookValidator>()
-                .SingleInstance();
-
             // InProc Services
 
             builder.RegisterType<LykkeExchangeService>()
