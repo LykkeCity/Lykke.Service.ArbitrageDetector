@@ -14,7 +14,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
 {
     public class MatrixHistoryService : IMatrixHistoryService, IStartable, IStopable
     {
-        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 5, 0);
         private readonly TimerTrigger _trigger;
         private readonly IMatrixHistoryRepository _matrixHistoryRepository;
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
@@ -26,42 +25,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             _matrixHistoryRepository = matrixHistoryRepository;
             _arbitrageDetectorService = arbitrageDetectorService;
-            _log = log ?? throw new ArgumentNullException(nameof(log));
-
-            InitSettings();
+            _log = log ?? throw new ArgumentNullException(nameof(log));;
 
             var settings = _arbitrageDetectorService.GetSettings();
             _trigger = new TimerTrigger(nameof(MatrixHistoryService), settings.MatrixHistoryInterval, log, Execute);
-        }
-
-        private void InitSettings()
-        {
-            var settings = _arbitrageDetectorService.GetSettings();
-
-            // First time matrix history settings initialization
-
-            var isDirty = false;
-
-            if (settings.MatrixHistoryAssetPairs == null)
-            {
-                settings.MatrixHistoryAssetPairs = new List<string>();
-                isDirty = true;
-            }
-
-            if (settings.MatrixHistoryInterval == default)
-            {
-                settings.MatrixHistoryInterval = DefaultInterval;
-                isDirty = true;
-            }
-
-            if (string.IsNullOrWhiteSpace(settings.MatrixHistoryLykkeName))
-            {
-                settings.MatrixHistoryLykkeName = "lykke";
-                isDirty = true;
-            }
-
-            if (isDirty)
-                _arbitrageDetectorService.SetSettings(settings);
         }
 
         public async Task Execute(ITimerTrigger timer, TimerTriggeredHandlerArgs args, CancellationToken cancellationtoken)
