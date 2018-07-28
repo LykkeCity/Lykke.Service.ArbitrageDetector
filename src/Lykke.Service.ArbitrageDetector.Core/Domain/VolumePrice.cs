@@ -21,8 +21,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Contructor.
         /// </summary>
-        /// <param name="price"></param>
-        /// <param name="volume"></param>
         public VolumePrice(decimal price, decimal volume)
         {
             Price = price;
@@ -32,7 +30,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Returns reciprocal volume price.
         /// </summary>
-        /// <returns></returns>
         public VolumePrice Reciprocal()
         {
             return new VolumePrice(1 / Price, Volume * Price);

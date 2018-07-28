@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Lykke.AzureStorage.Tables;
 using Lykke.AzureStorage.Tables.Entity.Annotation;
-using Lykke.Service.ArbitrageDetector.Core.Domain;
+using DomainSettings = Lykke.Service.ArbitrageDetector.Core.Domain.Settings;
 
 namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
 {
-    public class Settings : AzureTableEntity, ISettings
+    public class Settings : AzureTableEntity
     {
         // Common
 
@@ -57,11 +58,16 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
 
         public string MatrixHistoryLykkeName { get; set; }
 
+        // Other
+
+        public IEnumerable<ExchangeFees> ExchangesFees { get; set; }
+
+
         public Settings()
         {
         }
 
-        public Settings(ISettings domain)
+        public Settings(DomainSettings domain)
         {
             PartitionKey = "";
             RowKey = "";
@@ -81,6 +87,33 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
             MatrixHistoryAssetPairs = domain.MatrixHistoryAssetPairs;
             MatrixSignificantSpread = domain.MatrixSignificantSpread;
             MatrixHistoryLykkeName = domain.MatrixHistoryLykkeName;
+            ExchangesFees = domain.ExchangesFees.Select(x => new ExchangeFees(x)).ToList();
+        }
+
+        public DomainSettings ToDomain()
+        {
+            var result = new DomainSettings
+            {
+                HistoryMaxSize = HistoryMaxSize,
+                ExpirationTimeInSeconds = ExpirationTimeInSeconds,
+                MinimumPnL = MinimumPnL,
+                MinimumVolume = MinimumVolume,
+                MinSpread = MinSpread,
+                BaseAssets = BaseAssets,
+                IntermediateAssets = IntermediateAssets,
+                QuoteAsset = QuoteAsset,
+                Exchanges = Exchanges,
+                PublicMatrixAssetPairs = PublicMatrixAssetPairs,
+                PublicMatrixExchanges = PublicMatrixExchanges,
+                MatrixAssetPairs = MatrixAssetPairs,
+                MatrixHistoryInterval = MatrixHistoryInterval,
+                MatrixHistoryAssetPairs = MatrixHistoryAssetPairs,
+                MatrixSignificantSpread = MatrixSignificantSpread,
+                MatrixHistoryLykkeName = MatrixHistoryLykkeName,
+                ExchangesFees = ExchangesFees.Select(x => x.ToDomain()).ToList()
+            };
+
+            return result;
         }
     }
 }

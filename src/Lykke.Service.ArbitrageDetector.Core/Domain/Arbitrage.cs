@@ -72,11 +72,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="assetPair"></param>
-        /// <param name="bidSynth"></param>
-        /// <param name="bid"></param>
-        /// <param name="askSynth"></param>
-        /// <param name="ask"></param>
         public Arbitrage(AssetPair assetPair, SynthOrderBook bidSynth, VolumePrice bid, SynthOrderBook askSynth, VolumePrice ask)
         {
             AssetPair = assetPair;
@@ -100,9 +95,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Formats conversion path.
         /// </summary>
-        /// <param name="bidSynthOrderBookConversionPath"></param>
-        /// <param name="askSynthOrderBookConversionPath"></param>
-        /// <returns></returns>
         public static string FormatConversionPath(string bidSynthOrderBookConversionPath, string askSynthOrderBookConversionPath)
         {
             return "(" + bidSynthOrderBookConversionPath + ") > (" + askSynthOrderBookConversionPath + ")";
@@ -111,9 +103,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Calculates spread.
         /// </summary>
-        /// <param name="bidPrice"></param>
-        /// <param name="askPrice"></param>
-        /// <returns></returns>
         public static decimal GetSpread(decimal bidPrice, decimal askPrice)
         {
             return (askPrice - bidPrice) / bidPrice * 100;
@@ -122,10 +111,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Calculates PnL.
         /// </summary>
-        /// <param name="bidPrice"></param>
-        /// <param name="askPrice"></param>
-        /// <param name="volume"></param>
-        /// <returns></returns>
         public static decimal GetPnL(decimal bidPrice, decimal askPrice, decimal volume)
         {
             return (bidPrice - askPrice) * volume;
@@ -134,9 +119,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Calculates best volume (biggest spread strategy).
         /// </summary>
-        /// <param name="bids">Bids.</param>
-        /// <param name="asks">Asks.</param>
-        /// <returns></returns>
         public static (decimal? Volume, decimal? PnL)? GetArbitrageVolumePnL(IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks)
         {
             if (bids == null)
@@ -211,9 +193,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Returns chained order books for arbitrage execution.
         /// </summary>
-        /// <param name="synthOrderBook"></param>
-        /// <param name="target"></param>
-        /// <returns></returns>
         public static IReadOnlyCollection<OrderBook> GetChainedOrderBooks(SynthOrderBook synthOrderBook, AssetPair target)
         {
             if (synthOrderBook == null)

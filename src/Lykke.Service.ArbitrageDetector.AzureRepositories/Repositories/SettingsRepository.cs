@@ -1,9 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AzureStorage;
-using Lykke.Service.ArbitrageDetector.Core.Domain;
+using Lykke.Service.ArbitrageDetector.AzureRepositories.Models;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
-using Settings = Lykke.Service.ArbitrageDetector.AzureRepositories.Models.Settings;
+using DomainSettings = Lykke.Service.ArbitrageDetector.Core.Domain.Settings;
 
 namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 {
@@ -16,14 +15,14 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
             _storage = storage;
         }
 
-        public async Task<ISettings> GetAsync()
+        public async Task<DomainSettings> GetAsync()
         {
             var settings = await _storage.GetDataAsync("", "");
 
-            return settings;
+            return settings.ToDomain();
         }
 
-        public async Task InsertOrReplaceAsync(ISettings settings)
+        public async Task InsertOrReplaceAsync(DomainSettings settings)
         {
             await _storage.InsertOrReplaceAsync(new Settings(settings));
         }

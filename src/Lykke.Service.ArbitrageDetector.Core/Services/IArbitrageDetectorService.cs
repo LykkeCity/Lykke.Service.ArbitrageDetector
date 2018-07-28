@@ -34,8 +34,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
 
         // Settings
 
-        ISettings GetSettings();
+        Settings GetSettings();
 
-        void SetSettings(ISettings settings);
+        void SetSettings(Settings settings);
     }
 }
