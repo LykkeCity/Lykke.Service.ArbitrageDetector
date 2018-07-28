@@ -51,7 +51,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
 
         // Other
 
-        public IEnumerable<ExchangeFees> ExchangesFees { get; set; } = new List<ExchangeFees>();
+        public IEnumerable<ExchangeFees> ExchangesFees { get; set; }
 
 
         public Settings(DomainSettings domain)
