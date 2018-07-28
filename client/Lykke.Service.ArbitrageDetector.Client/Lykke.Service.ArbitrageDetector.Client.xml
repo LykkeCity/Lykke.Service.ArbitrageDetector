@@ -552,6 +552,29 @@
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Exchange.ToString">
             <inheritdoc />
         </member>
+        <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.ExchangeFees">
+            <summary>
+            Represents fees of an exhange.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.ExchangeFees.ExchangeName">
+            <summary>
+            Exchange name.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.ExchangeFees.DepositFee">
+            <summary>
+            Comulative fee for both deposit and withdrawal fees.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.ExchangeFees.TakerFee">
+            <summary>
+            Taker fee.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.ExchangeFees.ToString">
+            <inheritdoc />
+        </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.LykkeArbitrageRow">
             <summary>
             Represents an arbitrage situation.
@@ -902,31 +925,10 @@
             Lykke exchange name for "arbitrages only" option.
             </summary>
         </member>
-        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor">
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.ExchangesFees">
             <summary>
-            Constructor.
+            Exchanges fees.
             </summary>
-        </member>
-        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Settings.#ctor(System.Int32,System.Int32,System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String},System.String,System.Int32,System.Collections.Generic.IEnumerable{System.String},System.Decimal,System.Decimal,System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IDictionary{System.String,System.String},System.Collections.Generic.IEnumerable{System.String},System.TimeSpan,System.Collections.Generic.IEnumerable{System.String},System.Nullable{System.Decimal},System.String)">
-            <summary>
-            Constructor.
-            </summary>
-            <param name="historyMaxSize"></param>
-            <param name="expirationTimeInSeconds"></param>
-            <param name="baseAssets"></param>
-            <param name="intermediateAssets"></param>
-            <param name="quoteAsset"></param>
-            <param name="minSpread"></param>
-            <param name="exchanges"></param>
-            <param name="minimumPnL"></param>
-            <param name="minimumVolume"></param>
-            <param name="publicMatrixAssetPairs"></param>
-            <param name="publicMatrixExchanges"></param>
-            <param name="matrixAssetPairs"></param>
-            <param name="matrixHistoryInterval"></param>
-            <param name="matrixHistoryAssetPairs"></param>
-            <param name="matrixMinimumSpread"></param>
-            <param name="matrixHistoryLykkeName"></param>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.SynthOrderBook">
             <summary>

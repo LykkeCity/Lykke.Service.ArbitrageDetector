@@ -26,7 +26,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrages;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrageHistory;
         private bool _restartNeeded;
-        private ISettings _s;
+        private Settings _s;
         private readonly TimerTrigger _trigger;
         private readonly ISettingsRepository _settingsRepository;
         private readonly ILykkeExchangeService _lykkeExchangeService;
@@ -56,8 +56,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             if (dbSettings == null)
             {
-                dbSettings = Settings.Default;
-                _settingsRepository.InsertOrReplaceAsync(Settings.Default).GetAwaiter().GetResult();
+                dbSettings = new Settings();
+                _settingsRepository.InsertOrReplaceAsync(dbSettings).GetAwaiter().GetResult();
             }
 
             // First time settings initialization
@@ -596,12 +596,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return result;
         }
 
-        public ISettings GetSettings()
+        public Settings GetSettings()
         {
             return _s;
         }
 
-        public async void SetSettings(ISettings settings)
+        public async void SetSettings(Settings settings)
         {
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
@@ -697,6 +697,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
             {
                 _s.MatrixHistoryLykkeName = settings.MatrixHistoryLykkeName.Trim();
                 restartNeeded = true;
+            }
+
+            if (settings.ExchangesFees != null && !_s.ExchangesFees.SequenceEqual(settings.ExchangesFees))
+            {
+                _s.ExchangesFees = settings.ExchangesFees;
             }
 
             await _settingsRepository.InsertOrReplaceAsync(_s);

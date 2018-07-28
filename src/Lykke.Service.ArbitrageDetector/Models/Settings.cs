@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Lykke.Service.ArbitrageDetector.Core.Domain;
+using System.Linq;
+using DomainSettings = Lykke.Service.ArbitrageDetector.Core.Domain.Settings;
 
 namespace Lykke.Service.ArbitrageDetector.Models
 {
-    public class Settings : ISettings
+    public class Settings
     {
         // Common
 
@@ -48,49 +49,56 @@ namespace Lykke.Service.ArbitrageDetector.Models
 
         public string MatrixHistoryLykkeName { get; set; }
 
+        // Other
 
-        public Settings()
+        public IEnumerable<ExchangeFees> ExchangesFees { get; set; } = new List<ExchangeFees>();
+
+
+        public Settings(DomainSettings domain)
         {
+            HistoryMaxSize = domain.HistoryMaxSize;
+            ExpirationTimeInSeconds = domain.ExpirationTimeInSeconds;
+            MinimumPnL = domain.MinimumPnL;
+            MinimumVolume = domain.MinimumVolume;
+            MinSpread = domain.MinSpread;
+            BaseAssets = domain.BaseAssets;
+            IntermediateAssets = domain.IntermediateAssets;
+            QuoteAsset = domain.QuoteAsset;
+            Exchanges = domain.Exchanges;
+            PublicMatrixAssetPairs = domain.PublicMatrixAssetPairs;
+            PublicMatrixExchanges = domain.PublicMatrixExchanges;
+            MatrixAssetPairs = domain.MatrixAssetPairs;
+            MatrixHistoryInterval = domain.MatrixHistoryInterval;
+            MatrixHistoryAssetPairs = domain.MatrixHistoryAssetPairs;
+            MatrixSignificantSpread = domain.MatrixSignificantSpread;
+            MatrixHistoryLykkeName = domain.MatrixHistoryLykkeName;
+            ExchangesFees = domain.ExchangesFees.Select(x => new ExchangeFees(x)).ToList();
         }
 
-        public Settings(int historyMaxSize, int expirationTimeInSeconds, IEnumerable<string> baseAssets,
-            IEnumerable<string> intermediateAssets, string quoteAsset, int minSpread, IEnumerable<string> exchanges, decimal minimumPnL, decimal minimumVolume,
-            IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges, IEnumerable<string> matrixAssetPairs,
-            TimeSpan matrixHistoryInterval, IEnumerable<string> matrixHistoryAssetPairs, decimal? matrixMinimumSpread, string matrixHistoryLykkeName)
+        public DomainSettings ToDomain()
         {
-            HistoryMaxSize = historyMaxSize;
-            ExpirationTimeInSeconds = expirationTimeInSeconds;
-            MinimumPnL = minimumPnL;
-            MinimumVolume = minimumVolume;
-            MinSpread = minSpread;
-            BaseAssets = baseAssets ?? new List<string>();
-            IntermediateAssets = intermediateAssets ?? new List<string>();
-            QuoteAsset = quoteAsset;
-            Exchanges = exchanges ?? new List<string>();
-            PublicMatrixAssetPairs = publicMatrixAssetPairs ?? new List<string>();
-            PublicMatrixExchanges = publicMatrixExchanges ?? new Dictionary<string, string>();
-            MatrixAssetPairs = matrixAssetPairs ?? new List<string>();
-            MatrixHistoryInterval = matrixHistoryInterval;
-            MatrixHistoryAssetPairs = matrixHistoryAssetPairs;
-            MatrixSignificantSpread = matrixMinimumSpread;
-            MatrixHistoryLykkeName = matrixHistoryLykkeName;
-        }
+            var result = new DomainSettings
+            {
+                HistoryMaxSize = HistoryMaxSize,
+                ExpirationTimeInSeconds = ExpirationTimeInSeconds,
+                MinimumPnL = MinimumPnL,
+                MinimumVolume = MinimumVolume,
+                MinSpread = MinSpread,
+                BaseAssets = BaseAssets,
+                IntermediateAssets = IntermediateAssets,
+                QuoteAsset = QuoteAsset,
+                Exchanges = Exchanges,
+                PublicMatrixAssetPairs = PublicMatrixAssetPairs,
+                PublicMatrixExchanges = PublicMatrixExchanges,
+                MatrixAssetPairs = MatrixAssetPairs,
+                MatrixHistoryInterval = MatrixHistoryInterval,
+                MatrixHistoryAssetPairs = MatrixHistoryAssetPairs,
+                MatrixSignificantSpread = MatrixSignificantSpread,
+                MatrixHistoryLykkeName = MatrixHistoryLykkeName,
+                ExchangesFees = ExchangesFees.Select(x => x.ToDomain()).ToList()
+            };
 
-        public Settings(ISettings settings)
-            : this(settings.HistoryMaxSize, settings.ExpirationTimeInSeconds, settings.BaseAssets,
-                settings.IntermediateAssets, settings.QuoteAsset, settings.MinSpread, settings.Exchanges, settings.MinimumPnL, settings.MinimumVolume,
-                settings.PublicMatrixAssetPairs, settings.PublicMatrixExchanges, settings.MatrixAssetPairs,
-                settings.MatrixHistoryInterval, settings.MatrixHistoryAssetPairs, settings.MatrixSignificantSpread, settings.MatrixHistoryLykkeName)
-        {
-        }
-
-        public ISettings ToModel()
-        {
-            var domain = new Core.Domain.Settings(HistoryMaxSize, ExpirationTimeInSeconds, BaseAssets, IntermediateAssets, QuoteAsset,
-                MinSpread, Exchanges, MinimumPnL, MinimumVolume, PublicMatrixAssetPairs, PublicMatrixExchanges, MatrixAssetPairs,
-                MatrixHistoryInterval, MatrixHistoryAssetPairs, MatrixSignificantSpread, MatrixHistoryLykkeName);
-
-            return domain;
+            return result;
         }
     }
 }
