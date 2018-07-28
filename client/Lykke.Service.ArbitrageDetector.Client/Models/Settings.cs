@@ -69,7 +69,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Public matrix exchanges
         /// </summary>
-        public IDictionary<string, string> PublicMatrixExchanges { get; set; }
+        public IDictionary<string, string> PublicMatrixExchanges { get; set; } = new Dictionary<string, string>();
 
 
         // Matrix
