@@ -21,37 +21,37 @@ namespace Lykke.Service.ArbitrageDetector.Models
 
         public int MinSpread { get; set; }
 
-        public IEnumerable<string> BaseAssets { get; set; }
+        public IEnumerable<string> BaseAssets { get; set; } = new List<string>();
 
-        public IEnumerable<string> IntermediateAssets { get; set; }
+        public IEnumerable<string> IntermediateAssets { get; set; } = new List<string>();
 
         public string QuoteAsset { get; set; }
 
-        public IEnumerable<string> Exchanges { get; set; }
+        public IEnumerable<string> Exchanges { get; set; } = new List<string>();
 
         // Matrix
 
-        public IEnumerable<string> MatrixAssetPairs { get; set; }
+        public IEnumerable<string> MatrixAssetPairs { get; set; } = new List<string>();
 
         public decimal? MatrixSignificantSpread { get; set; }
 
         // Public Matrix
 
-        public IEnumerable<string> PublicMatrixAssetPairs { get; set; }
+        public IEnumerable<string> PublicMatrixAssetPairs { get; set; } = new List<string>();
 
-        public IDictionary<string, string> PublicMatrixExchanges { get; set; }
+        public IDictionary<string, string> PublicMatrixExchanges { get; set; } = new Dictionary<string, string>();
 
         // Matrix History
 
         public TimeSpan MatrixHistoryInterval { get; set; }
 
-        public IEnumerable<string> MatrixHistoryAssetPairs { get; set; }
+        public IEnumerable<string> MatrixHistoryAssetPairs { get; set; } = new List<string>();
 
         public string MatrixHistoryLykkeName { get; set; }
 
         // Other
 
-        public IEnumerable<ExchangeFees> ExchangesFees { get; set; }
+        public IEnumerable<ExchangeFees> ExchangesFees { get; set; } = new List<ExchangeFees>();
 
 
         public Settings()
