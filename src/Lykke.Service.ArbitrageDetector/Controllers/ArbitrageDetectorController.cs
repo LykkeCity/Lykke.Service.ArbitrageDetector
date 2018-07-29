@@ -250,7 +250,8 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public IActionResult SetSettings([FromBody]Models.Settings settings)
         {
-            _arbitrageDetectorService.SetSettings(settings.ToDomain());
+            var domainSettings = settings.ToDomain();
+            _arbitrageDetectorService.SetSettings(domainSettings);
 
             return Ok();
         }

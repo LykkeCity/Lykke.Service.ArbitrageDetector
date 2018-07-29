@@ -54,6 +54,10 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public IEnumerable<ExchangeFees> ExchangesFees { get; set; }
 
 
+        public Settings()
+        {
+        }
+
         public Settings(DomainSettings domain)
         {
             HistoryMaxSize = domain.HistoryMaxSize;

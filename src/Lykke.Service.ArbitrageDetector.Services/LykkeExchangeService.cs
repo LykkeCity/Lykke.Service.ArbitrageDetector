@@ -169,8 +169,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
             InitializeAssets();
             InitializeAssetPairs();
             InitializeAccuracies();
-            InitializeOrderBooks();
 
+            InitializeOrderBooks();
             InitializeServicesWithOrderBooks();
         }
 
