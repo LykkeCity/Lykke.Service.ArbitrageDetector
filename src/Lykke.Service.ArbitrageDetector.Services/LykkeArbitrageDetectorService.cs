@@ -89,10 +89,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 {
                     var source = orderBooks.ElementAt(j);
 
-                    // Calculate all synthetic order books between base order book and current order book
+                    // Calculate all synthetic order books between source order book and target order book
                     var synthOrderBooks = SynthOrderBook.GetSynthsFromAll(target.AssetPair, source, orderBooks);
 
-                    // Compare each cross pair with base pair
+                    // Compare each synthetic with target
                     foreach (var synthOrderBook in synthOrderBooks.Values)
                     {
                         decimal spread = 0;
@@ -125,10 +125,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         if (string.IsNullOrWhiteSpace(targetSide)) // no arbitrages
                             continue;
 
-                        var baseToUsd = Convert(target.AssetPair.Base, "USD", _orderBooks.Values.ToList());
-                        var quoteToUsd = Convert(target.AssetPair.Quote, "USD", _orderBooks.Values.ToList());
-                        var volumeInUsd = volume * baseToUsd;
-                        var pnLInUsd = pnL * quoteToUsd;
+                        var baseToUsdRate = Convert(target.AssetPair.Base, "USD", _orderBooks.Values.ToList());
+                        var quoteToUsdRate = Convert(target.AssetPair.Quote, "USD", _orderBooks.Values.ToList());
+                        var volumeInUsd = volume * baseToUsdRate;
+                        var pnLInUsd = pnL * quoteToUsdRate;
 
                         var lykkeArbitrage = new LykkeArbitrageRow(target.AssetPair, source.AssetPair, spread, targetSide, synthOrderBook.ConversionPath,
                             volume, target.BestBid?.Price, target.BestAsk?.Price, synthOrderBook.BestBid?.Price, synthOrderBook.BestAsk?.Price, volumeInUsd, pnL, pnLInUsd);

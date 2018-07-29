@@ -10,6 +10,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
     /// </summary>
     public class SynthOrderBook : OrderBook
     {
+        private const int MaxDepth = 30;
+
         /// <summary>
         /// Conversion path.
         /// </summary>
@@ -173,9 +175,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             var asks = new List<VolumePrice>();
 
             // Calculating new bids
-            foreach (var leftBid in left.Bids)
+            foreach (var leftBid in left.Bids.Take(MaxDepth))
             {
-                foreach (var rightBid in right.Bids)
+                foreach (var rightBid in right.Bids.Take(MaxDepth))
                 {
                     var newBidPrice = leftBid.Price * rightBid.Price;
                     var rightBidVolumeInBaseAsset = rightBid.Volume / leftBid.Price;
@@ -187,9 +189,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             }
 
             // Calculating new asks
-            foreach (var leftAsk in left.Asks)
+            foreach (var leftAsk in left.Asks.Take(MaxDepth))
             {
-                foreach (var rightAsk in right.Asks)
+                foreach (var rightAsk in right.Asks.Take(MaxDepth))
                 {
                     var newAskPrice = leftAsk.Price * rightAsk.Price;
                     var rightAskVolumeInBaseAsset = rightAsk.Volume / leftAsk.Price;
@@ -297,11 +299,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             var asks = new List<VolumePrice>();
 
             // Calculating new bids
-            foreach (var leftBid in left.Bids)
+            foreach (var leftBid in left.Bids.Take(MaxDepth))
             {
-                foreach (var middleBid in middle.Bids)
+                foreach (var middleBid in middle.Bids.Take(MaxDepth))
                 {
-                    foreach (var rightBid in right.Bids)
+                    foreach (var rightBid in right.Bids.Take(MaxDepth))
                     {
                         var newBidPrice = leftBid.Price * middleBid.Price * rightBid.Price;
                         var interimBidPrice = leftBid.Price * middleBid.Price;
@@ -316,11 +318,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             }
 
             // Calculating new asks
-            foreach (var leftAsk in left.Asks)
+            foreach (var leftAsk in left.Asks.Take(MaxDepth))
             {
-                foreach (var middleAsk in middle.Asks)
+                foreach (var middleAsk in middle.Asks.Take(MaxDepth))
                 {
-                    foreach (var rightAsk in right.Asks)
+                    foreach (var rightAsk in right.Asks.Take(MaxDepth))
                     {
                         var newAskPrice = leftAsk.Price * middleAsk.Price * rightAsk.Price;
                         var interimAskPrice = leftAsk.Price * middleAsk.Price;
@@ -641,8 +643,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             result.AddRange(synthOrderBookFrom1Pair);
             var synthOrderBookFrom2Pairs = GetSynthsFrom2(target, sourceOrderBooks, allOrderBooks);
             result.AddRange(synthOrderBookFrom2Pairs);
-            //var synthOrderBookFrom3Pairs = GetSynthsFrom3(target, sourceOrderBooks, allOrderBooks);
-            //result.AddRange(synthOrderBookFrom3Pairs);
+            var synthOrderBookFrom3Pairs = GetSynthsFrom3(target, sourceOrderBooks, allOrderBooks);
+            result.AddRange(synthOrderBookFrom3Pairs);
 
             return result;
         }
