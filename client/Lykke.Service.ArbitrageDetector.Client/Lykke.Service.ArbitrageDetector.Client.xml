@@ -890,6 +890,11 @@
             Wanted exchanges.
             </summary>
         </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.SynthMaxDepth">
+            <summary>
+            Maximum depth of asks and bids while synthetic order books calculation.
+            </summary>
+        </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.PublicMatrixAssetPairs">
             <summary>
             Public matrix asset pairs.

@@ -28,6 +28,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public IEnumerable<string> Exchanges { get; set; }  = new List<string>();
 
+        public int SynthMaxDepth { get; set; } = 30;
+
         // Matrix
 
         public IEnumerable<string> MatrixAssetPairs { get; set; } = new List<string>();
@@ -65,6 +67,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                    string.Equals(QuoteAsset, other.QuoteAsset) &&
                    IntermediateAssets.SequenceEqual(other.IntermediateAssets) &&
                    Exchanges.SequenceEqual(other.Exchanges) &&
+                   SynthMaxDepth.Equals(other.SynthMaxDepth) &&
                    MatrixAssetPairs.SequenceEqual(other.MatrixAssetPairs) &&
                    MatrixSignificantSpread == other.MatrixSignificantSpread &&
                    PublicMatrixAssetPairs.SequenceEqual(other.PublicMatrixAssetPairs) &&
@@ -96,6 +99,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 hashCode = (hashCode * 397) ^ (QuoteAsset != null ? QuoteAsset.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (IntermediateAssets != null ? IntermediateAssets.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (Exchanges != null ? Exchanges.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ SynthMaxDepth;
                 hashCode = (hashCode * 397) ^ (MatrixAssetPairs != null ? MatrixAssetPairs.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ MatrixSignificantSpread.GetHashCode();
                 hashCode = (hashCode * 397) ^ (PublicMatrixAssetPairs != null ? PublicMatrixAssetPairs.GetHashCode() : 0);

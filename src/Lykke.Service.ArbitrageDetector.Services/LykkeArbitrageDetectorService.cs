@@ -77,7 +77,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             var watch = Stopwatch.StartNew();
 
-            var minSpread = _arbitrageDetectorService.GetSettings().MinSpread;
+            var minSpread = Settings().MinSpread;
+            var synthMaxDepth = Settings().SynthMaxDepth;
 
             var synthsCount = 0;
             var totalItarations = 0;
@@ -95,7 +96,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     var source = orderBooks.ElementAt(j);
 
                     // Calculate all synthetic order books between source order book and target order book
-                    var synthOrderBooks = SynthOrderBook.GetSynthsFromAll(target.AssetPair, source, orderBooks);
+                    var synthOrderBooks = SynthOrderBook.GetSynthsFromAll(target.AssetPair, source, orderBooks, synthMaxDepth);
                     synthsCount += synthOrderBooks.Count;
 
                     // Compare each synthetic with target
@@ -168,21 +169,21 @@ namespace Lykke.Service.ArbitrageDetector.Services
             decimal? result = null;
             var synths1 = SynthOrderBook.GetSynthsFrom1(target, orderBooks);
             if (synths1.Any())
-                result = GetMedianAskPrice(synths1.Values);
+                result = GetMedianAskPrice(synths1.Values.ToList());
 
             if (result.HasValue)
                 return result;
 
             var synths2 = SynthOrderBook.GetSynthsFrom2(target, orderBooks);
             if (synths2.Any())
-                result = GetMedianAskPrice(synths2.Values);
+                result = GetMedianAskPrice(synths2.Values.ToList());
 
             if (result.HasValue)
                 return result;
 
             var synths3 = SynthOrderBook.GetSynthsFrom3(target, orderBooks);
             if (synths3.Any())
-                result = GetMedianAskPrice(synths3.Values);
+                result = GetMedianAskPrice(synths3.Values.ToList());
 
             return result;
         }
@@ -197,6 +198,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 result = bestAsks.ElementAt(bestAsks.Count / 2);
 
             return result;
+        }
+
+        private Settings Settings()
+        {
+            return _arbitrageDetectorService.GetSettings();
         }
 
 

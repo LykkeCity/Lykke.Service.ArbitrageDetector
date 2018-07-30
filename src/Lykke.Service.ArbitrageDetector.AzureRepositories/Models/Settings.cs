@@ -34,6 +34,8 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
         [JsonValueSerializer]
         public IEnumerable<string> Exchanges { get; set; } = new List<string>();
 
+        public int SynthMaxDepth { get; set; }
+
         // Matrix
 
         [JsonValueSerializer]
@@ -81,6 +83,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
             IntermediateAssets = domain.IntermediateAssets;
             QuoteAsset = domain.QuoteAsset;
             Exchanges = domain.Exchanges;
+            SynthMaxDepth = domain.SynthMaxDepth;
             PublicMatrixAssetPairs = domain.PublicMatrixAssetPairs;
             PublicMatrixExchanges = domain.PublicMatrixExchanges;
             MatrixAssetPairs = domain.MatrixAssetPairs;
@@ -104,6 +107,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
             result.IntermediateAssets = IntermediateAssets;
             result.QuoteAsset = QuoteAsset;
             result.Exchanges = Exchanges;
+            result.SynthMaxDepth = SynthMaxDepth;
             result.PublicMatrixAssetPairs = PublicMatrixAssetPairs;
             result.PublicMatrixExchanges = PublicMatrixExchanges;
             result.MatrixAssetPairs = MatrixAssetPairs;

@@ -65,11 +65,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="asset"></param>
-        /// <param name="bids"></param>
-        /// <param name="asks"></param>
-        /// <param name="timestamp"></param>
         public OrderBook(string source, string asset, IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks, DateTime timestamp)
         {
             Source = string.IsNullOrEmpty(source) ? throw new ArgumentException(nameof(source)) : source;
@@ -86,7 +81,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Set asset pair to AssetPair from string by providing onw of the asset.
         /// </summary>
-        /// <param name="oneOfTheAssets"></param>
         public void SetAssetPair(string oneOfTheAssets)
         {
             if (string.IsNullOrWhiteSpace(oneOfTheAssets))
@@ -98,7 +92,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Set AssetPair.
         /// </summary>
-        /// <param name="assetPair"></param>
         public void SetAssetPair(AssetPair assetPair)
         {
             if (assetPair.IsEmpty())
@@ -110,7 +103,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Returns new reversed order book.
         /// </summary>
-        /// <returns></returns>
         public OrderBook Reverse()
         {
             var result = new OrderBook(Source, AssetPair.Quote + AssetPair.Base,
@@ -131,9 +123,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Formats source asset pair.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="assetPair"></param>
-        /// <returns></returns>
         public static string FormatSourceAssetPair(string source, string assetPair)
         {
             return source + "-" + assetPair;
