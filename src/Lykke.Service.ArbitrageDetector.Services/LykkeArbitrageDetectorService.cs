@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,7 +57,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             try
             {
-                Execute();
+                await Execute();
             }
             catch (Exception ex)
             {
@@ -64,18 +65,22 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
         }
 
-        public void Execute()
+        public async Task Execute()
         {
-            var lykkeArbitrages = GetArbitrages(_orderBooks.Values.ToList());
+            var lykkeArbitrages = await GetArbitrages(_orderBooks.Values.ToList());
             RefreshArbitrages(lykkeArbitrages);
         }
 
-        private IReadOnlyCollection<LykkeArbitrageRow> GetArbitrages(IReadOnlyCollection<OrderBook> orderBooks)
+        private async Task<IReadOnlyCollection<LykkeArbitrageRow>> GetArbitrages(IReadOnlyCollection<OrderBook> orderBooks)
         {
             var result = new List<LykkeArbitrageRow>();
 
+            var watch = Stopwatch.StartNew();
+
             var minSpread = _arbitrageDetectorService.GetSettings().MinSpread;
 
+            var synthsCount = 0;
+            var totalItarations = 0;
             // O( (n^2) )
             for (var i = 0; i < orderBooks.Count; i++)
             {
@@ -91,10 +96,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                     // Calculate all synthetic order books between source order book and target order book
                     var synthOrderBooks = SynthOrderBook.GetSynthsFromAll(target.AssetPair, source, orderBooks);
+                    synthsCount += synthOrderBooks.Count;
 
                     // Compare each synthetic with target
                     foreach (var synthOrderBook in synthOrderBooks.Values)
                     {
+                        totalItarations++;
+
                         decimal spread = 0;
                         decimal volume = 0;
                         decimal pnL = 0;
@@ -136,6 +144,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     }
                 }
             }
+
+            watch.Stop();
+            if (watch.ElapsedMilliseconds > 1000)
+                await _log.WriteInfoAsync(GetType().Name, nameof(GetArbitrages), $"{watch.ElapsedMilliseconds} ms, {orderBooks.Count} order books, {synthsCount} synthetic order books created, {totalItarations} iterations.");
 
             return result.OrderBy(x => x.Target).ThenBy(x => x.Source).ToList();
         }

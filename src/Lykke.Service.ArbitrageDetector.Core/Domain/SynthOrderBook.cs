@@ -463,11 +463,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 if (intermediate == target.Base || intermediate == target.Quote)
                     continue; // The pairs are the same or reversed (it is from 1 order book)
 
-                // 1. If current is base&intermediate then find quote&intermediate&
+                // 1. If current is base&intermediate then find quote&intermediate
                 if (withBaseOrQuoteAssetPair.ContainsAsset(target.Base))
                 {
                     var baseAndIntermediate = withBaseOrQuoteOrderBook;
-                    // Trying to find quote/intermediate or intermediate/quote pair
+                    // Trying to find quote/intermediate or intermediate/quote pair (quote&intermediate)
                     var intermediateQuoteOrderBooks = allOrderBooks
                         .Where(x => x.AssetPair.ContainsAsset(intermediate) && x.AssetPair.ContainsAsset(target.Quote))
                         .ToList();
@@ -491,7 +491,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 if (withBaseOrQuoteAssetPair.ContainsAsset(target.Quote))
                 {
                     var quoteAndIntermediate = withBaseOrQuoteOrderBook;
-                    // Trying to find base/intermediate or intermediate/base pair
+                    // Trying to find base/intermediate or intermediate/base pair (base&intermediate)
                     var intermediateBaseOrderBooks = allOrderBooks
                         .Where(x => x.AssetPair.ContainsAsset(intermediate) && x.AssetPair.ContainsAsset(target.Base))
                         .ToList();
