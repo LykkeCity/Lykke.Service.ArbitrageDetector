@@ -194,7 +194,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
                 MatrixHistoryAssetPairs = new List<string> { "ETHUSD" },
                 MatrixSignificantSpread = -33,
                 MatrixHistoryLykkeName = "lykke33",
-                ExchangesFees = new List<ExchangeFees> { new ExchangeFees { ExchangeName = "Qoinex", DepositFee = 0.33f, TradingFee = 0.33f } }
+                ExchangesFees = new List<ExchangeFees> { new ExchangeFees { ExchangeName = "Qoinex", DepositFee = 0.33m, TradingFee = 0.33m } }
             };
 
             await Client.SetSettingsAsync(settings);
