@@ -72,13 +72,13 @@ namespace Lykke.Service.ArbitrageDetector.Client
         /// Returns arbitrage matrix.
         /// </summary>
         /// <returns>Arbitrage matrix.</returns>
-        Task<Matrix> MatrixAsync(string assetPair);
+        Task<Matrix> MatrixAsync(string assetPair, bool depositFee = false, bool tradingFee = false);
 
         /// <summary>
         /// Returns public arbitrages matrix.
         /// </summary>
         /// <returns>Arbitrage matrix.</returns>
-        Task<Matrix> PublicMatrixAsync(string assetPair);
+        Task<Matrix> PublicMatrixAsync(string assetPair, bool depositFee = false, bool tradingFee = false);
 
         /// <summary>
         /// Returns public arbitrages matrix asset pairs.
@@ -90,7 +90,7 @@ namespace Lykke.Service.ArbitrageDetector.Client
         /// Returns a collection of LykkeArbitrageRow entities.
         /// </summary>
         /// <returns>A collection of Lykke Arbitrage entities.</returns>
-        Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync(string basePair, string crossPair, decimal minVolumeInUsd = 0);
+        Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync(string basePair, string crossPair, string target = "", string source = "", ArbitrageProperty property = default, decimal minValue = 0);
 
         /// <summary>
         /// Get matrix datetime stamps by date.

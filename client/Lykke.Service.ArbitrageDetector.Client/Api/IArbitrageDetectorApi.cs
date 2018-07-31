@@ -34,16 +34,16 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
         Task<IEnumerable<ArbitrageRow>> ArbitrageHistory(DateTime since, int take);
 
         [Get("/matrix")]
-        Task<Matrix> Matrix(string assetPair);
+        Task<Matrix> Matrix(string assetPair, bool depositFee = false, bool tradingFee = false);
 
         [Get("/publicMatrix")]
-        Task<Matrix> PublicMatrix(string assetPair);
+        Task<Matrix> PublicMatrix(string assetPair, bool depositFee = false, bool tradingFee = false);
 
         [Get("/publicMatrixAssetPairs")]
         Task<IEnumerable<string>> PublicMatrixAssetPairs();
 
         [Get("/lykkeArbitrages")]
-        Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitrages(string basePair, string crossPair, decimal minVolumeInUsd = 0);
+        Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitrages(string basePair, string crossPair, string target = "", string source = "", ArbitrageProperty property = default, decimal minValue = 0);
 
         [Get("/matrixHistory/stamps")]
         Task<IEnumerable<DateTime>> MatrixHistoryStamps(string assetPair, DateTime date, bool lykkeArbitragesOnly);

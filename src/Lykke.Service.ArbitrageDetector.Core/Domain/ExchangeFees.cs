@@ -13,17 +13,22 @@
         /// <summary>
         /// Comulative fee for both deposit and withdrawal fees.
         /// </summary>
-        public float DepositFee { get; set; }
+        public decimal DepositFee { get; set; } = 0.2m;
 
         /// <summary>
-        /// Taker fee.
+        /// Trading fee.
         /// </summary>
-        public float TakerFee { get; set; }
+        public decimal TradingFee { get; set; } = 0.2m;
+
+        /// <summary>
+        /// Default fees - deposit = 0.2%, trading = 0.2%.
+        /// </summary>
+        public static ExchangeFees Default => new ExchangeFees();
 
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"{ExchangeName} - deposit: {DepositFee}, taker: {TakerFee}";
+            return $"{ExchangeName} - deposit: {DepositFee}, trading: {TradingFee}";
         }
     }
 }

@@ -567,9 +567,9 @@
             Comulative fee for both deposit and withdrawal fees.
             </summary>
         </member>
-        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.ExchangeFees.TakerFee">
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.ExchangeFees.TradingFee">
             <summary>
-            Taker fee.
+            Trading fee.
             </summary>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.ExchangeFees.ToString">

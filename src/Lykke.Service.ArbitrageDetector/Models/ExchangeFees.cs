@@ -15,12 +15,12 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Comulative fee for both deposit and withdrawal fees.
         /// </summary>
-        public float DepositFee { get; set; }
+        public decimal DepositFee { get; set; }
 
         /// <summary>
-        /// Taker fee.
+        /// Trading fee.
         /// </summary>
-        public float TakerFee { get; set; }
+        public decimal TradingFee { get; set; }
 
         public ExchangeFees()
         {
@@ -30,7 +30,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         {
             ExchangeName = domain.ExchangeName;
             DepositFee = domain.DepositFee;
-            TakerFee = domain.TakerFee;
+            TradingFee = domain.TradingFee;
         }
 
         public DomainExchangeFees ToDomain()
@@ -39,7 +39,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
             {
                 ExchangeName = ExchangeName,
                 DepositFee = DepositFee,
-                TakerFee = TakerFee
+                TradingFee = TradingFee
             };
 
             return result;
@@ -48,7 +48,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"{ExchangeName} - deposit: {DepositFee}, taker: {TakerFee}";
+            return $"{ExchangeName} - deposit: {DepositFee}, trading: {TradingFee}";
         }
     }
 }
