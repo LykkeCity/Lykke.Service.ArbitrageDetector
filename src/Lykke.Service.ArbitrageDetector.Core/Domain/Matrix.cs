@@ -4,6 +4,9 @@ using System.Linq;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
+    /// <summary>
+    /// Represents a matrix with arbitrages.
+    /// </summary>
     public sealed class Matrix
     {
         public string AssetPair { get; set; }

@@ -20,8 +20,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="exchange"></param>
-        /// <param name="assetPair"></param>
         public AssetPairSource(string exchange, AssetPair assetPair)
         {
             Exchange = string.IsNullOrEmpty(exchange) ? throw new ArgumentNullException(nameof(exchange)) : exchange;

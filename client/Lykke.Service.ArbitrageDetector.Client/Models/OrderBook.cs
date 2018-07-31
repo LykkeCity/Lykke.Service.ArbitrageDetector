@@ -33,12 +33,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Best bid.
         /// </summary>
-        public VolumePrice? BestBid { get; }
+        public VolumePrice? BestBid => Bids.Any() ? Bids.MaxBy(x => x.Price) : (VolumePrice?)null;
 
         /// <summary>
         /// Best ask.
         /// </summary>
-        public VolumePrice? BestAsk { get; }
+        public VolumePrice? BestAsk => Asks.Any() ? Asks.MinBy(x => x.Price) : (VolumePrice?)null;
 
         /// <summary>
         /// All bids volume.
@@ -69,8 +69,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
             AssetPair = assetPair;
             Bids = bids ?? throw new ArgumentNullException(nameof(bids));
             Asks = asks ?? throw new ArgumentNullException(nameof(asks));
-            BestBid = Bids.Any() ? Bids.MaxBy(x => x.Price) : (VolumePrice?)null;
-            BestAsk = Asks.Any() ? Asks.MinBy(x => x.Price) : (VolumePrice?)null;
             Timestamp = timestamp;
         }
 

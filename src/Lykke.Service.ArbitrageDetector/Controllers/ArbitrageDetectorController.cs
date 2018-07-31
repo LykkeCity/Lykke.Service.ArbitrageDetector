@@ -141,9 +141,9 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ProducesResponseType(typeof(Matrix), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "*" })]
-        public IActionResult Matrix(string assetPair)
+        public IActionResult Matrix(string assetPair, bool depositFee = false, bool tradingFee = false)
         {
-            var matrix = _arbitrageDetectorService.GetMatrix(assetPair);
+            var matrix = _arbitrageDetectorService.GetMatrix(assetPair, depositFee, tradingFee);
             var result = new Matrix(matrix);
 
             return Ok(result);
@@ -155,9 +155,9 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ProducesResponseType(typeof(Matrix), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ResponseCache(Duration = 1, VaryByQueryKeys = new [] { "*" })]
-        public IActionResult PublicMatrix(string assetPair)
+        public IActionResult PublicMatrix(string assetPair, bool depositFee = false, bool tradingFee = false)
         {
-            var matrix = _arbitrageDetectorService.GetMatrix(assetPair, true);
+            var matrix = _arbitrageDetectorService.GetMatrix(assetPair, true, depositFee, tradingFee);
             var result = new Matrix(matrix);
 
             return Ok(result);
@@ -183,11 +183,13 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ProducesResponseType(typeof(IEnumerable<LykkeArbitrageRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "*" })]
-        public IActionResult LykkeArbitrages(string basePair, string crossPair, decimal minVolumeInUsd = 0)
+        public IActionResult LykkeArbitrages(string basePair, string crossPair, string target = "", string source = "", ArbitrageProperty property = default, decimal minValue = 0)
         {
-            var result = _lykkeArbitrageDetectorService.GetArbitrages(basePair, crossPair, minVolumeInUsd)
+            target = string.IsNullOrWhiteSpace(target) ? basePair : target;
+            source = string.IsNullOrWhiteSpace(target) ? crossPair : source;
+
+            var result = _lykkeArbitrageDetectorService.GetArbitrages(target, source, (Core.Domain.ArbitrageProperty)property, minValue)
                 .Select(x => new LykkeArbitrageRow(x))
-                .OrderBy(x => x.BaseAssetPair.Name)
                 .ToList();
 
             return Ok(result);

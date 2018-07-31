@@ -58,6 +58,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// </summary>
         public IEnumerable<string> Exchanges { get; set; } = new List<string>();
 
+        /// <summary>
+        /// Maximum depth of asks and bids while synthetic order books calculation.
+        /// </summary>
+        public int SynthMaxDepth { get; set; }
+
 
         // Public Matrix
 

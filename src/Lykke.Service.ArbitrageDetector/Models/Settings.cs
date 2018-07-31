@@ -29,6 +29,8 @@ namespace Lykke.Service.ArbitrageDetector.Models
 
         public IEnumerable<string> Exchanges { get; set; } = new List<string>();
 
+        public int SynthMaxDepth { get; set; }
+
         // Matrix
 
         public IEnumerable<string> MatrixAssetPairs { get; set; } = new List<string>();
@@ -69,6 +71,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
             IntermediateAssets = domain.IntermediateAssets;
             QuoteAsset = domain.QuoteAsset;
             Exchanges = domain.Exchanges;
+            SynthMaxDepth = domain.SynthMaxDepth;
             PublicMatrixAssetPairs = domain.PublicMatrixAssetPairs;
             PublicMatrixExchanges = domain.PublicMatrixExchanges;
             MatrixAssetPairs = domain.MatrixAssetPairs;
@@ -92,6 +95,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
                 IntermediateAssets = IntermediateAssets,
                 QuoteAsset = QuoteAsset,
                 Exchanges = Exchanges,
+                SynthMaxDepth = SynthMaxDepth,
                 PublicMatrixAssetPairs = PublicMatrixAssetPairs,
                 PublicMatrixExchanges = PublicMatrixExchanges,
                 MatrixAssetPairs = MatrixAssetPairs,

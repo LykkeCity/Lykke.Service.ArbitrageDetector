@@ -104,15 +104,15 @@ namespace Lykke.Service.ArbitrageDetector.Client
         }
 
         /// <inheritdoc />
-        public async Task<Matrix> MatrixAsync(string assetPair)
+        public async Task<Matrix> MatrixAsync(string assetPair, bool depositFee = false, bool tradingFee = false)
         {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.Matrix(assetPair));
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.Matrix(assetPair, depositFee, tradingFee));
         }
 
         /// <inheritdoc />
-        public async Task<Matrix> PublicMatrixAsync(string assetPair)
+        public async Task<Matrix> PublicMatrixAsync(string assetPair, bool depositFee = false, bool tradingFee = false)
         {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.PublicMatrix(assetPair));
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.PublicMatrix(assetPair, depositFee, tradingFee));
         }
 
         /// <inheritdoc />
@@ -122,9 +122,9 @@ namespace Lykke.Service.ArbitrageDetector.Client
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync(string basePair, string crossPair, decimal minVolumeInUsd = 0)
+        public async Task<IEnumerable<LykkeArbitrageRow>> LykkeArbitragesAsync(string basePair, string crossPair, string target = "", string source = "", ArbitrageProperty property = default, decimal minValue = 0)
         {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.LykkeArbitrages(basePair, crossPair));
+            return await _runner.RunAsync(() => _arbitrageDetectorApi.LykkeArbitrages(basePair, crossPair, target, source, property, minValue));
         }
 
         /// <inheritdoc />

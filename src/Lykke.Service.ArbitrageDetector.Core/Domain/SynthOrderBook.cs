@@ -20,22 +20,12 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Original order books.
         /// </summary>
-        public IList<OrderBook> OriginalOrderBooks { get; }
+        public IReadOnlyCollection<OrderBook> OriginalOrderBooks { get; }
 
         /// <inheritdoc />
-        /// <summary>
-        /// Contructor.
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="assetPair"></param>
-        /// <param name="bids"></param>
-        /// <param name="asks"></param>
-        /// <param name="conversionPath"></param>
-        /// <param name="originalOrderBooks"></param>
-        /// <param name="timestamp"></param>
         public SynthOrderBook(string source, AssetPair assetPair,
             IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks,
-            string conversionPath, IList<OrderBook> originalOrderBooks, DateTime timestamp)
+            string conversionPath, IReadOnlyCollection<OrderBook> originalOrderBooks, DateTime timestamp)
             : base(source, assetPair.Name, bids, asks, timestamp)
         {
             if (assetPair.IsEmpty())
@@ -54,10 +44,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// From one order book if equal or reversed.
         /// </summary>
-        /// <param name="orderBook"></param>
-        /// <param name="targetAssetPair"></param>
-        /// <returns></returns>
-        public static SynthOrderBook FromOrderBook(OrderBook orderBook, AssetPair targetAssetPair)
+        public static SynthOrderBook FromOrderBook(OrderBook orderBook, AssetPair targetAssetPair, int maxDepth = MaxDepth)
         {
             #region Checking arguments
 
@@ -98,7 +85,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             if (orderBookResult == null)
                 throw new InvalidOperationException("AssetPairs must be the same or reversed)");
 
-            var result = new SynthOrderBook(orderBookResult.Source, targetAssetPair, orderBookResult.Bids, orderBookResult.Asks, conversionPath, originalOrderBooks, orderBook.Timestamp);
+            var result = new SynthOrderBook(orderBookResult.Source, targetAssetPair, orderBookResult.Bids.Take(maxDepth).ToList(), orderBookResult.Asks.Take(maxDepth).ToList(), conversionPath, originalOrderBooks, orderBook.Timestamp);
 
             return result;
         }
@@ -106,11 +93,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// From two order books.
         /// </summary>
-        /// <param name="one"></param>
-        /// <param name="another"></param>
-        /// <param name="targetAssetPair"></param>
-        /// <returns></returns>
-        public static SynthOrderBook FromOrderBooks(OrderBook one, OrderBook another, AssetPair targetAssetPair)
+        public static SynthOrderBook FromOrderBooks(OrderBook one, OrderBook another, AssetPair targetAssetPair, int maxDepth = MaxDepth)
         {
             #region Checking arguments 
 
@@ -175,9 +158,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             var asks = new List<VolumePrice>();
 
             // Calculating new bids
-            foreach (var leftBid in left.Bids.Take(MaxDepth))
+            foreach (var leftBid in left.Bids.Take(maxDepth))
             {
-                foreach (var rightBid in right.Bids.Take(MaxDepth))
+                foreach (var rightBid in right.Bids.Take(maxDepth))
                 {
                     var newBidPrice = leftBid.Price * rightBid.Price;
                     var rightBidVolumeInBaseAsset = rightBid.Volume / leftBid.Price;
@@ -189,9 +172,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             }
 
             // Calculating new asks
-            foreach (var leftAsk in left.Asks.Take(MaxDepth))
+            foreach (var leftAsk in left.Asks.Take(maxDepth))
             {
-                foreach (var rightAsk in right.Asks.Take(MaxDepth))
+                foreach (var rightAsk in right.Asks.Take(maxDepth))
                 {
                     var newAskPrice = leftAsk.Price * rightAsk.Price;
                     var rightAskVolumeInBaseAsset = rightAsk.Volume / leftAsk.Price;
@@ -215,12 +198,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// From three order books.
         /// </summary>
-        /// <param name="one"></param>
-        /// <param name="second"></param>
-        /// <param name="third"></param>
-        /// <param name="targetAssetPair"></param>
-        /// <returns></returns>
-        public static SynthOrderBook FromOrderBooks(OrderBook one, OrderBook second, OrderBook third, AssetPair targetAssetPair)
+        public static SynthOrderBook FromOrderBooks(OrderBook one, OrderBook second, OrderBook third, AssetPair targetAssetPair, int maxDepth = MaxDepth)
         {
             #region Checking arguments 
 
@@ -299,11 +277,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             var asks = new List<VolumePrice>();
 
             // Calculating new bids
-            foreach (var leftBid in left.Bids.Take(MaxDepth))
+            foreach (var leftBid in left.Bids.Take(maxDepth))
             {
-                foreach (var middleBid in middle.Bids.Take(MaxDepth))
+                foreach (var middleBid in middle.Bids.Take(maxDepth))
                 {
-                    foreach (var rightBid in right.Bids.Take(MaxDepth))
+                    foreach (var rightBid in right.Bids.Take(maxDepth))
                     {
                         var newBidPrice = leftBid.Price * middleBid.Price * rightBid.Price;
                         var interimBidPrice = leftBid.Price * middleBid.Price;
@@ -318,11 +296,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             }
 
             // Calculating new asks
-            foreach (var leftAsk in left.Asks.Take(MaxDepth))
+            foreach (var leftAsk in left.Asks.Take(maxDepth))
             {
-                foreach (var middleAsk in middle.Asks.Take(MaxDepth))
+                foreach (var middleAsk in middle.Asks.Take(maxDepth))
                 {
-                    foreach (var rightAsk in right.Asks.Take(MaxDepth))
+                    foreach (var rightAsk in right.Asks.Take(maxDepth))
                     {
                         var newAskPrice = leftAsk.Price * middleAsk.Price * rightAsk.Price;
                         var interimAskPrice = leftAsk.Price * middleAsk.Price;
@@ -353,29 +331,26 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Get synthetic order books from 1 order book (the same or reverted).
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="orderBooks"></param>
-        /// <returns></returns>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom1(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom1(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks,
+            int maxDepth = MaxDepth)
         {
-            return GetSynthsFrom1(target, orderBooks, orderBooks);
+            return GetSynthsFrom1(target, orderBooks, orderBooks, maxDepth);
         }
 
         /// <summary>
         /// Get synthetic order books from 1 order book (the same or reverted).
         /// </summary>
-        /// <param name="target"></param
-        /// <param name="source"></param>
-        /// <param name="allOrderBooks"></param>
-        /// <returns></returns>
         public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom1(AssetPair target,
-            OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks)
+            OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks, int maxDepth = MaxDepth)
         {
-            return GetSynthsFrom1(target, new List<OrderBook> { source }, allOrderBooks);
+            return GetSynthsFrom1(target, new List<OrderBook> { source }, allOrderBooks, maxDepth);
         }
 
+        /// <summary>
+        /// Get synthetic order books from 1 order book (the same or reverted).
+        /// </summary>
         public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom1(AssetPair target,
-            IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks)
+            IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks, int maxDepth = MaxDepth)
         {
             var result = new Dictionary<AssetPairSource, SynthOrderBook>();
 
@@ -394,14 +369,14 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 // If current is target or reversed then just use it
                 if (intermediate == target.Base || intermediate == target.Quote)
                 {
-                    if (withBaseOrQuoteOrderBook.Asks.Count == 0 && withBaseOrQuoteOrderBook.Bids.Count == 0)
+                    if (!withBaseOrQuoteOrderBook.Asks.Any() && !withBaseOrQuoteOrderBook.Bids.Any())
                         continue;
 
                     var key = new AssetPairSource(withBaseOrQuoteOrderBook.ToString(), target);
                     if (result.ContainsKey(key))
                         continue;
 
-                    var synthOrderBook = FromOrderBook(withBaseOrQuoteOrderBook, target);
+                    var synthOrderBook = FromOrderBook(withBaseOrQuoteOrderBook, target, maxDepth);
                     result[key] = synthOrderBook;
                 }
             }
@@ -414,36 +389,26 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Get synthetic order books from 2 original order books.
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="orderBooks"></param>
-        /// <returns></returns>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom2(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom2(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks,
+            int maxDepth = MaxDepth)
         {
-            return GetSynthsFrom2(target, orderBooks, orderBooks);
+            return GetSynthsFrom2(target, orderBooks, orderBooks, maxDepth);
         }
 
         /// <summary>
         /// Get synthetic order books from 2 original order books.
         /// </summary>
-        /// <param name="target"></param
-        /// <param name="source"></param>
-        /// <param name="allOrderBooks"></param>
-        /// <returns></returns>
         public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom2(AssetPair target,
-            OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks)
+            OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks, int maxDepth = MaxDepth)
         {
-            return GetSynthsFrom2(target, new List<OrderBook> { source }, allOrderBooks);
+            return GetSynthsFrom2(target, new List<OrderBook> { source }, allOrderBooks, maxDepth);
         }
 
         /// <summary>
         /// Get synthetic order books from 2 original order books.
         /// </summary>
-        /// <param name="target"></param
-        /// <param name="sourceOrderBooks"></param>
-        /// <param name="allOrderBooks"></param>
-        /// <returns></returns>
         public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom2(AssetPair target,
-            IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks)
+            IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks, int maxDepth = MaxDepth)
         {
             var result = new Dictionary<AssetPairSource, SynthOrderBook>();
 
@@ -474,15 +439,15 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
                     foreach (var intermediateQuoteOrderBook in intermediateQuoteOrderBooks)
                     {
-                        if (baseAndIntermediate.Asks.Count == 0 && baseAndIntermediate.Bids.Count == 0
-                            || intermediateQuoteOrderBook.Asks.Count == 0 && intermediateQuoteOrderBook.Bids.Count == 0)
+                        if (!baseAndIntermediate.Asks.Any() && !baseAndIntermediate.Bids.Any()
+                            || !intermediateQuoteOrderBook.Asks.Any() && !intermediateQuoteOrderBook.Bids.Any())
                             continue;
 
                         var key = new AssetPairSource(GetConversionPath(baseAndIntermediate, intermediateQuoteOrderBook), target);
                         if (result.ContainsKey(key))
                             continue;
 
-                        var synthOrderBook = FromOrderBooks(baseAndIntermediate, intermediateQuoteOrderBook, target);
+                        var synthOrderBook = FromOrderBooks(baseAndIntermediate, intermediateQuoteOrderBook, target, maxDepth);
                         result[key] = synthOrderBook;
                     }
                 }
@@ -498,15 +463,15 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
                     foreach (var intermediateBaseOrderBook in intermediateBaseOrderBooks)
                     {
-                        if (intermediateBaseOrderBook.Asks.Count == 0 && intermediateBaseOrderBook.Bids.Count == 0
-                            || quoteAndIntermediate.Asks.Count == 0 && quoteAndIntermediate.Bids.Count == 0)
+                        if (!intermediateBaseOrderBook.Asks.Any() && !intermediateBaseOrderBook.Bids.Any()
+                            || !quoteAndIntermediate.Asks.Any() && !quoteAndIntermediate.Bids.Any())
                             continue;
 
                         var key = new AssetPairSource(GetConversionPath(intermediateBaseOrderBook, quoteAndIntermediate), target);
                         if (result.ContainsKey(key))
                             continue;
 
-                        var synthOrderBook = FromOrderBooks(intermediateBaseOrderBook, quoteAndIntermediate, target);
+                        var synthOrderBook = FromOrderBooks(intermediateBaseOrderBook, quoteAndIntermediate, target, maxDepth);
                         result[key] = synthOrderBook;
                     }
                 }
@@ -520,36 +485,26 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Get synthetic order books from 3 asset pairs.
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="orderBooks"></param>
-        /// <returns></returns>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom3(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom3(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks,
+            int maxDepth = MaxDepth)
         {
-            return GetSynthsFrom3(target, orderBooks, orderBooks);
+            return GetSynthsFrom3(target, orderBooks, orderBooks, maxDepth);
         }
 
         /// <summary>
         /// Get synthetic order books from 3 asset pairs.
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="source"></param>
-        /// <param name="allOrderBooks"></param>
-        /// <returns></returns>
         public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom3(AssetPair target,
-            OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks)
+            OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks, int maxDepth = MaxDepth)
         {
-            return GetSynthsFrom3(target, new List<OrderBook> { source }, allOrderBooks);
+            return GetSynthsFrom3(target, new List<OrderBook> { source }, allOrderBooks, maxDepth);
         }
 
         /// <summary>
         /// Get synthetic order books from 3 asset pairs.
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="sourceOrderBooks"></param>
-        /// <param name="allOrderBooks"></param>
-        /// <returns></returns>
         public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom3(AssetPair target,
-            IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks)
+            IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks, int maxDepth = MaxDepth)
         {
             var result = new Dictionary<AssetPairSource, SynthOrderBook>();
 
@@ -570,16 +525,16 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                     var quoteTargetQuoteOrderBooks = allOrderBooks.Where(x => x.AssetPair.ContainsAssets(quote, target.Quote)).ToList();
                     foreach (var quoteTargetQuoteOrderBook in quoteTargetQuoteOrderBooks)
                     {
-                        if (baseTargetBaseOrderBook.Asks.Count == 0 && baseTargetBaseOrderBook.Bids.Count == 0
-                            || woBaseAndQuoteOrderBook.Asks.Count == 0 && woBaseAndQuoteOrderBook.Bids.Count == 0
-                            || quoteTargetQuoteOrderBook.Asks.Count == 0 && quoteTargetQuoteOrderBook.Bids.Count == 0)
+                        if (!baseTargetBaseOrderBook.Asks.Any() && !baseTargetBaseOrderBook.Bids.Any()
+                            || !woBaseAndQuoteOrderBook.Asks.Any() && !woBaseAndQuoteOrderBook.Bids.Any()
+                            || !quoteTargetQuoteOrderBook.Asks.Any() && !quoteTargetQuoteOrderBook.Bids.Any())
                             continue;
 
                         var key = new AssetPairSource(GetConversionPath(baseTargetBaseOrderBook, woBaseAndQuoteOrderBook, quoteTargetQuoteOrderBook), target);
                         if (result.ContainsKey(key))
                             continue;
 
-                        var synthOrderBook = FromOrderBooks(baseTargetBaseOrderBook, woBaseAndQuoteOrderBook, quoteTargetQuoteOrderBook, target);
+                        var synthOrderBook = FromOrderBooks(baseTargetBaseOrderBook, woBaseAndQuoteOrderBook, quoteTargetQuoteOrderBook, target, maxDepth);
                         result[key] = synthOrderBook;
                     }
                 }
@@ -591,16 +546,16 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                     var quoteTargetBaseOrderBooks = allOrderBooks.Where(x => x.AssetPair.ContainsAssets(quote, target.Base)).ToList();
                     foreach (var quoteTargetBaseOrderBook in quoteTargetBaseOrderBooks)
                     {
-                        if (quoteTargetBaseOrderBook.Asks.Count == 0 && quoteTargetBaseOrderBook.Bids.Count == 0
-                            || woBaseAndQuoteOrderBook.Asks.Count == 0 && woBaseAndQuoteOrderBook.Bids.Count == 0
-                            || baseTargetQuoteOrderBook.Asks.Count == 0 && baseTargetQuoteOrderBook.Bids.Count == 0)
+                        if (!quoteTargetBaseOrderBook.Asks.Any() && !quoteTargetBaseOrderBook.Bids.Any()
+                            || !woBaseAndQuoteOrderBook.Asks.Any() && !woBaseAndQuoteOrderBook.Bids.Any()
+                            || !baseTargetQuoteOrderBook.Asks.Any() && !baseTargetQuoteOrderBook.Bids.Any())
                             continue;
 
                         var key = new AssetPairSource(GetConversionPath(quoteTargetBaseOrderBook, woBaseAndQuoteOrderBook, baseTargetQuoteOrderBook), target);
                         if (result.ContainsKey(key))
                             continue;
 
-                        var synthOrderBook = FromOrderBooks(quoteTargetBaseOrderBook, woBaseAndQuoteOrderBook, baseTargetQuoteOrderBook, target);
+                        var synthOrderBook = FromOrderBooks(quoteTargetBaseOrderBook, woBaseAndQuoteOrderBook, baseTargetQuoteOrderBook, target, maxDepth);
                         result[key] = synthOrderBook;
                     }
                 }
@@ -614,36 +569,31 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Get synthetic from 1, 2 or 3 asset pairs.
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="orderBooks"></param>
-        /// <returns></returns>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFromAll(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks)
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFromAll(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks,
+            int maxDepth = MaxDepth)
         {
-            return GetSynthsFromAll(target, orderBooks, orderBooks);
+            return GetSynthsFromAll(target, orderBooks, orderBooks, maxDepth);
         }
 
         /// <summary>
         /// Get synthetic from 1, 2 or 3 asset pairs.
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="source"></param>
-        /// <param name="allOrderBooks"></param>
-        /// <returns></returns>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFromAll(AssetPair target, OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks)
+        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFromAll(AssetPair target, OrderBook source,
+            IReadOnlyCollection<OrderBook> allOrderBooks, int maxDepth = MaxDepth)
         {
-            return GetSynthsFromAll(target, new List<OrderBook> { source }, allOrderBooks);
+            return GetSynthsFromAll(target, new List<OrderBook> { source }, allOrderBooks, maxDepth);
         }
 
         public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFromAll(AssetPair target,
-            IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks)
+            IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks, int maxDepth = MaxDepth)
         {
             var result = new Dictionary<AssetPairSource, SynthOrderBook>();
 
-            var synthOrderBookFrom1Pair = GetSynthsFrom1(target, sourceOrderBooks, allOrderBooks);
+            var synthOrderBookFrom1Pair = GetSynthsFrom1(target, sourceOrderBooks, allOrderBooks, maxDepth);
             result.AddRange(synthOrderBookFrom1Pair);
-            var synthOrderBookFrom2Pairs = GetSynthsFrom2(target, sourceOrderBooks, allOrderBooks);
+            var synthOrderBookFrom2Pairs = GetSynthsFrom2(target, sourceOrderBooks, allOrderBooks, maxDepth);
             result.AddRange(synthOrderBookFrom2Pairs);
-            var synthOrderBookFrom3Pairs = GetSynthsFrom3(target, sourceOrderBooks, allOrderBooks);
+            var synthOrderBookFrom3Pairs = GetSynthsFrom3(target, sourceOrderBooks, allOrderBooks, maxDepth);
             result.AddRange(synthOrderBookFrom3Pairs);
 
             return result;
@@ -654,8 +604,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Formats conversion path.
         /// </summary>
-        /// <param name="left"></param>
-        /// <param name="right"></param>
         public static string GetConversionPath(OrderBook left, OrderBook right)
         {
             return left + " * " + right;
@@ -664,9 +612,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Formats conversion path.
         /// </summary>
-        /// <param name="left"></param>
-        /// <param name="middle"></param>
-        /// <param name="right"></param>
         public static string GetConversionPath(OrderBook left, OrderBook middle, OrderBook right)
         {
             return left + " * " + middle + " * " + right;
@@ -675,10 +620,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Formats conversion path.
         /// </summary>
-        /// <param name="leftSource"></param>
-        /// <param name="leftAssetPair"></param>
-        /// <param name="rightSource"></param>
-        /// <param name="rightAssetPair"></param>
         public static string GetConversionPath(string leftSource, string leftAssetPair, string rightSource, string rightAssetPair)
         {
             return leftSource + "-" + leftAssetPair + " * " + rightSource + "-" + rightAssetPair;
@@ -687,12 +628,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Formats conversion path.
         /// </summary>
-        /// <param name="leftSource"></param>
-        /// <param name="leftAssetPair"></param>
-        /// <param name="middleSource"></param>
-        /// <param name="middleAssetPair"></param>
-        /// <param name="rightSource"></param>
-        /// <param name="rightAssetPair"></param>
         public static string GetConversionPath(string leftSource, string leftAssetPair, string middleSource, string middleAssetPair, string rightSource, string rightAssetPair)
         {
             return leftSource + "-" + leftAssetPair + " * " + middleSource + "-" + middleAssetPair + " * " + rightSource + "-" + rightAssetPair;
@@ -701,9 +636,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Formats source - source path.
         /// </summary>
-        /// <param name="leftSource"></param>
-        /// <param name="rightSource"></param>
-        /// <returns></returns>]
         public static string GetSourcesPath(string leftSource, string rightSource)
         {
             return leftSource + "-" + rightSource;
@@ -712,10 +644,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Formats source - source path.
         /// </summary>
-        /// <param name="leftSource"></param>
-        /// <param name="middleSource"></param>
-        /// <param name="rightSource"></param>
-        /// <returns></returns>]
         public static string GetSourcesPath(string leftSource, string middleSource, string rightSource)
         {
             return leftSource + "-" + middleSource + "-" + rightSource;
