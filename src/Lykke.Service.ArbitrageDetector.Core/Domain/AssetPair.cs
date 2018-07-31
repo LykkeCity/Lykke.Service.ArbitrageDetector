@@ -27,8 +27,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// </summary>
         public AssetPair(string @base, string quote)
         {
-            Base = string.IsNullOrWhiteSpace(@base) ? throw new ArgumentException(nameof(@base)) : @base;
-            Quote = string.IsNullOrWhiteSpace(quote) ? throw new ArgumentException(nameof(quote)) : quote;
+            Base = string.IsNullOrWhiteSpace(@base) ? throw new ArgumentException($"AssetPair.ctor - missed {nameof(@base)} argument") : @base;
+            Quote = string.IsNullOrWhiteSpace(quote) ? throw new ArgumentException($"AssetPair.ctor - missed {nameof(@base)} argument") : quote;
         }
 
         /// <summary>
