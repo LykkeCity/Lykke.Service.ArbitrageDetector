@@ -73,6 +73,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         private async Task<IReadOnlyCollection<LykkeArbitrageRow>> GetArbitrages(IReadOnlyCollection<OrderBook> orderBooks)
         {
+            orderBooks = orderBooks.Where(x => x.BestBid.HasValue || x.BestAsk.HasValue).ToList();
+
             var result = new List<LykkeArbitrageRow>();
 
             var watch = Stopwatch.StartNew();
@@ -93,6 +95,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 for (var j = i + 1; j < orderBooks.Count; j++)
                 {
                     var source = orderBooks.ElementAt(j);
+
+                    if (target.ToString() == source.ToString())
+                        continue;
 
                     // Calculate all synthetic order books between source order book and target order book
                     var synthOrderBooks = SynthOrderBook.GetSynthsFromAll(target.AssetPair, source, orderBooks, synthMaxDepth);
@@ -147,7 +152,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             watch.Stop();
             if (watch.ElapsedMilliseconds > 1000)
-                await _log.WriteInfoAsync(GetType().Name, nameof(GetArbitrages), $"{watch.ElapsedMilliseconds} ms, {orderBooks.Count} order books, {synthsCount} synthetic order books created, {totalItarations} iterations.");
+                await _log.WriteInfoAsync(GetType().Name, nameof(GetArbitrages), $"{watch.ElapsedMilliseconds} ms, {result.Count} arbitrages, {orderBooks.Count} order books, {synthsCount} synthetic order books created, {totalItarations} iterations.");
 
             return result.OrderBy(x => x.Target).ThenBy(x => x.Source).ToList();
         }
