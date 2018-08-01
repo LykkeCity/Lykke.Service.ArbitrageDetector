@@ -143,7 +143,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "*" })]
         public IActionResult Matrix(string assetPair, bool depositFee = false, bool tradingFee = false)
         {
-            var matrix = _arbitrageDetectorService.GetMatrix(assetPair, depositFee, tradingFee);
+            var matrix = _arbitrageDetectorService.GetMatrix(assetPair, false, depositFee, tradingFee);
             var result = new Matrix(matrix);
 
             return Ok(result);
