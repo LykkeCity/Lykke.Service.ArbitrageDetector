@@ -18,7 +18,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 {
     public class LykkeArbitrageDetectorService : ILykkeArbitrageDetectorService, IStartable, IStopable
     {
-        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 0, 10);
+        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 0, 2);
         private const string LykkeExchangeName = "lykke";
 
         private readonly ConcurrentDictionary<AssetPair, OrderBook> _orderBooks;
