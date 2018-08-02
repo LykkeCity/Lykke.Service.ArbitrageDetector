@@ -142,12 +142,18 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             {
                 var bids = new List<VolumePrice>();
                 foreach (var bid in Bids)
-                    bids.Add(new VolumePrice(bid.Price - (bid.Price / 100 * fee), bid.Volume));
+                {
+                    var newVolumePrice = new VolumePrice(bid.Price - (bid.Price / 100 * fee), bid.Volume);
+                    bids.Add(newVolumePrice);
+                }
                 result.Bids = bids;
 
                 var asks = new List<VolumePrice>();
                 foreach (var ask in Asks)
-                    asks.Add(new VolumePrice(ask.Price + (ask.Price / 100 * fee), ask.Volume));
+                {
+                    var newVolumePrice = new VolumePrice(ask.Price + (ask.Price / 100 * fee), ask.Volume);
+                    asks.Add(newVolumePrice);
+                }
                 result.Asks = asks;
             }
 
