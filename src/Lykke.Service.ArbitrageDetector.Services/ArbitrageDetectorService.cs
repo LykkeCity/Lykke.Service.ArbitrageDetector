@@ -571,10 +571,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     // Put fees into prices.
                     if (depositFee || tradingFee)
                     {
-                        var totalFeeRow = exchangeFeesRow.DepositFee + exchangeFeesRow.TradingFee;
+                        var totalFeeRow = (depositFee ? exchangeFeesRow.DepositFee : 0) + (tradingFee ? exchangeFeesRow.TradingFee : 0);
                         orderBookRow = orderBookRow.DeepClone(totalFeeRow);
 
-                        var totalFeeCol = exchangeFeesCol.DepositFee + exchangeFeesCol.TradingFee;
+                        var totalFeeCol = (depositFee ? exchangeFeesCol.DepositFee : 0) + (tradingFee ? exchangeFeesCol.TradingFee : 0);
                         orderBookCol = orderBookCol.DeepClone(totalFeeCol);
                     }
 
