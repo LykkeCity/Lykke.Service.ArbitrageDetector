@@ -100,7 +100,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         continue;
 
                     // Calculate all synthetic order books between source order book and target order book
-                    var synthOrderBooks = SynthOrderBook.GetSynthsFromAll(target.AssetPair, source, orderBooks, synthMaxDepth);
+                    var synthOrderBooks = SynthOrderBook.GetSynthsFromAll(target.AssetPair, source, orderBooks, /*synthMaxDepth*/int.MaxValue);
                     synthsCount += synthOrderBooks.Count;
 
                     // Compare each synthetic with target
