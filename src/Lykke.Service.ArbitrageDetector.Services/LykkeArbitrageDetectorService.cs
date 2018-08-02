@@ -312,15 +312,15 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 case ArbitrageProperty.Volume:
                     return arbitrages.OrderByDescending(x => x.VolumeInUsd)
                                       .ThenByDescending(x => x.PnLInUsd)
-                                      .ThenByDescending(x => x.Spread);
+                                      .ThenBy(x => x.Spread);
                 case ArbitrageProperty.Spread:
-                    return arbitrages.OrderByDescending(x => x.Spread)
+                    return arbitrages.OrderBy(x => x.Spread)
                                       .ThenByDescending(x => x.PnLInUsd)
                                       .ThenByDescending(x => x.VolumeInUsd);
                 default:
                     return arbitrages.OrderByDescending(x => x.PnLInUsd)
                                       .ThenByDescending(x => x.VolumeInUsd)
-                                      .ThenByDescending(x => x.Spread);
+                                      .ThenBy(x => x.Spread);
             }
         }
 
