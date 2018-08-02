@@ -144,7 +144,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var pnLInUsd = pnL * quoteToUsdRate;
 
                         var lykkeArbitrage = new LykkeArbitrageRow(target.AssetPair, source.AssetPair, spread, targetSide, synthOrderBook.ConversionPath,
-                            volume, target.BestBid?.Price, target.BestAsk?.Price, synthOrderBook.BestBid?.Price, synthOrderBook.BestAsk?.Price, volumeInUsd, pnL, pnLInUsd);
+                            volume, target.BestBid?.Price, target.BestAsk?.Price, synthOrderBook.BestBid?.Price, synthOrderBook.BestAsk?.Price, volumeInUsd,
+                            pnL, pnLInUsd);
                         result.Add(lykkeArbitrage);
                     }
                 }
@@ -168,6 +169,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         private decimal? Convert(string sourceAsset, string targetAsset, IReadOnlyCollection<OrderBook> orderBooks)
         {
+            if (sourceAsset == targetAsset)
+                return 1;
+
             var target = new AssetPair(sourceAsset, targetAsset);
 
             decimal? result = null;
