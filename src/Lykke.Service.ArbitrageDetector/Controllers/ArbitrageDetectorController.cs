@@ -186,7 +186,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         public IActionResult LykkeArbitrages(string basePair, string crossPair, string target = "", string source = "", ArbitrageProperty property = default, decimal minValue = 0)
         {
             target = string.IsNullOrWhiteSpace(target) ? basePair : target;
-            source = string.IsNullOrWhiteSpace(target) ? crossPair : source;
+            source = string.IsNullOrWhiteSpace(source) ? crossPair : source;
 
             var result = _lykkeArbitrageDetectorService.GetArbitrages(target, source, (Core.Domain.ArbitrageProperty)property, minValue)
                 .Select(x => new LykkeArbitrageRow(x))
