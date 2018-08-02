@@ -569,21 +569,23 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     }
 
                     // Put fees into prices.
+                    var newOrderBookRow = orderBookRow;
+                    var newOrderBookCol = orderBookCol;
                     if (depositFee || tradingFee)
                     {
                         var totalFeeRow = (depositFee ? exchangeFeesRow.DepositFee : 0) + (tradingFee ? exchangeFeesRow.TradingFee : 0);
-                        orderBookRow = orderBookRow.DeepClone(totalFeeRow);
+                        newOrderBookRow = orderBookRow.DeepClone(totalFeeRow);
 
                         var totalFeeCol = (depositFee ? exchangeFeesCol.DepositFee : 0) + (tradingFee ? exchangeFeesCol.TradingFee : 0);
-                        orderBookCol = orderBookCol.DeepClone(totalFeeCol);
+                        newOrderBookCol = orderBookCol.DeepClone(totalFeeCol);
                     }
 
-                    var spread = Arbitrage.GetSpread(orderBookCol.BestBid.Value.Price, orderBookRow.BestAsk.Value.Price);
+                    var spread = Arbitrage.GetSpread(newOrderBookCol.BestBid.Value.Price, newOrderBookRow.BestAsk.Value.Price);
                     spread = Math.Round(spread, 2);
                     decimal? volume = null;
                     if (spread < 0)
                     {
-                        volume = Arbitrage.GetArbitrageVolumePnL(orderBookCol.Bids, orderBookRow.Asks)?.Volume;
+                        volume = Arbitrage.GetArbitrageVolumePnL(newOrderBookCol.Bids, newOrderBookRow.Asks)?.Volume;
                         volume = GetVolumeWithAccuracy(volume, assetPairObj);
                     }
 
