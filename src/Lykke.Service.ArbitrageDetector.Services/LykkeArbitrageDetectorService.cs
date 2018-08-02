@@ -226,7 +226,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         copy = copy.Where(x => x.VolumeInUsd > minValue).ToList();
                         break;
                     case ArbitrageProperty.Spread:
-                        copy = copy.Where(x => x.Spread > minValue).ToList();
+                        copy = copy.Where(x => Math.Abs(x.Spread) > minValue).ToList();
                         break;
                     default:
                         copy = copy.Where(x => x.PnLInUsd > minValue).ToList();
