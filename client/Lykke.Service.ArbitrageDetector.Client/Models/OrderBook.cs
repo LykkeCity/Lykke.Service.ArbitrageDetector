@@ -58,11 +58,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="assetPair"></param>
-        /// <param name="bids"></param>
-        /// <param name="asks"></param>
-        /// <param name="timestamp"></param>
         public OrderBook(string source, AssetPair assetPair, IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks, DateTime timestamp)
         {
             Source = string.IsNullOrWhiteSpace(source) ? throw new ArgumentNullException(nameof(source)) : source;
@@ -75,7 +70,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Returns new reversed order book.
         /// </summary>
-        /// <returns></returns>
         public OrderBook Reverse()
         {
             var result = new OrderBook(Source, AssetPair.Reverse(),
@@ -96,9 +90,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Formats source asset pair.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="assetPair"></param>
-        /// <returns></returns>
         public static string FormatSourceAssetPair(string source, string assetPair)
         {
             return source + "-" + assetPair;

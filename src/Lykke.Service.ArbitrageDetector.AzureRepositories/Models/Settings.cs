@@ -51,6 +51,9 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
         [JsonValueSerializer]
         public IDictionary<string, string> PublicMatrixExchanges { get; set; } = new Dictionary<string, string>();
 
+        [JsonValueSerializer]
+        public IEnumerable<ExchangeFees> ExchangesFees { get; set; } = new List<ExchangeFees>();
+
         // Matrix History
 
         public TimeSpan MatrixHistoryInterval { get; set; }
@@ -59,11 +62,6 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
         public IEnumerable<string> MatrixHistoryAssetPairs { get; set; } = new List<string>();
 
         public string MatrixHistoryLykkeName { get; set; }
-
-        // Other
-
-        [JsonValueSerializer]
-        public IEnumerable<ExchangeFees> ExchangesFees { get; set; } = new List<ExchangeFees>();
 
 
         public Settings()

@@ -127,7 +127,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="domain"></param>
         public LykkeArbitrageRow(Core.Domain.LykkeArbitrageRow domain)
         {
             BaseAssetPair = new AssetPair(domain.Target);

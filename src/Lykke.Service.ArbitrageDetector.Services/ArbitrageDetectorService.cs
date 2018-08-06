@@ -555,7 +555,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 var assetPairObj = orderBookRow.AssetPair;
 
                 // Add ask and exchange
-                result.Exchanges.Add(new Exchange(exchangesNames[row], isActual));
+                var exchangeName = exchangesNames[row];
+                var exchangeFees = _s.ExchangesFees.SingleOrDefault(x => x.ExchangeName.Equals(exchangeName, StringComparison.OrdinalIgnoreCase));
+                result.Exchanges.Add(new Exchange(exchangeName, isActual, exchangeFees));
                 result.Asks.Add(GetPriceWithAccuracy(orderBookRow.BestAsk?.Price, assetPairObj));
 
                 for (var col = 0; col < matrixSide; col++)

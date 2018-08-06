@@ -15,10 +15,16 @@
         /// </summary>
         public bool IsActual { get; set; }
 
-        public Exchange(string name, bool isActual)
+        /// <summary>
+        /// Fees.
+        /// </summary>
+        public ExchangeFees Fees { get; set; }
+
+        public Exchange(string name, bool isActual, ExchangeFees fees)
         {
             Name = name;
             IsActual = isActual;
+            Fees = fees;
         }
 
         /// <inheritdoc />

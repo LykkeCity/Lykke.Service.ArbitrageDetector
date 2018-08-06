@@ -89,6 +89,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// </summary>
         public decimal? MatrixSignificantSpread { get; set; }
 
+        /// <summary>
+        /// Exchanges fees.
+        /// </summary>
+        public IEnumerable<ExchangeFees> ExchangesFees { get; set; } = new List<ExchangeFees>();
+
 
         // Matrix History
 
@@ -106,12 +111,5 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// Lykke exchange name for "arbitrages only" option.
         /// </summary>
         public string MatrixHistoryLykkeName { get; set; }
-
-        // Other
-
-        /// <summary>
-        /// Exchanges fees.
-        /// </summary>
-        public IEnumerable<ExchangeFees> ExchangesFees { get; set; } = new List<ExchangeFees>();
     }
 }

@@ -6,10 +6,13 @@
 
         public bool IsActual { get; set; }
 
-        public Exchange(string name, bool isActual)
+        public ExchangeFees Fees { get; set; }
+
+        public Exchange(string name, bool isActual, ExchangeFees fees)
         {
             Name = name;
             IsActual = isActual;
+            Fees = fees;
         }
 
         public override string ToString()

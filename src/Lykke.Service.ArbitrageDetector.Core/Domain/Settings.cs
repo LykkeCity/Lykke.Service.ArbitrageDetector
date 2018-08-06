@@ -42,6 +42,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public IDictionary<string, string> PublicMatrixExchanges { get; set; } = new Dictionary<string, string>();
 
+        public IEnumerable<ExchangeFees> ExchangesFees { get; set; } = new List<ExchangeFees>();
+
         // Matrix History
 
         public TimeSpan MatrixHistoryInterval { get; set; } = new TimeSpan(0, 0, 5, 0);
@@ -49,10 +51,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public IEnumerable<string> MatrixHistoryAssetPairs { get; set; } = new List<string>();
 
         public string MatrixHistoryLykkeName { get; set; } = "lykke";
-
-        // Other
-
-        public IEnumerable<ExchangeFees> ExchangesFees { get; set; } = new List<ExchangeFees>();
 
         #region Equals
 

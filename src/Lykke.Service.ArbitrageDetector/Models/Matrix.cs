@@ -19,19 +19,19 @@ namespace Lykke.Service.ArbitrageDetector.Models
 
         public DateTime DateTime { get; set; }
 
-        public Matrix(DomainMatrix matrix)
+        public Matrix(DomainMatrix domain)
         {
-            if (matrix == null)
-                throw new ArgumentNullException(nameof(matrix));
+            if (domain == null)
+                throw new ArgumentNullException(nameof(domain));
 
-            if (string.IsNullOrWhiteSpace(matrix.AssetPair))
-                throw new ArgumentOutOfRangeException(nameof(matrix.AssetPair));
+            if (string.IsNullOrWhiteSpace(domain.AssetPair))
+                throw new ArgumentOutOfRangeException(nameof(domain.AssetPair));
 
-            AssetPair = matrix.AssetPair;
-            Exchanges = matrix.Exchanges.Select(x => new Exchange(x.Name, x.IsActual)).ToList();
-            Bids = matrix.Bids;
-            Asks = matrix.Asks;
-            foreach (var rows in matrix.Cells)
+            AssetPair = domain.AssetPair;
+            Exchanges = domain.Exchanges.Select(x => new Exchange(x.Name, x.IsActual, new ExchangeFees(x.Fees))).ToList();
+            Bids = domain.Bids;
+            Asks = domain.Asks;
+            foreach (var rows in domain.Cells)
             {
                 var row = new List<MatrixCell>();
                 foreach (var cell in rows)
@@ -43,7 +43,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
                 Cells.Add(row);
             }
 
-            DateTime = matrix.DateTime;
+            DateTime = domain.DateTime;
         }
     }
 }

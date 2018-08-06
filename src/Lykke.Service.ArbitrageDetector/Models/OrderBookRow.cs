@@ -47,13 +47,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="assetPair"></param>
-        /// <param name="bestBid"></param>
-        /// <param name="bestAsk"></param>
-        /// <param name="bidsVolume"></param>
-        /// <param name="asksVolume"></param>
-        /// <param name="timestamp"></param>
         public OrderBookRow(string source, AssetPair assetPair, VolumePrice? bestBid, VolumePrice? bestAsk, decimal bidsVolume, decimal asksVolume, DateTime timestamp)
         {
             Source = string.IsNullOrWhiteSpace(source) ? throw new ArgumentNullException(nameof(source)) : source;
@@ -68,7 +61,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="domain"></param>
         public OrderBookRow(DomainOrderBook domain)
         {
             Source = domain.Source;
