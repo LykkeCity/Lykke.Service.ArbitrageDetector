@@ -80,18 +80,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="assetPair"></param>
-        /// <param name="bidSource"></param>
-        /// <param name="askSource"></param>
-        /// <param name="bidConversionPath"></param>
-        /// <param name="askConversionPath"></param>
-        /// <param name="bid"></param>
-        /// <param name="ask"></param>
-        /// <param name="spread"></param>
-        /// <param name="volume"></param>
-        /// <param name="pnL"></param>
-        /// <param name="startedAt"></param>
-        /// <param name="endedAt"></param>
         public ArbitrageRow(AssetPair assetPair, string bidSource, string askSource, string bidConversionPath, string askConversionPath, VolumePrice bid, VolumePrice ask,
             decimal spread, decimal volume, decimal pnL, DateTime startedAt, DateTime endedAt)
         {

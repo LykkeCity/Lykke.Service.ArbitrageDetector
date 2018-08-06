@@ -554,7 +554,7 @@
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.Exchange">
             <summary>
-            Represents an arbitrage matrix cell.
+            Represents an exchange.
             </summary>
         </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Exchange.Name">
@@ -567,12 +567,15 @@
             Is data from exchange actual.
             </summary>
         </member>
-        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Exchange.#ctor(System.String,System.Boolean)">
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Exchange.Fees">
+            <summary>
+            Fees.
+            </summary>
+        </member>
+        <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Exchange.#ctor(System.String,System.Boolean,Lykke.Service.ArbitrageDetector.Client.Models.ExchangeFees)">
             <summary>
             Constructor.
             </summary>
-            <param name="name"></param>
-            <param name="isActual"></param>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Exchange.ToString">
             <inheritdoc />

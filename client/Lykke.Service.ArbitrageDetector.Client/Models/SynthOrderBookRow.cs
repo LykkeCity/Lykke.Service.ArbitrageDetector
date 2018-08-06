@@ -40,12 +40,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="assetPair"></param>
-        /// <param name="bestBid"></param>
-        /// <param name="bestAsk"></param>
-        /// <param name="conversionPath"></param>
-        /// <param name="timestamp"></param>
         public SynthOrderBookRow(string source, AssetPair assetPair, VolumePrice? bestBid, VolumePrice? bestAsk, string conversionPath, DateTime timestamp)
         {
             Source = string.IsNullOrWhiteSpace(source) ? throw new ArgumentNullException(nameof(source)) : source;

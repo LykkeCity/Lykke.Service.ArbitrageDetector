@@ -21,7 +21,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="domain"></param>
         public VolumePrice(DomainVolumePrice domain)
         {
             Price = domain.Price;
@@ -31,8 +30,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Contructor.
         /// </summary>
-        /// <param name="price"></param>
-        /// <param name="volume"></param>
         public VolumePrice(decimal price, decimal volume)
         {
             Price = price;
@@ -42,7 +39,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Returns reciprocal volume price.
         /// </summary>
-        /// <returns></returns>
         public VolumePrice Reciprocal()
         {
             return new VolumePrice(1 / Price, Volume * Price);
@@ -51,8 +47,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// From domain.
         /// </summary>
-        /// <param name="domain"></param>
-        /// <returns></returns>
         public static VolumePrice? FromDomain(DomainVolumePrice? domain)
         {
             if (domain == null)

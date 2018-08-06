@@ -18,8 +18,6 @@
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="spread"></param>
-        /// <param name="volume"></param>
         public MatrixCell(decimal? spread, decimal? volume)
         {
             Spread = spread;

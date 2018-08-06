@@ -22,13 +22,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Contructor.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="assetPair"></param>
-        /// <param name="bids"></param>
-        /// <param name="asks"></param>
-        /// <param name="conversionPath"></param>
-        /// <param name="originalOrderBooks"></param>
-        /// <param name="timestamp"></param>
         public CrossRate(string source, AssetPair assetPair,
             IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks,
             string conversionPath, IList<OrderBook> originalOrderBooks, DateTime timestamp)
@@ -49,8 +42,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Formats conversion path.
         /// </summary>
-        /// <param name="left"></param>
-        /// <param name="right"></param>
         public static string GetConversionPath(OrderBook left, OrderBook right)
         {
             return left + " * " + right;
@@ -59,10 +50,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Formats conversion path.
         /// </summary>
-        /// <param name="leftSource"></param>
-        /// <param name="leftAssetPair"></param>
-        /// <param name="rightSource"></param>
-        /// <param name="rightAssetPair"></param>
         public static string GetConversionPath(string leftSource, string leftAssetPair, string rightSource, string rightAssetPair)
         {
             return leftSource + "-" + leftAssetPair + " * " + rightSource + "-" + rightAssetPair;
@@ -71,9 +58,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Formats source - source path.
         /// </summary>
-        /// <param name="leftSource"></param>
-        /// <param name="rightSource"></param>
-        /// <returns></returns>]
         public static string GetSourcesPath(string leftSource, string rightSource)
         {
             return leftSource + "-" + rightSource;

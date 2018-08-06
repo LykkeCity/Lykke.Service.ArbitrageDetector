@@ -43,6 +43,8 @@ namespace Lykke.Service.ArbitrageDetector.Models
 
         public IDictionary<string, string> PublicMatrixExchanges { get; set; } = new Dictionary<string, string>();
 
+        public IEnumerable<ExchangeFees> ExchangesFees { get; set; } = new List<ExchangeFees>();
+
         // Matrix History
 
         public TimeSpan MatrixHistoryInterval { get; set; }
@@ -50,10 +52,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public IEnumerable<string> MatrixHistoryAssetPairs { get; set; } = new List<string>();
 
         public string MatrixHistoryLykkeName { get; set; }
-
-        // Other
-
-        public IEnumerable<ExchangeFees> ExchangesFees { get; set; } = new List<ExchangeFees>();
 
 
         public Settings()

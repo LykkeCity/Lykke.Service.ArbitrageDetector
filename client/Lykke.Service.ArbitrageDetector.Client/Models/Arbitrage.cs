@@ -83,9 +83,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Formats conversion path.
         /// </summary>
-        /// <param name="bidSynthOrderBookConversionPath"></param>
-        /// <param name="askSynthOrderBookConversionPath"></param>
-        /// <returns></returns>
         public static string FormatConversionPath(string bidSynthOrderBookConversionPath, string askSynthOrderBookConversionPath)
         {
             return "(" + bidSynthOrderBookConversionPath + ") > (" + askSynthOrderBookConversionPath + ")";
@@ -94,9 +91,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Calculates spread.
         /// </summary>
-        /// <param name="bidPrice"></param>
-        /// <param name="askPrice"></param>
-        /// <returns></returns>
         public static decimal GetSpread(decimal bidPrice, decimal askPrice)
         {
             return (askPrice - bidPrice) / bidPrice * 100;
@@ -105,10 +99,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Calculates PnL.
         /// </summary>
-        /// <param name="bidPrice"></param>
-        /// <param name="askPrice"></param>
-        /// <param name="volume"></param>
-        /// <returns></returns>
         public static decimal GetPnL(decimal bidPrice, decimal askPrice, decimal volume)
         {
             return (bidPrice - askPrice) * volume;
