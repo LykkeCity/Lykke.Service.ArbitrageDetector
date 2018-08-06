@@ -523,31 +523,44 @@ namespace Lykke.Service.ArbitrageDetector.Services
             // Order by exchange name
             orderBooks = orderBooks.OrderBy(x => x.Source).ToList();
 
-            var uniqueExchanges = orderBooks.Select(x => x.Source).Distinct().ToList();
+            // Order books with fees
+            var useFees = depositFee || tradingFee;
+            var orderBooksWithFees = useFees ? new List<OrderBook>() : null;
+            if (useFees)
+            {
+                // Put fees into prices.
+                foreach (var orderBook in orderBooks)
+                {
+                    var exchangeFees = _s.ExchangesFees.SingleOrDefault(x => x.ExchangeName.Equals(orderBook.Source, StringComparison.OrdinalIgnoreCase))
+                                       ?? ExchangeFees.Default;
+
+                    var totalFee = (depositFee ? exchangeFees.DepositFee : 0) + (tradingFee ? exchangeFees.TradingFee : 0);
+                    var orderBookWithFees = orderBook.DeepClone(totalFee);
+                    orderBooksWithFees.Add(orderBookWithFees);
+                }
+            }
+
+            var exchangesNames = orderBooks.Select(x => x.Source).ToList();
 
             // Raplace exchange names
             if (isPublic && _s.PublicMatrixExchanges.Any())
-                uniqueExchanges = uniqueExchanges.Select(x => x.Replace(x, _s.PublicMatrixExchanges[x])).ToList();
+                exchangesNames = exchangesNames.Select(x => x.Replace(x, _s.PublicMatrixExchanges[x])).ToList();
 
-            var matrixSide = uniqueExchanges.Count;
+            var matrixSide = exchangesNames.Count;
             for (var row = 0; row < matrixSide; row++)
             {
                 var orderBookRow = orderBooks[row];
                 var cellsRow = new List<MatrixCell>();
                 var isActual = (DateTime.UtcNow - orderBookRow.Timestamp).TotalSeconds < _s.ExpirationTimeInSeconds;
                 var assetPairObj = orderBookRow.AssetPair;
-                var exchangeFeesRow = _s.ExchangesFees.SingleOrDefault(x => x.ExchangeName.Equals(orderBookRow.Source, StringComparison.OrdinalIgnoreCase))
-                                     ?? ExchangeFees.Default;
 
                 // Add ask and exchange
-                result.Exchanges.Add(new Exchange(uniqueExchanges[row], isActual));
+                result.Exchanges.Add(new Exchange(exchangesNames[row], isActual));
                 result.Asks.Add(GetPriceWithAccuracy(orderBookRow.BestAsk?.Price, assetPairObj));
 
                 for (var col = 0; col < matrixSide; col++)
                 {
                     var orderBookCol = orderBooks[col];
-                    var exchangeFeesCol = _s.ExchangesFees.SingleOrDefault(x => x.ExchangeName.Equals(orderBookCol.Source, StringComparison.OrdinalIgnoreCase))
-                                         ?? ExchangeFees.Default;
 
                     // Add bid
                     if (row == 0)
@@ -561,31 +574,29 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         continue;
                     }
 
-                    if (orderBookRow.BestAsk == null || orderBookCol.BestBid == null)
+                    // Get order books with fees.
+                    var orderBookWithFeesRow = orderBookRow;
+                    var orderBookWithFeesCol = orderBookCol;
+                    if (useFees)
+                    {
+                        orderBookWithFeesRow = orderBooksWithFees.Single(x => x.Source == orderBookRow.Source);
+                        orderBookWithFeesCol = orderBooksWithFees.Single(x => x.Source == orderBookCol.Source);
+                    }
+
+                    // If current cell doesn't have prices on one or both sides.
+                    if (orderBookWithFeesCol.BestBid == null || orderBookWithFeesRow.BestAsk == null)
                     {
                         cell = new MatrixCell(null, null);
                         cellsRow.Add(cell);
                         continue;
                     }
 
-                    // Put fees into prices.
-                    var newOrderBookRow = orderBookRow;
-                    var newOrderBookCol = orderBookCol;
-                    if (depositFee || tradingFee)
-                    {
-                        var totalFeeRow = (depositFee ? exchangeFeesRow.DepositFee : 0) + (tradingFee ? exchangeFeesRow.TradingFee : 0);
-                        newOrderBookRow = orderBookRow.DeepClone(totalFeeRow);
-
-                        var totalFeeCol = (depositFee ? exchangeFeesCol.DepositFee : 0) + (tradingFee ? exchangeFeesCol.TradingFee : 0);
-                        newOrderBookCol = orderBookCol.DeepClone(totalFeeCol);
-                    }
-
-                    var spread = Arbitrage.GetSpread(newOrderBookCol.BestBid.Value.Price, newOrderBookRow.BestAsk.Value.Price);
+                    var spread = Arbitrage.GetSpread(orderBookWithFeesCol.BestBid.Value.Price, orderBookWithFeesRow.BestAsk.Value.Price);
                     spread = Math.Round(spread, 2);
                     decimal? volume = null;
                     if (spread < 0)
                     {
-                        volume = Arbitrage.GetArbitrageVolumePnL(newOrderBookCol.Bids, newOrderBookRow.Asks)?.Volume;
+                        volume = Arbitrage.GetArbitrageVolumePnL(orderBookWithFeesCol.Bids, orderBookWithFeesRow.Asks)?.Volume;
                         volume = GetVolumeWithAccuracy(volume, assetPairObj);
                     }
 
