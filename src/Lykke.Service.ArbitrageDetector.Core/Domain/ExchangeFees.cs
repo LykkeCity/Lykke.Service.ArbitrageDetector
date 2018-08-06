@@ -13,15 +13,15 @@
         /// <summary>
         /// Comulative fee for both deposit and withdrawal fees.
         /// </summary>
-        public decimal DepositFee { get; set; } = 0.2m;
+        public decimal DepositFee { get; set; }
 
         /// <summary>
         /// Trading fee.
         /// </summary>
-        public decimal TradingFee { get; set; } = 0.2m;
+        public decimal TradingFee { get; set; }
 
         /// <summary>
-        /// Default fees - deposit = 0.2%, trading = 0.2%.
+        /// Default fees - deposit = 0%, trading = 0%.
         /// </summary>
         public static ExchangeFees Default => new ExchangeFees();
 
