@@ -59,7 +59,9 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
 
             result.AssetPair = AssetPair;
             result.Exchanges = Exchanges.Select(x => new DomainExchange(x.Name, x.IsActual,
-                new DomainExchangeFees { ExchangeName = x.Fees.ExchangeName, DepositFee = x.Fees.DepositFee, TradingFee = x.Fees.DepositFee } )).ToList();
+                x.Fees != null
+                    ? new DomainExchangeFees { ExchangeName = x.Fees.ExchangeName, DepositFee = x.Fees.DepositFee, TradingFee = x.Fees.DepositFee }
+                    : new DomainExchangeFees { ExchangeName = x.Name } )).ToList();
             result.Bids = Bids;
             result.Asks = Asks;
             foreach (var rows in Cells)

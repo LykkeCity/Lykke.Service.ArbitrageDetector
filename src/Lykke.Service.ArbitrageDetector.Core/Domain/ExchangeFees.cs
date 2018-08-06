@@ -20,11 +20,6 @@
         /// </summary>
         public decimal TradingFee { get; set; }
 
-        /// <summary>
-        /// Default fees - deposit = 0%, trading = 0%.
-        /// </summary>
-        public static ExchangeFees Default => new ExchangeFees();
-
         /// <inheritdoc />
         public override string ToString()
         {

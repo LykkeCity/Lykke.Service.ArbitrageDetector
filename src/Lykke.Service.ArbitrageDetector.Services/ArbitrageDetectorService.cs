@@ -528,7 +528,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             foreach (var orderBook in orderBooks)
             {
                 var exchangeFees = _s.ExchangesFees.SingleOrDefault(x => x.ExchangeName.Equals(orderBook.Source, StringComparison.OrdinalIgnoreCase))
-                                   ?? ExchangeFees.Default;
+                                   ?? new ExchangeFees { ExchangeName = orderBook.Source }; // deposit and trading fees = 0 by default
                 exchangesFees.Add(exchangeFees);
             }
 
