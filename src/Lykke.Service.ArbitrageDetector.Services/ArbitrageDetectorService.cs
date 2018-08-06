@@ -523,17 +523,24 @@ namespace Lykke.Service.ArbitrageDetector.Services
             // Order by exchange name
             orderBooks = orderBooks.OrderBy(x => x.Source).ToList();
 
+            // Fees
+            var exchangesFees = new List<ExchangeFees>();
+            foreach (var orderBook in orderBooks)
+            {
+                var exchangeFees = _s.ExchangesFees.SingleOrDefault(x => x.ExchangeName.Equals(orderBook.Source, StringComparison.OrdinalIgnoreCase))
+                                   ?? ExchangeFees.Default;
+                exchangesFees.Add(exchangeFees);
+            }
+
             // Order books with fees
             var useFees = depositFee || tradingFee;
             var orderBooksWithFees = useFees ? new List<OrderBook>() : null;
             if (useFees)
             {
-                // Put fees into prices.
+                // Put fees into prices
                 foreach (var orderBook in orderBooks)
                 {
-                    var exchangeFees = _s.ExchangesFees.SingleOrDefault(x => x.ExchangeName.Equals(orderBook.Source, StringComparison.OrdinalIgnoreCase))
-                                       ?? ExchangeFees.Default;
-
+                    var exchangeFees = exchangesFees.Single(x => x.ExchangeName == orderBook.Source);
                     var totalFee = (depositFee ? exchangeFees.DepositFee : 0) + (tradingFee ? exchangeFees.TradingFee : 0);
                     var orderBookWithFees = orderBook.DeepClone(totalFee);
                     orderBooksWithFees.Add(orderBookWithFees);
@@ -556,7 +563,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 // Add ask and exchange
                 var exchangeName = exchangesNames[row];
-                var exchangeFees = _s.ExchangesFees.SingleOrDefault(x => x.ExchangeName.Equals(exchangeName, StringComparison.OrdinalIgnoreCase));
+                var exchangeFees = exchangesFees.Single(x => x.ExchangeName == exchangeName);
                 result.Exchanges.Add(new Exchange(exchangeName, isActual, exchangeFees));
                 result.Asks.Add(GetPriceWithAccuracy(orderBookRow.BestAsk?.Price, assetPairObj));
 
