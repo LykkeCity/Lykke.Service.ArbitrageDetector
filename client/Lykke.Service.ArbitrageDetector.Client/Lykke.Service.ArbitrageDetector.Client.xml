@@ -205,26 +205,16 @@
             <summary>
             Formats conversion path.
             </summary>
-            <param name="bidSynthOrderBookConversionPath"></param>
-            <param name="askSynthOrderBookConversionPath"></param>
-            <returns></returns>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.GetSpread(System.Decimal,System.Decimal)">
             <summary>
             Calculates spread.
             </summary>
-            <param name="bidPrice"></param>
-            <param name="askPrice"></param>
-            <returns></returns>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.Arbitrage.GetPnL(System.Decimal,System.Decimal,System.Decimal)">
             <summary>
             Calculates PnL.
             </summary>
-            <param name="bidPrice"></param>
-            <param name="askPrice"></param>
-            <param name="volume"></param>
-            <returns></returns>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageProperty">
             <summary>
@@ -330,18 +320,6 @@
             <summary>
             Constructor.
             </summary>
-            <param name="assetPair"></param>
-            <param name="bidSource"></param>
-            <param name="askSource"></param>
-            <param name="bidConversionPath"></param>
-            <param name="askConversionPath"></param>
-            <param name="bid"></param>
-            <param name="ask"></param>
-            <param name="spread"></param>
-            <param name="volume"></param>
-            <param name="pnL"></param>
-            <param name="startedAt"></param>
-            <param name="endedAt"></param>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.ArbitrageRow.ToString">
             <inheritdoc />
@@ -370,56 +348,41 @@
             <summary>
             Contructor.
             </summary>
-            <param name="base"></param>
-            <param name="quote"></param>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.Reverse">
             <summary>
             Returns reversed asset pair.
             </summary>
-            <returns></returns>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.IsReversed(Lykke.Service.ArbitrageDetector.Client.Models.AssetPair)">
             <summary>
             Checks if assset pair is revered.
             </summary>
-            <param name="assetPair"></param>
-            <returns></returns>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.IsEqualOrReversed(Lykke.Service.ArbitrageDetector.Client.Models.AssetPair)">
             <summary>
             Checks if equal or reversed.
             </summary>
-            <param name="other"></param>
-            <returns></returns>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.HasCommonAsset(Lykke.Service.ArbitrageDetector.Client.Models.AssetPair)">
             <summary>
             Check if has common asset.
             </summary>
-            <param name="other"></param>
-            <returns></returns>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.ContainsAsset(System.String)">
             <summary>
             Checks if contains asset.
             </summary>
-            <param name="asset"></param>
-            <returns></returns>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.FromString(System.String,System.String)">
             <summary>
             Create Asset Pair from string with one of the assets.
             </summary>
-            <param name="assetPair"></param>
-            <param name="oneOfTheAssets"></param>
-            <returns></returns>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.IsEmpty">
             <summary>
             Checks if not initialized.
             </summary>
-            <returns></returns>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.Validate">
             <summary>
@@ -433,8 +396,6 @@
             <summary>
             Equals.
             </summary>
-            <param name="other"></param>
-            <returns></returns>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.AssetPair.Equals(System.Object)">
             <inheritdoc />
@@ -449,8 +410,6 @@
             <summary>
             CompareTo.
             </summary>
-            <param name="other"></param>
-            <returns></returns>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate">
             <summary>
@@ -471,37 +430,21 @@
             <summary>
             Contructor.
             </summary>
-            <param name="source"></param>
-            <param name="assetPair"></param>
-            <param name="bids"></param>
-            <param name="asks"></param>
-            <param name="conversionPath"></param>
-            <param name="originalOrderBooks"></param>
-            <param name="timestamp"></param>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.GetConversionPath(Lykke.Service.ArbitrageDetector.Client.Models.OrderBook,Lykke.Service.ArbitrageDetector.Client.Models.OrderBook)">
             <summary>
             Formats conversion path.
             </summary>
-            <param name="left"></param>
-            <param name="right"></param>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.GetConversionPath(System.String,System.String,System.String,System.String)">
             <summary>
             Formats conversion path.
             </summary>
-            <param name="leftSource"></param>
-            <param name="leftAssetPair"></param>
-            <param name="rightSource"></param>
-            <param name="rightAssetPair"></param>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.GetSourcesPath(System.String,System.String)">
             <summary>
             Formats source - source path.
             </summary>
-            <param name="leftSource"></param>
-            <param name="rightSource"></param>
-            <returns></returns>]
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.CrossRate.ToString">
             <inheritdoc />
@@ -545,12 +488,6 @@
             <summary>
             Constructor.
             </summary>
-            <param name="source"></param>
-            <param name="assetPair"></param>
-            <param name="bestBid"></param>
-            <param name="bestAsk"></param>
-            <param name="conversionPath"></param>
-            <param name="timestamp"></param>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.Exchange">
             <summary>
@@ -736,8 +673,6 @@
             <summary>
             Constructor.
             </summary>
-            <param name="spread"></param>
-            <param name="volume"></param>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook">
             <summary>
@@ -793,17 +728,11 @@
             <summary>
             Constructor.
             </summary>
-            <param name="source"></param>
-            <param name="assetPair"></param>
-            <param name="bids"></param>
-            <param name="asks"></param>
-            <param name="timestamp"></param>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.Reverse">
             <summary>
             Returns new reversed order book.
             </summary>
-            <returns></returns>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.OrderBook.ToString">
             <inheritdoc />
@@ -812,9 +741,6 @@
             <summary>
             Formats source asset pair.
             </summary>
-            <param name="source"></param>
-            <param name="assetPair"></param>
-            <returns></returns>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.OrderBookRow">
             <summary>
@@ -860,13 +786,6 @@
             <summary>
             Constructor.
             </summary>
-            <param name="source"></param>
-            <param name="assetPair"></param>
-            <param name="bestBid"></param>
-            <param name="bestAsk"></param>
-            <param name="bidsVolume"></param>
-            <param name="asksVolume"></param>
-            <param name="timestamp"></param>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.Settings">
             <summary>
@@ -943,6 +862,11 @@
             Alert spread (highlighted with a color).
             </summary>
         </member>
+        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.ExchangesFees">
+            <summary>
+            Exchanges fees.
+            </summary>
+        </member>
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.MatrixHistoryInterval">
             <summary>
             Time interval for matrix snapshots to database.
@@ -956,11 +880,6 @@
         <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.MatrixHistoryLykkeName">
             <summary>
             Lykke exchange name for "arbitrages only" option.
-            </summary>
-        </member>
-        <member name="P:Lykke.Service.ArbitrageDetector.Client.Models.Settings.ExchangesFees">
-            <summary>
-            Exchanges fees.
             </summary>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.SynthOrderBook">
@@ -982,37 +901,21 @@
             <summary>
             Contructor.
             </summary>
-            <param name="source"></param>
-            <param name="assetPair"></param>
-            <param name="bids"></param>
-            <param name="asks"></param>
-            <param name="conversionPath"></param>
-            <param name="originalOrderBooks"></param>
-            <param name="timestamp"></param>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.SynthOrderBook.GetConversionPath(Lykke.Service.ArbitrageDetector.Client.Models.OrderBook,Lykke.Service.ArbitrageDetector.Client.Models.OrderBook)">
             <summary>
             Formats conversion path.
             </summary>
-            <param name="left"></param>
-            <param name="right"></param>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.SynthOrderBook.GetConversionPath(System.String,System.String,System.String,System.String)">
             <summary>
             Formats conversion path.
             </summary>
-            <param name="leftSource"></param>
-            <param name="leftAssetPair"></param>
-            <param name="rightSource"></param>
-            <param name="rightAssetPair"></param>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.SynthOrderBook.GetSourcesPath(System.String,System.String)">
             <summary>
             Formats source - source path.
             </summary>
-            <param name="leftSource"></param>
-            <param name="rightSource"></param>
-            <returns></returns>]
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.SynthOrderBook.ToString">
             <inheritdoc />
@@ -1056,12 +959,6 @@
             <summary>
             Constructor.
             </summary>
-            <param name="source"></param>
-            <param name="assetPair"></param>
-            <param name="bestBid"></param>
-            <param name="bestAsk"></param>
-            <param name="conversionPath"></param>
-            <param name="timestamp"></param>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice">
             <summary>
@@ -1082,14 +979,11 @@
             <summary>
             Contructor.
             </summary>
-            <param name="price"></param>
-            <param name="volume"></param>
         </member>
         <member name="M:Lykke.Service.ArbitrageDetector.Client.Models.VolumePrice.Reciprocal">
             <summary>
             Returns reciprocal volume price.
             </summary>
-            <returns></returns>
         </member>
         <member name="T:Lykke.Service.ArbitrageDetector.Client.ErrorResponseException">
             <summary>
