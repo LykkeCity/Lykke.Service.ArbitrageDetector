@@ -545,6 +545,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     var orderBookWithFees = orderBook.DeepClone(totalFee);
                     orderBooksWithFees.Add(orderBookWithFees);
                 }
+                orderBooks = orderBooksWithFees;
             }
 
             var exchangesNames = orderBooks.Select(x => x.Source).ToList();
@@ -583,29 +584,20 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         continue;
                     }
 
-                    // Get order books with fees.
-                    var orderBookWithFeesRow = orderBookRow;
-                    var orderBookWithFeesCol = orderBookCol;
-                    if (useFees)
-                    {
-                        orderBookWithFeesRow = orderBooksWithFees.Single(x => x.Source == orderBookRow.Source);
-                        orderBookWithFeesCol = orderBooksWithFees.Single(x => x.Source == orderBookCol.Source);
-                    }
-
                     // If current cell doesn't have prices on one or both sides.
-                    if (orderBookWithFeesCol.BestBid == null || orderBookWithFeesRow.BestAsk == null)
+                    if (orderBookCol.BestBid == null || orderBookRow.BestAsk == null)
                     {
                         cell = new MatrixCell(null, null);
                         cellsRow.Add(cell);
                         continue;
                     }
 
-                    var spread = Arbitrage.GetSpread(orderBookWithFeesCol.BestBid.Value.Price, orderBookWithFeesRow.BestAsk.Value.Price);
+                    var spread = Arbitrage.GetSpread(orderBookCol.BestBid.Value.Price, orderBookRow.BestAsk.Value.Price);
                     spread = Math.Round(spread, 2);
                     decimal? volume = null;
                     if (spread < 0)
                     {
-                        volume = Arbitrage.GetArbitrageVolumePnL(orderBookWithFeesCol.Bids, orderBookWithFeesRow.Asks)?.Volume;
+                        volume = Arbitrage.GetArbitrageVolumePnL(orderBookCol.Bids, orderBookRow.Asks)?.Volume;
                         volume = GetVolumeWithAccuracy(volume, assetPairObj);
                     }
 
