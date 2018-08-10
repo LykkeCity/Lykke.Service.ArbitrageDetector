@@ -143,6 +143,9 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "*" })]
         public IActionResult Matrix(string assetPair, bool depositFee = false, bool tradingFee = false)
         {
+            if (string.IsNullOrWhiteSpace(assetPair))
+                return NotFound();
+
             var matrix = _arbitrageDetectorService.GetMatrix(assetPair, false, depositFee, tradingFee);
             var result = new Matrix(matrix);
 
@@ -157,6 +160,9 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ResponseCache(Duration = 1, VaryByQueryKeys = new [] { "*" })]
         public IActionResult PublicMatrix(string assetPair, bool depositFee = false, bool tradingFee = false)
         {
+            if (string.IsNullOrWhiteSpace(assetPair))
+                return NotFound();
+
             var matrix = _arbitrageDetectorService.GetMatrix(assetPair, true, depositFee, tradingFee);
             var result = new Matrix(matrix);
 
