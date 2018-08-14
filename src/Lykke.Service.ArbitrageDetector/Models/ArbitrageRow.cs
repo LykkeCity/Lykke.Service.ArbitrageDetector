@@ -69,7 +69,7 @@ namespace Lykke.Service.ArbitrageDetector.Models
         public DateTime EndedAt { get; set; }
 
         /// <summary>
-        /// How log the arbitrage lasted.
+        /// How long the arbitrage lasted.
         /// </summary>
         public TimeSpan Lasted => EndedAt == default ? DateTime.UtcNow - StartedAt : EndedAt - StartedAt;
 
@@ -81,18 +81,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="assetPair"></param>
-        /// <param name="bidSource"></param>
-        /// <param name="askSource"></param>
-        /// <param name="bidConversionPath"></param>
-        /// <param name="askConversionPath"></param>
-        /// <param name="bid"></param>
-        /// <param name="ask"></param>
-        /// <param name="spread"></param>
-        /// <param name="volume"></param>
-        /// <param name="pnL"></param>
-        /// <param name="startedAt"></param>
-        /// <param name="endedAt"></param>
         public ArbitrageRow(AssetPair assetPair, string bidSource, string askSource, string bidConversionPath, string askConversionPath, VolumePrice bid, VolumePrice ask,
             decimal spread, decimal volume, decimal pnL, DateTime startedAt, DateTime endedAt)
         {
@@ -113,7 +101,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="domain"></param>
         public ArbitrageRow(DomainArbitrage domain)
         {
             AssetPair = new AssetPair(domain.AssetPair);

@@ -25,8 +25,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Contructor.
         /// </summary>
-        /// <param name="base"></param>
-        /// <param name="quote"></param>
         public AssetPair(string @base, string quote)
         {
             Base = string.IsNullOrWhiteSpace(@base) ? throw new ArgumentException(nameof(@base)) : @base;
@@ -36,7 +34,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Returns reversed asset pair.
         /// </summary>
-        /// <returns></returns>
         public AssetPair Reverse()
         {
             Validate();
@@ -47,8 +44,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Checks if assset pair is revered.
         /// </summary>
-        /// <param name="assetPair"></param>
-        /// <returns></returns>
         public bool IsReversed(AssetPair assetPair)
         {
             Validate();
@@ -62,8 +57,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Checks if equal or reversed.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
         public bool IsEqualOrReversed(AssetPair other)
         {
             Validate();
@@ -77,8 +70,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Check if has common asset.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
         public bool HasCommonAsset(AssetPair other)
         {
             Validate();
@@ -92,8 +83,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Checks if contains asset.
         /// </summary>
-        /// <param name="asset"></param>
-        /// <returns></returns>
         public bool ContainsAsset(string asset)
         {
             Validate();
@@ -107,9 +96,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Create Asset Pair from string with one of the assets.
         /// </summary>
-        /// <param name="assetPair"></param>
-        /// <param name="oneOfTheAssets"></param>
-        /// <returns></returns>
         public static AssetPair FromString(string assetPair, string oneOfTheAssets)
         {
             if (string.IsNullOrWhiteSpace(assetPair))
@@ -137,7 +123,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Checks if not initialized.
         /// </summary>
-        /// <returns></returns>
         public bool IsEmpty()
         {
             return string.IsNullOrWhiteSpace(Base) || string.IsNullOrWhiteSpace(Quote);
@@ -168,8 +153,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Equals.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
         public bool Equals(AssetPair other)
         {
             return string.Equals(Base, other.Base) && string.Equals(Quote, other.Quote);
@@ -215,8 +198,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// CompareTo.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
         public int CompareTo(AssetPair other)
         {
             if (default(AssetPair).Equals(other))

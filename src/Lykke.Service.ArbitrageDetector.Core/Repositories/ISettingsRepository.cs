@@ -5,9 +5,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Repositories
 {
     public interface ISettingsRepository
     {
-        Task<ISettings> GetAsync();
+        Task<Settings> GetAsync();
 
-        Task InsertOrReplaceAsync(ISettings settings);
+        Task InsertOrReplaceAsync(Settings settings);
 
         Task<bool> DeleteAsync();
     }

@@ -24,13 +24,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Contructor.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="assetPair"></param>
-        /// <param name="bids"></param>
-        /// <param name="asks"></param>
-        /// <param name="conversionPath"></param>
-        /// <param name="originalOrderBooks"></param>
-        /// <param name="timestamp"></param>
         public CrossRate(string source, AssetPair assetPair,
             IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks,
             string conversionPath, IList<OrderBook> originalOrderBooks, DateTime timestamp)
@@ -51,7 +44,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Constructor from model object.
         /// </summary>
-        /// <param name="domain"></param>
         public CrossRate(DomainSynthOrderBook domain)
             : this(domain.Source, new AssetPair(domain.AssetPair),
                 domain.Bids.Select(x => new VolumePrice(x)).ToList(), domain.Asks.Select(x => new VolumePrice(x)).ToList(),

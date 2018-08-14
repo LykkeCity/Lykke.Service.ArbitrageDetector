@@ -1276,10 +1276,14 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public async Task ArbitrageHistoryTest()
         {
-            var baseAssets = new List<string> { "BTC" };
-            const string quoteAsset = "USD";
+            var settings = new Settings
+            {
+                ExpirationTimeInSeconds = 1,
+                BaseAssets = new List<string> {"BTC"},
+                QuoteAsset = "USD",
+                MinSpread = -20
+            };
 
-            var settings = new Settings(50, 1, baseAssets, new List<string>(), quoteAsset, -20, new List<string>(), 0, 0, new List<string>(), new Dictionary<string, string>(), new List<string>(), new TimeSpan(0, 0, 5, 0), new List<string>(), -1, "lykke");
             var arbitrageDetector = GetArbitrageDetector(settings);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
@@ -1447,36 +1451,66 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public async Task SettingsSetAllTest()
         {
-            var startupSettings = new Settings(50, 10, new List<string> { "BTC", "ETH" }, new List<string> { "EUR", "CHF" }, "USD", -20, new List<string> { "GDAX" }, 0,
-                10.00000001m, new List<string> { "ABC" }, new Dictionary<string, string> { { "Bitfinex(e)", "Bitfinex" } }, new List<string>{ "BTCUSD" }, new TimeSpan(0, 0, 5, 0),
-                new List<string> { "BTCUSD" }, -1, "lykke");
+            var startupSettings = new Settings
+            {
+                HistoryMaxSize = 77,
+                ExpirationTimeInSeconds = 77,
+                BaseAssets = new List<string> { "BTC" },
+                IntermediateAssets = new List<string> { "BTC" },
+                QuoteAsset = "BTC",
+                MinSpread = -77,
+                Exchanges = new List<string> { "GDAX" },
+                MinimumPnL = 77,
+                MinimumVolume = 77,
+                PublicMatrixAssetPairs = new List<string> { "BTCUSD" },
+                PublicMatrixExchanges = new Dictionary<string, string> { { "GDAX(e)", "GDAX" } },
+                MatrixAssetPairs = new List<string> { "BTCUSD" },
+                MatrixHistoryInterval = new TimeSpan(0, 0, 7, 0),
+                MatrixHistoryAssetPairs = new List<string> { "BTCUSD" },
+                MatrixSignificantSpread = -77,
+                MatrixHistoryLykkeName = "lykke77",
+                ExchangesFees = new List<ExchangeFees> { new ExchangeFees { ExchangeName = "GDAX", DepositFee = 0.77m, TradingFee = 0.77m } }
+            };
 
-            var arbitrageCalculator = new ArbitrageDetectorService(new LogToConsole(), null, SettingsRepository(startupSettings), AssetsService());
+            var arbitrageDetectorService = new ArbitrageDetectorService(new LogToConsole(), null, SettingsRepository(startupSettings), AssetsService());
 
-            var settings = new Settings(30, 5, new List<string> { "EUR", "USD" }, new List<string> { "BTC", "ETH" }, "BTC", -20, new List<string> { "Bitfinex" }, 0,
-                10.00000001m, new List<string> { "XYZ" }, new Dictionary<string, string> { { "Kucoin(e)", "Kucoin" } }, new List<string> { "ETHUSD" }, new TimeSpan(0, 0, 3, 0),
-                new List<string> { "ETHUSD" }, -2, "lykke(e)");
+            var settings = new Settings
+            {
+                HistoryMaxSize = 77, // shouldn't be changed
+                ExpirationTimeInSeconds = 3,
+                BaseAssets = new List<string> { "ETH" },
+                IntermediateAssets = new List<string> { "ETH" },
+                QuoteAsset = "ETH",
+                MinSpread = -33,
+                Exchanges = new List<string> { "Qoinex" },
+                MinimumPnL = 33,
+                MinimumVolume = 33,
+                PublicMatrixAssetPairs = new List<string> { "ETHUSD" },
+                PublicMatrixExchanges = new Dictionary<string, string> { { "Qoinex(e)", "Qoinex" } },
+                MatrixAssetPairs = new List<string> { "ETHUSD" },
+                MatrixHistoryInterval = new TimeSpan(0, 0, 3, 0),
+                MatrixHistoryAssetPairs = new List<string> { "ETHUSD" },
+                MatrixSignificantSpread = -33,
+                MatrixHistoryLykkeName = "lykke33",
+                ExchangesFees = new List<ExchangeFees> { new ExchangeFees { ExchangeName = "Qoinex", DepositFee = 0.33m, TradingFee = 0.33m } }
+            };
 
-            arbitrageCalculator.SetSettings(settings);
+            arbitrageDetectorService.SetSettings(settings);
 
-            var newSettings = arbitrageCalculator.GetSettings();
-            Assert.Equal(settings.ExpirationTimeInSeconds, newSettings.ExpirationTimeInSeconds);
-            Assert.Equal(settings.BaseAssets, newSettings.BaseAssets);
-            Assert.Equal(settings.IntermediateAssets, newSettings.IntermediateAssets);
-            Assert.Equal(settings.QuoteAsset, newSettings.QuoteAsset);
-            Assert.Equal(settings.MinSpread, newSettings.MinSpread);
-            Assert.Equal(settings.Exchanges, newSettings.Exchanges);
-            Assert.Equal(settings.MinimumPnL, newSettings.MinimumPnL);
-            Assert.Equal(settings.MinimumVolume, newSettings.MinimumVolume);
+            var newSettings = arbitrageDetectorService.GetSettings();
+            Assert.Equal(settings, newSettings);
         }
 
         [Fact]
         public async Task SettingsMinimumPnLTest()
         {
-            var baseAssets = new List<string> { "BTC" };
-            const string quoteAsset = "USD";
+            var settings = new Settings
+            {
+                BaseAssets = new List<string> { "BTC" },
+                QuoteAsset = "USD",
+                MinimumPnL = 500.000000001m
+            };
 
-            var settings = new Settings(50, 10, baseAssets, new List<string>(), quoteAsset, -20, new List<string>(), 0, 500.00000001m, new List<string>(), new Dictionary<string, string>(), new List<string>(), new TimeSpan(0, 0, 5, 0), new List<string>(), -1, "lykke");
             var arbitrageDetector = GetArbitrageDetector(settings);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
@@ -1504,10 +1538,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public async Task SettingsMinimumVolumeTest()
         {
-            var baseAssets = new List<string> { "BTC" };
-            const string quoteAsset = "USD";
+            var settings = new Settings
+            {
+                BaseAssets = new List<string> { "BTC" },
+                QuoteAsset = "USD",
+                MinimumVolume = 10.00000001m
+            };
 
-            var settings = new Settings(50, 10, baseAssets, new List<string>(), quoteAsset, -20, new List<string>(), 0, 10.00000001m, new List<string>(), new Dictionary<string, string>(), new List<string>(), new TimeSpan(0, 0, 5, 0), new List<string>(), -1, "lykke");
             var arbitrageDetector = GetArbitrageDetector(settings);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
@@ -1535,10 +1572,13 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public async Task SettingsExchangesTest()
         {
-            var baseAssets = new List<string> { "BTC" };
-            const string quoteAsset = "USD";
+            var settings = new Settings
+            {
+                BaseAssets = new List<string> { "BTC" },
+                QuoteAsset = "USD",
+                Exchanges = new List<string> { "GDAX" }
+            };
 
-            var settings = new Settings(50, 10, baseAssets, new List<string>(), quoteAsset, -20, new List<string> { "GDAX" }, 0, 0, new List<string>(), new Dictionary<string, string>(), new List<string>(), new TimeSpan(0, 0, 5, 0), new List<string>(), -1, "lykke");
             var arbitrageDetector = GetArbitrageDetector(settings);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
@@ -1564,12 +1604,12 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         }
 
 
-        private ArbitrageDetectorService GetArbitrageDetector(ISettings settings)
+        private ArbitrageDetectorService GetArbitrageDetector(Settings settings)
         {
             return new ArbitrageDetectorService(new LogToConsole(), null, SettingsRepository(settings), AssetsService());
         }
 
-        private ISettingsRepository SettingsRepository(ISettings settings)
+        private ISettingsRepository SettingsRepository(Settings settings)
         {
             var settingsRepository = new Mock<ISettingsRepository>();
             settingsRepository.Setup(x => x.GetAsync()).ReturnsAsync(settings);
@@ -1600,7 +1640,12 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
         private Settings GetSettings(IEnumerable<string> baseAssets, string quoteAsset, int minSpread)
         {
-            var result = new Settings(50, 10, baseAssets, new List<string>(), quoteAsset, minSpread, new List<string>(), 0, 0, new List<string>(), new Dictionary<string, string>(), new List<string>(), new TimeSpan(0, 0, 5, 0), new List<string>(), -1, "lykke");
+            var result = new Settings
+            {
+                BaseAssets = baseAssets,
+                QuoteAsset = quoteAsset,
+                MinSpread = minSpread
+            };
 
             return result;
         }

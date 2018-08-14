@@ -34,12 +34,12 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Best bid.
         /// </summary>
-        public VolumePrice? BestBid { get; }
+        public VolumePrice? BestBid => Bids.Any() ? Bids.MaxBy(x => x.Price) : (VolumePrice?)null;
 
         /// <summary>
         /// Best ask.
         /// </summary>
-        public VolumePrice? BestAsk { get; }
+        public VolumePrice? BestAsk => Asks.Any() ? Asks.MinBy(x => x.Price) : (VolumePrice?)null;
 
         /// <summary>
         /// Timestamp.
@@ -49,26 +49,18 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="assetPair"></param>
-        /// <param name="timestamp"></param>
-        /// <param name="bids"></param>
-        /// <param name="asks"></param>
         public OrderBook(string source, AssetPair assetPair, IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks, DateTime timestamp)
         {
             Source = string.IsNullOrWhiteSpace(source) ? throw new ArgumentNullException(nameof(source)) : source;
             AssetPair = assetPair;
             Bids = bids ?? throw new ArgumentNullException(nameof(bids));
             Asks = asks ?? throw new ArgumentNullException(nameof(asks));
-            BestBid = Bids.Any() ? Bids.MaxBy(x => x.Price) : (VolumePrice?)null;
-            BestAsk = Asks.Any() ? Asks.MinBy(x => x.Price) : (VolumePrice?)null;
             Timestamp = timestamp;
         }
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="domain"></param>
         public OrderBook(DomainOrderBook domain)
             : this(domain.Source, new AssetPair(domain.AssetPair),
                 domain.Bids.Select(x => new VolumePrice(x)).ToList(), domain.Asks.Select(x => new VolumePrice(x)).ToList(), domain.Timestamp)
@@ -78,7 +70,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Returns new reversed order book.
         /// </summary>
-        /// <returns></returns>
         public OrderBook Reverse()
         {
             var result = new OrderBook(Source, AssetPair.Reverse(),
@@ -99,9 +90,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Formats source asset pair.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="assetPair"></param>
-        /// <returns></returns>
         public static string FormatSourceAssetPair(string source, string assetPair)
         {
             return source + "-" + assetPair;

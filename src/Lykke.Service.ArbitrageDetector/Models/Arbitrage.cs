@@ -4,7 +4,7 @@ using DomainArbitrage = Lykke.Service.ArbitrageDetector.Core.Domain.Arbitrage;
 namespace Lykke.Service.ArbitrageDetector.Models
 {
     /// <summary>
-    /// Represents an arbitrage situation.
+    /// Represents an arbitrage.
     /// </summary>
     public sealed class Arbitrage
     {
@@ -72,13 +72,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="assetPair"></param>
-        /// <param name="bidSynth"></param>
-        /// <param name="bid"></param>
-        /// <param name="askSynth"></param>
-        /// <param name="ask"></param>
-        /// <param name="startedAt"></param>
-        /// <param name="endedAt"></param>
         public Arbitrage(AssetPair assetPair, SynthOrderBook bidSynth, VolumePrice bid, SynthOrderBook askSynth, VolumePrice ask, DateTime startedAt, DateTime endedAt)
         {
             AssetPair = assetPair;
@@ -99,7 +92,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Constructor from domain model.
         /// </summary>
-        /// <param name="domain"></param>
         public Arbitrage(DomainArbitrage domain)
         : this(new AssetPair(domain.AssetPair), new SynthOrderBook(domain.BidSynth), new VolumePrice(domain.Bid),
             new SynthOrderBook(domain.AskSynth), new VolumePrice(domain.Ask), domain.StartedAt, domain.EndedAt)
@@ -115,9 +107,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Formats conversion path.
         /// </summary>
-        /// <param name="bidSynthOrderBookConversionPath"></param>
-        /// <param name="askSynthOrderBookConversionPath"></param>
-        /// <returns></returns>
         public static string FormatConversionPath(string bidSynthOrderBookConversionPath, string askSynthOrderBookConversionPath)
         {
             return "(" + bidSynthOrderBookConversionPath + ") > (" + askSynthOrderBookConversionPath + ")";
@@ -126,9 +115,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Calculates spread.
         /// </summary>
-        /// <param name="bidPrice"></param>
-        /// <param name="askPrice"></param>
-        /// <returns></returns>
         public static decimal GetSpread(decimal bidPrice, decimal askPrice)
         {
             return (askPrice - bidPrice) / bidPrice * 100;
@@ -137,10 +123,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// <summary>
         /// Calculates PnL.
         /// </summary>
-        /// <param name="bidPrice"></param>
-        /// <param name="askPrice"></param>
-        /// <param name="volume"></param>
-        /// <returns></returns>
         public static decimal GetPnL(decimal bidPrice, decimal askPrice, decimal volume)
         {
             return (bidPrice - askPrice) * volume;

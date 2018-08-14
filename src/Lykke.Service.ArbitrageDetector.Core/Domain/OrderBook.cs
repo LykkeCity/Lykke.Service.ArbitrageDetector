@@ -30,22 +30,22 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Bidding prices and volumes.
         /// </summary>
-        public IReadOnlyCollection<VolumePrice> Bids { get; }
+        public IReadOnlyCollection<VolumePrice> Bids { get; protected set; }
 
         /// <summary>
         /// Asking prices and volumes.
         /// </summary>
-        public IReadOnlyCollection<VolumePrice> Asks { get; }
+        public IReadOnlyCollection<VolumePrice> Asks { get; protected set; }
 
         /// <summary>
         /// Best bid.
         /// </summary>
-        public VolumePrice? BestBid { get; }
+        public VolumePrice? BestBid => Bids.Any() ? Bids.MaxBy(x => x.Price) : (VolumePrice?)null;
 
         /// <summary>
         /// Best ask.
         /// </summary>
-        public VolumePrice? BestAsk { get; }
+        public VolumePrice? BestAsk => Asks.Any() ? Asks.MinBy(x => x.Price) : (VolumePrice?)null;
 
         /// <summary>
         /// All bids volume.
@@ -65,11 +65,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="asset"></param>
-        /// <param name="bids"></param>
-        /// <param name="asks"></param>
-        /// <param name="timestamp"></param>
         public OrderBook(string source, string asset, IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks, DateTime timestamp)
         {
             Source = string.IsNullOrEmpty(source) ? throw new ArgumentException(nameof(source)) : source;
@@ -78,15 +73,12 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                        .OrderByDescending(x => x.Price).ToList();
             Asks = asks.Where(x => x.Price != 0 && x.Volume != 0)
                        .OrderBy(x => x.Price).ToList();
-            BestBid = Bids.Any() ? Bids.MaxBy(x => x.Price) : (VolumePrice?)null;
-            BestAsk = Asks.Any() ? Asks.MinBy(x => x.Price) : (VolumePrice?)null;
             Timestamp = timestamp;
         }
 
         /// <summary>
         /// Set asset pair to AssetPair from string by providing onw of the asset.
         /// </summary>
-        /// <param name="oneOfTheAssets"></param>
         public void SetAssetPair(string oneOfTheAssets)
         {
             if (string.IsNullOrWhiteSpace(oneOfTheAssets))
@@ -98,7 +90,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Set AssetPair.
         /// </summary>
-        /// <param name="assetPair"></param>
         public void SetAssetPair(AssetPair assetPair)
         {
             if (assetPair.IsEmpty())
@@ -110,7 +101,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Returns new reversed order book.
         /// </summary>
-        /// <returns></returns>
         public OrderBook Reverse()
         {
             var result = new OrderBook(Source, AssetPair.Quote + AssetPair.Base,
@@ -131,12 +121,43 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Formats source asset pair.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="assetPair"></param>
-        /// <returns></returns>
         public static string FormatSourceAssetPair(string source, string assetPair)
         {
             return source + "-" + assetPair;
+        }
+
+        /// <summary>
+        /// Returns a deep clone.
+        /// </summary>
+        public OrderBook DeepClone(decimal fee = 0)
+        {
+            var result = (OrderBook)MemberwiseClone();
+
+            if (fee == 0)
+            {
+                Bids = new List<VolumePrice>(Bids);
+                Asks = new List<VolumePrice>(Asks);
+            }
+            else
+            {
+                var bids = new List<VolumePrice>();
+                foreach (var bid in Bids)
+                {
+                    var newVolumePrice = new VolumePrice(bid.Price - (bid.Price / 100 * fee), bid.Volume);
+                    bids.Add(newVolumePrice);
+                }
+                result.Bids = bids;
+
+                var asks = new List<VolumePrice>();
+                foreach (var ask in Asks)
+                {
+                    var newVolumePrice = new VolumePrice(ask.Price + (ask.Price / 100 * fee), ask.Volume);
+                    asks.Add(newVolumePrice);
+                }
+                result.Asks = asks;
+            }
+
+            return result;
         }
     }
 }

@@ -176,7 +176,26 @@ namespace Lykke.Service.ArbitrageDetector.Client.Tests
         {
             var oldSettings = await Client.GetSettingsAsync();
 
-            var settings = new Settings(150, 0, new List<string> { "AUD", "CHF" }, new List<string> { "EUR" }, "BTC", -97, new List<string> { "GDAX" }, 13, 17, new List<string> {"BTCUSD"}, new Dictionary<string, string>{ {"", ""} }, new List<string>{ "BTCUSD" }, new TimeSpan(0, 0, 5, 0), new List<string> { "BTCUSD" }, -1, "lykke");
+            var settings = new Settings
+            {
+                HistoryMaxSize = 33,
+                ExpirationTimeInSeconds = 3,
+                BaseAssets = new List<string> { "ETH" },
+                IntermediateAssets = new List<string> { "ETH" },
+                QuoteAsset = "ETH",
+                MinSpread = -33,
+                Exchanges = new List<string> { "Qoinex" },
+                MinimumPnL = 33,
+                MinimumVolume = 33,
+                PublicMatrixAssetPairs = new List<string> { "ETHUSD" },
+                PublicMatrixExchanges = new Dictionary<string, string> { { "Qoinex(e)", "Qoinex" } },
+                MatrixAssetPairs = new List<string> { "ETHUSD" },
+                MatrixHistoryInterval = new TimeSpan(0, 0, 3, 0),
+                MatrixHistoryAssetPairs = new List<string> { "ETHUSD" },
+                MatrixSignificantSpread = -33,
+                MatrixHistoryLykkeName = "lykke33",
+                ExchangesFees = new List<ExchangeFees> { new ExchangeFees { ExchangeName = "Qoinex", DepositFee = 0.33m, TradingFee = 0.33m } }
+            };
 
             await Client.SetSettingsAsync(settings);
 

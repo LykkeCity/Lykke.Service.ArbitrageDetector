@@ -3,7 +3,7 @@
 namespace Lykke.Service.ArbitrageDetector.Client.Models
 {
     /// <summary>
-    /// Represents an arbitrage matrix cell.
+    /// Represents an exchange.
     /// </summary>
     public sealed class Exchange
     {
@@ -18,14 +18,18 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public bool IsActual { get; set; }
 
         /// <summary>
+        /// Fees.
+        /// </summary>
+        public ExchangeFees Fees { get; set; }
+
+        /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="isActual"></param>
-        public Exchange(string name, bool isActual)
+        public Exchange(string name, bool isActual, ExchangeFees fees)
         {
             Name = name;
             IsActual = isActual;
+            Fees = fees;
         }
 
         /// <inheritdoc />

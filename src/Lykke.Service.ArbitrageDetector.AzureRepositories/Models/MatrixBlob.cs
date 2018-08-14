@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DomainMatrix = Lykke.Service.ArbitrageDetector.Core.Domain.Matrix;
 using DomainExchange = Lykke.Service.ArbitrageDetector.Core.Domain.Exchange;
+using DomainExchangeFees = Lykke.Service.ArbitrageDetector.Core.Domain.ExchangeFees;
 using DomainMatrixCell = Lykke.Service.ArbitrageDetector.Core.Domain.MatrixCell;
 
 namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
@@ -34,7 +35,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
                 throw new ArgumentOutOfRangeException(nameof(matrix.AssetPair));
 
             AssetPair = matrix.AssetPair;
-            Exchanges = matrix.Exchanges.Select(x => new Exchange(x.Name, x.IsActual)).ToList();
+            Exchanges = matrix.Exchanges.Select(x => new Exchange(x.Name, x.IsActual, new ExchangeFees(x.Fees))).ToList();
             Bids = matrix.Bids;
             Asks = matrix.Asks;
             foreach (var rows in matrix.Cells)
@@ -57,7 +58,10 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
             var result = new DomainMatrix(AssetPair);
 
             result.AssetPair = AssetPair;
-            result.Exchanges = Exchanges.Select(x => new DomainExchange(x.Name, x.IsActual)).ToList();
+            result.Exchanges = Exchanges.Select(x => new DomainExchange(x.Name, x.IsActual,
+                x.Fees != null
+                    ? new DomainExchangeFees { ExchangeName = x.Fees.ExchangeName, DepositFee = x.Fees.DepositFee, TradingFee = x.Fees.DepositFee }
+                    : new DomainExchangeFees { ExchangeName = x.Name } )).ToList();
             result.Bids = Bids;
             result.Asks = Asks;
             foreach (var rows in Cells)

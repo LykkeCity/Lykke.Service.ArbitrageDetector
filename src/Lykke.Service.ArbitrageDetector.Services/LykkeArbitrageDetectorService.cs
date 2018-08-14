@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 {
     public class LykkeArbitrageDetectorService : ILykkeArbitrageDetectorService, IStartable, IStopable
     {
-        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 0, 10);
+        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 0, 2);
         private const string LykkeExchangeName = "lykke";
 
         private readonly ConcurrentDictionary<AssetPair, OrderBook> _orderBooks;
@@ -56,7 +57,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             try
             {
-                Execute();
+                await Execute();
             }
             catch (Exception ex)
             {
@@ -64,19 +65,26 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
         }
 
-        public void Execute()
+        public async Task Execute()
         {
-            var lykkeArbitrages = GetArbitrages(_orderBooks.Values.ToList());
+            var lykkeArbitrages = await GetArbitrages(_orderBooks.Values.ToList());
             RefreshArbitrages(lykkeArbitrages);
         }
 
-        private IReadOnlyCollection<LykkeArbitrageRow> GetArbitrages(IReadOnlyCollection<OrderBook> orderBooks)
+        private async Task<IReadOnlyCollection<LykkeArbitrageRow>> GetArbitrages(IReadOnlyCollection<OrderBook> orderBooks)
         {
+            orderBooks = orderBooks.Where(x => x.BestBid.HasValue || x.BestAsk.HasValue).ToList();
+
             var result = new List<LykkeArbitrageRow>();
 
-            var minSpread = _arbitrageDetectorService.GetSettings().MinSpread;
+            var watch = Stopwatch.StartNew();
 
-            // O( (n^2) )
+            var minSpread = Settings().MinSpread;
+            var synthMaxDepth = Settings().SynthMaxDepth;
+
+            var synthsCount = 0;
+            var totalItarations = 0;
+            // O( (n^2)/2 )
             for (var i = 0; i < orderBooks.Count; i++)
             {
                 if (i == orderBooks.Count - 1)
@@ -84,17 +92,22 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 var target = orderBooks.ElementAt(i);
 
-                // Can be "var j = i + 1" to decrease uneccessary (dublicated, swaped base and cross) comparisons
-                for (var j = 0; j < orderBooks.Count; j++)
+                for (var j = i + 1; j < orderBooks.Count; j++)
                 {
                     var source = orderBooks.ElementAt(j);
 
-                    // Calculate all synthetic order books between base order book and current order book
-                    var synthOrderBooks = SynthOrderBook.GetSynthsFromAll(target.AssetPair, source, orderBooks);
+                    if (target.ToString() == source.ToString())
+                        continue;
 
-                    // Compare each cross pair with base pair
+                    // Calculate all synthetic order books between source order book and target order book
+                    var synthOrderBooks = SynthOrderBook.GetSynthsFromAll(target.AssetPair, source, orderBooks, /*synthMaxDepth*/int.MaxValue);
+                    synthsCount += synthOrderBooks.Count;
+
+                    // Compare each synthetic with target
                     foreach (var synthOrderBook in synthOrderBooks.Values)
                     {
+                        totalItarations++;
+
                         decimal spread = 0;
                         decimal volume = 0;
                         decimal pnL = 0;
@@ -125,17 +138,22 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         if (string.IsNullOrWhiteSpace(targetSide)) // no arbitrages
                             continue;
 
-                        var baseToUsd = Convert(target.AssetPair.Base, "USD", _orderBooks.Values.ToList());
-                        var quoteToUsd = Convert(target.AssetPair.Quote, "USD", _orderBooks.Values.ToList());
-                        var volumeInUsd = volume * baseToUsd;
-                        var pnLInUsd = pnL * quoteToUsd;
+                        var baseToUsdRate = Convert(target.AssetPair.Base, "USD", _orderBooks.Values.ToList());
+                        var quoteToUsdRate = Convert(target.AssetPair.Quote, "USD", _orderBooks.Values.ToList());
+                        var volumeInUsd = volume * baseToUsdRate;
+                        var pnLInUsd = pnL * quoteToUsdRate;
 
                         var lykkeArbitrage = new LykkeArbitrageRow(target.AssetPair, source.AssetPair, spread, targetSide, synthOrderBook.ConversionPath,
-                            volume, target.BestBid?.Price, target.BestAsk?.Price, synthOrderBook.BestBid?.Price, synthOrderBook.BestAsk?.Price, volumeInUsd, pnL, pnLInUsd);
+                            volume, target.BestBid?.Price, target.BestAsk?.Price, synthOrderBook.BestBid?.Price, synthOrderBook.BestAsk?.Price, volumeInUsd,
+                            pnL, pnLInUsd);
                         result.Add(lykkeArbitrage);
                     }
                 }
             }
+
+            watch.Stop();
+            if (watch.ElapsedMilliseconds > 1000)
+                await _log.WriteInfoAsync(GetType().Name, nameof(GetArbitrages), $"{watch.ElapsedMilliseconds} ms, {result.Count} arbitrages, {orderBooks.Count} order books, {synthsCount} synthetic order books created, {totalItarations} iterations.");
 
             return result.OrderBy(x => x.Target).ThenBy(x => x.Source).ToList();
         }
@@ -151,26 +169,29 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         private decimal? Convert(string sourceAsset, string targetAsset, IReadOnlyCollection<OrderBook> orderBooks)
         {
+            if (sourceAsset == targetAsset)
+                return 1;
+
             var target = new AssetPair(sourceAsset, targetAsset);
 
             decimal? result = null;
             var synths1 = SynthOrderBook.GetSynthsFrom1(target, orderBooks);
             if (synths1.Any())
-                result = GetMedianAskPrice(synths1.Values);
+                result = GetMedianAskPrice(synths1.Values.ToList());
 
             if (result.HasValue)
                 return result;
 
             var synths2 = SynthOrderBook.GetSynthsFrom2(target, orderBooks);
             if (synths2.Any())
-                result = GetMedianAskPrice(synths2.Values);
+                result = GetMedianAskPrice(synths2.Values.ToList());
 
             if (result.HasValue)
                 return result;
 
             var synths3 = SynthOrderBook.GetSynthsFrom3(target, orderBooks);
             if (synths3.Any())
-                result = GetMedianAskPrice(synths3.Values);
+                result = GetMedianAskPrice(synths3.Values.ToList());
 
             return result;
         }
@@ -187,8 +208,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return result;
         }
 
+        private Settings Settings()
+        {
+            return _arbitrageDetectorService.GetSettings();
+        }
 
-        public IEnumerable<LykkeArbitrageRow> GetArbitrages(string basePair, string crossPair, decimal minVolumeInUsd = 0)
+
+        public IEnumerable<LykkeArbitrageRow> GetArbitrages(string target, string source, ArbitrageProperty property = default, decimal minValue = 0)
         {
             var copy = new List<LykkeArbitrageRow>();
             lock (_lockArbitrages)
@@ -196,65 +222,110 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 copy.AddRange(_arbitrages);
             }
 
-            // Filter by minVolumeInUsd
-            copy = copy.Where(x => x.VolumeInUsd > minVolumeInUsd).ToList();
+            // Filter by minValue
+            if (minValue != 0)
+                switch (property)
+                {
+                    case ArbitrageProperty.Volume:
+                        copy = copy.Where(x => x.VolumeInUsd > minValue).ToList();
+                        break;
+                    case ArbitrageProperty.Spread:
+                        copy = copy.Where(x => Math.Abs(x.Spread) > minValue).ToList();
+                        break;
+                    default:
+                        copy = copy.Where(x => x.PnLInUsd > minValue).ToList();
+                        break;
+                }
 
             var result = new List<LykkeArbitrageRow>();
 
-            // Filter by basePair
-            if (!string.IsNullOrWhiteSpace(basePair))
-                copy = copy.Where(x => string.Equals(x.Target.Name, basePair, StringComparison.OrdinalIgnoreCase)).ToList();
+            // Filter by target
+            if (!string.IsNullOrWhiteSpace(target))
+                copy = copy.Where(x => x.Target.Name.Equals(target, StringComparison.OrdinalIgnoreCase)).ToList();
 
-            var groupedByBasePair = copy.GroupBy(x => x.Target);
-            foreach (var basePairArbitrages in groupedByBasePair)
+            var groupedByTarget = copy.GroupBy(x => x.Target);
+            foreach (var targetPairArbitrages in groupedByTarget)
             {
-                var baseArbitrages = basePairArbitrages.ToList();
+                var targetArbitrages = targetPairArbitrages.ToList();
 
-                // No base pair
-                if (string.IsNullOrWhiteSpace(basePair))
+                // No target
+                if (string.IsNullOrWhiteSpace(target))
                 {
-                    // Best cross pair for each base pair
-                    var bestBySpread = baseArbitrages.MinBy(x => x.Spread);
-                    bestBySpread.SourcesCount = baseArbitrages.Count;
-
-                    result.Add(bestBySpread);
+                    // Best arbitrage for each target
+                    var bestByProperty = GetBestByProperty(targetArbitrages, property);
+                    bestByProperty.SourcesCount = targetArbitrages.Count;
+                    result.Add(bestByProperty);
                 }
-                // Base pair selected
+                // Target selected
                 else
                 {
-                    // No cross pair
-                    if (string.IsNullOrWhiteSpace(crossPair))
+                    // No source selected
+                    if (string.IsNullOrWhiteSpace(source))
                     {
-                        // Group by cross pair
-                        var groupedByCrossPair = baseArbitrages.GroupBy(x => x.Source);
+                        // Group by source
+                        var groupedBySource = targetArbitrages.GroupBy(x => x.Source);
 
-                        foreach (var group in groupedByCrossPair)
+                        foreach (var group in groupedBySource)
                         {
-                            var crossPairGrouped = group.ToList();
-                            var bestBySpread = crossPairGrouped.MinBy(x => x.Spread);
-                            bestBySpread.SynthsCount = crossPairGrouped.Count;
-
-                            result.Add(bestBySpread);
+                            // Best arbitrage by target and source
+                            var targetGrouped = group.ToList();
+                            var bestByProperty = GetBestByProperty(targetGrouped, property);
+                            bestByProperty.SynthsCount = targetGrouped.Count;
+                            result.Add(bestByProperty);
                         }
                     }
-                    // Cross pair selected
+                    // Source selected
                     else
                     {
-                        // Filter by cross pair
-                        baseArbitrages = baseArbitrages.Where(x => string.Equals(x.Source.Name, crossPair, StringComparison.OrdinalIgnoreCase)).ToList();
+                        // Filter by source
+                        targetArbitrages = targetArbitrages.Where(x => x.Source.Name.Equals(source, StringComparison.OrdinalIgnoreCase)).ToList();
 
-                        var groupedByCrossPair = baseArbitrages.GroupBy(x => x.Source);
-                        foreach (var baseCrossPairsArbitrages in groupedByCrossPair)
+                        var groupedBySource = targetArbitrages.GroupBy(x => x.Source);
+                        foreach (var baseSourcePairsArbitrages in groupedBySource)
                         {
-                            var baseCrossArbitrages = baseCrossPairsArbitrages.ToList();
-
-                            result.AddRange(baseCrossArbitrages);
+                            var baseSourceArbitrages = baseSourcePairsArbitrages.ToList();
+                            result.AddRange(baseSourceArbitrages);
                         }
                     }
                 }
             }
 
+            result = GetOrderedByProperty(result, property).ToList();
+
             return result;
+        }
+
+
+        private static LykkeArbitrageRow GetBestByProperty(IEnumerable<LykkeArbitrageRow> arbitrages, ArbitrageProperty property)
+        {
+            switch (property)
+            {
+                case ArbitrageProperty.Volume:
+                    return arbitrages.MaxBy(x => x.VolumeInUsd);
+                case ArbitrageProperty.Spread:
+                    return arbitrages.MinBy(x => x.Spread);
+                default:
+                    return arbitrages.MaxBy(x => x.PnL);
+            }
+        }
+
+        private static IEnumerable<LykkeArbitrageRow> GetOrderedByProperty(IEnumerable<LykkeArbitrageRow> arbitrages, ArbitrageProperty property)
+        {
+            switch (property)
+            {
+                case ArbitrageProperty.Volume:
+                    return arbitrages.OrderByDescending(x => x.VolumeInUsd)
+                                      .ThenByDescending(x => x.PnLInUsd)
+                                      .ThenBy(x => x.Spread);
+                case ArbitrageProperty.Spread:
+                    return arbitrages.OrderBy(x => x.Spread)
+                                      .ThenByDescending(x => x.PnLInUsd)
+                                      .ThenByDescending(x => x.VolumeInUsd);
+                default:
+                    return arbitrages.OrderByDescending(x => x.PnLInUsd)
+                                      .ThenByDescending(x => x.VolumeInUsd)
+                                      .ThenBy(x => x.Spread);
+            }
         }
 
         #region IStartable, IStopable

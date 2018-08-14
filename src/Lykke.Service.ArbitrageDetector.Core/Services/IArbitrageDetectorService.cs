@@ -30,12 +30,12 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
 
         // Matrix
 
-        Matrix GetMatrix(string assetPair, bool isPublic = false);
+        Matrix GetMatrix(string assetPair, bool isPublic = false, bool depositFee = false, bool tradingFee = false);
 
         // Settings
 
-        ISettings GetSettings();
+        Settings GetSettings();
 
-        void SetSettings(ISettings settings);
+        void SetSettings(Settings settings);
     }
 }

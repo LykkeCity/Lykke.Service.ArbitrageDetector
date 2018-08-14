@@ -41,12 +41,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Wanted base assets.
         /// </summary>
-        public IEnumerable<string> BaseAssets { get; set; }
+        public IEnumerable<string> BaseAssets { get; set; } = new List<string>();
 
         /// <summary>
         /// Intermediate assets.
         /// </summary>
-        public IEnumerable<string> IntermediateAssets { get; set; }
+        public IEnumerable<string> IntermediateAssets { get; set; } = new List<string>();
 
         /// <summary>
         /// Quote asset for wanted assets.
@@ -56,7 +56,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Wanted exchanges.
         /// </summary>
-        public IEnumerable<string> Exchanges { get; set; }
+        public IEnumerable<string> Exchanges { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Maximum depth of asks and bids while synthetic order books calculation.
+        /// </summary>
+        public int SynthMaxDepth { get; set; }
 
 
         // Public Matrix
@@ -64,12 +69,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Public matrix asset pairs.
         /// </summary>
-        public IEnumerable<string> PublicMatrixAssetPairs { get; set; }
+        public IEnumerable<string> PublicMatrixAssetPairs { get; set; } = new List<string>();
 
         /// <summary>
         /// Public matrix exchanges
         /// </summary>
-        public IDictionary<string, string> PublicMatrixExchanges { get; set; }
+        public IDictionary<string, string> PublicMatrixExchanges { get; set; } = new Dictionary<string, string>();
 
 
         // Matrix
@@ -77,12 +82,17 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Internal matrix asset pairs.
         /// </summary>
-        public IEnumerable<string> MatrixAssetPairs { get; set; }
+        public IEnumerable<string> MatrixAssetPairs { get; set; } = new List<string>();
 
         /// <summary>
         /// Alert spread (highlighted with a color).
         /// </summary>
         public decimal? MatrixSignificantSpread { get; set; }
+
+        /// <summary>
+        /// Exchanges fees.
+        /// </summary>
+        public IEnumerable<ExchangeFees> ExchangesFees { get; set; } = new List<ExchangeFees>();
 
 
         // Matrix History
@@ -95,60 +105,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Asset pairs for matrix snapshots.
         /// </summary>
-        public IEnumerable<string> MatrixHistoryAssetPairs { get; set; }
+        public IEnumerable<string> MatrixHistoryAssetPairs { get; set; } = new List<string>();
 
         /// <summary>
         /// Lykke exchange name for "arbitrages only" option.
         /// </summary>
         public string MatrixHistoryLykkeName { get; set; }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        public Settings()
-        {
-        }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="historyMaxSize"></param>
-        /// <param name="expirationTimeInSeconds"></param>
-        /// <param name="baseAssets"></param>
-        /// <param name="intermediateAssets"></param>
-        /// <param name="quoteAsset"></param>
-        /// <param name="minSpread"></param>
-        /// <param name="exchanges"></param>
-        /// <param name="minimumPnL"></param>
-        /// <param name="minimumVolume"></param>
-        /// <param name="publicMatrixAssetPairs"></param>
-        /// <param name="publicMatrixExchanges"></param>
-        /// <param name="matrixAssetPairs"></param>
-        /// <param name="matrixHistoryInterval"></param>
-        /// <param name="matrixHistoryAssetPairs"></param>
-        /// <param name="matrixMinimumSpread"></param>
-        /// <param name="matrixHistoryLykkeName"></param>
-        public Settings(int historyMaxSize, int expirationTimeInSeconds, IEnumerable<string> baseAssets,
-            IEnumerable<string> intermediateAssets, string quoteAsset, int minSpread, IEnumerable<string> exchanges, decimal minimumPnL, decimal minimumVolume,
-            IEnumerable<string> publicMatrixAssetPairs, IDictionary<string, string> publicMatrixExchanges, IEnumerable<string> matrixAssetPairs,
-            TimeSpan matrixHistoryInterval, IEnumerable<string> matrixHistoryAssetPairs, decimal? matrixMinimumSpread, string matrixHistoryLykkeName)
-        {
-            HistoryMaxSize = historyMaxSize;
-            ExpirationTimeInSeconds = expirationTimeInSeconds;
-            MinimumPnL = minimumPnL;
-            MinimumVolume = minimumVolume;
-            MinSpread = minSpread;
-            BaseAssets = baseAssets;
-            IntermediateAssets = intermediateAssets;
-            QuoteAsset = quoteAsset;
-            Exchanges = exchanges;
-            PublicMatrixAssetPairs = publicMatrixAssetPairs;
-            PublicMatrixExchanges = publicMatrixExchanges;
-            MatrixAssetPairs = matrixAssetPairs;
-            MatrixHistoryInterval = matrixHistoryInterval;
-            MatrixHistoryAssetPairs = matrixHistoryAssetPairs;
-            MatrixSignificantSpread = matrixMinimumSpread;
-            MatrixHistoryLykkeName = matrixHistoryLykkeName;
-        }
     }
 }

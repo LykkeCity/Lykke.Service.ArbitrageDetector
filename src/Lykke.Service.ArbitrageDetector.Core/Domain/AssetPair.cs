@@ -25,18 +25,15 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Contructor.
         /// </summary>
-        /// <param name="base"></param>
-        /// <param name="quote"></param>
         public AssetPair(string @base, string quote)
         {
-            Base = string.IsNullOrWhiteSpace(@base) ? throw new ArgumentException(nameof(@base)) : @base;
-            Quote = string.IsNullOrWhiteSpace(quote) ? throw new ArgumentException(nameof(quote)) : quote;
+            Base = string.IsNullOrWhiteSpace(@base) ? throw new ArgumentException($"AssetPair.ctor - missed {nameof(@base)} argument") : @base;
+            Quote = string.IsNullOrWhiteSpace(quote) ? throw new ArgumentException($"AssetPair.ctor - missed {nameof(@base)} argument") : quote;
         }
 
         /// <summary>
         /// Returns reversed asset pair.
         /// </summary>
-        /// <returns></returns>
         public AssetPair Reverse()
         {
             Validate();
@@ -47,8 +44,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Checks if assset pair is revered.
         /// </summary>
-        /// <param name="assetPair"></param>
-        /// <returns></returns>
         public bool IsReversed(AssetPair assetPair)
         {
             Validate();
@@ -62,8 +57,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Checks if equal or reversed.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
         public bool IsEqualOrReversed(AssetPair other)
         {
             Validate();
@@ -77,8 +70,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Check if has common asset.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
         public bool HasCommonAsset(AssetPair other)
         {
             Validate();
@@ -92,8 +83,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Checks if contains asset.
         /// </summary>
-        /// <param name="asset"></param>
-        /// <returns></returns>
         public bool ContainsAsset(string asset)
         {
             Validate();
@@ -107,9 +96,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Checks if contains both assets.
         /// </summary>
-        /// <param name="one"></param>
-        /// <param name="another"></param>
-        /// <returns></returns>
         public bool ContainsAssets(string one, string another)
         {
             Validate();
@@ -127,8 +113,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Returns other asset than argument
         /// </summary>
-        /// <param name="one"></param>
-        /// <returns></returns>
         public string GetOtherAsset(string one)
         {
             Validate();
@@ -147,9 +131,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Create Asset Pair from string with one of the assets.
         /// </summary>
-        /// <param name="assetPair"></param>
-        /// <param name="oneOfTheAssets"></param>
-        /// <returns></returns>
         public static AssetPair FromString(string assetPair, string oneOfTheAssets)
         {
             if (string.IsNullOrWhiteSpace(assetPair))
@@ -177,7 +158,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Checks if not initialized.
         /// </summary>
-        /// <returns></returns>
         public bool IsEmpty()
         {
             return string.IsNullOrWhiteSpace(Base) || string.IsNullOrWhiteSpace(Quote);
@@ -208,8 +188,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Equals.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
         public bool Equals(AssetPair other)
         {
             return string.Equals(Base, other.Base) && string.Equals(Quote, other.Quote);
@@ -255,8 +233,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// CompareTo.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
         public int CompareTo(AssetPair other)
         {
             if (default(AssetPair).Equals(other) )
