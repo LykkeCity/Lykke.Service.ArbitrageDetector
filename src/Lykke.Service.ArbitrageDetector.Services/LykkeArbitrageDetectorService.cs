@@ -141,7 +141,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var baseToUsdRate = Convert(target.AssetPair.Base, "USD", _orderBooks.Values.ToList());
                         var quoteToUsdRate = Convert(target.AssetPair.Quote, "USD", _orderBooks.Values.ToList());
                         var volumeInUsd = volume * baseToUsdRate;
+                        volumeInUsd = volumeInUsd.HasValue ? Math.Round(volumeInUsd.Value) : (decimal?)null;
                         var pnLInUsd = pnL * quoteToUsdRate;
+                        pnLInUsd = pnLInUsd.HasValue ? Math.Round(pnLInUsd.Value) : (decimal?)null;
 
                         var lykkeArbitrage = new LykkeArbitrageRow(target.AssetPair, source.AssetPair, spread, targetSide, synthOrderBook.ConversionPath,
                             volume, target.BestBid?.Price, target.BestAsk?.Price, synthOrderBook.BestBid?.Price, synthOrderBook.BestAsk?.Price, volumeInUsd,
