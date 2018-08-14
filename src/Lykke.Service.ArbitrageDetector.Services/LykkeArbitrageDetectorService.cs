@@ -227,13 +227,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 switch (property)
                 {
                     case ArbitrageProperty.Volume:
-                        copy = copy.Where(x => x.VolumeInUsd > minValue).ToList();
+                        copy = copy.Where(x => x.VolumeInUsd >= minValue).ToList();
                         break;
                     case ArbitrageProperty.Spread:
-                        copy = copy.Where(x => Math.Abs(x.Spread) > minValue).ToList();
+                        copy = copy.Where(x => Math.Abs(x.Spread) >= minValue).ToList();
                         break;
                     default:
-                        copy = copy.Where(x => x.PnLInUsd > minValue).ToList();
+                        copy = copy.Where(x => x.PnLInUsd >= minValue).ToList();
                         break;
                 }
 
