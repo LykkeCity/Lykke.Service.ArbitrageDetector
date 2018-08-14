@@ -141,7 +141,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var baseToUsdRate = Convert(target.AssetPair.Base, "USD", _orderBooks.Values.ToList());
                         var quoteToUsdRate = Convert(target.AssetPair.Quote, "USD", _orderBooks.Values.ToList());
                         var volumeInUsd = volume * baseToUsdRate;
+                        volumeInUsd = volumeInUsd.HasValue ? Math.Round(volumeInUsd.Value) : (decimal?)null;
                         var pnLInUsd = pnL * quoteToUsdRate;
+                        pnLInUsd = pnLInUsd.HasValue ? Math.Round(pnLInUsd.Value) : (decimal?)null;
 
                         var lykkeArbitrage = new LykkeArbitrageRow(target.AssetPair, source.AssetPair, spread, targetSide, synthOrderBook.ConversionPath,
                             volume, target.BestBid?.Price, target.BestAsk?.Price, synthOrderBook.BestBid?.Price, synthOrderBook.BestAsk?.Price, volumeInUsd,
@@ -227,13 +229,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 switch (property)
                 {
                     case ArbitrageProperty.Volume:
-                        copy = copy.Where(x => x.VolumeInUsd > minValue).ToList();
+                        copy = copy.Where(x => x.VolumeInUsd >= minValue).ToList();
                         break;
                     case ArbitrageProperty.Spread:
-                        copy = copy.Where(x => Math.Abs(x.Spread) > minValue).ToList();
+                        copy = copy.Where(x => Math.Abs(x.Spread) >= minValue).ToList();
                         break;
                     default:
-                        copy = copy.Where(x => x.PnLInUsd > minValue).ToList();
+                        copy = copy.Where(x => x.PnLInUsd >= minValue).ToList();
                         break;
                 }
 
