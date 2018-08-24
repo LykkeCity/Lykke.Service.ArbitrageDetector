@@ -11,7 +11,6 @@ using Lykke.Service.Assets.Client;
 using Lykke.Service.Assets.Client.Models;
 using MoreLinq;
 using AssetPair = Lykke.Service.ArbitrageDetector.Core.Domain.AssetPair;
-using ILykkeAssetsService = Lykke.Service.Assets.Client.IAssetsService;
 using LykkeAssetPair = Lykke.Service.Assets.Client.Models.AssetPair;
 using OrderBook = Lykke.Service.ArbitrageDetector.Core.Domain.OrderBook;
 using LykkeOrderBook = Lykke.Job.OrderBooksCacheProvider.Client.OrderBook;
@@ -28,7 +27,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public IArbitrageDetectorService ArbitrageDetectorService { get; set; }
         public ILykkeArbitrageDetectorService LykkeArbitrageDetectorService { get; set; }
-        public ILykkeAssetsService AssetsService { get; set; }
+        public IAssetsService AssetsService { get; set; }
         public IOrderBookProviderClient OrderBookProviderClient { get; set; }
         public ILog Log { get; set; }
 
@@ -44,7 +43,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     var displayId = lykkeAsset.DisplayId;
                     var id = lykkeAsset.Id;
 
-                    var shortestName = getShortestName(id, name, displayId);
+                    var shortestName = GetShortestName(id, name, displayId);
                     if (!_assets.ContainsKey(shortestName))
                         _assets.Add(shortestName, new List<Asset> { lykkeAsset } );
                     else
@@ -68,8 +67,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 if (baseAsset == null || quoteAsset == null)
                     continue;
 
-                var baseName = getShortestName(baseAsset.Id, baseAsset.Name, baseAsset.DisplayId);
-                var quoteName = getShortestName(quoteAsset.Id, quoteAsset.Name, quoteAsset.DisplayId);
+                var baseName = GetShortestName(baseAsset.Id, baseAsset.Name, baseAsset.DisplayId);
+                var quoteName = GetShortestName(quoteAsset.Id, quoteAsset.Name, quoteAsset.DisplayId);
 
                 var assetPair = new AssetPair(baseName, quoteName);
                 if (!_assetPairs.ContainsKey(assetPair))
@@ -174,7 +173,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             InitializeServicesWithOrderBooks();
         }
 
-        private string getShortestName(string id, string name, string displayId)
+        private string GetShortestName(string id, string name, string displayId)
         {
             var allNames = new List<string> { id, name, displayId };
             return allNames.Where(x => x != null).MinBy(x => x.Length);

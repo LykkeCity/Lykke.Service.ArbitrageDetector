@@ -34,7 +34,7 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
         [JsonValueSerializer]
         public IEnumerable<string> Exchanges { get; set; } = new List<string>();
 
-        public int SynthMaxDepth { get; set; } = 30;
+        public int SynthMaxDepth { get; set; }
 
         // Matrix
 

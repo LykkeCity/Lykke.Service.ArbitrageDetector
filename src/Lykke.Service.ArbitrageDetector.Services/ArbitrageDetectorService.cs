@@ -414,7 +414,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             if (!string.IsNullOrWhiteSpace(assetPair))
                 result = result.Where(x => x.AssetPairStr.ToUpper().Trim().Contains(assetPair.ToUpper().Trim())).ToList();
 
-            return result.OrderByDescending(x => x.Timestamp).ToList();
+            return result.OrderByDescending(x => x.AssetPair.Name).ToList();
         }
 
         public OrderBook GetOrderBook(string exchange, string assetPair)

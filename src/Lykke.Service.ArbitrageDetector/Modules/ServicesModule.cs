@@ -9,7 +9,6 @@ using Lykke.Service.ArbitrageDetector.OrderBookHandlers;
 using Lykke.Service.ArbitrageDetector.RabbitSubscribers;
 using Lykke.Service.ArbitrageDetector.Services;
 using Lykke.Service.ArbitrageDetector.Settings;
-using Lykke.Service.RateCalculator.Client;
 using Lykke.SettingsReader;
 using ILykkeAssetsService = Lykke.Service.Assets.Client.IAssetsService;
 using LykkeAssetsService = Lykke.Service.Assets.Client.AssetsService;
