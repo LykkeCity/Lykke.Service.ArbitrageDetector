@@ -202,34 +202,44 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
             var result = new List<OrderBook>();
 
-            var @base = target.Base;   // BTC
-            var quote = target.Quote;  // USD
+            var @base = target.Base;
+            var quote = target.Quote;
 
-            var first = orderBooks.Single(x => x.AssetPair.ContainsAsset(quote)); // Looking for USD|CHF
-            if (first.AssetPair.Base == quote)  // Reverse if USD/CHF
+            var first = orderBooks.Single(x => x.AssetPair.ContainsAsset(@base));
+            if (first.AssetPair.Quote == @base)
                 first = first.Reverse();
-            result.Add(first);  // CHF/USD
+            result.Add(first);
 
             if (orderBooks.Count == 1)
-                return result;
+            {
+                if (first.AssetPair.Quote != quote)
+                    throw new InvalidOperationException($"One order book {orderBooks.First().AssetPair.Name} must be equal or reversed to {target.Name}.");
 
-            var nextAsset = first.AssetPair.Base; // CHF
-            var second = orderBooks.Single(x => x.AssetPair.ContainsAsset(nextAsset) && !x.AssetPair.IsEqualOrReversed(first.AssetPair)); // Looking for CHF|EUR
-            if (second.AssetPair.Base == nextAsset)  // Reverse if CHF/EUR
+                return result;
+            }
+                 
+            var nextAsset = first.AssetPair.Quote;
+            var second = orderBooks.Single(x => x.AssetPair.ContainsAsset(nextAsset) && !x.AssetPair.IsEqualOrReversed(first.AssetPair));
+            if (second.AssetPair.Quote == nextAsset)
                 second = second.Reverse();
-            result.Add(second);  // EUR/CHF
+            result.Add(second);
 
             if (orderBooks.Count == 2)
-                if (second.AssetPair.Base != @base)
-                    throw new InvalidOperationException($"{nameof(second)}.{nameof(second.AssetPair)}.{nameof(second.AssetPair.Base)}={second.AssetPair.Base} must be equal to {quote}");
-                else
-                    return result;
+            {
+                if (second.AssetPair.Quote != quote)
+                    throw new InvalidOperationException($"Second order book quote = {second.AssetPair.Quote} but must be {quote}.");
 
-            nextAsset = second.AssetPair.Base; // EUR
-            var third = orderBooks.Single(x => x.AssetPair.ContainsAsset(nextAsset) && x.AssetPair.ContainsAsset(@base)); // Looking for EUR|BTC
-            if (third.AssetPair.Base == nextAsset)  // Reverse if EUR/BTC
+                return result;
+            }
+
+            nextAsset = second.AssetPair.Quote;
+            var third = orderBooks.Single(x => x.AssetPair.ContainsAsset(nextAsset) && x.AssetPair.ContainsAsset(quote));
+            if (third.AssetPair.Quote == nextAsset)
                 third = third.Reverse();
-            result.Add(third);  // BTC/EUR
+            result.Add(third);
+
+            if (third.AssetPair.Quote != quote)
+                throw new InvalidOperationException($"Third order book quote = {third.AssetPair.Quote} but must be {quote}.");
 
             return result;
         }

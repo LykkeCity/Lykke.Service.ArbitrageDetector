@@ -218,10 +218,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public IEnumerable<LykkeArbitrageRow> GetArbitrages(string target, string source, ArbitrageProperty property = default, decimal minValue = 0)
         {
-            var copy = new List<LykkeArbitrageRow>();
+            IEnumerable<LykkeArbitrageRow> copy;
             lock (_lockArbitrages)
             {
-                copy.AddRange(_arbitrages);
+                copy = _arbitrages.ToList();
             }
 
             // Filter by minValue
