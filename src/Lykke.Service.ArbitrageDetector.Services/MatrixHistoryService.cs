@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using Autofac;
 using Common;
 using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
-using Lykke.Service.ArbitrageDetector.Core.Services.Infrastructure;
 
 namespace Lykke.Service.ArbitrageDetector.Services
 {
@@ -19,16 +19,14 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
         private readonly ILog _log;
 
-        public MatrixHistoryService(ILog log, IShutdownManager shutdownManager, IMatrixHistoryRepository matrixHistoryRepository, IArbitrageDetectorService arbitrageDetectorService)
+        public MatrixHistoryService(IArbitrageDetectorService arbitrageDetectorService, IMatrixHistoryRepository matrixHistoryRepository, ILogFactory logFactory)
         {
-            shutdownManager?.Register(this);
-
             _matrixHistoryRepository = matrixHistoryRepository;
             _arbitrageDetectorService = arbitrageDetectorService;
-            _log = log ?? throw new ArgumentNullException(nameof(log));;
+            _log = logFactory.CreateLog(this);
 
             var settings = _arbitrageDetectorService.GetSettings();
-            _trigger = new TimerTrigger(nameof(MatrixHistoryService), settings.MatrixHistoryInterval, log, Execute);
+            _trigger = new TimerTrigger(nameof(MatrixHistoryService), settings.MatrixHistoryInterval, logFactory, Execute);
         }
 
         public async Task Execute(ITimerTrigger timer, TimerTriggeredHandlerArgs args, CancellationToken cancellationtoken)
@@ -39,7 +37,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
             catch (Exception ex)
             {
-                await _log.WriteErrorAsync(GetType().Name, nameof(Execute), ex);
+                _log.Error(ex);
             }
         }
 

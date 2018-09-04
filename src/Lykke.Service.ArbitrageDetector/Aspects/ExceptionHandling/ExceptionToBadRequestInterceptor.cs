@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Castle.DynamicProxy;
 using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.ArbitrageDetector.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,12 +17,12 @@ namespace Lykke.Service.ArbitrageDetector.Aspects.ExceptionHandling
     {
         private readonly ILog _log;
 
-        public ExceptionToBadRequestInterceptor(ILog log)
+        public ExceptionToBadRequestInterceptor(ILogFactory logFactory)
         {
-            _log = log;
+            _log = logFactory.CreateLog(this);
         }
 
-        public async void Intercept(IInvocation invocation)
+        public void Intercept(IInvocation invocation)
         {
             var cacheMethodAttr = GetExceptionLoggingMethodAttribute(invocation);
             var cacheClassAttr = GetExceptionLoggingClassAttribute(invocation);
@@ -60,7 +61,7 @@ namespace Lykke.Service.ArbitrageDetector.Aspects.ExceptionHandling
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(invocation.TargetType.ToString(), invocation.Method.Name, exception);
+                _log.Error(exception);
                 invocation.ReturnValue = new BadRequestObjectResult(ErrorResponse.Create(exception.Message));
             }
         }
@@ -75,7 +76,7 @@ namespace Lykke.Service.ArbitrageDetector.Aspects.ExceptionHandling
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(invocation.TargetType.ToString(), invocation.Method.Name, exception);
+                _log.Error(exception);
                 return (T)(object)new BadRequestObjectResult(ErrorResponse.Create(exception.Message));
             }
 

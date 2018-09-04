@@ -6,32 +6,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Utils
 {
     public static class ConcurrentDictionaryExtention
     {
-        public static void AddOrUpdate<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dictionary, TKey key, TValue value)
-        {
-            dictionary[key] = value;
-        }
-
-        public static void AddOrUpdate<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dictionary, KeyValuePair<TKey, TValue> keyValuePair)
-        {
-            dictionary.AddOrUpdate(keyValuePair.Key, keyValuePair.Value);
-        }
-
-        public static void Update<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dictionary, TKey key, TValue value)
-        {
-            if (!dictionary.ContainsKey(key))
-                throw new ArgumentException(nameof(key));
-
-            dictionary.AddOrUpdate(key, value);
-        }
-
-        public static void Add<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dictionary, TKey key, TValue value)
-        {
-            if (dictionary.ContainsKey(key))
-                throw new ArgumentException(nameof(key));
-
-            dictionary.AddOrUpdate(key, value);
-        }
-
         public static void AddRange<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dictionary, IDictionary<TKey, TValue> other)
         {
             if (other == null)
@@ -39,7 +13,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Utils
 
             foreach (var keyValue in other)
             {
-                dictionary.Add(keyValue.Key, keyValue.Value);
+                if (dictionary.ContainsKey(keyValue.Key))
+                    throw new InvalidOperationException("Dictionary already has that key.");
+
+                dictionary[keyValue.Key] = keyValue.Value;
             }
         }
 
@@ -50,7 +27,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Utils
 
             foreach (var keyValue in other)
             {
-                dictionary.AddOrUpdate(keyValue.Key, keyValue.Value);
+                dictionary[keyValue.Key] = keyValue.Value;
             }
         }
 
