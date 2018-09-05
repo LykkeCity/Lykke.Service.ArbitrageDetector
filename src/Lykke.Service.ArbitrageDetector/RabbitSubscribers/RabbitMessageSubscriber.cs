@@ -3,11 +3,11 @@ using System.Threading.Tasks;
 using Autofac;
 using Common;
 using Common.Log;
+using Lykke.Common.Log;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
+using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Services;
-using Lykke.Service.ArbitrageDetector.Core.Services.Infrastructure;
-using Lykke.Service.ArbitrageDetector.OrderBookHandlers;
 
 namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
 {
@@ -15,31 +15,27 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
     {
         private readonly string _connectionString;
         private readonly string _exchangeName;
-        private RabbitMqSubscriber<byte[]> _subscriber;
+        private RabbitMqSubscriber<OrderBook> _subscriber;
 
-        private readonly OrderBookParser _orderBookParser;
-        
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
         private readonly ILykkeArbitrageDetectorService _lykkeArbitrageDetectorService;
+        private readonly ILogFactory _logFactory;
         private readonly ILog _log;
 
         public RabbitMessageSubscriber(
             string connectionString,
             string exchangeName,
-            IShutdownManager shutdownManager,
-            OrderBookParser orderBookParser,
             IArbitrageDetectorService arbitrageDetectorService,
             ILykkeArbitrageDetectorService lykkeArbitrageDetectorService,
-            ILog log)
+            ILogFactory logFactory)
         {
-            _connectionString = !string.IsNullOrWhiteSpace(connectionString) ? connectionString : throw new ArgumentNullException(nameof(connectionString));
-            _exchangeName = !string.IsNullOrWhiteSpace(exchangeName) ? exchangeName : throw new ArgumentNullException(nameof(exchangeName));
-
-            shutdownManager.Register(this);
-            _orderBookParser = orderBookParser ?? throw new ArgumentNullException(nameof(orderBookParser));
-            _arbitrageDetectorService = arbitrageDetectorService ?? throw new ArgumentNullException(nameof(arbitrageDetectorService));
-            _lykkeArbitrageDetectorService = lykkeArbitrageDetectorService ?? throw new ArgumentNullException(nameof(lykkeArbitrageDetectorService));
-            _log = log ?? throw new ArgumentNullException(nameof(log));
+            _connectionString = connectionString;
+            _exchangeName = exchangeName;
+            
+            _arbitrageDetectorService = arbitrageDetectorService;
+            _lykkeArbitrageDetectorService = lykkeArbitrageDetectorService;
+            _logFactory = logFactory;
+            _log = logFactory.CreateLog(this);
         }
 
         public void Start()
@@ -52,31 +48,29 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
                 IsDurable = false
             };
 
-            _subscriber = new RabbitMqSubscriber<byte[]>(settings,
-                    new ResilientErrorHandlingStrategy(_log, settings,
-                        retryTimeout: TimeSpan.FromSeconds(10),
-                        next: new DeadQueueErrorHandlingStrategy(_log, settings)))
-                .SetMessageDeserializer(this)
+            _subscriber = new RabbitMqSubscriber<OrderBook>(_logFactory, settings,
+                    new ResilientErrorHandlingStrategy(_logFactory, settings, TimeSpan.FromSeconds(10)))
+                .SetMessageDeserializer(new JsonMessageDeserializer<OrderBook>())
+                .SetMessageReadStrategy(new MessageReadQueueStrategy())
                 .Subscribe(ProcessMessageAsync)
                 .CreateDefaultBinding()
-                .SetLogger(_log)
                 .Start();
         }
 
-        private async Task ProcessMessageAsync(byte[] item)
+        private Task ProcessMessageAsync(OrderBook orderBook)
         {
             try
             {
-                var orderBook = _orderBookParser.Parse(item);
-
                 _arbitrageDetectorService.Process(orderBook);
                 _lykkeArbitrageDetectorService.Process(orderBook);                        
             }
             catch (Exception ex)
             {
-                await _log.WriteErrorAsync(nameof(RabbitMessageSubscriber), nameof(ProcessMessageAsync), ex);
+                _log.Error(ex);
                 throw;
             }
+
+            return Task.CompletedTask;
         }
 
         public void Dispose()

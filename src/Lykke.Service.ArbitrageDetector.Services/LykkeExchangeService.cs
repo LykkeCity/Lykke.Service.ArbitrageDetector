@@ -2,8 +2,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Autofac;
 using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Job.OrderBooksCacheProvider.Client;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Core.Utils;
@@ -11,7 +13,6 @@ using Lykke.Service.Assets.Client;
 using Lykke.Service.Assets.Client.Models;
 using MoreLinq;
 using AssetPair = Lykke.Service.ArbitrageDetector.Core.Domain.AssetPair;
-using ILykkeAssetsService = Lykke.Service.Assets.Client.IAssetsService;
 using LykkeAssetPair = Lykke.Service.Assets.Client.Models.AssetPair;
 using OrderBook = Lykke.Service.ArbitrageDetector.Core.Domain.OrderBook;
 using LykkeOrderBook = Lykke.Job.OrderBooksCacheProvider.Client.OrderBook;
@@ -26,15 +27,20 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ConcurrentDictionary<AssetPair, (int Price, int Volume)> _accuracies = new ConcurrentDictionary<AssetPair, (int Price, int Volume)>();
         private readonly ConcurrentDictionary<AssetPair, OrderBook> _orderBooks = new ConcurrentDictionary<AssetPair, OrderBook>();
 
-        public IArbitrageDetectorService ArbitrageDetectorService { get; set; }
-        public ILykkeArbitrageDetectorService LykkeArbitrageDetectorService { get; set; }
-        public ILykkeAssetsService AssetsService { get; set; }
-        public IOrderBookProviderClient OrderBookProviderClient { get; set; }
-        public ILog Log { get; set; }
+        private readonly IAssetsService _assetsService;
+        private readonly IOrderBookProviderClient _orderBookProviderClient;
+        private readonly ILog _log;
+
+        public LykkeExchangeService(IAssetsService assetsService, IOrderBookProviderClient orderBookProviderClient, ILogFactory logFactory)
+        {
+            _assetsService = assetsService;
+            _orderBookProviderClient = orderBookProviderClient;
+            _log = logFactory.CreateLog(this);
+        }
 
         private void InitializeAssets()
         {
-            var lykkeAssets = AssetsService.AssetGetAll();
+            var lykkeAssets = _assetsService.AssetGetAll();
             
             foreach (var lykkeAsset in lykkeAssets)
             {
@@ -44,20 +50,20 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     var displayId = lykkeAsset.DisplayId;
                     var id = lykkeAsset.Id;
 
-                    var shortestName = getShortestName(id, name, displayId);
+                    var shortestName = GetShortestName(id, name, displayId);
                     if (!_assets.ContainsKey(shortestName))
-                        _assets.Add(shortestName, new List<Asset> { lykkeAsset } );
+                        _assets[shortestName] = new List<Asset> { lykkeAsset };
                     else
                         _assets[shortestName].Add(lykkeAsset);
                 }
             }
 
-            Log.WriteInfoAsync(GetType().Name, nameof(InitializeAssets), $"Initialized {_assets.SelectMany(x => x.Value).Count()} of {lykkeAssets.Count} Lykke assets.");
+            _log.Info($"Initialized {_assets.SelectMany(x => x.Value).Count()} of {lykkeAssets.Count} Lykke assets.");
         }
 
         private void InitializeAssetPairs()
         {
-            var lykkeAssetPairs = AssetsService.AssetPairGetAll();
+            var lykkeAssetPairs = _assetsService.AssetPairGetAll();
 
             foreach (var lykkeAssetPair in lykkeAssetPairs)
             {
@@ -68,13 +74,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 if (baseAsset == null || quoteAsset == null)
                     continue;
 
-                var baseName = getShortestName(baseAsset.Id, baseAsset.Name, baseAsset.DisplayId);
-                var quoteName = getShortestName(quoteAsset.Id, quoteAsset.Name, quoteAsset.DisplayId);
+                var baseName = GetShortestName(baseAsset.Id, baseAsset.Name, baseAsset.DisplayId);
+                var quoteName = GetShortestName(quoteAsset.Id, quoteAsset.Name, quoteAsset.DisplayId);
 
                 var assetPair = new AssetPair(baseName, quoteName);
                 if (!_assetPairs.ContainsKey(assetPair))
                 {
-                    _assetPairs.Add(assetPair, lykkeAssetPair);
+                    _assetPairs[assetPair] = lykkeAssetPair;
                     continue;
                 }
 
@@ -85,10 +91,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 // Current is shorter - remove existed and add current
                 _assetPairs.Remove(assetPair);
-                _assetPairs.Add(assetPair, lykkeAssetPair);
+                _assetPairs[assetPair] = lykkeAssetPair;
             }
 
-            Log.WriteInfoAsync(GetType().Name, nameof(InitializeAssetPairs), $"Initialized {_assetPairs.Count} of {lykkeAssetPairs.Count} Lykke asset pairs.");
+            _log.Info($"Initialized {_assetPairs.Count} of {lykkeAssetPairs.Count} Lykke asset pairs.");
         }
 
         private void InitializeAccuracies()
@@ -97,15 +103,15 @@ namespace Lykke.Service.ArbitrageDetector.Services
             {
                 var accuracy = (assetPair.Value.Accuracy, assetPair.Value.InvertedAccuracy);
 
-                _accuracies.Add(assetPair.Key, accuracy);
+                _accuracies[assetPair.Key] = accuracy;
             }
 
-            Log.WriteInfoAsync(GetType().Name, nameof(InitializeAccuracies), $"Initialized {_accuracies.Count} accuracies.");
+            _log.Info($"Initialized {_accuracies.Count} accuracies.");
         }
 
-        private void InitializeOrderBooks()
+        private async Task InitializeOrderBooks()
         {
-            Log.WriteInfoAsync(GetType().Name, nameof(InitializeOrderBooks), $"Initializing Lykke order books...");
+            _log.Info($"Initializing Lykke order books...");
 
             foreach (var assetPairlykkeAssetPair in _assetPairs)
             {
@@ -115,10 +121,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 LykkeOrderBook lykkeOrderBook;
                 try
                 {
-                    lykkeOrderBook = OrderBookProviderClient.GetOrderBookAsync(lykkeAssetPair.Id).GetAwaiter().GetResult();
+                    lykkeOrderBook = await _orderBookProviderClient.GetOrderBookAsync(lykkeAssetPair.Id);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
+                    // Some order books can't be found by asset pair id
                     continue;
                 }
                 
@@ -127,19 +134,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 var orderBook = Convert(assetPair, lykkeOrderBook);
 
-                _orderBooks.Add(assetPair, orderBook);
+                _orderBooks[assetPair] = orderBook;
             }
 
-            Log.WriteInfoAsync(GetType().Name, nameof(InitializeOrderBooks), $"Initialized {_orderBooks.Count} Lykke order books.");
-        }
-
-        private void InitializeServicesWithOrderBooks()
-        {
-            foreach (var orderBook in _orderBooks.Values)
-            {
-                ArbitrageDetectorService.Process(orderBook);
-                LykkeArbitrageDetectorService.Process(orderBook);
-            }
+            _log.Info($"Initialized {_orderBooks.Count} Lykke order books.");
         }
 
         private OrderBook Convert(AssetPair assetPair, LykkeOrderBook lykkeOrderBook)
@@ -170,11 +168,18 @@ namespace Lykke.Service.ArbitrageDetector.Services
             InitializeAssetPairs();
             InitializeAccuracies();
 
-            InitializeOrderBooks();
-            InitializeServicesWithOrderBooks();
+            Task.Run(async () =>
+                {
+                    await InitializeOrderBooks();
+                })
+                .ContinueWith(t =>
+                {
+                    if (t.IsFaulted)
+                        _log.Error(t.Exception, "Can't initialize order books from cache provider.");
+                });
         }
 
-        private string getShortestName(string id, string name, string displayId)
+        private string GetShortestName(string id, string name, string displayId)
         {
             var allNames = new List<string> { id, name, displayId };
             return allNames.Where(x => x != null).MinBy(x => x.Length);
@@ -213,7 +218,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                     if (string.IsNullOrWhiteSpace(@base) || string.IsNullOrWhiteSpace(quote))
                     {
-                        Log.WriteInfoAsync(GetType().Name, nameof(InferBaseAndQuoteAssets), $"Strange situation with asset inference - assetPairStr: {orderBook.AssetPairStr}, found base: '{@base}', found quote: '{quote}', assets: {string.Join(", ", assets.Select(x => $"'{x}'"))}");
+                        _log.Info($"Strange situation with asset inference - assetPairStr: {orderBook.AssetPairStr}, found base: '{@base}', found quote: '{quote}', assets: {string.Join(", ", assets.Select(x => $"'{x}'"))}");
                         continue;
                     }
 

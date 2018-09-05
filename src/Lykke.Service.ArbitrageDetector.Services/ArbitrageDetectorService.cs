@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 using Autofac;
 using Common;
 using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Utils;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
-using Lykke.Service.ArbitrageDetector.Core.Services.Infrastructure;
 using Lykke.Service.ArbitrageDetector.Services.Models;
 using MoreLinq;
 
@@ -32,10 +32,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ILykkeExchangeService _lykkeExchangeService;
         private readonly ILog _log;
 
-        public ArbitrageDetectorService(ILog log, IShutdownManager shutdownManager, ISettingsRepository settingsRepository, ILykkeExchangeService lykkeExchangeService)
+        public ArbitrageDetectorService(ISettingsRepository settingsRepository, ILykkeExchangeService lykkeExchangeService, ILogFactory logFactory)
         {
-            shutdownManager?.Register(this);
-
             _orderBooks = new ConcurrentDictionary<AssetPairSource, OrderBook>();
             _synthOrderBooks = new ConcurrentDictionary<AssetPairSource, SynthOrderBook>();
             _arbitrages = new ConcurrentDictionary<string, Arbitrage>();
@@ -43,11 +41,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             _settingsRepository = settingsRepository ?? throw new ArgumentNullException(nameof(settingsRepository));
             _lykkeExchangeService = lykkeExchangeService ?? throw new ArgumentNullException(nameof(lykkeExchangeService));
-            _log = log ?? throw new ArgumentNullException(nameof(log));
+            _log = logFactory.CreateLog(this);
 
             InitSettings();
 
-            _trigger = new TimerTrigger(nameof(ArbitrageDetectorService), DefaultInterval, log, Execute);
+            _trigger = new TimerTrigger(nameof(ArbitrageDetectorService), DefaultInterval, logFactory, Execute);
         }
 
         private void InitSettings()
@@ -69,7 +67,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             if (_lykkeExchangeService.InferBaseAndQuoteAssets(orderBook) > 0)
             {
                 var key = new AssetPairSource(orderBook.Source, orderBook.AssetPair);
-                _orderBooks.AddOrUpdate(key, orderBook);
+                _orderBooks[key] = orderBook;
             }
         }
 
@@ -81,19 +79,19 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
             catch (Exception ex)
             {
-                await _log.WriteErrorAsync(GetType().Name, nameof(Execute), ex);
+                _log.Error(ex);
             }
         }
 
         public async Task Execute()
         {
-            await CalculateSynthOrderBooks();
-            await RefreshArbitrages();
+            await CalculateSynthOrderBooksAsync();
+            await RefreshArbitragesAsync();
 
-            await RestartIfNeeded();
+            RestartIfNeeded();
         }
 
-        public async Task<IEnumerable<SynthOrderBook>> CalculateSynthOrderBooks()
+        public Task<IEnumerable<SynthOrderBook>> CalculateSynthOrderBooksAsync()
         {
             var watch = Stopwatch.StartNew();
 
@@ -111,9 +109,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             watch.Stop();
             if (watch.ElapsedMilliseconds > 500)
-                await _log.WriteInfoAsync(GetType().Name, nameof(CalculateSynthOrderBooks), $"{watch.ElapsedMilliseconds} ms, {_synthOrderBooks.Count} synthetic order books, {orderBooks.Count} order books.");
+                _log.Info($"{watch.ElapsedMilliseconds} ms, {_synthOrderBooks.Count} synthetic order books, {orderBooks.Count} order books.");
 
-            return _synthOrderBooks.Select(x => x.Value).ToList().AsReadOnly();
+            return Task.FromResult(_synthOrderBooks.Select(x => x.Value));
         }
 
         private (IList<SynthOrderBookLine> bids, IList<SynthOrderBookLine> asks)? CalculateSynthOrderBookLines(IList<SynthOrderBook> synthOrderBooks)
@@ -153,7 +151,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return (bids, asks);
         }
 
-        public async Task<Dictionary<string, Arbitrage>> CalculateArbitrages()
+        public Task<Dictionary<string, Arbitrage>> CalculateArbitrages()
         {
             var newArbitrages = new Dictionary<string, Arbitrage>();
             var actualSynthOrderBooks = GetActualSynthOrderBooks();
@@ -171,7 +169,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 var bidsAndAsksMs = watch.ElapsedMilliseconds;
 
                 if (!bidsAndAsks.HasValue)
-                    return newArbitrages;
+                    return Task.FromResult(newArbitrages);
 
                 var totalItarations = 0;
                 var possibleArbitrages = 0;
@@ -231,13 +229,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                 watch.Stop();
                 if (watch.ElapsedMilliseconds > 1000)
-                    await _log.WriteInfoAsync(GetType().Name, nameof(CalculateArbitrages), $"{watch.ElapsedMilliseconds} ms, {newArbitrages.Count} arbitrages, {actualSynthOrderBooks.Count} actual synthetic order books, {bidsAndAsksMs} ms for bids and asks, {bids.Count} bids, {asks.Count} asks, {totalItarations} iterations, {possibleArbitrages} possible arbitrages.");
+                    _log.Info($"{watch.ElapsedMilliseconds} ms, {newArbitrages.Count} arbitrages, {actualSynthOrderBooks.Count} actual synthetic order books, {bidsAndAsksMs} ms for bids and asks, {bids.Count} bids, {asks.Count} asks, {totalItarations} iterations, {possibleArbitrages} possible arbitrages.");
             }
 
-            return newArbitrages;
+            return Task.FromResult(newArbitrages);
         }
 
-        public async Task RefreshArbitrages()
+        public async Task RefreshArbitragesAsync()
         {
             var watch = Stopwatch.StartNew();
 
@@ -264,7 +262,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 if (!_arbitrages.TryGetValue(newArbitrage.Key, out var oldArbitrage))
                 {
                     added++;
-                    _arbitrages.Add(newArbitrage.Key, newArbitrage.Value);
+                    _arbitrages[newArbitrage.Key] = newArbitrage.Value;
                 }
                 // Existed
                 else
@@ -274,7 +272,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         removed++;
                         MoveFromActualToHistory(oldArbitrage);
 
-                        _arbitrages.Add(newArbitrage.Key, newArbitrage.Value);
+                        _arbitrages[newArbitrage.Key] = newArbitrage.Value;
                     }
                 }
             }
@@ -284,7 +282,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             watch.Stop();
             if (watch.ElapsedMilliseconds - calculateArbitragesMs > 100)
-                await _log.WriteInfoAsync(GetType().Name, nameof(RefreshArbitrages), $"{watch.ElapsedMilliseconds} ms, new {newArbitrages.Count} arbitrages, {removed} removed, {added} added, {beforeCleaning - _arbitrageHistory.Count} cleaned, {_arbitrages.Count} active, {_arbitrageHistory.Count} in history.");
+                _log.Info($"{watch.ElapsedMilliseconds} ms, new {newArbitrages.Count} arbitrages, {removed} removed, {added} added, {beforeCleaning - _arbitrageHistory.Count} cleaned, {_arbitrages.Count} active, {_arbitrageHistory.Count} in history.");
         }
 
         private void CleanHistory()
@@ -299,7 +297,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 _arbitrageHistory.Where(x => x.Value.AssetPair.Equals(assetPair))
                     .OrderByDescending(x => x.Value.PnL)
                     .Take(_s.HistoryMaxSize)
-                    .ForEach(x => remained.Add(x.Key, x.Value));
+                    .ForEach(x => remained[x.Key] = x.Value);
             }
 
             _arbitrageHistory.Clear();
@@ -364,10 +362,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 return;
 
             // Otherwise add or update
-            _arbitrageHistory.AddOrUpdate(key, arbitrage);
+            _arbitrageHistory[key] = arbitrage;
         }
 
-        private async Task RestartIfNeeded()
+        private void RestartIfNeeded()
         {
             if (_restartNeeded)
             {
@@ -378,7 +376,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 _arbitrages.Clear();
                 _arbitrageHistory.Clear();
 
-                await _log.WriteInfoAsync(GetType().Name, nameof(RestartIfNeeded), $"Restarted");
+                _log.Info("Restarted");
             }
         }
 
@@ -414,7 +412,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             if (!string.IsNullOrWhiteSpace(assetPair))
                 result = result.Where(x => x.AssetPairStr.ToUpper().Trim().Contains(assetPair.ToUpper().Trim())).ToList();
 
-            return result.OrderByDescending(x => x.Timestamp).ToList();
+            return result.OrderByDescending(x => x.AssetPair.Name).ToList();
         }
 
         public OrderBook GetOrderBook(string exchange, string assetPair)

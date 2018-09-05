@@ -172,6 +172,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var synthOrderBook = new SynthOrderBook("FE", assetPair, new List<VolumePrice>(), new List<VolumePrice>(), "None", new List<OrderBook> {orderBook}, DateTime.UtcNow);
 
             var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, assetPair);
+
             Assert.Single(result);
             Assert.True(result.Single().AssetPair.Equals(assetPair));
         }
@@ -186,6 +187,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var synthOrderBook = new SynthOrderBook("FE", assetPair, new List<VolumePrice>(), new List<VolumePrice>(), "None", new List<OrderBook> { orderBook }, DateTime.UtcNow);
 
             var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, assetPair);
+
             Assert.Single(result);
             Assert.True(result.Single().AssetPair.Equals(assetPair));
         }
@@ -197,7 +199,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var target = new AssetPair("BTC", "USD");
             var assetPair1 = new AssetPair("BTC", "EUR");
             var assetPair2 = new AssetPair("EUR", "USD");
-            // result = EUR/USD, BTC/EUR
 
             var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, target);
 
@@ -212,7 +213,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var target = new AssetPair("BTC", "USD");
             var assetPair1 = new AssetPair("BTC", "EUR");
             var assetPair2 = new AssetPair("USD", "EUR");
-            // result = EUR/USD, BTC/EUR
 
             var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, target);
 
@@ -227,7 +227,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var target = new AssetPair("BTC", "USD");
             var assetPair1 = new AssetPair("EUR", "BTC");
             var assetPair2 = new AssetPair("EUR", "USD");
-            // result = EUR/USD, BTC/EUR
 
             var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, target);
 
@@ -242,7 +241,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var target = new AssetPair("BTC", "USD");
             var assetPair1 = new AssetPair("EUR", "BTC");
             var assetPair2 = new AssetPair("USD", "EUR");
-            // result = EUR/USD, BTC/EUR
 
             var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, target);
 
@@ -259,7 +257,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair1 = new AssetPair("BTC", "EUR");
             var assetPair2 = new AssetPair("EUR", "CHF");
             var assetPair3 = new AssetPair("CHF", "USD");
-            // result = CHF/USD, EUR/CHF, BTC/EUR
 
             var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
 
@@ -275,7 +272,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair1 = new AssetPair("BTC", "EUR");
             var assetPair2 = new AssetPair("EUR", "CHF");
             var assetPair3 = new AssetPair("USD", "CHF");
-            // result = CHF/USD, EUR/CHF, BTC/EUR
 
             var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
 
@@ -291,7 +287,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair1 = new AssetPair("BTC", "EUR");
             var assetPair2 = new AssetPair("CHF", "EUR");
             var assetPair3 = new AssetPair("CHF", "USD");
-            // result = CHF/USD, EUR/CHF, BTC/EUR
 
             var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
 
@@ -307,7 +302,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair1 = new AssetPair("EUR", "BTC");
             var assetPair2 = new AssetPair("EUR", "CHF");
             var assetPair3 = new AssetPair("CHF", "USD");
-            // result = CHF/USD, EUR/CHF, BTC/EUR
 
             var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
 
@@ -323,7 +317,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair1 = new AssetPair("BTC", "EUR");
             var assetPair2 = new AssetPair("CHF", "EUR");
             var assetPair3 = new AssetPair("USD", "CHF");
-            // result = CHF/USD, EUR/CHF, BTC/EUR
 
             var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
 
@@ -339,7 +332,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair1 = new AssetPair("EUR", "BTC");
             var assetPair2 = new AssetPair("CHF", "EUR");
             var assetPair3 = new AssetPair("CHF", "USD");
-            // result = CHF/USD, EUR/CHF, BTC/EUR
 
             var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
 
@@ -355,7 +347,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair1 = new AssetPair("EUR", "BTC");
             var assetPair2 = new AssetPair("EUR", "CHF");
             var assetPair3 = new AssetPair("USD", "CHF");
-            // result = CHF/USD, EUR/CHF, BTC/EUR
 
             var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
 
@@ -371,7 +362,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetPair1 = new AssetPair("EUR", "BTC");
             var assetPair2 = new AssetPair("CHF", "EUR");
             var assetPair3 = new AssetPair("USD", "CHF");
-            // result = CHF/USD, EUR/CHF, BTC/EUR
 
             var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
 
@@ -406,21 +396,26 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         private void AssertChained2(IReadOnlyCollection<OrderBook> result)
         {
             Assert.Equal(2, result.Count);
-            Assert.Equal("EUR", result.ElementAt(0).AssetPair.Base);
-            Assert.Equal("USD", result.ElementAt(0).AssetPair.Quote);
-            Assert.Equal("BTC", result.ElementAt(1).AssetPair.Base);
-            Assert.Equal("EUR", result.ElementAt(1).AssetPair.Quote);
+
+            Assert.Equal("BTC", result.ElementAt(0).AssetPair.Base);
+            Assert.Equal("EUR", result.ElementAt(0).AssetPair.Quote);
+
+            Assert.Equal("EUR", result.ElementAt(1).AssetPair.Base);
+            Assert.Equal("USD", result.ElementAt(1).AssetPair.Quote);
         }
 
         private void AssertChained3(IReadOnlyCollection<OrderBook> result)
         {
             Assert.Equal(3, result.Count);
-            Assert.Equal("CHF", result.ElementAt(0).AssetPair.Base);
-            Assert.Equal("USD", result.ElementAt(0).AssetPair.Quote);
+
+            Assert.Equal("BTC", result.ElementAt(0).AssetPair.Base);
+            Assert.Equal("EUR", result.ElementAt(0).AssetPair.Quote);
+
             Assert.Equal("EUR", result.ElementAt(1).AssetPair.Base);
             Assert.Equal("CHF", result.ElementAt(1).AssetPair.Quote);
-            Assert.Equal("BTC", result.ElementAt(2).AssetPair.Base);
-            Assert.Equal("EUR", result.ElementAt(2).AssetPair.Quote);
+
+            Assert.Equal("CHF", result.ElementAt(2).AssetPair.Base);
+            Assert.Equal("USD", result.ElementAt(2).AssetPair.Quote);
         }
     }
 }

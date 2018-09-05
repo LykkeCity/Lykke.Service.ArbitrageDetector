@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AzureStorage;
 using AzureStorage.Tables;
-using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.ArbitrageDetector.AzureRepositories.Models;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
@@ -19,9 +19,9 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
         private readonly MatrixHistoryBlobRepository _blobRepository;
         private readonly INoSQLTableStorage<MatrixEntity> _storage;
 
-        public MatrixHistoryRepository(MatrixHistoryBlobRepository matrixHistoryBlobRepository, IReloadingManager<string> connectionString, ILog log)
+        public MatrixHistoryRepository(MatrixHistoryBlobRepository matrixHistoryBlobRepository, IReloadingManager<string> connectionString, ILogFactory logFactory)
         {
-            _storage = AzureTableStorage<MatrixEntity>.Create(connectionString, TableName, log);
+            _storage = AzureTableStorage<MatrixEntity>.Create(connectionString, TableName, logFactory);
             _blobRepository = matrixHistoryBlobRepository ?? throw new ArgumentNullException(nameof(matrixHistoryBlobRepository));
         }
 

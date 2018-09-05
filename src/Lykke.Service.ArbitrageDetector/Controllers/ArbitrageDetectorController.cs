@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Lykke.Service.ArbitrageDetector.Aspects.ExceptionHandling;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -11,8 +10,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.ArbitrageDetector.Controllers
 {
-    [Produces("application/json")]
-    [ExceptionToBadRequest]
+    [Route("/api/[controller]")]
     public class ArbitrageDetectorController : Controller
     {
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
@@ -28,8 +26,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             _matrixHistoryService = matrixHistoryService;
         }
 
-        [HttpGet]
-        [Route("orderBooks")]
+        [HttpGet("OrderBooks")]
         [SwaggerOperation("OrderBooks")]
         [ProducesResponseType(typeof(IEnumerable<OrderBookRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -41,8 +38,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("orderBook")]
+        [HttpGet("OrderBook")]
         [SwaggerOperation("OrderBook")]
         [ProducesResponseType(typeof(IEnumerable<OrderBook>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -54,8 +50,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("synthOrderBooks")]
+        [HttpGet("SynthOrderBooks")]
         [SwaggerOperation("SynthOrderBooks")]
         [ProducesResponseType(typeof(IEnumerable<SynthOrderBookRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -67,8 +62,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("crossRates")]
+        [HttpGet("CrossRates")]
         [SwaggerOperation("CrossRates")]
         [ProducesResponseType(typeof(IEnumerable<CrossRateRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -81,8 +75,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("arbitrages")]
+        [HttpGet("Arbitrages")]
         [SwaggerOperation("Arbitrages")]
         [ProducesResponseType(typeof(IEnumerable<ArbitrageRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -94,8 +87,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("arbitrageFromHistory")]
+        [HttpGet("ArbitrageFromHistory")]
         [SwaggerOperation("ArbitrageFromHistory")]
         [ProducesResponseType(typeof(IEnumerable<Arbitrage>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -108,8 +100,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("arbitrageFromActiveOrHistory")]
+        [HttpGet("ArbitrageFromActiveOrHistory")]
         [SwaggerOperation("ArbitrageFromActiveOrHistory")]
         [ProducesResponseType(typeof(IEnumerable<Arbitrage>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -122,8 +113,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("arbitrageHistory")]
+        [HttpGet("ArbitrageHistory")]
         [SwaggerOperation("ArbitrageHistory")]
         [ProducesResponseType(typeof(IEnumerable<ArbitrageRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -135,8 +125,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("matrix")]
+        [HttpGet("MatrixEntity")]
         [SwaggerOperation("MatrixEntity")]
         [ProducesResponseType(typeof(Matrix), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -152,8 +141,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("publicMatrix")]
+        [HttpGet("PublicMatrix")]
         [SwaggerOperation("PublicMatrix")]
         [ProducesResponseType(typeof(Matrix), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -169,8 +157,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("publicMatrixAssetPairs")]
+        [HttpGet("PublicMatrixAssetPairs")]
         [SwaggerOperation("PublicMatrixAssetPairs")]
         [ProducesResponseType(typeof(IEnumerable<string>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -183,8 +170,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("lykkeArbitrages")]
+        [HttpGet("LykkeArbitrages")]
         [SwaggerOperation("LykkeArbitrages")]
         [ProducesResponseType(typeof(IEnumerable<LykkeArbitrageRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -201,8 +187,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("matrixHistory/stamps")]
+        [HttpGet("MatrixHistoryStamps")]
         [SwaggerOperation("MatrixHistoryStamps")]
         [ProducesResponseType(typeof(IEnumerable<DateTime>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -213,8 +198,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("matrixHistory/assetPairs")]
+        [HttpGet("MatrixHistoryAssetPairs")]
         [SwaggerOperation("MatrixHistoryAssetPairs")]
         [ProducesResponseType(typeof(IEnumerable<string>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -225,8 +209,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("matrixHistory/matrix")]
+        [HttpGet("MatrixHistory")]
         [SwaggerOperation("MatrixHistory")]
         [ProducesResponseType(typeof(Matrix), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -238,8 +221,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("getSettings")]
+        [HttpGet("GetSettings")]
         [SwaggerOperation("GetSettings")]
         [ProducesResponseType(typeof(Models.Settings), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -251,8 +233,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
-        [Route("setSettings")]
+        [HttpPost("SetSettings")]
         [SwaggerOperation("SetSettings")]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]

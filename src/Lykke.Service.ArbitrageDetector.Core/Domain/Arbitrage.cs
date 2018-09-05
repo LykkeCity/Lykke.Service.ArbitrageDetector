@@ -188,50 +188,5 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
             return volume == 0 ? ((decimal?, decimal?)?)null : (volume, pnl);
         }
-
-
-        /// <summary>
-        /// Returns chained order books for arbitrage execution.
-        /// </summary>
-        public static IReadOnlyCollection<OrderBook> GetChainedOrderBooks(SynthOrderBook synthOrderBook, AssetPair target)
-        {
-            if (synthOrderBook == null)
-                throw new NullReferenceException(nameof(synthOrderBook));
-
-            var orderBooks = synthOrderBook.OriginalOrderBooks;
-
-            var result = new List<OrderBook>();
-
-            var @base = target.Base;   // BTC
-            var quote = target.Quote;  // USD
-
-            var first = orderBooks.Single(x => x.AssetPair.ContainsAsset(quote)); // Looking for USD|CHF
-            if (first.AssetPair.Base == quote)  // Reverse if USD/CHF
-                first = first.Reverse();
-            result.Add(first);  // CHF/USD
-
-            if (orderBooks.Count == 1)
-                return result;
-
-            var nextAsset = first.AssetPair.Base; // CHF
-            var second = orderBooks.Single(x => x.AssetPair.ContainsAsset(nextAsset) && !x.AssetPair.IsEqualOrReversed(first.AssetPair)); // Looking for CHF|EUR
-            if (second.AssetPair.Base == nextAsset)  // Reverse if CHF/EUR
-                second = second.Reverse();
-            result.Add(second);  // EUR/CHF
-
-            if (orderBooks.Count == 2)
-                if (second.AssetPair.Base != @base)
-                    throw new InvalidOperationException($"{nameof(second)}.{nameof(second.AssetPair)}.{nameof(second.AssetPair.Base)}={second.AssetPair.Base} must be equal to {quote}");
-                else
-                    return result;
-
-            nextAsset = second.AssetPair.Base; // EUR
-            var third = orderBooks.Single(x => x.AssetPair.ContainsAsset(nextAsset) && x.AssetPair.ContainsAsset(@base)); // Looking for EUR|BTC
-            if (third.AssetPair.Base == nextAsset)  // Reverse if EUR/BTC
-                third = third.Reverse();
-            result.Add(third);  // BTC/EUR
-
-            return result;
-        }
     }
 }

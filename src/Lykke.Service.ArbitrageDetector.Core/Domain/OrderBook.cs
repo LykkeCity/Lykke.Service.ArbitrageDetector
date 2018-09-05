@@ -104,7 +104,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public OrderBook Reverse()
         {
             var result = new OrderBook(Source, AssetPair.Quote + AssetPair.Base,
-                Asks.Select(x => x.Reciprocal()).OrderByDescending(x => x.Price).ToList(),
+                Asks.Select(x => x.Reciprocal()).OrderBy(x => x.Price).ToList(),
                 Bids.Select(x => x.Reciprocal()).OrderByDescending(x => x.Price).ToList(),
                 Timestamp);
             result.AssetPair = AssetPair.Reverse();
