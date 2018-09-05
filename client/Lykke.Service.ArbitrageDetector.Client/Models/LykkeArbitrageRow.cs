@@ -5,7 +5,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
     /// <summary>
     /// Represents an arbitrage situation.
     /// </summary>
-    /// TODO: Return to getters only with a constructor.
     public sealed class LykkeArbitrageRow
     {
         /// <summary>
@@ -27,9 +26,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// Count of synthetic order books.
         /// </summary>
         public int SynthsCount { get; set; }
-
-        [Obsolete]
-        public int CrossRatesCount { get; set; }
 
         /// <summary>
         /// Spread

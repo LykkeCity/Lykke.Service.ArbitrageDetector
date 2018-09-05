@@ -5,7 +5,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
     /// <summary>
     /// Represents an arbitrage situation.
     /// </summary>
-    /// TODO: Return to getters only with a constructor.
     public sealed class Arbitrage
     {
         /// <summary>
@@ -18,9 +17,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// </summary>
         public SynthOrderBook BidSynth { get; set; }
 
-        [Obsolete]
-        public CrossRate BidCrossRate { get; set; }
-
         /// <summary>
         /// Price and volume of high bid.
         /// </summary>
@@ -30,9 +26,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// Synthetic order book with low ask.
         /// </summary>
         public SynthOrderBook AskSynth { get; set; }
-
-        [Obsolete]
-        public CrossRate AskCrossRate { get; set; }
 
         /// <summary>
         /// Price and volume of low ask.
