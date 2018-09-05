@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Castle.DynamicProxy;
 using Common.Log;
 using Lykke.Common.Log;
-using Lykke.Service.ArbitrageDetector.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lykke.Service.ArbitrageDetector.Aspects.ExceptionHandling
@@ -62,7 +61,7 @@ namespace Lykke.Service.ArbitrageDetector.Aspects.ExceptionHandling
             catch (Exception exception)
             {
                 _log.Error(exception);
-                invocation.ReturnValue = new BadRequestObjectResult(ErrorResponse.Create(exception.Message));
+                invocation.ReturnValue = new BadRequestObjectResult(exception.Message);
             }
         }
 
@@ -77,7 +76,7 @@ namespace Lykke.Service.ArbitrageDetector.Aspects.ExceptionHandling
             catch (Exception exception)
             {
                 _log.Error(exception);
-                return (T)(object)new BadRequestObjectResult(ErrorResponse.Create(exception.Message));
+                return (T)(object)new BadRequestObjectResult(exception.Message);
             }
 
             return result;
