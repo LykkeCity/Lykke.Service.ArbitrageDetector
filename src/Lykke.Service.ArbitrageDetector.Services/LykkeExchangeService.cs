@@ -109,7 +109,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _log.Info($"Initialized {_accuracies.Count} accuracies.");
         }
 
-        private void InitializeOrderBooks()
+        private async Task InitializeOrderBooks()
         {
             _log.Info($"Initializing Lykke order books...");
 
@@ -121,7 +121,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 LykkeOrderBook lykkeOrderBook;
                 try
                 {
-                    lykkeOrderBook = _orderBookProviderClient.GetOrderBookAsync(lykkeAssetPair.Id).GetAwaiter().GetResult();
+                    lykkeOrderBook = await _orderBookProviderClient.GetOrderBookAsync(lykkeAssetPair.Id);
                 }
                 catch (Exception)
                 {
@@ -168,9 +168,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
             InitializeAssetPairs();
             InitializeAccuracies();
 
-            Task.Run(() =>
+            Task.Run(async () =>
                 {
-                    InitializeOrderBooks();
+                    await InitializeOrderBooks();
                 })
                 .ContinueWith(t =>
                 {
