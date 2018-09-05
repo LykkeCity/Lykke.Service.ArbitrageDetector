@@ -65,20 +65,6 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         }
 
         [HttpGet]
-        [Route("crossRates")]
-        [SwaggerOperation("CrossRates")]
-        [ProducesResponseType(typeof(IEnumerable<CrossRateRow>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ResponseCache(Duration = 1)]
-        [Obsolete]
-        public IActionResult CrossRates()
-        {
-            var result = _arbitrageDetectorService.GetSynthOrderBooks().Select(x => new CrossRateRow(x)).ToList();
-
-            return Ok(result);
-        }
-
-        [HttpGet]
         [Route("arbitrages")]
         [SwaggerOperation("Arbitrages")]
         [ProducesResponseType(typeof(IEnumerable<ArbitrageRow>), (int)HttpStatusCode.OK)]
@@ -186,11 +172,8 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ProducesResponseType(typeof(IEnumerable<LykkeArbitrageRow>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "*" })]
-        public IActionResult LykkeArbitrages(string basePair, string crossPair, string target = "", string source = "", ArbitrageProperty property = default, decimal minValue = 0)
+        public IActionResult LykkeArbitrages(string target, string source, ArbitrageProperty property = default, decimal minValue = 0)
         {
-            target = string.IsNullOrWhiteSpace(target) ? basePair : target;
-            source = string.IsNullOrWhiteSpace(source) ? crossPair : source;
-
             var result = _lykkeArbitrageDetectorService.GetArbitrages(target, source, (Core.Domain.ArbitrageProperty)property, minValue)
                 .Select(x => new LykkeArbitrageRow(x))
                 .ToList();

@@ -32,13 +32,6 @@ namespace Lykke.Service.ArbitrageDetector.Client
         /// <returns>A collection of SynthOrderBook entities.</returns>
         Task<IEnumerable<SynthOrderBookRow>> SynthOrderBooksAsync();
 
-        /// <summary>
-        /// Returns a collection of SynthOrderBook entities.
-        /// </summary>
-        /// <returns>A collection of SynthOrderBook entities.</returns>
-        [Obsolete]
-        Task<IEnumerable<CrossRateRow>> CrossRatesAsync();
-
         /// <summary> 
         /// Returns a collection of Arbitrage entities.
         /// </summary>

@@ -18,9 +18,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// </summary>
         public SynthOrderBook BidSynth { get; }
 
-        [Obsolete]
-        public CrossRate BidCrossRate { get; }
-
         /// <summary>
         /// Price and volume of high bid.
         /// </summary>
@@ -30,9 +27,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
         /// Synthetic order book with low ask.
         /// </summary>
         public SynthOrderBook AskSynth { get; }
-
-        [Obsolete]
-        public CrossRate AskCrossRate { get; }
 
         /// <summary>
         /// Price and volume of low ask.
@@ -84,9 +78,6 @@ namespace Lykke.Service.ArbitrageDetector.Models
             PnL = GetPnL(Bid.Price, Ask.Price, Volume);
             StartedAt = startedAt;
             EndedAt = endedAt;
-
-            BidCrossRate = new CrossRate(BidSynth);
-            AskCrossRate = new CrossRate(BidSynth);
         }
 
         /// <summary>
