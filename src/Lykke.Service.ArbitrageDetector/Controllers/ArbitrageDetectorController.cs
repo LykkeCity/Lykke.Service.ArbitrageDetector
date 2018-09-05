@@ -10,7 +10,6 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.ArbitrageDetector.Controllers
 {
-    [Route("/[controller]")]
     public class ArbitrageDetectorController : Controller
     {
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
