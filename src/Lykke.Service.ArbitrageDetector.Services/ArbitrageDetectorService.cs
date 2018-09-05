@@ -39,8 +39,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _arbitrages = new ConcurrentDictionary<string, Arbitrage>();
             _arbitrageHistory = new ConcurrentDictionary<string, Arbitrage>();
 
-            _settingsRepository = settingsRepository ?? throw new ArgumentNullException(nameof(settingsRepository));
-            _lykkeExchangeService = lykkeExchangeService ?? throw new ArgumentNullException(nameof(lykkeExchangeService));
+            _settingsRepository = settingsRepository;
+            _lykkeExchangeService = lykkeExchangeService;
             _log = logFactory.CreateLog(this);
 
             InitSettings();

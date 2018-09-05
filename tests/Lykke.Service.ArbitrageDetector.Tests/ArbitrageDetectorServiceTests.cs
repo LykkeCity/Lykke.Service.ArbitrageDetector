@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Log;
+using Lykke.Logs;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
@@ -389,7 +389,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
 
 
-        //[Fact]
+        [Fact]
         public async Task From3OrderBooks_0_0_0_Test()
         {
             var baseAssets = new List<string> { "BTC" };
@@ -492,7 +492,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(11, arbitrage1.Ask.Volume, 8);
         }
 
-        //[Fact]
+        [Fact]
         public async Task From3OrderBooks_0_0_1_Test()
         {
             var baseAssets = new List<string> { "BTC" };
@@ -595,7 +595,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(9, arbitrage1.Ask.Volume, 8);
         }
 
-        //[Fact]
+        [Fact]
         public async Task From3OrderBooks_0_1_0_Test()
         {
             var baseAssets = new List<string> { "BTC" };
@@ -698,7 +698,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(11, arbitrage1.Ask.Volume, 8);
         }
 
-        //[Fact]
+        [Fact]
         public async Task From3OrderBooks_1_0_0_Test()
         {
             var baseAssets = new List<string> { "BTC" };
@@ -801,7 +801,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(11, arbitrage1.Ask.Volume, 8);
         }
 
-        //[Fact]
+        [Fact]
         public async Task From3OrderBooks_0_1_1_Test()
         {
             var baseAssets = new List<string> { "BTC" };
@@ -904,7 +904,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(9, arbitrage1.Ask.Volume, 8);
         }
 
-        //[Fact]
+        [Fact]
         public async Task From3OrderBooks_1_0_1_Test()
         {
             var baseAssets = new List<string> { "BTC" };
@@ -1007,7 +1007,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(11, arbitrage1.Ask.Volume, 8);
         }
 
-        //[Fact]
+        [Fact]
         public async Task From3OrderBooks_1_1_0_Test()
         {
             var baseAssets = new List<string> { "BTC" };
@@ -1110,7 +1110,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(11, arbitrage1.Ask.Volume, 8);
         }
 
-        //[Fact]
+        [Fact]
         public async Task From3OrderBooks_1_1_1_Test()
         {
             var baseAssets = new List<string> { "BTC" };
@@ -1339,7 +1339,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 arbitrageDetector.Process(orderBook);
 
             var watch = Stopwatch.StartNew();
-            await arbitrageDetector.CalculateSynthOrderBooks();
+            await arbitrageDetector.CalculateSynthOrderBooksAsync();
             watch.Stop();
             if (performance)
                 Assert.InRange(watch.ElapsedMilliseconds, 400, 500);
@@ -1376,7 +1376,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 arbitrageDetector.Process(orderBook);
 
             var watch = Stopwatch.StartNew();
-            var synthOrderBooks = await arbitrageDetector.CalculateSynthOrderBooks();
+            var synthOrderBooks = await arbitrageDetector.CalculateSynthOrderBooksAsync();
             if (performance)
                 Assert.InRange(watch.ElapsedMilliseconds, 5, 50);
             var arbitrages = await arbitrageDetector.CalculateArbitrages();
@@ -1472,7 +1472,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 ExchangesFees = new List<ExchangeFees> { new ExchangeFees { ExchangeName = "GDAX", DepositFee = 0.77m, TradingFee = 0.77m } }
             };
 
-            var arbitrageDetectorService = new ArbitrageDetectorService(new LogToConsole(), null, SettingsRepository(startupSettings), AssetsService());
+            var arbitrageDetectorService = new ArbitrageDetectorService(SettingsRepository(startupSettings), LykkeExchangeService(), LogFactory.Create());
 
             var settings = new Settings
             {
@@ -1606,7 +1606,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
         private ArbitrageDetectorService GetArbitrageDetector(Settings settings)
         {
-            return new ArbitrageDetectorService(new LogToConsole(), null, SettingsRepository(settings), AssetsService());
+            return new ArbitrageDetectorService(SettingsRepository(settings), LykkeExchangeService(), LogFactory.Create());
         }
 
         private ISettingsRepository SettingsRepository(Settings settings)
@@ -1617,7 +1617,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             return settingsRepository.Object;
         }
 
-        private ILykkeExchangeService AssetsService()
+        private ILykkeExchangeService LykkeExchangeService()
         {
             var assetsRepository = new Mock<ILykkeExchangeService>();
             assetsRepository.Setup(x => x.GetAccuracy(It.IsAny<AssetPair>()))

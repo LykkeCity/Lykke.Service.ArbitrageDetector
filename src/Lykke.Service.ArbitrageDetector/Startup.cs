@@ -20,7 +20,7 @@ namespace Lykke.Service.ArbitrageDetector
         [UsedImplicitly]
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            //services.AddResponseCaching();
+            services.AddResponseCaching();
 
             return services.BuildServiceProvider<AppSettings>(options =>
             {
@@ -40,7 +40,7 @@ namespace Lykke.Service.ArbitrageDetector
         {
             app.UseLykkeConfiguration(options =>
             {
-                //app.UseResponseCaching();
+                app.UseResponseCaching();
 
                 options.SwaggerOptions = _swaggerOptions;
                 options.DefaultErrorHandler = exception => ErrorResponse.Create(exception.Message);
