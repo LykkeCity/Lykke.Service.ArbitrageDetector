@@ -7,7 +7,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
     public class SynthOrderBook
     {
-        public string Source => string.Join(" - ", OriginalOrderBooks.Select(x => x.Source));
+        public string Source => string.Join("-", OriginalOrderBooks.Select(x => x.Source));
 
         public AssetPair AssetPair { get; }
 
@@ -21,7 +21,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public IReadOnlyList<OrderBook> OriginalOrderBooks { get; }
 
-        public string ConversionPath => string.Join(" & ", OriginalOrderBooks.Select(x => x.AssetPair.Name));
+        public string ConversionPath => string.Join(" * ", OriginalOrderBooks.Select(x => $"{x.Source}-{x.AssetPair.Name}"));
 
         public DateTime Timestamp => OriginalOrderBooks.Select(x => x.Timestamp).Min();
 
