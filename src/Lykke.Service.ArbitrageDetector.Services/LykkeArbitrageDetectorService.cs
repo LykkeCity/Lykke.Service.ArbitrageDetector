@@ -148,7 +148,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         private Task<IReadOnlyList<LykkeArbitrageRow>> GetArbitragesAsync(IReadOnlyList<OrderBook> orderBooks)
         {
-            orderBooks = orderBooks.Where(x => x.BestBid.HasValue || x.BestAsk.HasValue).ToList();
+            orderBooks = orderBooks.Where(x => x.BestBid.HasValue || x.BestAsk.HasValue).OrderBy(x => x.AssetPair.Name).ToList();
 
             var result = new List<LykkeArbitrageRow>();
 
@@ -223,7 +223,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
 
             watch.Stop();
-            //if (watch.ElapsedMilliseconds > 1000)
+            if (watch.ElapsedMilliseconds > 1000)
                 _log.Info($"{watch.ElapsedMilliseconds} ms, {result.Count} arbitrages, {orderBooks.Count} order books, {synthsCount} synthetic order books.");
 
             return Task.FromResult(result.OrderBy(x => x.Target).ThenBy(x => x.Source).ToList() as IReadOnlyList<LykkeArbitrageRow>);
