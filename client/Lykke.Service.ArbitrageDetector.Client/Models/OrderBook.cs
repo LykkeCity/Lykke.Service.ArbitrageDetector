@@ -13,7 +13,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Exchange name.
         /// </summary>
-        public string Source { get; }
+        public string Source { get; set; }
 
         /// <summary>
         /// Asset pair.
@@ -23,12 +23,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Bidding prices and volumes.
         /// </summary>
-        public IReadOnlyCollection<VolumePrice> Bids { get; }
+        public IReadOnlyList<VolumePrice> Bids { get; set; }
 
         /// <summary>
         /// Asking prices and volumes.
         /// </summary>
-        public IReadOnlyCollection<VolumePrice> Asks { get; }
+        public IReadOnlyList<VolumePrice> Asks { get; set; }
 
         /// <summary>
         /// Best bid.
@@ -53,46 +53,12 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Timestamp.
         /// </summary>
-        public DateTime Timestamp { get; protected set; }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        public OrderBook(string source, AssetPair assetPair, IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks, DateTime timestamp)
-        {
-            Source = string.IsNullOrWhiteSpace(source) ? throw new ArgumentNullException(nameof(source)) : source;
-            AssetPair = assetPair;
-            Bids = bids ?? throw new ArgumentNullException(nameof(bids));
-            Asks = asks ?? throw new ArgumentNullException(nameof(asks));
-            Timestamp = timestamp;
-        }
-
-        /// <summary>
-        /// Returns new reversed order book.
-        /// </summary>
-        public OrderBook Reverse()
-        {
-            var result = new OrderBook(Source, AssetPair.Reverse(),
-                Asks.Select(x => x.Reciprocal()).OrderByDescending(x => x.Price).ToList(),
-                Bids.Select(x => x.Reciprocal()).OrderByDescending(x => x.Price).ToList(),
-                Timestamp);
-            result.AssetPair = AssetPair.Reverse();
-
-            return result;
-        }
+        public DateTime Timestamp { get; set; }
 
         /// <inheritdoc />
         public override string ToString()
         {
-            return FormatSourceAssetPair(Source, AssetPair.Name);
-        }
-
-        /// <summary>
-        /// Formats source asset pair.
-        /// </summary>
-        public static string FormatSourceAssetPair(string source, string assetPair)
-        {
-            return source + "-" + assetPair;
+            return $"{Source}-{AssetPair.Name}";
         }
     }
 }

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using AutoMapper;
+using Lykke.Service.ArbitrageDetector.Client.Models;
 using Lykke.Service.ArbitrageDetector.Core.Services;
-using Lykke.Service.ArbitrageDetector.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -32,21 +33,23 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "*" })]
         public virtual IActionResult OrderBooks(string exchange, string assetPair)
         {
-            var result = _arbitrageDetectorService.GetOrderBooks(exchange, assetPair).Select(x => new OrderBookRow(x)).ToList();
+            var domain = _arbitrageDetectorService.GetOrderBooks(exchange, assetPair);
+            var model = Mapper.Map<IReadOnlyList<OrderBookRow>>(domain);
 
-            return Ok(result);
+            return Ok(model);
         }
 
         [HttpGet]
         [Route("orderBook")]
         [SwaggerOperation("OrderBook")]
-        [ProducesResponseType(typeof(IEnumerable<OrderBook>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(OrderBook), (int)HttpStatusCode.OK)]
         [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "*" })]
         public virtual IActionResult OrderBook(string exchange, string assetPair)
         {
-            var result = _arbitrageDetectorService.GetOrderBook(exchange, assetPair);
+            var domain = _arbitrageDetectorService.GetOrderBook(exchange, assetPair);
+            var model = Mapper.Map<OrderBook>(domain);
 
-            return Ok(result);
+            return Ok(model);
         }
 
         [HttpGet]
@@ -56,9 +59,10 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ResponseCache(Duration = 1)]
         public IActionResult SynthOrderBooks()
         {
-            var result = _arbitrageDetectorService.GetSynthOrderBooks().Select(x => new SynthOrderBookRow(x)).ToList();
+            var domain = _arbitrageDetectorService.GetSynthOrderBooks().ToList();
+            var model = Mapper.Map<IReadOnlyList<SynthOrderBookRow>>(domain);
 
-            return Ok(result);
+            return Ok(model);
         }
 
         [HttpGet]
@@ -68,35 +72,36 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ResponseCache(Duration = 1)]
         public IActionResult Arbitrages()
         {
-            var result = _arbitrageDetectorService.GetArbitrages().Select(x => new ArbitrageRow(x)).ToList();
+            var domain = _arbitrageDetectorService.GetArbitrages().ToList();
+            var model = Mapper.Map<IReadOnlyList<ArbitrageRow>>(domain);
 
-            return Ok(result);
+            return Ok(model);
         }
 
         [HttpGet]
         [Route("arbitrageFromHistory")]
         [SwaggerOperation("ArbitrageFromHistory")]
-        [ProducesResponseType(typeof(IEnumerable<Arbitrage>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Arbitrage), (int)HttpStatusCode.OK)]
         [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "*" })]
         public IActionResult ArbitrageFromHistory(string conversionPath)
         {
-            var arbitrage = _arbitrageDetectorService.GetArbitrageFromHistory(conversionPath);
-            var result = arbitrage == null ? null : new Arbitrage(arbitrage);
+            var domain = _arbitrageDetectorService.GetArbitrageFromHistory(conversionPath);
+            var model = Mapper.Map<Arbitrage>(domain);
 
-            return Ok(result);
+            return Ok(model);
         }
 
         [HttpGet]
         [Route("arbitrageFromActiveOrHistory")]
         [SwaggerOperation("ArbitrageFromActiveOrHistory")]
-        [ProducesResponseType(typeof(IEnumerable<Arbitrage>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Arbitrage), (int)HttpStatusCode.OK)]
         [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "*" })]
         public IActionResult ArbitrageFromActiveOrHistory(string conversionPath)
         {
-            var arbitrage = _arbitrageDetectorService.GetArbitrageFromActiveOrHistory(conversionPath);
-            var result = arbitrage == null ? null : new Arbitrage(arbitrage);
+            var domain = _arbitrageDetectorService.GetArbitrageFromActiveOrHistory(conversionPath);
+            var model = Mapper.Map<Arbitrage>(domain);
 
-            return Ok(result);
+            return Ok(model);
         }
 
         [HttpGet]
@@ -106,9 +111,10 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "*" })]
         public IActionResult ArbitrageHistory(DateTime since, int take)
         {
-            var result = _arbitrageDetectorService.GetArbitrageHistory(since, take).Select(x => new ArbitrageRow(x)).ToList();
+            var domain = _arbitrageDetectorService.GetArbitrageHistory(since, take).ToList();
+            var model = Mapper.Map<IReadOnlyList<ArbitrageRow>>(domain);
 
-            return Ok(result);
+            return Ok(model);
         }
 
         [HttpGet]
@@ -121,10 +127,10 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             if (string.IsNullOrWhiteSpace(assetPair))
                 return NotFound();
 
-            var matrix = _arbitrageDetectorService.GetMatrix(assetPair, false, depositFee, tradingFee);
-            var result = new Matrix(matrix);
+            var domain = _arbitrageDetectorService.GetMatrix(assetPair, false, depositFee, tradingFee);
+            var model = Mapper.Map<Matrix>(domain);
 
-            return Ok(result);
+            return Ok(model);
         }
 
         [HttpGet]
@@ -137,10 +143,10 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             if (string.IsNullOrWhiteSpace(assetPair))
                 return NotFound();
 
-            var matrix = _arbitrageDetectorService.GetMatrix(assetPair, true, depositFee, tradingFee);
-            var result = new Matrix(matrix);
+            var domain = _arbitrageDetectorService.GetMatrix(assetPair, true, depositFee, tradingFee);
+            var model = Mapper.Map<Matrix>(domain);
 
-            return Ok(result);
+            return Ok(model);
         }
 
         [HttpGet]
@@ -166,11 +172,10 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
             target = string.IsNullOrWhiteSpace(target) ? basePair : target;
             source = string.IsNullOrWhiteSpace(source) ? crossPair : source;
 
-            var result = _lykkeArbitrageDetectorService.GetArbitrages(target, source, (Core.Domain.ArbitrageProperty)property, minValue)
-                .Select(x => new LykkeArbitrageRow(x))
-                .ToList();
+            var domain = _lykkeArbitrageDetectorService.GetArbitrages(target, source, (Core.Domain.ArbitrageProperty)property, minValue).ToList();
+            var model = Mapper.Map<IReadOnlyList<LykkeArbitrageRow>>(domain);
 
-            return Ok(result);
+            return Ok(model);
         }
 
         [HttpGet]
@@ -202,31 +207,32 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ResponseCache(Duration = 60 * 60 * 4, VaryByQueryKeys = new[] { "*" })] // 4 hours
         public async Task<IActionResult> MatrixHistory(string assetPair, DateTime dateTime)
         {
-            var result = await _matrixHistoryService.GetAsync(assetPair, dateTime);
+            var domain = await _matrixHistoryService.GetAsync(assetPair, dateTime);
+            var model = Mapper.Map<Matrix>(domain);
 
-            return Ok(result);
+            return Ok(model);
         }
 
         [HttpGet]
         [Route("getSettings")]
         [SwaggerOperation("GetSettings")]
-        [ProducesResponseType(typeof(Models.Settings), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Client.Models.Settings), (int)HttpStatusCode.OK)]
         public IActionResult GetSettings()
         {
-            var settings = _arbitrageDetectorService.GetSettings();
-            var result = new Models.Settings(settings);
+            var domain = _arbitrageDetectorService.GetSettings();
+            var model = Mapper.Map<Client.Models.Settings>(domain);
 
-            return Ok(result);
+            return Ok(model);
         }
 
         [HttpPost]
         [Route("setSettings")]
         [SwaggerOperation("SetSettings")]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
-        public IActionResult SetSettings([FromBody]Models.Settings settings)
+        public IActionResult SetSettings([FromBody]Client.Models.Settings settings)
         {
-            var domainSettings = settings.ToDomain();
-            _arbitrageDetectorService.SetSettings(domainSettings);
+            var domain = Mapper.Map<Core.Domain.Settings>(settings);
+            _arbitrageDetectorService.SetSettings(domain);
 
             return Ok();
         }

@@ -30,12 +30,12 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Bidding prices and volumes.
         /// </summary>
-        public IReadOnlyCollection<VolumePrice> Bids { get; protected set; }
+        public IReadOnlyList<VolumePrice> Bids { get; protected set; }
 
         /// <summary>
         /// Asking prices and volumes.
         /// </summary>
-        public IReadOnlyCollection<VolumePrice> Asks { get; protected set; }
+        public IReadOnlyList<VolumePrice> Asks { get; protected set; }
 
         /// <summary>
         /// Best bid.

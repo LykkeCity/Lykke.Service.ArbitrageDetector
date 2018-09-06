@@ -20,6 +20,9 @@
         /// </summary>
         public ExchangeFees Fees { get; set; }
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
         public Exchange(string name, bool isActual, ExchangeFees fees)
         {
             Name = name;

@@ -31,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="7.0.1" />
     <PackageReference Include="Lykke.Sdk" Version="5.3.0" />
     <PackageReference Include="Autofac.Extras.DynamicProxy" Version="4.4.0" />
     <PackageReference Include="Castle.Core" Version="4.3.1" />
@@ -49,6 +50,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\..\client\Lykke.Service.ArbitrageDetector.Client\Lykke.Service.ArbitrageDetector.Client.csproj" />
     <ProjectReference Include="..\Lykke.Service.ArbitrageDetector.AzureRepositories\Lykke.Service.ArbitrageDetector.AzureRepositories.csproj" />
     <ProjectReference Include="..\Lykke.Service.ArbitrageDetector.Core\Lykke.Service.ArbitrageDetector.Core.csproj" />
     <ProjectReference Include="..\Lykke.Service.ArbitrageDetector.Services\Lykke.Service.ArbitrageDetector.Services.csproj" />
