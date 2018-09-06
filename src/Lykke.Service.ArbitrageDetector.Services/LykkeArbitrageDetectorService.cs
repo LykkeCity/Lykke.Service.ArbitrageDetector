@@ -176,11 +176,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         continue;
 
                     // Calculate all synthetic order books between source order book and target order book
-                    var synthOrderBooks = SynthOrderBook.GetSynthsFromAll(target.AssetPair, source, orderBooks, int.MaxValue);
+                    var synthOrderBooks = SynthOrderBook.GetSynthsFromAll(target.AssetPair, source, orderBooks);
                     synthsCount += synthOrderBooks.Count;
 
                     // Compare each synthetic with target
-                    foreach (var synthOrderBook in synthOrderBooks.Values)
+                    foreach (var synthOrderBook in synthOrderBooks)
                     {
                         totalItarations++;
 
@@ -245,7 +245,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
         }
 
-        private decimal? Convert(string sourceAsset, string targetAsset, IReadOnlyCollection<OrderBook> orderBooks)
+        private decimal? Convert(string sourceAsset, string targetAsset, IReadOnlyList<OrderBook> orderBooks)
         {
             if (sourceAsset == targetAsset)
                 return 1;
@@ -253,23 +253,23 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var target = new AssetPair(sourceAsset, targetAsset);
 
             decimal? result = null;
-            var synths1 = SynthOrderBook.GetSynthsFrom1(target, orderBooks);
+            var synths1 = SynthOrderBook.GetSynthsFrom1(target, orderBooks, orderBooks);
             if (synths1.Any())
-                result = GetMedianAskPrice(synths1.Values.ToList());
+                result = GetMedianAskPrice(synths1);
 
             if (result.HasValue)
                 return result;
 
-            var synths2 = SynthOrderBook.GetSynthsFrom2(target, orderBooks);
+            var synths2 = SynthOrderBook.GetSynthsFrom2(target, orderBooks, orderBooks);
             if (synths2.Any())
-                result = GetMedianAskPrice(synths2.Values.ToList());
+                result = GetMedianAskPrice(synths2);
 
             if (result.HasValue)
                 return result;
 
-            var synths3 = SynthOrderBook.GetSynthsFrom3(target, orderBooks);
+            var synths3 = SynthOrderBook.GetSynthsFrom3(target, orderBooks, orderBooks);
             if (synths3.Any())
-                result = GetMedianAskPrice(synths3.Values.ToList());
+                result = GetMedianAskPrice(synths3);
 
             return result;
         }

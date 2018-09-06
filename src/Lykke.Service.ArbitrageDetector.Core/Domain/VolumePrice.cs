@@ -16,7 +16,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Volume.
         /// </summary>
-        public decimal Volume { get; }
+        public decimal Volume { get; set; }
 
         /// <summary>
         /// Contructor.
