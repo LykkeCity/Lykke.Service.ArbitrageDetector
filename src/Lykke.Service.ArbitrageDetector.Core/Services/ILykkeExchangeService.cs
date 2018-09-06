@@ -16,6 +16,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
         /// </summary>
         /// <param name="orderBook"></param>
         /// <returns>Number of infered assets. Can be 0, 1 or 2.</returns>
-        int InferBaseAndQuoteAssets(OrderBook orderBook);
+        AssetPair? InferBaseAndQuoteAssets(string assetPairStr);
     }
 }

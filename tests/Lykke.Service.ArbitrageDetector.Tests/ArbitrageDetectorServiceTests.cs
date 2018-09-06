@@ -16,6 +16,18 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 {
     public class ArbitrageDetectorServiceTests
     {
+        private readonly AssetPair _btceur = new AssetPair("BTC", "EUR");
+        private readonly AssetPair _eurbtc = new AssetPair("EUR", "BTC");
+        private readonly AssetPair _eurusd = new AssetPair("EUR", "USD");
+        private readonly AssetPair _usdeur = new AssetPair("USD", "EUR");
+        private readonly AssetPair _btcusd = new AssetPair("BTC", "USD");
+        private readonly AssetPair _eurjpy = new AssetPair("EUR", "JPY");
+        private readonly AssetPair _jpyeur = new AssetPair("JPY", "EUR");
+        private readonly AssetPair _jpyusd = new AssetPair("JPY", "USD");
+        private readonly AssetPair _usdjpy = new AssetPair("USD", "JPY");
+
+
+
         private const bool performance = false;
 
         [Fact]
@@ -25,14 +37,11 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
             const string exchange = "FE";
-            const string btceur = "BTCEUR";
-            const string eurusd = "EURUSD";
-            const string btcusd = "BTCUSD";
 
             var settings = GetSettings(baseAssets, quoteAsset, -20);
             var arbitrageCalculator = GetArbitrageDetector(settings);
 
-            var btcEurOrderBook = new OrderBook(exchange, btceur,
+            var btcEurOrderBook = new OrderBook(exchange, _btceur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 10),
@@ -46,7 +55,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            var eurUsdOrderBook = new OrderBook(exchange, eurusd,
+            var eurUsdOrderBook = new OrderBook(exchange, _eurusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1.2203m, 10),
@@ -60,7 +69,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            var btcUsdOrderBook = new OrderBook(exchange, btcusd,
+            var btcUsdOrderBook = new OrderBook(exchange, _btcusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(10760, 10),
@@ -118,14 +127,11 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
             const string exchange = "FE";
-            const string btceur = "BTCEUR";
-            const string usdeur = "USDEUR";
-            const string btcusd = "BTCUSD";
 
             var settings = GetSettings(baseAssets, quoteAsset, -20);
             var arbitrageCalculator = GetArbitrageDetector(settings);
 
-            var btcEurOrderBook = new OrderBook(exchange, btceur,
+            var btcEurOrderBook = new OrderBook(exchange, _btceur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 10),
@@ -139,7 +145,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            var usdEurOrderBook = new OrderBook(exchange, usdeur,
+            var usdEurOrderBook = new OrderBook(exchange, _usdeur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/1.22033m, 10),
@@ -152,7 +158,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            var btcUsdOrderBook = new OrderBook(exchange, btcusd,
+            var btcUsdOrderBook = new OrderBook(exchange, _btcusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(10760, 10),
@@ -210,14 +216,11 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
             const string exchange = "FE";
-            const string eurbtc = "EURBTC";
-            const string eurusd = "EURUSD";
-            const string btcusd = "BTCUSD";
 
             var settings = GetSettings(baseAssets, quoteAsset, -20);
             var arbitrageCalculator = GetArbitrageDetector(settings);
 
-            var btcEurOrderBook = new OrderBook(exchange, eurbtc,
+            var btcEurOrderBook = new OrderBook(exchange, _eurbtc,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/8999.95m, 10),
@@ -231,7 +234,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            var eurUsdOrderBook = new OrderBook(exchange, eurusd,
+            var eurUsdOrderBook = new OrderBook(exchange, _eurusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1.2203m, 10),
@@ -244,7 +247,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            var btcUsdOrderBook = new OrderBook(exchange, btcusd,
+            var btcUsdOrderBook = new OrderBook(exchange, _btcusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(10760, 10),
@@ -302,14 +305,11 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var baseAssets = new List<string> { "BTC" };
             const string quoteAsset = "USD";
             const string exchange = "FE";
-            const string eurbtc = "EURBTC";
-            const string usdeur = "USDEUR";
-            const string btcusd = "BTCUSD";
 
             var settings = GetSettings(baseAssets, quoteAsset, -20);
             var arbitrageCalculator = GetArbitrageDetector(settings);
 
-            var eurBtcOrderBook = new OrderBook(exchange, eurbtc,
+            var eurBtcOrderBook = new OrderBook(exchange, _eurbtc,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/8999.95m, 10),
@@ -323,7 +323,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            var usdEurOrderBook = new OrderBook(exchange, usdeur,
+            var usdEurOrderBook = new OrderBook(exchange, _usdeur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/1.22033m, 10),
@@ -336,7 +336,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            var btcUsdOrderBook = new OrderBook(exchange, btcusd,
+            var btcUsdOrderBook = new OrderBook(exchange, _btcusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(10760, 10),
@@ -398,10 +398,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange2 = "TEST2";
             const string exchange3 = "TEST3";
             const string exchange4 = "TEST4";
-            const string btcEur = "BTCEUR";
-            const string eurJpy = "EURJPY";
-            const string jpyUsd = "JPYUSD";
-            const string btcUsd = "BTCUSD";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
@@ -409,7 +405,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var settings = GetSettings(baseAssets, quoteAsset, 0);
             var arbitrageCalculator = GetArbitrageDetector(settings);
 
-            var btcEurOrderBook = new OrderBook(exchange1, btcEur,
+            var btcEurOrderBook = new OrderBook(exchange1, _btceur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(7310m, 9),
@@ -423,7 +419,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var eurJpyOrderBook = new OrderBook(exchange2, eurJpy,
+            var eurJpyOrderBook = new OrderBook(exchange2, _eurjpy,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(131m, 9),
@@ -436,9 +432,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(134m, 3)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair("EUR");
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, jpyUsd,
+            var jpyUsdOrderBook = new OrderBook(exchange3, _jpyusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(0.009132m, 9),
@@ -452,7 +447,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 timestamp3);
 
-            var btcUsdOrderBook = new OrderBook(exchange4, btcUsd,
+            var btcUsdOrderBook = new OrderBook(exchange4, _btcusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8742, 7),
@@ -501,10 +496,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange2 = "TEST2";
             const string exchange3 = "TEST3";
             const string exchange4 = "TEST4";
-            const string btcEur = "BTCEUR";
-            const string eurJpy = "EURJPY";
-            const string usdJpy = "USDJPY";
-            const string btcUsd = "BTCUSD";
+
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
@@ -512,7 +504,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var settings = GetSettings(baseAssets, quoteAsset, 0);
             var arbitrageCalculator = GetArbitrageDetector(settings);
 
-            var btcEurOrderBook = new OrderBook(exchange1, btcEur,
+            var btcEurOrderBook = new OrderBook(exchange1, _btceur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(7310m, 9),
@@ -526,7 +518,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var eurJpyOrderBook = new OrderBook(exchange2, eurJpy,
+            var eurJpyOrderBook = new OrderBook(exchange2, _eurjpy,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(131m, 9),
@@ -539,9 +531,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(134m, 3)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair("EUR");
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, usdJpy,
+            var jpyUsdOrderBook = new OrderBook(exchange3, _usdjpy,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/0.009132m, 9),
@@ -555,7 +546,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 timestamp3);
 
-            var btcUsdOrderBook = new OrderBook(exchange4, btcUsd,
+            var btcUsdOrderBook = new OrderBook(exchange4, _btcusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/8743m, 11),
@@ -604,10 +595,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange2 = "TEST2";
             const string exchange3 = "TEST3";
             const string exchange4 = "TEST4";
-            const string btcEur = "BTCEUR";
-            const string jpyEur = "JPYEUR";
-            const string jpyUsd = "JPYUSD";
-            const string btcUsd = "BTCUSD";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
@@ -615,7 +602,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var settings = GetSettings(baseAssets, quoteAsset, 0);
             var arbitrageCalculator = GetArbitrageDetector(settings);
 
-            var btcEurOrderBook = new OrderBook(exchange1, btcEur,
+            var btcEurOrderBook = new OrderBook(exchange1, _btceur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(7310m, 9),
@@ -629,7 +616,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var eurJpyOrderBook = new OrderBook(exchange2, jpyEur,
+            var eurJpyOrderBook = new OrderBook(exchange2, _jpyeur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/132m, 11),
@@ -642,9 +629,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/130m, 5)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair("EUR");
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, jpyUsd,
+            var jpyUsdOrderBook = new OrderBook(exchange3, _jpyusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(0.009132m, 9),
@@ -658,7 +644,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 timestamp3);
 
-            var btcUsdOrderBook = new OrderBook(exchange4, btcUsd,
+            var btcUsdOrderBook = new OrderBook(exchange4, _btcusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8741, 7),
@@ -707,10 +693,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange2 = "TEST2";
             const string exchange3 = "TEST3";
             const string exchange4 = "TEST4";
-            const string eurBtc = "EURBTC";
-            const string eurJpy = "EURJPY";
-            const string jpyUsd = "JPYUSD";
-            const string btcUsd = "BTCUSD";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
@@ -718,7 +700,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var settings = GetSettings(baseAssets, quoteAsset, 0);
             var arbitrageCalculator = GetArbitrageDetector(settings);
 
-            var btcEurOrderBook = new OrderBook(exchange1, eurBtc,
+            var btcEurOrderBook = new OrderBook(exchange1, _eurbtc,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/7320m, 10),
@@ -732,7 +714,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var eurJpyOrderBook = new OrderBook(exchange2, eurJpy,
+            var eurJpyOrderBook = new OrderBook(exchange2, _eurjpy,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(131m, 9),
@@ -745,9 +727,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(134m, 3)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair("EUR");
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, jpyUsd,
+            var jpyUsdOrderBook = new OrderBook(exchange3, _jpyusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(0.009132m, 9),
@@ -761,7 +742,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 timestamp3);
 
-            var btcUsdOrderBook = new OrderBook(exchange4, btcUsd,
+            var btcUsdOrderBook = new OrderBook(exchange4, _btcusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8741, 7),
@@ -821,7 +802,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var settings = GetSettings(baseAssets, quoteAsset, 0);
             var arbitrageCalculator = GetArbitrageDetector(settings);
 
-            var btcEurOrderBook = new OrderBook(exchange1, btcEur,
+            var btcEurOrderBook = new OrderBook(exchange1, _btceur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(7310m, 9),
@@ -835,7 +816,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var eurJpyOrderBook = new OrderBook(exchange2, jpyEur,
+            var eurJpyOrderBook = new OrderBook(exchange2, _jpyeur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/132m, 11),
@@ -848,9 +829,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/130m, 5)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair("EUR");
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, usdJpy,
+            var jpyUsdOrderBook = new OrderBook(exchange3, _usdjpy,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/0.009132m, 9),
@@ -864,7 +844,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 timestamp3);
 
-            var btcUsdOrderBook = new OrderBook(exchange4, btcUsd,
+            var btcUsdOrderBook = new OrderBook(exchange4, _btcusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/8743m, 11),
@@ -913,10 +893,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange2 = "TEST2";
             const string exchange3 = "TEST3";
             const string exchange4 = "TEST4";
-            const string eurBtc = "EURBTC";
-            const string eurJpy = "EURJPY";
-            const string usdJpy = "USDJPY";
-            const string btcUsd = "BTCUSD";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
@@ -924,7 +900,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var settings = GetSettings(baseAssets, quoteAsset, 0);
             var arbitrageCalculator = GetArbitrageDetector(settings);
 
-            var btcEurOrderBook = new OrderBook(exchange1, eurBtc,
+            var btcEurOrderBook = new OrderBook(exchange1, _eurbtc,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/7320m, 10),
@@ -938,7 +914,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var eurJpyOrderBook = new OrderBook(exchange2, eurJpy,
+            var eurJpyOrderBook = new OrderBook(exchange2, _eurjpy,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(131m, 9),
@@ -951,9 +927,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(134m, 3)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair("EUR");
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, usdJpy,
+            var jpyUsdOrderBook = new OrderBook(exchange3, _usdjpy,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/0.009133m, 12),
@@ -967,7 +942,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 timestamp3);
 
-            var btcUsdOrderBook = new OrderBook(exchange4, btcUsd,
+            var btcUsdOrderBook = new OrderBook(exchange4, _btcusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8741, 7),
@@ -1016,10 +991,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange2 = "TEST2";
             const string exchange3 = "TEST3";
             const string exchange4 = "TEST4";
-            const string eurBtc = "EURBTC";
-            const string jpyEur = "JPYEUR";
-            const string jpyUsd = "JPYUSD";
-            const string btcUsd = "BTCUSD";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
@@ -1027,7 +998,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var settings = GetSettings(baseAssets, quoteAsset, 0);
             var arbitrageCalculator = GetArbitrageDetector(settings);
 
-            var btcEurOrderBook = new OrderBook(exchange1, eurBtc,
+            var btcEurOrderBook = new OrderBook(exchange1, _eurbtc,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/7320m, 10),
@@ -1041,7 +1012,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var jpyEurOrderBook = new OrderBook(exchange2, jpyEur,
+            var jpyEurOrderBook = new OrderBook(exchange2, _jpyeur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/132m, 11),
@@ -1054,9 +1025,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/130m, 5)
                 },
                 timestamp2);
-            jpyEurOrderBook.SetAssetPair("EUR");
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, jpyUsd,
+            var jpyUsdOrderBook = new OrderBook(exchange3, _jpyusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(0.009132m, 9),
@@ -1070,7 +1040,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 timestamp3);
 
-            var btcUsdOrderBook = new OrderBook(exchange4, btcUsd,
+            var btcUsdOrderBook = new OrderBook(exchange4, _btcusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8741, 7),
@@ -1130,7 +1100,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var settings = GetSettings(baseAssets, quoteAsset, 0);
             var arbitrageCalculator = GetArbitrageDetector(settings);
 
-            var btcEurOrderBook = new OrderBook(exchange1, eurBtc,
+            var btcEurOrderBook = new OrderBook(exchange1, _eurbtc,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/7320m, 10),
@@ -1144,7 +1114,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 timestamp1);
 
-            var jpyEurOrderBook = new OrderBook(exchange2, jpyEur,
+            var jpyEurOrderBook = new OrderBook(exchange2, _jpyeur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/132m, 11),
@@ -1157,9 +1127,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/130m, 5)
                 },
                 timestamp2);
-            jpyEurOrderBook.SetAssetPair("EUR");
 
-            var usdJpyOrderBook = new OrderBook(exchange3, usdJpy,
+            var usdJpyOrderBook = new OrderBook(exchange3, _usdjpy,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/0.009133m, 12),
@@ -1173,7 +1142,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 timestamp3);
 
-            var btcUsdOrderBook = new OrderBook(exchange4, btcUsd,
+            var btcUsdOrderBook = new OrderBook(exchange4, _btcusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8741, 7),
@@ -1224,22 +1193,22 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var settings = GetSettings(baseAssets, quoteAsset, -20);
             var arbitrageDetector = GetArbitrageDetector(settings);
 
-            var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
+            var btcUsdOrderBook1 = new OrderBook("GDAX", _btcusd,
                 new List<VolumePrice> { new VolumePrice(11000, 10) }, // bids
                 new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
                 DateTime.UtcNow);
 
-            var btcUsdOrderBook2 = new OrderBook("Bitfinex", "BTCUSD",
+            var btcUsdOrderBook2 = new OrderBook("Bitfinex", _btcusd,
                 new List<VolumePrice> { new VolumePrice(11100, 10) }, // bids
                 new List<VolumePrice> { new VolumePrice(11300, 10) }, // asks
                 DateTime.UtcNow);
 
-            var btcEurOrderBook = new OrderBook("Quoine", "BTCEUR",
+            var btcEurOrderBook = new OrderBook("Quoine", _btceur,
                 new List<VolumePrice> { new VolumePrice(8825, 10) }, // bids
                 new List<VolumePrice> { new VolumePrice(8999.95m, 10) }, // asks
                 DateTime.UtcNow);
 
-            var eurUsdOrderBook = new OrderBook("Binance", "EURUSD",
+            var eurUsdOrderBook = new OrderBook("Binance", _eurusd,
                 new List<VolumePrice> { new VolumePrice(1.2203m, 10) }, // bids
                 new List<VolumePrice> { new VolumePrice(1.22033m, 10) }, // asks
                 DateTime.UtcNow);
@@ -1286,22 +1255,22 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             var arbitrageDetector = GetArbitrageDetector(settings);
 
-            var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
+            var btcUsdOrderBook1 = new OrderBook("GDAX", _btcusd,
                 new List<VolumePrice> { new VolumePrice(11000, 10) }, // bids
                 new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
                 DateTime.UtcNow);
 
-            var btcUsdOrderBook2 = new OrderBook("Bitfinex", "BTCUSD",
+            var btcUsdOrderBook2 = new OrderBook("Bitfinex", _btcusd,
                 new List<VolumePrice> { new VolumePrice(11100, 10) }, // bids
                 new List<VolumePrice> { new VolumePrice(11300, 10) }, // asks
                 DateTime.UtcNow);
 
-            var btcEurOrderBook = new OrderBook("Quoine", "BTCEUR",
+            var btcEurOrderBook = new OrderBook("Quoine", _btceur,
                 new List<VolumePrice> { new VolumePrice(8825, 10) }, // bids
                 new List<VolumePrice> { new VolumePrice(8999.95m, 10) }, // asks
                 DateTime.UtcNow);
 
-            var eurUsdOrderBook = new OrderBook("Binance", "EURUSD",
+            var eurUsdOrderBook = new OrderBook("Binance", _eurusd,
                 new List<VolumePrice> { new VolumePrice(1.2203m, 10) }, // bids
                 new List<VolumePrice> { new VolumePrice(1.22033m, 10) }, // asks
                 DateTime.UtcNow);
@@ -1532,12 +1501,12 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             var arbitrageDetector = GetArbitrageDetector(settings);
 
-            var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
+            var btcUsdOrderBook1 = new OrderBook("GDAX", _btcusd,
                 new List<VolumePrice> { new VolumePrice(11000, 10) }, // bids
                 new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
                 DateTime.UtcNow);
 
-            var btcUsdOrderBook2 = new OrderBook("Bitfinex", "BTCUSD",
+            var btcUsdOrderBook2 = new OrderBook("Bitfinex", _btcusd,
                 new List<VolumePrice> { new VolumePrice(11100, 10) }, // bids
                 new List<VolumePrice> { new VolumePrice(11300, 10) }, // asks
                 DateTime.UtcNow);
@@ -1566,12 +1535,12 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             var arbitrageDetector = GetArbitrageDetector(settings);
 
-            var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
+            var btcUsdOrderBook1 = new OrderBook("GDAX", _btcusd,
                 new List<VolumePrice> { new VolumePrice(11000, 10) }, // bids
                 new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
                 DateTime.UtcNow);
 
-            var btcUsdOrderBook2 = new OrderBook("Bitfinex", "BTCUSD",
+            var btcUsdOrderBook2 = new OrderBook("Bitfinex", _btcusd,
                 new List<VolumePrice> { new VolumePrice(11100, 10) }, // bids
                 new List<VolumePrice> { new VolumePrice(11300, 10) }, // asks
                 DateTime.UtcNow);
@@ -1600,12 +1569,12 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             var arbitrageDetector = GetArbitrageDetector(settings);
 
-            var btcUsdOrderBook1 = new OrderBook("GDAX", "BTCUSD",
+            var btcUsdOrderBook1 = new OrderBook("GDAX", _btcusd,
                 new List<VolumePrice> { new VolumePrice(11000, 10) }, // bids
                 new List<VolumePrice> { new VolumePrice(11050, 10) }, // asks
                 DateTime.UtcNow);
 
-            var btcUsdOrderBook2 = new OrderBook("Bitfinex", "BTCUSD",
+            var btcUsdOrderBook2 = new OrderBook("Bitfinex", _btcusd,
                 new List<VolumePrice> { new VolumePrice(11100, 10) }, // bids
                 new List<VolumePrice> { new VolumePrice(11300, 10) }, // asks
                 DateTime.UtcNow);
@@ -1641,18 +1610,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var assetsRepository = new Mock<ILykkeExchangeService>();
             assetsRepository.Setup(x => x.GetAccuracy(It.IsAny<AssetPair>()))
                 .Returns<AssetPair>(assetPair => (5, 3));
-            assetsRepository.Setup(x => x.InferBaseAndQuoteAssets(It.IsAny<OrderBook>()))
-                .Returns<OrderBook>(orderBook =>
-                {
-                    var assets = new List<string>{ "USD", "EUR", "GBP", "CHF", "AUD", "CAD", "JPY", "BTC", "ETH" };
-                    foreach (var asset in assets)
-                        if (orderBook.AssetPairStr.Contains(asset))
-                        {
-                            orderBook.SetAssetPair(asset);
-                            break;
-                        }
-                    return 2;
-                });
 
             return assetsRepository.Object;
         }
@@ -1689,8 +1646,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 var asks = GenerateVolumePrices(askCount, minAsk, maxAsk);
                 var bids = GenerateVolumePrices(bidCount, minBid, maxBid);
 
-                var orderBook = new OrderBook(source + i, assetPair.Name, bids, asks, DateTime.UtcNow);
-                orderBook.SetAssetPair(assetPair.Base);
+                var orderBook = new OrderBook(source + i, assetPair, bids, asks, DateTime.UtcNow);
 
                 result.Add(orderBook);
             }
@@ -1706,7 +1662,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             return result;
         }
 
-        private IReadOnlyCollection<VolumePrice> GenerateVolumePrices(int count, decimal min, decimal max)
+        private IReadOnlyList<VolumePrice> GenerateVolumePrices(int count, decimal min, decimal max)
         {
             var result = new List<VolumePrice>();
 
@@ -1747,10 +1703,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 var asks = GenerateVolumePricesForSynthOrderBooks(askCount, minAsk, maxAsk);
 
                 var intermediateAsset = RandomString(3);
-                var orderBook1 = new OrderBook(source + i, assetPair.Base + intermediateAsset, bids, asks, DateTime.UtcNow);
-                orderBook1.SetAssetPair(assetPair.Base);
-                var orderBook2 = new OrderBook(source + i, intermediateAsset + assetPair.Quote, bids, asks, DateTime.UtcNow);
-                orderBook2.SetAssetPair(assetPair.Quote);
+                var orderBook1 = new OrderBook(source + i, new AssetPair(assetPair.Base, intermediateAsset), bids, asks, DateTime.UtcNow);
+                var orderBook2 = new OrderBook(source + i, new AssetPair(intermediateAsset, assetPair.Quote), bids, asks, DateTime.UtcNow);
 
                 result.Add(orderBook1);
                 result.Add(orderBook2);
@@ -1787,15 +1741,12 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 var asks = GenerateVolumePricesForSynthOrderBooks(askCount, minAsk, maxAsk);
 
                 var intermediate1Asset = RandomString(3);
-                var orderBook1 = new OrderBook(source + i, assetPair.Base + intermediate1Asset, bids, asks, DateTime.UtcNow);
-                orderBook1.SetAssetPair(assetPair.Base);
+                var orderBook1 = new OrderBook(source + i, new AssetPair(assetPair.Base, intermediate1Asset), bids, asks, DateTime.UtcNow);
 
                 var intermediate2Asset = RandomString(3);
-                var orderBook2 = new OrderBook(source + i, intermediate1Asset + intermediate2Asset, bids, asks, DateTime.UtcNow);
-                orderBook2.SetAssetPair(assetPair.Quote);
+                var orderBook2 = new OrderBook(source + i, new AssetPair(intermediate1Asset, intermediate2Asset), bids, asks, DateTime.UtcNow);
 
-                var orderBook3 = new OrderBook(source + i, intermediate2Asset + assetPair.Quote, bids, asks, DateTime.UtcNow);
-                orderBook3.SetAssetPair(assetPair.Quote);
+                var orderBook3 = new OrderBook(source + i, new AssetPair(intermediate2Asset, assetPair.Quote), bids, asks, DateTime.UtcNow);
 
                 result.Add(orderBook1);
                 result.Add(orderBook2);
@@ -1812,7 +1763,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             return result;
         }
 
-        private IReadOnlyCollection<VolumePrice> GenerateVolumePricesForSynthOrderBooks(int count, decimal min, decimal max)
+        private IReadOnlyList<VolumePrice> GenerateVolumePricesForSynthOrderBooks(int count, decimal min, decimal max)
         {
             var result = new List<VolumePrice>();
 

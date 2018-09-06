@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using Common;
@@ -6,7 +7,6 @@ using Common.Log;
 using Lykke.Common.Log;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
-using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 
 namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
@@ -15,16 +15,18 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
     {
         private readonly string _connectionString;
         private readonly string _exchangeName;
-        private RabbitMqSubscriber<OrderBook> _subscriber;
+        private RabbitMqSubscriber<RabbitMq.Models.OrderBook> _subscriber;
 
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
         private readonly ILykkeArbitrageDetectorService _lykkeArbitrageDetectorService;
+        private readonly ILykkeExchangeService _lykkeExchangeService;
         private readonly ILogFactory _logFactory;
         private readonly ILog _log;
 
         public RabbitMessageSubscriber(
             string connectionString,
             string exchangeName,
+            ILykkeExchangeService lykkeExchangeService,
             IArbitrageDetectorService arbitrageDetectorService,
             ILykkeArbitrageDetectorService lykkeArbitrageDetectorService,
             ILogFactory logFactory)
@@ -34,6 +36,7 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
             
             _arbitrageDetectorService = arbitrageDetectorService;
             _lykkeArbitrageDetectorService = lykkeArbitrageDetectorService;
+            _lykkeExchangeService = lykkeExchangeService;
             _logFactory = logFactory;
             _log = logFactory.CreateLog(this);
         }
@@ -48,21 +51,31 @@ namespace Lykke.Service.ArbitrageDetector.RabbitSubscribers
                 IsDurable = false
             };
 
-            _subscriber = new RabbitMqSubscriber<OrderBook>(_logFactory, settings,
+            _subscriber = new RabbitMqSubscriber<RabbitMq.Models.OrderBook>(_logFactory, settings,
                     new ResilientErrorHandlingStrategy(_logFactory, settings, TimeSpan.FromSeconds(10)))
-                .SetMessageDeserializer(new JsonMessageDeserializer<OrderBook>())
+                .SetMessageDeserializer(new JsonMessageDeserializer<RabbitMq.Models.OrderBook>())
                 .SetMessageReadStrategy(new MessageReadQueueStrategy())
                 .Subscribe(ProcessMessageAsync)
                 .CreateDefaultBinding()
                 .Start();
         }
 
-        private Task ProcessMessageAsync(OrderBook orderBook)
+        private Task ProcessMessageAsync(RabbitMq.Models.OrderBook orderBook)
         {
             try
             {
-                _arbitrageDetectorService.Process(orderBook);
-                _lykkeArbitrageDetectorService.Process(orderBook);                        
+                var assetPair = _lykkeExchangeService.InferBaseAndQuoteAssets(orderBook.AssetPairStr);
+
+                if (!assetPair.HasValue)
+                    return Task.CompletedTask;
+
+                var domain = new Core.Domain.OrderBook(orderBook.Source, assetPair.Value,
+                    orderBook.Bids.Select(x => new Core.Domain.VolumePrice(x.Price, x.Volume)).ToList(),
+                    orderBook.Asks.Select(x => new Core.Domain.VolumePrice(x.Price, x.Volume)).ToList(),
+                    orderBook.Timestamp);
+
+                _arbitrageDetectorService.Process(domain);
+                _lykkeArbitrageDetectorService.Process(domain);
             }
             catch (Exception ex)
             {

@@ -29,7 +29,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string source = "FakeExchange";
             var timestamp = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(source, _btceur.Name,
+            var btcEurOrderBook = new OrderBook(source, _btceur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 9), new VolumePrice(8823, 5)
@@ -39,7 +39,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp);
-            btcEurOrderBook.SetAssetPair(_btceur);
 
             var synthOrderBook = SynthOrderBook.FromOrderBook(btcEurOrderBook, _btceur);
             Assert.Equal(source, synthOrderBook.Source);
@@ -66,7 +65,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp = DateTime.UtcNow;
             var inverted = _btcusd.Reverse();
 
-            var btcUsdOrderBook = new OrderBook(source, _btcusd.Name,
+            var btcUsdOrderBook = new OrderBook(source, _btcusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/8825m, 9), new VolumePrice(1/8823m, 5)
@@ -76,7 +75,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/9000m, 10), new VolumePrice(1/8999.95m, 7), new VolumePrice(1/8900.12345677m, 3)
                 },
                 timestamp);
-            btcUsdOrderBook.SetAssetPair(_btcusd);
 
             var synthOrderBook = SynthOrderBook.FromOrderBook(btcUsdOrderBook, inverted);
             Assert.Equal(source, synthOrderBook.Source);
@@ -104,7 +102,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp1 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp2 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(source, _btceur.Name,
+            var btcEurOrderBook = new OrderBook(source, _btceur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 9),
@@ -117,9 +115,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair(_btceur);
 
-            var eurUsdOrderBook = new OrderBook(source, _eurusd.Name,
+            var eurUsdOrderBook = new OrderBook(source, _eurusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1.11m, 9),
@@ -132,7 +129,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1.14m, 3)
                 },
                 timestamp2);
-            eurUsdOrderBook.SetAssetPair(_eurusd);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, _btcusd);
             Assert.Equal("FakeExchange-FakeExchange", synthOrderBook.Source);
@@ -154,7 +150,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp1 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp2 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(source, _btceur.Name,
+            var btcEurOrderBook = new OrderBook(source, _btceur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 9),
@@ -167,9 +163,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair(_btceur);
 
-            var eurUsdOrderBook = new OrderBook(source, _usdeur.Name,
+            var eurUsdOrderBook = new OrderBook(source, _usdeur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/1.11m, 9),
@@ -182,7 +177,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/1.14m, 3)
                 },
                 timestamp2);
-            eurUsdOrderBook.SetAssetPair(_usdeur);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, _btcusd);
             Assert.Equal("FakeExchange-FakeExchange", synthOrderBook.Source);
@@ -206,7 +200,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp1 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp2 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(source, _eurbtc.Name,
+            var btcEurOrderBook = new OrderBook(source, _eurbtc,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/8825m, 9),
@@ -219,9 +213,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/8900.12345677m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair(_eurbtc);
 
-            var eurUsdOrderBook = new OrderBook(source, _eurusd.Name,
+            var eurUsdOrderBook = new OrderBook(source, _eurusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1.11m, 9),
@@ -234,7 +227,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1.14m, 3)
                 },
                 timestamp2);
-            eurUsdOrderBook.SetAssetPair(_eurusd);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, _btcusd);
             Assert.Equal("FakeExchange-FakeExchange", synthOrderBook.Source);
@@ -257,7 +249,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp1 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp2 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(source, _eurbtc.Name,
+            var btcEurOrderBook = new OrderBook(source, _eurbtc,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/8825m, 9),
@@ -270,9 +262,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/8900.12345677m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair(_eurbtc);
 
-            var eurUsdOrderBook = new OrderBook(source, _usdeur.Name,
+            var eurUsdOrderBook = new OrderBook(source, _usdeur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/1.11m, 9),
@@ -285,7 +276,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/1.14m, 3)
                 },
                 timestamp2);
-            eurUsdOrderBook.SetAssetPair(_usdeur);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, _btcusd);
             Assert.Equal("FakeExchange-FakeExchange", synthOrderBook.Source);
@@ -313,7 +303,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(source1, _btceur.Name,
+            var btcEurOrderBook = new OrderBook(source1, _btceur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(7310m, 9), new VolumePrice(7300m, 5)
@@ -323,9 +313,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(7320m, 10), new VolumePrice(7330m, 7), new VolumePrice(7340m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair(_btceur);
 
-            var eurJpyOrderBook = new OrderBook(source2, _eurjpy.Name,
+            var eurJpyOrderBook = new OrderBook(source2, _eurjpy,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(131m, 9), new VolumePrice(130m, 5)
@@ -335,9 +324,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(132m, 11), new VolumePrice(133m, 7), new VolumePrice(134m, 3)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair(_eurjpy);
 
-            var jpyUsdOrderBook = new OrderBook(source3, _jpyusd.Name,
+            var jpyUsdOrderBook = new OrderBook(source3, _jpyusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(0.009132m, 9), new VolumePrice(0.009131m, 5)
@@ -347,7 +335,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(0.009133m, 12), new VolumePrice(0.009134m, 7), new VolumePrice(0.009135m, 3)
                 },
                 timestamp3);
-            jpyUsdOrderBook.SetAssetPair(_jpyusd);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
             Assert.Equal("TEST1-TEST2-TEST3", synthOrderBook.Source);
@@ -373,7 +360,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(source1, _btceur.Name,
+            var btcEurOrderBook = new OrderBook(source1, _btceur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(7310m, 9), new VolumePrice(7300m, 5)
@@ -383,9 +370,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(7320m, 10), new VolumePrice(7330m, 7), new VolumePrice(7340m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair(_btceur);
 
-            var eurJpyOrderBook = new OrderBook(source2, _eurjpy.Name,
+            var eurJpyOrderBook = new OrderBook(source2, _eurjpy,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(131m, 9), new VolumePrice(130m, 5)
@@ -395,9 +381,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(132m, 11), new VolumePrice(133m, 7), new VolumePrice(134m, 3)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair(_eurjpy);
 
-            var jpyUsdOrderBook = new OrderBook(source3, _usdjpy.Name,
+            var jpyUsdOrderBook = new OrderBook(source3, _usdjpy,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/0.009132m, 9), new VolumePrice(1/0.009131m, 5)
@@ -407,7 +392,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/0.009133m, 12), new VolumePrice(1/0.009134m, 7), new VolumePrice(1/0.009135m, 3)
                 },
                 timestamp3);
-            jpyUsdOrderBook.SetAssetPair(_usdjpy);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
             Assert.Equal("TEST1-TEST2-TEST3", synthOrderBook.Source);
@@ -433,7 +417,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(source1, _btceur.Name,
+            var btcEurOrderBook = new OrderBook(source1, _btceur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(7310m, 9), new VolumePrice(7300m, 5)
@@ -443,9 +427,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(7320m, 10), new VolumePrice(7330m, 7), new VolumePrice(7340m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair(_btceur);
 
-            var eurJpyOrderBook = new OrderBook(source2, _eurjpy.Name,
+            var eurJpyOrderBook = new OrderBook(source2, _eurjpy,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(131m, 9), new VolumePrice(130m, 5)
@@ -455,9 +438,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(132m, 11), new VolumePrice(133m, 7), new VolumePrice(134m, 3)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair(_eurjpy);
 
-            var jpyUsdOrderBook = new OrderBook(source3, _jpyusd.Name,
+            var jpyUsdOrderBook = new OrderBook(source3, _jpyusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(0.009132m, 9), new VolumePrice(0.009131m, 5)
@@ -467,7 +449,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(0.009133m, 12), new VolumePrice(0.009134m, 7), new VolumePrice(0.009135m, 3)
                 },
                 timestamp3);
-            jpyUsdOrderBook.SetAssetPair(_jpyusd);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
             Assert.Equal("TEST1-TEST2-TEST3", synthOrderBook.Source);
@@ -493,7 +474,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(source1, _eurbtc.Name,
+            var btcEurOrderBook = new OrderBook(source1, _eurbtc,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/7310m, 9), new VolumePrice(1/7300m, 5)
@@ -503,9 +484,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/7320m, 10), new VolumePrice(1/7330m, 7), new VolumePrice(1/7340m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair(_eurbtc);
 
-            var eurJpyOrderBook = new OrderBook(source2, _eurjpy.Name,
+            var eurJpyOrderBook = new OrderBook(source2, _eurjpy,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(131m, 9), new VolumePrice(130m, 5)
@@ -515,9 +495,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(132m, 11), new VolumePrice(133m, 7), new VolumePrice(134m, 3)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair(_eurjpy);
-
-            var jpyUsdOrderBook = new OrderBook(source3, _jpyusd.Name,
+            
+            var jpyUsdOrderBook = new OrderBook(source3, _jpyusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(0.009132m, 9), new VolumePrice(0.009131m, 5)
@@ -527,7 +506,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(0.009133m, 12), new VolumePrice(0.009134m, 7), new VolumePrice(0.009135m, 3)
                 },
                 timestamp3);
-            jpyUsdOrderBook.SetAssetPair(_jpyusd);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
             Assert.Equal("TEST1-TEST2-TEST3", synthOrderBook.Source);
@@ -553,7 +531,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(source1, _btceur.Name,
+            var btcEurOrderBook = new OrderBook(source1, _btceur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(7310m, 9), new VolumePrice(7300m, 5)
@@ -563,9 +541,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(7320m, 10), new VolumePrice(7330m, 7), new VolumePrice(7340m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair(_btceur);
 
-            var jpyEurOrderBook = new OrderBook(source2, _jpyeur.Name,
+            var jpyEurOrderBook = new OrderBook(source2, _jpyeur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/132m, 11), new VolumePrice(1/133m, 7), new VolumePrice(1/134m, 3)
@@ -575,9 +552,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/131m, 9), new VolumePrice(1/130m, 5)
                 },
                 timestamp2);
-            jpyEurOrderBook.SetAssetPair(_jpyeur);
 
-            var jpyUsdOrderBook = new OrderBook(source3, _usdjpy.Name,
+            var jpyUsdOrderBook = new OrderBook(source3, _usdjpy,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/0.009132m, 9), new VolumePrice(1/0.009131m, 5)
@@ -587,7 +563,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/0.009133m, 12), new VolumePrice(1/0.009134m, 7), new VolumePrice(1/0.009135m, 3)
                 },
                 timestamp3);
-            jpyUsdOrderBook.SetAssetPair(_usdjpy);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, jpyEurOrderBook, jpyUsdOrderBook, _btcusd);
             Assert.Equal("TEST1-TEST2-TEST3", synthOrderBook.Source);
@@ -613,7 +588,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(source1, _eurbtc.Name,
+            var btcEurOrderBook = new OrderBook(source1, _eurbtc,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/7310m, 9), new VolumePrice(1/7300m, 5)
@@ -623,9 +598,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/7320m, 10), new VolumePrice(1/7330m, 7), new VolumePrice(1/7340m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair(_eurbtc);
 
-            var eurJpyOrderBook = new OrderBook(source2, _eurjpy.Name,
+            var eurJpyOrderBook = new OrderBook(source2, _eurjpy,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(131m, 9), new VolumePrice(130m, 5)
@@ -635,9 +609,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(132m, 11), new VolumePrice(133m, 7), new VolumePrice(134m, 3)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair(_eurjpy);
 
-            var jpyUsdOrderBook = new OrderBook(source3, _usdjpy.Name,
+            var jpyUsdOrderBook = new OrderBook(source3, _usdjpy,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/0.009132m, 9), new VolumePrice(1/0.009131m, 5)
@@ -647,7 +620,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/0.009133m, 12), new VolumePrice(1/0.009134m, 7), new VolumePrice(1/0.009135m, 3)
                 },
                 timestamp3);
-            jpyUsdOrderBook.SetAssetPair(_usdjpy);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
             Assert.Equal("TEST1-TEST2-TEST3", synthOrderBook.Source);
@@ -673,7 +645,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(source1, _eurbtc.Name,
+            var btcEurOrderBook = new OrderBook(source1, _eurbtc,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/7310m, 9), new VolumePrice(1/7300m, 5)
@@ -683,9 +655,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/7320m, 10), new VolumePrice(1/7330m, 7), new VolumePrice(1/7340m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair(_eurbtc);
 
-            var eurJpyOrderBook = new OrderBook(source2, _jpyeur.Name,
+            var eurJpyOrderBook = new OrderBook(source2, _jpyeur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/131m, 9), new VolumePrice(1/130m, 5)
@@ -695,9 +666,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/132m, 11), new VolumePrice(1/133m, 7), new VolumePrice(1/134m, 3)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair(_jpyeur);
 
-            var jpyUsdOrderBook = new OrderBook(source3, _jpyusd.Name,
+            var jpyUsdOrderBook = new OrderBook(source3, _jpyusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(0.009132m, 9), new VolumePrice(0.009131m, 5)
@@ -707,7 +677,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(0.009133m, 12), new VolumePrice(0.009134m, 7), new VolumePrice(0.009135m, 3)
                 },
                 timestamp3);
-            jpyUsdOrderBook.SetAssetPair(_jpyusd);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
             Assert.Equal("TEST1-TEST2-TEST3", synthOrderBook.Source);
@@ -733,7 +702,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
 
-            var btcEurOrderBook = new OrderBook(source1, _eurbtc.Name,
+            var btcEurOrderBook = new OrderBook(source1, _eurbtc,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/7310m, 9), new VolumePrice(1/7300m, 5)
@@ -743,9 +712,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/7320m, 10), new VolumePrice(1/7330m, 7), new VolumePrice(1/7340m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair(_eurbtc);
 
-            var eurJpyOrderBook = new OrderBook(source2, _jpyeur.Name,
+            var eurJpyOrderBook = new OrderBook(source2, _jpyeur,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/131m, 9), new VolumePrice(1/130m, 5)
@@ -755,9 +723,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/132m, 11), new VolumePrice(1/133m, 7), new VolumePrice(1/134m, 3)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair(_jpyeur);
 
-            var jpyUsdOrderBook = new OrderBook(source3, _usdjpy.Name,
+            var jpyUsdOrderBook = new OrderBook(source3, _usdjpy,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/0.009132m, 9), new VolumePrice(1/0.009131m, 5)
@@ -767,7 +734,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/0.009133m, 12), new VolumePrice(1/0.009134m, 7), new VolumePrice(1/0.009135m, 3)
                 },
                 timestamp3);
-            jpyUsdOrderBook.SetAssetPair(_usdjpy);
 
             var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
             Assert.Equal("TEST1-TEST2-TEST3", synthOrderBook.Source);
@@ -789,8 +755,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void OrderBooks_PrepareForEnumeration_0_Test()
         {
-            var orderBook = new OrderBook("FE", _btcusd.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
-            orderBook.SetAssetPair(_btcusd);
+            var orderBook = new OrderBook("FE", _btcusd, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
             var result = SynthOrderBook.PrepareForEnumeration(new List<OrderBook> { orderBook }, _btcusd);
 
             Assert.Single(result);
@@ -802,8 +767,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         public void OrderBooks_PrepareForEnumeration_1_Test()
         {
             var usdbtc = _btcusd.Reverse();
-            var orderBook = new OrderBook("FE", usdbtc.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
-            orderBook.SetAssetPair(usdbtc);
+            var orderBook = new OrderBook("FE", usdbtc, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
 
             var result = SynthOrderBook.PrepareForEnumeration(new List<OrderBook> { orderBook }, _btcusd);
 
@@ -938,7 +902,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void SynthOrderBook_GetBids_Streight_Test()
         {
-            var gbpusdOb = new OrderBook("FE", _gbpusd.Name,
+            var gbpusdOb = new OrderBook("FE", _gbpusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1.28167m, 2909.98m),
@@ -946,7 +910,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 new List<VolumePrice>(), // asks
                 DateTime.Now);
-            gbpusdOb.SetAssetPair(_gbpusd);
 
             var bids = SynthOrderBook.GetBids(gbpusdOb, _gbpusd).ToList();
             var orderedBids = bids.OrderByDescending(x => x.Price).ToList();
@@ -959,7 +922,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void SynthOrderBook_GetBids_Reverseed_Test()
         {
-            var gbpusdOb = new OrderBook("FE", _gbpusd.Name,
+            var gbpusdOb = new OrderBook("FE", _gbpusd,
                 new List<VolumePrice>(), // bids
                 new List<VolumePrice> // asks
                 {
@@ -967,7 +930,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1.28167m, 2909.98m)
                 },
                 DateTime.Now);
-            gbpusdOb.SetAssetPair(_gbpusd);
 
             var bids = SynthOrderBook.GetBids(gbpusdOb, _usdgbp).ToList();
             var orderedBids = bids.OrderByDescending(x => x.Price).ToList();
@@ -980,7 +942,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void SynthOrderBook_GetAsks_Streight_Test()
         {
-            var gbpusdOb = new OrderBook("FE", _gbpusd.Name,
+            var gbpusdOb = new OrderBook("FE", _gbpusd,
                 new List<VolumePrice>(), // bids
                 new List<VolumePrice> // asks
                 {
@@ -988,7 +950,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1.28167m, 2909.98m)
                 },
                 DateTime.Now);
-            gbpusdOb.SetAssetPair(_gbpusd);
 
             var bids = SynthOrderBook.GetAsks(gbpusdOb, _gbpusd).ToList();
             var orderedBids = bids.OrderBy(x => x.Price).ToList();
@@ -1001,7 +962,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void SynthOrderBook_GetAsks_Reverseed_Test()
         {
-            var gbpusdOb = new OrderBook("FE", _gbpusd.Name,
+            var gbpusdOb = new OrderBook("FE", _gbpusd,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1.28167m, 2909.98m),
@@ -1009,7 +970,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 new List<VolumePrice>(), // asks
                 DateTime.Now);
-            gbpusdOb.SetAssetPair(_gbpusd);
 
             var bids = SynthOrderBook.GetAsks(gbpusdOb, _usdgbp).ToList();
             var orderedBids = bids.OrderBy(x => x.Price).ToList();
@@ -1023,22 +983,17 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
         private IReadOnlyList<OrderBook> GetOrderBooks(AssetPair assetPair1, AssetPair assetPair2)
         {
-            var orderBook1 = new OrderBook("FE", assetPair1.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
-            orderBook1.SetAssetPair(assetPair1);
-            var orderBook2 = new OrderBook("FE", assetPair2.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
-            orderBook2.SetAssetPair(assetPair2);
-
+            var orderBook1 = new OrderBook("FE", assetPair1, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
+            var orderBook2 = new OrderBook("FE", assetPair2, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
+            
             return new List<OrderBook> { orderBook1, orderBook2 };
         }
 
         private IReadOnlyList<OrderBook> GetOrderBooks(AssetPair assetPair1, AssetPair assetPair2, AssetPair assetPair3)
         {
-            var orderBook1 = new OrderBook("FE", assetPair1.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
-            orderBook1.SetAssetPair(assetPair1);
-            var orderBook2 = new OrderBook("FE", assetPair2.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
-            orderBook2.SetAssetPair(assetPair2);
-            var orderBook3 = new OrderBook("FE", assetPair3.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
-            orderBook3.SetAssetPair(assetPair3);
+            var orderBook1 = new OrderBook("FE", assetPair1, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
+            var orderBook2 = new OrderBook("FE", assetPair2, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
+            var orderBook3 = new OrderBook("FE", assetPair3, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
 
             return new List<OrderBook> { orderBook1, orderBook2, orderBook3 };
         }

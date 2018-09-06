@@ -12,6 +12,7 @@ namespace Lykke.Service.ArbitrageDetector
             CreateMap<Core.Domain.AssetPair, AssetPair>();
             CreateMap<Core.Domain.Exchange, Exchange>();
             CreateMap<Core.Domain.ExchangeFees, ExchangeFees>();
+            CreateMap<ExchangeFees, Core.Domain.ExchangeFees>();
             CreateMap<Core.Domain.LykkeArbitrageRow, LykkeArbitrageRow>();
             CreateMap<Core.Domain.Matrix, Matrix>();
             CreateMap<Core.Domain.MatrixCell, MatrixCell>();

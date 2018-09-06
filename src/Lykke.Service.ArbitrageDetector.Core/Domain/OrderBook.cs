@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using MoreLinq;
-using Newtonsoft.Json;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
@@ -15,12 +14,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// Exchange name.
         /// </summary>
         public string Source { get; }
-
-        /// <summary>
-        /// String of an asset pair.
-        /// </summary>
-        [JsonProperty("asset")]
-        public string AssetPairStr { get; }
 
         /// <summary>
         /// Asset pair.
@@ -65,10 +58,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Constructor.
         /// </summary>
-        public OrderBook(string source, string asset, IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks, DateTime timestamp)
+        public OrderBook(string source, AssetPair assetPair, IReadOnlyList<VolumePrice> bids, IReadOnlyList<VolumePrice> asks, DateTime timestamp)
         {
             Source = string.IsNullOrEmpty(source) ? throw new ArgumentException(nameof(source)) : source;
-            AssetPairStr = string.IsNullOrEmpty(asset) ? throw new ArgumentException(nameof(asset)) : asset;
+            AssetPair = assetPair.IsEmpty() ? throw new ArgumentException(nameof(assetPair)) : assetPair;
             Bids = bids.Where(x => x.Price != 0 && x.Volume != 0)
                        .OrderByDescending(x => x.Price).ToList();
             Asks = asks.Where(x => x.Price != 0 && x.Volume != 0)
@@ -77,33 +70,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         }
 
         /// <summary>
-        /// Set asset pair to AssetPair from string by providing onw of the asset.
-        /// </summary>
-        public void SetAssetPair(string oneOfTheAssets)
-        {
-            if (string.IsNullOrWhiteSpace(oneOfTheAssets))
-                throw new ArgumentNullException(nameof(oneOfTheAssets));
-
-            AssetPair = AssetPair.FromString(AssetPairStr, oneOfTheAssets);
-        }
-
-        /// <summary>
-        /// Set AssetPair.
-        /// </summary>
-        public void SetAssetPair(AssetPair assetPair)
-        {
-            if (assetPair.IsEmpty())
-                throw new ArgumentNullException(nameof(assetPair));
-
-            AssetPair = assetPair;
-        }
-
-        /// <summary>
         /// Returns new reversed order book.
         /// </summary>
         public OrderBook Reverse()
         {
-            var result = new OrderBook(Source, AssetPair.Quote + AssetPair.Base,
+            var result = new OrderBook(Source, AssetPair,
                 Asks.Select(x => x.Reciprocal()).OrderBy(x => x.Price).ToList(),
                 Bids.Select(x => x.Reciprocal()).OrderByDescending(x => x.Price).ToList(),
                 Timestamp);
@@ -115,7 +86,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <inheritdoc />
         public override string ToString()
         {
-            return FormatSourceAssetPair(Source, AssetPair.IsEmpty() ? AssetPairStr : AssetPair.Name);
+            return FormatSourceAssetPair(Source, AssetPair.Name);
         }
 
         /// <summary>
