@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using Lykke.Common.Api.Contract.Responses;
 using Lykke.Service.ArbitrageDetector.Settings;
+using AutoMapper;
 
 namespace Lykke.Service.ArbitrageDetector
 {
@@ -32,6 +33,12 @@ namespace Lykke.Service.ArbitrageDetector
                     logs.AzureTableConnectionStringResolver = settings =>
                         settings.ArbitrageDetector.Db.LogsConnectionString;
                 };
+
+                Mapper.Initialize(cfg =>
+                {
+                    cfg.AddProfiles(typeof(AutoMapperProfile));
+                });
+                Mapper.AssertConfigurationIsValid();
             });
         }
 
