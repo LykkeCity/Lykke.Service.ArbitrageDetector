@@ -1031,7 +1031,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
         private static AssetPair GetAssetPair(string @base, string quote)
         {
-            return new AssetPair(@base, quote);
+            return new AssetPair(@base, quote, 8, 8);
         }
     }
 }

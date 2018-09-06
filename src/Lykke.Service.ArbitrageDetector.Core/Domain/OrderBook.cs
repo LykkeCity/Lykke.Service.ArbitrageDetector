@@ -61,7 +61,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public OrderBook(string source, AssetPair assetPair, IReadOnlyList<VolumePrice> bids, IReadOnlyList<VolumePrice> asks, DateTime timestamp)
         {
             Source = string.IsNullOrEmpty(source) ? throw new ArgumentException(nameof(source)) : source;
-            AssetPair = assetPair.IsEmpty() ? throw new ArgumentException(nameof(assetPair)) : assetPair;
+            AssetPair = assetPair ?? throw new ArgumentException(nameof(assetPair));
             Bids = bids.Where(x => x.Price != 0 && x.Volume != 0)
                        .OrderByDescending(x => x.Price).ToList();
             Asks = asks.Where(x => x.Price != 0 && x.Volume != 0)

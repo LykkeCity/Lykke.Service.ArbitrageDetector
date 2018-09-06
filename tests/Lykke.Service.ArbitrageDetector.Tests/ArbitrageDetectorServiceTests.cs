@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Lykke.Logs;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
-using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Services;
 using Moq;
 using Xunit;
@@ -16,18 +15,15 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 {
     public class ArbitrageDetectorServiceTests
     {
-        private readonly AssetPair _btceur = new AssetPair("BTC", "EUR");
-        private readonly AssetPair _eurbtc = new AssetPair("EUR", "BTC");
-        private readonly AssetPair _eurusd = new AssetPair("EUR", "USD");
-        private readonly AssetPair _usdeur = new AssetPair("USD", "EUR");
-        private readonly AssetPair _btcusd = new AssetPair("BTC", "USD");
-        private readonly AssetPair _eurjpy = new AssetPair("EUR", "JPY");
-        private readonly AssetPair _jpyeur = new AssetPair("JPY", "EUR");
-        private readonly AssetPair _jpyusd = new AssetPair("JPY", "USD");
-        private readonly AssetPair _usdjpy = new AssetPair("USD", "JPY");
-
-
-
+        private readonly AssetPair _btceur = new AssetPair("BTC", "EUR", 8, 8);
+        private readonly AssetPair _eurbtc = new AssetPair("EUR", "BTC", 8, 8);
+        private readonly AssetPair _eurusd = new AssetPair("EUR", "USD", 8, 8);
+        private readonly AssetPair _usdeur = new AssetPair("USD", "EUR", 8, 8);
+        private readonly AssetPair _btcusd = new AssetPair("BTC", "USD", 8, 8);
+        private readonly AssetPair _eurjpy = new AssetPair("EUR", "JPY", 8, 8);
+        private readonly AssetPair _jpyeur = new AssetPair("JPY", "EUR", 8, 8);
+        private readonly AssetPair _jpyusd = new AssetPair("JPY", "USD", 8, 8);
+        private readonly AssetPair _usdjpy = new AssetPair("USD", "JPY", 8, 8);
         private const bool performance = false;
 
         [Fact]
@@ -1300,8 +1296,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var arbitrageDetector = GetArbitrageDetector(settings);
 
             var orderBooks = new List<OrderBook>();
-            orderBooks.AddRange(Generate2OrderBooksForSynthOrderBooks(500, "GDAX", new AssetPair("BTC", "USD"), 10, 11000, 10000, 10, 11500, 11000));
-            orderBooks.AddRange(Generate2OrderBooksForSynthOrderBooks(500, "Bitfinex", new AssetPair("BTC", "USD"), 10, 11000, 10200, 10, 11600, 11000));
+            orderBooks.AddRange(Generate2OrderBooksForSynthOrderBooks(500, "GDAX", new AssetPair("BTC", "USD", 8, 8), 10, 11000, 10000, 10, 11500, 11000));
+            orderBooks.AddRange(Generate2OrderBooksForSynthOrderBooks(500, "Bitfinex", new AssetPair("BTC", "USD", 8, 8), 10, 11000, 10200, 10, 11600, 11000));
             Assert.Equal(2000, orderBooks.Count);
 
             foreach (var orderBook in orderBooks)
@@ -1330,14 +1326,14 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var arbitrageDetector = GetArbitrageDetector(settings);
 
             var orderBooks = new List<OrderBook>();
-            orderBooks.AddRange(GenerateOrderBooks(2, "TEST1", new AssetPair("BTC", "USD"), 10, 11000, 10000, 10, 11500, 11000));
+            orderBooks.AddRange(GenerateOrderBooks(2, "TEST1", new AssetPair("BTC", "USD", 8, 8), 10, 11000, 10000, 10, 11500, 11000));
 
-            orderBooks.AddRange(GenerateOrderBooks(2, "TEST2", new AssetPair("BTC", "EUR"), 10, 8980.95m, 8825, 10, 9000, 8980.95m));
-            orderBooks.AddRange(GenerateOrderBooks(1, "TEST3", new AssetPair("EUR", "USD"), 10, 1.2200m, 1.2190m, 10, 1.2205m, 1.2200m));
+            orderBooks.AddRange(GenerateOrderBooks(2, "TEST2", new AssetPair("BTC", "EUR", 8, 8), 10, 8980.95m, 8825, 10, 9000, 8980.95m));
+            orderBooks.AddRange(GenerateOrderBooks(1, "TEST3", new AssetPair("EUR", "USD", 8, 8), 10, 1.2200m, 1.2190m, 10, 1.2205m, 1.2200m));
 
-            orderBooks.AddRange(GenerateOrderBooks(2, "TEST4", new AssetPair("BTC", "CHF"), 10, 9197, 9196, 10, 9196, 9195));
-            orderBooks.AddRange(GenerateOrderBooks(1, "TEST5", new AssetPair("CHF", "JPY"), 10, 131, 130, 10, 134, 132));
-            orderBooks.AddRange(GenerateOrderBooks(1, "TEST6", new AssetPair("JPY", "USD"), 10, 0.009132m, 0.009131m, 10, 0.009135m, 0.009133m));
+            orderBooks.AddRange(GenerateOrderBooks(2, "TEST4", new AssetPair("BTC", "CHF", 8, 8), 10, 9197, 9196, 10, 9196, 9195));
+            orderBooks.AddRange(GenerateOrderBooks(1, "TEST5", new AssetPair("CHF", "JPY", 8, 8), 10, 131, 130, 10, 134, 132));
+            orderBooks.AddRange(GenerateOrderBooks(1, "TEST6", new AssetPair("JPY", "USD", 8, 8), 10, 0.009132m, 0.009131m, 10, 0.009135m, 0.009133m));
 
             Assert.Equal(9, orderBooks.Count);
 
@@ -1367,10 +1363,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var arbitrageDetector = GetArbitrageDetector(settings);
 
             var orderBooks = new List<OrderBook>();
-            orderBooks.AddRange(GenerateOrderBooks(7, "GDAX", new AssetPair("BTC", "USD"), 10, 11000, 10000, 10, 11500, 11000));
-            orderBooks.AddRange(GenerateOrderBooks(7, "Bitfinex", new AssetPair("BTC", "USD"), 10, 10900, 10200, 10, 11600, 10900));
-            orderBooks.AddRange(GenerateOrderBooks(7, "Quoine", new AssetPair("BTC", "EUR"), 10, 8980.95m, 8825, 10, 9000, 8980.95m));
-            orderBooks.AddRange(GenerateOrderBooks(7, "Binance", new AssetPair("EUR", "USD"), 10, 1.2200m, 1.2190m, 10, 1.2205m, 1.2200m));
+            orderBooks.AddRange(GenerateOrderBooks(7, "GDAX", new AssetPair("BTC", "USD", 8, 8), 10, 11000, 10000, 10, 11500, 11000));
+            orderBooks.AddRange(GenerateOrderBooks(7, "Bitfinex", new AssetPair("BTC", "USD", 8, 8), 10, 10900, 10200, 10, 11600, 10900));
+            orderBooks.AddRange(GenerateOrderBooks(7, "Quoine", new AssetPair("BTC", "EUR", 8, 8), 10, 8980.95m, 8825, 10, 9000, 8980.95m));
+            orderBooks.AddRange(GenerateOrderBooks(7, "Binance", new AssetPair("EUR", "USD", 8, 8), 10, 1.2200m, 1.2190m, 10, 1.2205m, 1.2200m));
             Assert.Equal(28, orderBooks.Count);
             foreach (var orderBook in orderBooks)
                 arbitrageDetector.Process(orderBook);
@@ -1389,10 +1385,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
 
             orderBooks = new List<OrderBook>();
-            orderBooks.AddRange(GenerateOrderBooks(7, "GDAX", new AssetPair("BTC", "USD"), 10, 11000, 10000, 10, 11500, 11000));
-            orderBooks.AddRange(GenerateOrderBooks(7, "Bitfinex", new AssetPair("BTC", "USD"), 10, 10900, 10200, 10, 11600, 10900));
-            orderBooks.AddRange(GenerateOrderBooks(7, "Quoine", new AssetPair("BTC", "EUR"), 10, 8980.95m, 8825, 10, 9000, 8980.95m));
-            orderBooks.AddRange(GenerateOrderBooks(7, "Binance", new AssetPair("EUR", "USD"), 10, 1.2200m, 1.2190m, 10, 1.2205m, 1.2200m));
+            orderBooks.AddRange(GenerateOrderBooks(7, "GDAX", new AssetPair("BTC", "USD", 8, 8), 10, 11000, 10000, 10, 11500, 11000));
+            orderBooks.AddRange(GenerateOrderBooks(7, "Bitfinex", new AssetPair("BTC", "USD", 8, 8), 10, 10900, 10200, 10, 11600, 10900));
+            orderBooks.AddRange(GenerateOrderBooks(7, "Quoine", new AssetPair("BTC", "EUR", 8, 8), 10, 8980.95m, 8825, 10, 9000, 8980.95m));
+            orderBooks.AddRange(GenerateOrderBooks(7, "Binance", new AssetPair("EUR", "USD", 8, 8), 10, 1.2200m, 1.2190m, 10, 1.2205m, 1.2200m));
             Assert.Equal(28, orderBooks.Count);
             foreach (var orderBook in orderBooks)
                 arbitrageDetector.Process(orderBook);
@@ -1441,7 +1437,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 ExchangesFees = new List<ExchangeFees> { new ExchangeFees { ExchangeName = "GDAX", DepositFee = 0.77m, TradingFee = 0.77m } }
             };
 
-            var arbitrageDetectorService = new ArbitrageDetectorService(SettingsRepository(startupSettings), LykkeExchangeService(), LogFactory.Create());
+            var arbitrageDetectorService = new ArbitrageDetectorService(SettingsRepository(startupSettings), LogFactory.Create());
 
             var settings = new Settings
             {
@@ -1594,7 +1590,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
         private ArbitrageDetectorService GetArbitrageDetector(Settings settings)
         {
-            return new ArbitrageDetectorService(SettingsRepository(settings), LykkeExchangeService(), LogFactory.Create());
+            return new ArbitrageDetectorService(SettingsRepository(settings), LogFactory.Create());
         }
 
         private ISettingsRepository SettingsRepository(Settings settings)
@@ -1603,15 +1599,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             settingsRepository.Setup(x => x.GetAsync()).ReturnsAsync(settings);
 
             return settingsRepository.Object;
-        }
-
-        private ILykkeExchangeService LykkeExchangeService()
-        {
-            var assetsRepository = new Mock<ILykkeExchangeService>();
-            assetsRepository.Setup(x => x.GetAccuracy(It.IsAny<AssetPair>()))
-                .Returns<AssetPair>(assetPair => (5, 3));
-
-            return assetsRepository.Object;
         }
 
         private Settings GetSettings(IEnumerable<string> baseAssets, string quoteAsset, int minSpread)
@@ -1703,8 +1690,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 var asks = GenerateVolumePricesForSynthOrderBooks(askCount, minAsk, maxAsk);
 
                 var intermediateAsset = RandomString(3);
-                var orderBook1 = new OrderBook(source + i, new AssetPair(assetPair.Base, intermediateAsset), bids, asks, DateTime.UtcNow);
-                var orderBook2 = new OrderBook(source + i, new AssetPair(intermediateAsset, assetPair.Quote), bids, asks, DateTime.UtcNow);
+                var orderBook1 = new OrderBook(source + i, new AssetPair(assetPair.Base, intermediateAsset, 8, 8), bids, asks, DateTime.UtcNow);
+                var orderBook2 = new OrderBook(source + i, new AssetPair(intermediateAsset, assetPair.Quote, 8, 8), bids, asks, DateTime.UtcNow);
 
                 result.Add(orderBook1);
                 result.Add(orderBook2);
@@ -1741,12 +1728,12 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 var asks = GenerateVolumePricesForSynthOrderBooks(askCount, minAsk, maxAsk);
 
                 var intermediate1Asset = RandomString(3);
-                var orderBook1 = new OrderBook(source + i, new AssetPair(assetPair.Base, intermediate1Asset), bids, asks, DateTime.UtcNow);
+                var orderBook1 = new OrderBook(source + i, new AssetPair(assetPair.Base, intermediate1Asset, 8, 8), bids, asks, DateTime.UtcNow);
 
                 var intermediate2Asset = RandomString(3);
-                var orderBook2 = new OrderBook(source + i, new AssetPair(intermediate1Asset, intermediate2Asset), bids, asks, DateTime.UtcNow);
+                var orderBook2 = new OrderBook(source + i, new AssetPair(intermediate1Asset, intermediate2Asset, 8, 8), bids, asks, DateTime.UtcNow);
 
-                var orderBook3 = new OrderBook(source + i, new AssetPair(intermediate2Asset, assetPair.Quote), bids, asks, DateTime.UtcNow);
+                var orderBook3 = new OrderBook(source + i, new AssetPair(intermediate2Asset, assetPair.Quote, 8, 8), bids, asks, DateTime.UtcNow);
 
                 result.Add(orderBook1);
                 result.Add(orderBook2);

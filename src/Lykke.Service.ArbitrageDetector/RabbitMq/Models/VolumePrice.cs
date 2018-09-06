@@ -13,5 +13,10 @@ namespace Lykke.Service.ArbitrageDetector.RabbitMq.Models
             Price = price;
             Volume = Math.Abs(volume);
         }
+
+        public override string ToString()
+        {
+            return $"{Price:0.##}-{Volume:0.##}";
+        }
     }
 }

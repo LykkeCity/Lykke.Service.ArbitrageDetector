@@ -11,7 +11,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         public void ArbitrageVolume_NoArbitrage_EmptyOrderBooks_Test()
         {
             const string exchangeName = "FE";
-            var assetPair = new AssetPair("BTC", "USD");
+            var assetPair = new AssetPair("BTC", "USD", 8, 8);
             var timestamp = DateTime.UtcNow;
 
             var orderBook1 = new OrderBook(exchangeName, assetPair, new List<VolumePrice>(), new List<VolumePrice>(), timestamp);
@@ -25,7 +25,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         public void ArbitrageVolume_NoArbitrage_TheSameOrderBook_Test()
         {
             const string exchangeName = "FE";
-            var assetPair = new AssetPair("BTC", "USD");
+            var assetPair = new AssetPair("BTC", "USD", 8, 8);
             var timestamp = DateTime.UtcNow;
 
             var asks = new List<VolumePrice>
@@ -51,7 +51,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         public void ArbitrageVolumePnL_Simple1_Test()
         {
             const string exchangeName = "FE";
-            var assetPair = new AssetPair("BTC", "USD");
+            var assetPair = new AssetPair("BTC", "USD", 8, 8);
             var timestamp = DateTime.UtcNow;
             
             var asks = new List<VolumePrice>
@@ -81,7 +81,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             // https://docs.google.com/spreadsheets/d/1plnbQSS-WP6ykTv8wIi_hbAhk_aSz_tllXFIE3jhFpU/edit#gid=0
 
             const string exchangeName = "FE";
-            var assetPair = new AssetPair("BTC", "USD");
+            var assetPair = new AssetPair("BTC", "USD", 8, 8);
             var timestamp = DateTime.UtcNow;
 
             var asks = new List<VolumePrice>
@@ -117,7 +117,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         {
             // https://docs.google.com/spreadsheets/d/1plnbQSS-WP6ykTv8wIi_hbAhk_aSz_tllXFIE3jhFpU/edit#gid=2011486790
             const string exchangeName = "FE";
-            var assetPair = new AssetPair("BTC", "USD");
+            var assetPair = new AssetPair("BTC", "USD", 8, 8);
             var timestamp = DateTime.UtcNow;
 
             var asks = new List<VolumePrice>

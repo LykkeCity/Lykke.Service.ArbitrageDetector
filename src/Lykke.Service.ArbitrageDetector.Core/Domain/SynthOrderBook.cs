@@ -15,9 +15,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public IEnumerable<VolumePrice> Asks => OrderedVolumePrices(GetAsks);
 
-        public VolumePrice? BestBid => Bids.FirstOrDefault();
+        public VolumePrice? BestBid => Bids.Any() ? Bids.First() : (VolumePrice?)null;
 
-        public VolumePrice? BestAsk => Asks.FirstOrDefault();
+        public VolumePrice? BestAsk => Asks.Any() ? Asks.First() : (VolumePrice?)null;
 
         public IReadOnlyList<OrderBook> OriginalOrderBooks { get; }
 
@@ -36,7 +36,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public static SynthOrderBook FromOrderBook(OrderBook orderBook, AssetPair target)
         {
             Debug.Assert(orderBook != null);
-            Debug.Assert(!target.IsEmpty());
+            Debug.Assert(target != null);
             Debug.Assert(target.IsEqualOrReversed(orderBook.AssetPair));
 
             var result = new SynthOrderBook(target, new List<OrderBook> { orderBook });
@@ -47,10 +47,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public static SynthOrderBook FromOrderBooks(OrderBook first, OrderBook second, AssetPair target)
         {
             Debug.Assert(first != null);
-            Debug.Assert(!first.AssetPair.IsEmpty());
+            Debug.Assert(first.AssetPair != null);
             Debug.Assert(second != null);
-            Debug.Assert(!second.AssetPair.IsEmpty());
-            Debug.Assert(!target.IsEmpty());
+            Debug.Assert(second.AssetPair != null);
+            Debug.Assert(target != null);
 
             var result = new SynthOrderBook(target, GetOrdered(new List<OrderBook> { first, second }, target));
 
@@ -60,12 +60,12 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public static SynthOrderBook FromOrderBooks(OrderBook first, OrderBook second, OrderBook third, AssetPair target)
         {
             Debug.Assert(first != null);
-            Debug.Assert(!first.AssetPair.IsEmpty());
+            Debug.Assert(first.AssetPair != null);
             Debug.Assert(second != null);
-            Debug.Assert(!second.AssetPair.IsEmpty());
+            Debug.Assert(second.AssetPair != null);
             Debug.Assert(third != null);
-            Debug.Assert(!third.AssetPair.IsEmpty());
-            Debug.Assert(!target.IsEmpty());
+            Debug.Assert(third.AssetPair != null);
+            Debug.Assert(target != null);
 
             var result = new SynthOrderBook(target, GetOrdered(new List<OrderBook> { first, second, third }, target));
 
@@ -396,7 +396,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public static IEnumerable<VolumePrice> GetBids(OrderBook orderBook, AssetPair target)
         {
             Debug.Assert(orderBook != null);
-            Debug.Assert(!target.IsEmpty());
+            Debug.Assert(target != null);
             Debug.Assert(target.IsEqualOrReversed(orderBook.AssetPair));
 
             var bids = orderBook.Bids;
@@ -427,7 +427,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public static IEnumerable<VolumePrice> GetAsks(OrderBook orderBook, AssetPair target)
         {
             Debug.Assert(orderBook != null);
-            Debug.Assert(!target.IsEmpty());
+            Debug.Assert(target != null);
             Debug.Assert(target.IsEqualOrReversed(orderBook.AssetPair));
 
             var bids = orderBook.Bids;
@@ -459,7 +459,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         {
             Debug.Assert(orderBooks != null);
             Debug.Assert(orderBooks.Any());
-            Debug.Assert(!target.IsEmpty());
+            Debug.Assert(target != null);
 
             var result = new List<OrderBook>();
 
@@ -490,7 +490,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         {
             Debug.Assert(orderBooks != null);
             Debug.Assert(orderBooks.Any());
-            Debug.Assert(!target.IsEmpty());
+            Debug.Assert(target != null);
 
             var result = new List<AssetPair>();
 

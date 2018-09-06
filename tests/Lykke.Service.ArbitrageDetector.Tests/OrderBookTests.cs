@@ -12,8 +12,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         public void ReverseTest()
         {
             const string exchangeName = "FakeExchange";
-            var assetPair = new AssetPair("BTC", "USD");
-            var reversedPair = new AssetPair("USD", "BTC");
+            var assetPair = new AssetPair("BTC", "USD", 8, 8);
+            var reversedPair = new AssetPair("USD", "BTC", 8, 8);
             var timestamp = DateTime.UtcNow;
 
             var orderBook = new OrderBook(exchangeName, assetPair,

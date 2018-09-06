@@ -154,10 +154,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             var watch = Stopwatch.StartNew();
 
-            var minSpread = Settings().MinSpread;
-
             var synthsCount = 0;
-            var totalItarations = 0;
             // O( (n^2)/2 )
             for (var i = 0; i < orderBooks.Count; i++)
             {
@@ -180,8 +177,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     // Compare each synthetic with target
                     foreach (var synthOrderBook in synthOrderBooks)
                     {
-                        totalItarations++;
-
                         decimal spread = 0;
                         decimal volume = 0;
                         decimal pnL = 0;
@@ -190,23 +185,23 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         if (target.BestBid?.Price > synthOrderBook.BestAsk?.Price)
                         {
                             spread = Arbitrage.GetSpread(target.BestBid.Value.Price, synthOrderBook.BestAsk.Value.Price);
-                            if (minSpread < 0 && spread < minSpread)
-                                continue;
                             var volumePnL = Arbitrage.GetArbitrageVolumePnL(target.Bids, synthOrderBook.Asks);
-                            volume = volumePnL?.Volume ?? throw new InvalidOperationException("Every arbitrage must have volume");
-                            pnL = volumePnL?.PnL ?? throw new InvalidOperationException("Every arbitrage must have PnL");
+                            Debug.Assert(volumePnL?.Volume != null);
+                            Debug.Assert(volumePnL?.PnL != null);
                             targetSide = "Bid";
+                            volume = volumePnL.Value.Volume;
+                            pnL = volumePnL.Value.PnL;
                         }
 
                         if (synthOrderBook.BestBid?.Price > target.BestAsk?.Price)
                         {
                             spread = Arbitrage.GetSpread(synthOrderBook.BestBid.Value.Price, target.BestAsk.Value.Price);
-                            if (minSpread < 0 && spread < minSpread)
-                                continue;
                             var volumePnL = Arbitrage.GetArbitrageVolumePnL(synthOrderBook.Bids, target.Asks);
-                            volume = volumePnL?.Volume ?? throw new InvalidOperationException("Every arbitrage must have volume");
-                            pnL = volumePnL?.PnL ?? throw new InvalidOperationException("Every arbitrage must have PnL");
+                            Debug.Assert(volumePnL?.Volume != null);
+                            Debug.Assert(volumePnL?.PnL != null);
                             targetSide = "Ask";
+                            volume = volumePnL.Value.Volume;
+                            pnL = volumePnL.Value.PnL;
                         }
 
                         if (string.IsNullOrWhiteSpace(targetSide)) // no arbitrages
@@ -228,8 +223,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
 
             watch.Stop();
-            if (watch.ElapsedMilliseconds > 1000)
-                _log.Info($"{watch.ElapsedMilliseconds} ms, {result.Count} arbitrages, {orderBooks.Count} order books, {synthsCount} synthetic order books created, {totalItarations} iterations.");
+            //if (watch.ElapsedMilliseconds > 1000)
+                _log.Info($"{watch.ElapsedMilliseconds} ms, {result.Count} arbitrages, {orderBooks.Count} order books, {synthsCount} synthetic order books.");
 
             return Task.FromResult(result.OrderBy(x => x.Target).ThenBy(x => x.Source).ToList() as IReadOnlyList<LykkeArbitrageRow>);
         }
@@ -248,7 +243,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             if (sourceAsset == targetAsset)
                 return 1;
 
-            var target = new AssetPair(sourceAsset, targetAsset);
+            var target = new AssetPair(sourceAsset, targetAsset, 8, 8);
 
             decimal? result = null;
             var synths1 = SynthOrderBook.GetSynthsFrom1(target, orderBooks, orderBooks);

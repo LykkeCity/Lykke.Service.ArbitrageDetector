@@ -28,12 +28,17 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly ConcurrentDictionary<AssetPair, OrderBook> _orderBooks = new ConcurrentDictionary<AssetPair, OrderBook>();
 
         private readonly IAssetsService _assetsService;
+        private readonly IArbitrageDetectorService _arbitrageDetectorService;
+        private readonly ILykkeArbitrageDetectorService _lykkeArbitrageDetectorService;
         private readonly IOrderBookProviderClient _orderBookProviderClient;
         private readonly ILog _log;
 
-        public LykkeExchangeService(IAssetsService assetsService, IOrderBookProviderClient orderBookProviderClient, ILogFactory logFactory)
+        public LykkeExchangeService(IAssetsService assetsService, IArbitrageDetectorService arbitrageDetectorService,
+            ILykkeArbitrageDetectorService lykkeArbitrageDetectorService, IOrderBookProviderClient orderBookProviderClient, ILogFactory logFactory)
         {
             _assetsService = assetsService;
+            _arbitrageDetectorService = arbitrageDetectorService;
+            _lykkeArbitrageDetectorService = lykkeArbitrageDetectorService;
             _orderBookProviderClient = orderBookProviderClient;
             _log = logFactory.CreateLog(this);
         }
@@ -77,7 +82,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 var baseName = GetShortestName(baseAsset.Id, baseAsset.Name, baseAsset.DisplayId);
                 var quoteName = GetShortestName(quoteAsset.Id, quoteAsset.Name, quoteAsset.DisplayId);
 
-                var assetPair = new AssetPair(baseName, quoteName);
+                var assetPair = new AssetPair(baseName, quoteName, lykkeAssetPair.Accuracy, lykkeAssetPair.InvertedAccuracy);
                 if (!_assetPairs.ContainsKey(assetPair))
                 {
                     _assetPairs[assetPair] = lykkeAssetPair;
@@ -118,7 +123,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 var assetPair = assetPairlykkeAssetPair.Key;
                 var lykkeAssetPair = assetPairlykkeAssetPair.Value;
 
-                LykkeOrderBook lykkeOrderBook;
+                LykkeOrderBook lykkeOrderBook = null;
                 try
                 {
                     lykkeOrderBook = await _orderBookProviderClient.GetOrderBookAsync(lykkeAssetPair.Id);
@@ -126,7 +131,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 catch (Exception)
                 {
                     // Some order books can't be found by asset pair id
-                    continue;
                 }
                 
                 if (lykkeOrderBook == null)
@@ -135,6 +139,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 var orderBook = Convert(assetPair, lykkeOrderBook);
 
                 _orderBooks[assetPair] = orderBook;
+
+                // Initialize arbitrage detector services
+                _arbitrageDetectorService.Process(orderBook);
+                _lykkeArbitrageDetectorService.Process(orderBook);
             }
 
             _log.Info($"Initialized {_orderBooks.Count} Lykke order books.");
@@ -184,19 +192,19 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return allNames.Where(x => x != null).MinBy(x => x.Length);
         }
 
-        public AssetPair? InferBaseAndQuoteAssets(string assetPairStr)
+        public AssetPair InferBaseAndQuoteAssets(string assetPairStr)
         {
             if (string.IsNullOrWhiteSpace(assetPairStr))
                 throw new ArgumentNullException(nameof(assetPairStr));
 
             // The exact asset pair name
             var assetPair = _assetPairs.Keys.SingleOrDefault(x => string.Equals(x.Name, assetPairStr, StringComparison.OrdinalIgnoreCase));
-            if (!assetPair.IsEmpty())
+            if (assetPair == null)
             {
-                return assetPair;
+                return null;
             }
 
-            AssetPair oneInfered;
+            AssetPair oneInfered = null;
             var assets = _assets.Keys;
             // Try to infer by assets
             foreach (var asset in assets)
@@ -218,7 +226,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         continue;
                     }
 
-                    assetPair = new AssetPair(@base, quote);
+                    assetPair = new AssetPair(@base, quote, 8, 8);
 
                     if (infered == 1)
                     {
@@ -232,17 +240,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
             }
 
             // If found only one asset then use it
-            if (!oneInfered.IsEmpty())
-            {
-                return oneInfered;
-            }
-
-            return null;
+            return oneInfered;
         }
 
         public (int Price, int Volume)? GetAccuracy(AssetPair assetPair)
         {
-            if (assetPair.IsEmpty())
+            if (assetPair == null)
                 throw new ArgumentOutOfRangeException(nameof(assetPair));
 
             if (!_accuracies.ContainsKey(assetPair))

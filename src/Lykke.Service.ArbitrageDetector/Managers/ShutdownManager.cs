@@ -2,23 +2,23 @@
 using Common;
 using Lykke.Sdk;
 using Lykke.Service.ArbitrageDetector.Core.Services;
-using Lykke.Service.ArbitrageDetector.RabbitSubscribers;
+using Lykke.Service.ArbitrageDetector.RabbitMq.Subscribers;
 
 namespace Lykke.Service.ArbitrageDetector.Managers
 {
     internal class ShutdownManager : IShutdownManager
     {
-        private readonly RabbitMessageSubscriber[] _rabbitMessageSubscribers;
+        private readonly OrderBooksSubscriber[] _orderBooksSubscribers;
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
         private readonly ILykkeArbitrageDetectorService _lykkeArbitrageDetectorService;
         private readonly IMatrixHistoryService _matrixHistoryService;
 
-        public ShutdownManager(RabbitMessageSubscriber[] rabbitMessageSubscribers,
+        public ShutdownManager(OrderBooksSubscriber[] orderBooksSubscribers,
             IArbitrageDetectorService arbitrageDetectorService,
             ILykkeArbitrageDetectorService lykkeArbitrageDetectorService,
             IMatrixHistoryService matrixHistoryService)
         {
-            _rabbitMessageSubscribers = rabbitMessageSubscribers;
+            _orderBooksSubscribers = orderBooksSubscribers;
             _arbitrageDetectorService = arbitrageDetectorService;
             _lykkeArbitrageDetectorService = lykkeArbitrageDetectorService;
             _matrixHistoryService = matrixHistoryService;
@@ -26,7 +26,7 @@ namespace Lykke.Service.ArbitrageDetector.Managers
 
         public Task StopAsync()
         {
-            foreach (var rabbitMessageSubscriber in _rabbitMessageSubscribers)
+            foreach (var rabbitMessageSubscriber in _orderBooksSubscribers)
                 rabbitMessageSubscriber.Stop();
 
             ((IStopable)_arbitrageDetectorService).Stop();
