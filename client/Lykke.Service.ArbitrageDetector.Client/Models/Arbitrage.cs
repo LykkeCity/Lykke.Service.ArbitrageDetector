@@ -78,7 +78,7 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// </summary>
         public static string FormatConversionPath(string bidSynthOrderBookConversionPath, string askSynthOrderBookConversionPath)
         {
-            return "(" + bidSynthOrderBookConversionPath + ") > (" + askSynthOrderBookConversionPath + ")";
+            return $"({bidSynthOrderBookConversionPath}) > ({askSynthOrderBookConversionPath})";
         }
 
         /// <summary>
