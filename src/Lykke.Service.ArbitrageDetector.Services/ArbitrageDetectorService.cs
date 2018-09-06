@@ -95,17 +95,19 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             var watch = Stopwatch.StartNew();
 
-            var newActualSynthOrderBooks = new Dictionary<AssetPairSource, SynthOrderBook>();
-            var orderBooks = GetWantedActualOrderBooks().Values;
+            var newActualSynthOrderBooks = new List<SynthOrderBook>();
+            var orderBooks = GetWantedActualOrderBooks().Values.ToList();
 
             foreach (var @base in _s.BaseAssets)
             {
                 var target = new AssetPair(@base, _s.QuoteAsset);
-                var newActualSynthsFromAll = SynthOrderBook.GetSynthsFromAll(target, orderBooks, _s.SynthMaxDepth);
+                var newActualSynthsFromAll = SynthOrderBook.GetSynthsFromAll(target, orderBooks, orderBooks);
+
                 newActualSynthOrderBooks.AddRange(newActualSynthsFromAll);
             }
 
-            _synthOrderBooks.AddOrUpdateRange(newActualSynthOrderBooks);
+            foreach (var newSynthOrderBook in newActualSynthOrderBooks)
+                _synthOrderBooks[new AssetPairSource(newSynthOrderBook.Source, newSynthOrderBook.AssetPair)] = newSynthOrderBook;
 
             watch.Stop();
             if (watch.ElapsedMilliseconds > 500)

@@ -8,68 +8,28 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 {
     public class SynthOrderBookTests
     {
-        [Fact]
-        public void ConstructorTest()
-        {
-            const string exchangeName = "FakeExchange";
-            const string conversionPath = "FakeExchange-BTCUSD";
-            var assetPair = new AssetPair("BTC", "USD");
-            var timestamp = DateTime.UtcNow;
+        private readonly AssetPair _btcusd = GetAssetPair("BTC", "USD");
+        private readonly AssetPair _btceur = GetAssetPair("BTC", "EUR");
+        private readonly AssetPair _eurusd = GetAssetPair("EUR", "USD");
+        private readonly AssetPair _gbpusd = GetAssetPair("GBP", "USD");
+        private readonly AssetPair _eurchf = GetAssetPair("EUR", "CHF");
+        private readonly AssetPair _chfusd = GetAssetPair("CHF", "USD");
+        private readonly AssetPair _usdeur = GetAssetPair("USD", "EUR");
+        private readonly AssetPair _usdgbp = GetAssetPair("USD", "GBP");
+        private readonly AssetPair _eurbtc = GetAssetPair("EUR", "BTC");
+        private readonly AssetPair _eurjpy = GetAssetPair("EUR", "JPY");
+        private readonly AssetPair _jpyusd = GetAssetPair("JPY", "USD");
+        private readonly AssetPair _usdjpy = GetAssetPair("USD", "JPY");
+        private readonly AssetPair _jpyeur = GetAssetPair("JPY", "EUR");
 
-            var bids = new List<VolumePrice>
-            {
-                new VolumePrice(8825, 9),
-                new VolumePrice(8823, 5)
-            };
-            var asks = new List<VolumePrice>
-            {
-                new VolumePrice(9000, 10),
-                new VolumePrice(8999.95m, 7),
-                new VolumePrice(8900.12345677m, 3)
-            };
-
-            void Construct1() => new SynthOrderBook("", assetPair, bids, asks, conversionPath, new List<OrderBook>(), timestamp);
-            Assert.Throws<ArgumentException>((Action)Construct1);
-
-            void Construct2() => new SynthOrderBook(null, assetPair, bids, asks, conversionPath, new List<OrderBook>(), timestamp);
-            Assert.Throws<ArgumentException>((Action)Construct2);
-
-            void Construct3() => new SynthOrderBook(exchangeName, assetPair, bids, asks, "", new List<OrderBook>(), timestamp);
-            Assert.Throws<ArgumentException>((Action)Construct3);
-
-            void Construct4() => new SynthOrderBook(exchangeName, assetPair, bids, asks, null, new List<OrderBook>(), timestamp);
-            Assert.Throws<ArgumentException>((Action)Construct4);
-
-            void Construct5() => new SynthOrderBook(exchangeName, assetPair, bids, asks, conversionPath, null, timestamp);
-            Assert.Throws<ArgumentNullException>((Action)Construct5);
-        }
 
         [Fact]
-        public void FromOrderBookExceptionTest()
+        public void FromOrderBook_0_Test()
         {
-            const string exchange = "FakeExchange";
+            const string source = "FakeExchange";
             var timestamp = DateTime.UtcNow;
-            var assetPair = new AssetPair("BTC", "EUR");
 
-            var orderBookWithEmptyAssetPair = new OrderBook(exchange, "BTCEUR", new List<VolumePrice>(), new List<VolumePrice>(), timestamp);
-
-            // AssetPair is not set in order book
-            Assert.Throws<ArgumentException>(() => SynthOrderBook.FromOrderBook(orderBookWithEmptyAssetPair, assetPair));
-
-            orderBookWithEmptyAssetPair.SetAssetPair("EUR");
-
-            Assert.Throws<ArgumentException>(() => SynthOrderBook.FromOrderBook(orderBookWithEmptyAssetPair, new AssetPair()));
-        }
-
-        [Fact]
-        public void FromOrderBookStreightTest()
-        {
-            const string exchange = "FakeExchange";
-            const string btceur = "BTCEUR";
-            var timestamp = DateTime.UtcNow;
-            var assetPair = new AssetPair("BTC", "EUR");
-
-            var btcEurOrderBook = new OrderBook(exchange, btceur,
+            var btcEurOrderBook = new OrderBook(source, _btceur.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 9), new VolumePrice(8823, 5)
@@ -79,37 +39,33 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp);
-            btcEurOrderBook.SetAssetPair("EUR");
 
-            var synthOrderBook = SynthOrderBook.FromOrderBook(btcEurOrderBook, assetPair);
-            Assert.Equal(exchange, synthOrderBook.Source);
-            Assert.Equal(btceur, synthOrderBook.AssetPairStr);
-            Assert.Equal(assetPair, synthOrderBook.AssetPair);
-            Assert.Equal(OrderBook.FormatSourceAssetPair(exchange, btceur), synthOrderBook.ConversionPath);
-            Assert.Equal(2, synthOrderBook.Bids.Count);
-            Assert.Equal(3, synthOrderBook.Asks.Count);
-            Assert.Equal(8825m, synthOrderBook.Bids.Max(x => x.Price));
+            var synthOrderBook = SynthOrderBook.FromOrderBook(btcEurOrderBook, _btceur);
+            Assert.Equal(source, synthOrderBook.Source);
+            Assert.Equal(_btceur, synthOrderBook.AssetPair);
+            Assert.Equal("BTCEUR", synthOrderBook.ConversionPath);
+            Assert.Equal(2, synthOrderBook.Bids.Count());
+            Assert.Equal(3, synthOrderBook.Asks.Count());
+            Assert.Equal(8825m, synthOrderBook.BestBid.Value.Price);
             Assert.Equal(9000m, synthOrderBook.Asks.Max(x => x.Price));
             Assert.Equal(8823m, synthOrderBook.Bids.Min(x => x.Price));
-            Assert.Equal(8900.12345677m, synthOrderBook.Asks.Min(x => x.Price));
-            Assert.Equal(9, synthOrderBook.Bids.Max(x => x.Volume));
+            Assert.Equal(8900.12345677m, synthOrderBook.BestAsk.Value.Price);
+            Assert.Equal(9, synthOrderBook.BestBid.Value.Volume);
             Assert.Equal(10, synthOrderBook.Asks.Max(x => x.Volume));
             Assert.Equal(5, synthOrderBook.Bids.Min(x => x.Volume));
-            Assert.Equal(3, synthOrderBook.Asks.Min(x => x.Volume));
+            Assert.Equal(3, synthOrderBook.BestAsk.Value.Volume);
             Assert.Equal(timestamp, synthOrderBook.Timestamp);
             Assert.Equal(1, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
-        public void FromOrderBookReversedTest()
+        public void FromOrderBook_1_Test()
         {
-            const string exchange = "FakeExchange";
-            const string btcusd = "BTCUSD";
+            const string source = "FakeExchange";
             var timestamp = DateTime.UtcNow;
-            var assetPair = new AssetPair("BTC", "USD");
-            var reversed = assetPair.Reverse();
+            var inverted = _btcusd.Reverse();
 
-            var btcUsdOrderBook = new OrderBook(exchange, btcusd,
+            var btcUsdOrderBook = new OrderBook(source, _btcusd.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/8825m, 9), new VolumePrice(1/8823m, 5)
@@ -119,58 +75,34 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/9000m, 10), new VolumePrice(1/8999.95m, 7), new VolumePrice(1/8900.12345677m, 3)
                 },
                 timestamp);
-            btcUsdOrderBook.SetAssetPair("USD");
 
-            var synthOrderBook = SynthOrderBook.FromOrderBook(btcUsdOrderBook, reversed);
-            Assert.Equal(exchange, synthOrderBook.Source);
-            Assert.Equal(reversed.Name, synthOrderBook.AssetPairStr);
-            Assert.Equal(reversed, synthOrderBook.AssetPair);
-            Assert.Equal(OrderBook.FormatSourceAssetPair(exchange, btcusd), synthOrderBook.ConversionPath);
-            Assert.Equal(3, synthOrderBook.Bids.Count);
-            Assert.Equal(2, synthOrderBook.Asks.Count);
-            Assert.Equal(9000m, synthOrderBook.Bids.Max(x => x.Price), 8);
+            var synthOrderBook = SynthOrderBook.FromOrderBook(btcUsdOrderBook, inverted);
+            Assert.Equal(source, synthOrderBook.Source);
+            Assert.Equal(inverted, synthOrderBook.AssetPair);
+            Assert.Equal("BTCUSD", synthOrderBook.ConversionPath);
+            Assert.Equal(3, synthOrderBook.Bids.Count());
+            Assert.Equal(2, synthOrderBook.Asks.Count());
+            Assert.Equal(9000m, synthOrderBook.BestBid.Value.Price, 8);
             Assert.Equal(8825m, synthOrderBook.Asks.Max(x => x.Price), 8);
             Assert.Equal(8900.12345677m, synthOrderBook.Bids.Min(x => x.Price), 8);
-            Assert.Equal(8823m, synthOrderBook.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00111111m, synthOrderBook.Bids.Max(x => x.Volume), 8);
+            Assert.Equal(8823m, synthOrderBook.BestAsk.Value.Price, 8);
+            Assert.Equal(0.00111111m, synthOrderBook.BestBid.Value.Volume, 8);
             Assert.Equal(0.00101983m, synthOrderBook.Asks.Max(x => x.Volume), 8);
             Assert.Equal(0.00033707m, synthOrderBook.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00056670m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            Assert.Equal(0.00056670m, synthOrderBook.BestAsk.Value.Volume, 8);
             Assert.Equal(timestamp, synthOrderBook.Timestamp);
             Assert.Equal(1, synthOrderBook.OriginalOrderBooks.Count);
         }
 
 
         [Fact]
-        public void From2OrderBooksExceptionTest()
-        {   
-            const string exchange = "FakeExchange";
-            var timestamp = DateTime.UtcNow;
-            var target = new AssetPair("BTC", "USD");
-
-            var orderBookWithEmptyAssetPair = new OrderBook(exchange, "BTCEUR", new List<VolumePrice>(), new List<VolumePrice>(), timestamp);
-            var goodOrderBook = new OrderBook(exchange, "BTCCHF", new List<VolumePrice>(), new List<VolumePrice>(), timestamp);
-
-            // AssetPair is not set in order book
-            Assert.Throws<ArgumentException>(() => SynthOrderBook.FromOrderBooks(orderBookWithEmptyAssetPair, goodOrderBook, target));
-            Assert.Throws<ArgumentException>(() => SynthOrderBook.FromOrderBooks(goodOrderBook, orderBookWithEmptyAssetPair, target));
-
-            orderBookWithEmptyAssetPair.SetAssetPair("EUR");
-
-            Assert.Throws<ArgumentException>(() => SynthOrderBook.FromOrderBooks(goodOrderBook, orderBookWithEmptyAssetPair, new AssetPair()));
-        }
-
-        [Fact]
-        public void From2OrderBooksReversed_0_0_Test()
+        public void From2OrderBooks_0_0_Test()
         {
-            const string exchange = "FakeExchange";
-            const string btceur = "BTCEUR";
-            const string eurusd = "EURUSD";
+            const string source = "FakeExchange";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp2 = DateTime.UtcNow;
-            var targetAssetPair = new AssetPair("BTC", "USD");
 
-            var btcEurOrderBook = new OrderBook(exchange, btceur,
+            var btcEurOrderBook = new OrderBook(source, _btceur.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 9),
@@ -183,9 +115,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair("EUR");
 
-            var eurUsdOrderBook = new OrderBook(exchange, eurusd,
+            var eurUsdOrderBook = new OrderBook(source, _eurusd.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1.11m, 9),
@@ -198,38 +129,28 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1.14m, 3)
                 },
                 timestamp2);
-            eurUsdOrderBook.SetAssetPair("EUR");
 
-            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, targetAssetPair);
-            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange, exchange), synthOrderBook.Source);
-            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
-            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
-            Assert.Equal(SynthOrderBook.GetConversionPath(exchange, btceur, exchange, eurusd), synthOrderBook.ConversionPath);
-            Assert.Equal(4, synthOrderBook.Bids.Count);
-            Assert.Equal(9, synthOrderBook.Asks.Count);
-            Assert.Equal(9795.75m, synthOrderBook.Bids.Max(x => x.Price), 8);
-            Assert.Equal(10260m, synthOrderBook.Asks.Max(x => x.Price), 8);
-            Assert.Equal(9705.3m, synthOrderBook.Bids.Min(x => x.Price), 8);
-            Assert.Equal(9968.1382715824m, synthOrderBook.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00102006m, synthOrderBook.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00112358m, synthOrderBook.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00056657m, synthOrderBook.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00033333m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, _btcusd);
+            Assert.Equal("FakeExchange - FakeExchange", synthOrderBook.Source);
+            Assert.Equal(_btcusd, synthOrderBook.AssetPair);
+            Assert.Equal("BTCEUR & EURUSD", synthOrderBook.ConversionPath);
+            Assert.Equal(2, synthOrderBook.Bids.Count());
+            Assert.Equal(3, synthOrderBook.Asks.Count());
+            Assert.Equal(9795.75m, synthOrderBook.BestBid.Value.Price, 8);
+            Assert.Equal(9968.1382715824m, synthOrderBook.BestAsk.Value.Price, 8);
+            // TODO: Prices must be tested in all From* methods (i.e. GetOrderedVolumePrices methods)
             Assert.Equal(timestamp1, synthOrderBook.Timestamp);
             Assert.Equal(2, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
-        public void From2OrderBooksReversed_0_1_Test()
+        public void From2OrderBooks_0_1_Test()
         {
-            const string exchange = "FakeExchange";
-            const string btceur = "BTCEUR";
-            const string usdeur = "USDEUR";
+            const string source = "FakeExchange";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp2 = DateTime.UtcNow;
-            var targetAssetPair = new AssetPair("BTC", "USD");
 
-            var btcEurOrderBook = new OrderBook(exchange, btceur,
+            var btcEurOrderBook = new OrderBook(source, _btceur.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(8825, 9),
@@ -242,9 +163,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair("EUR");
 
-            var eurUsdOrderBook = new OrderBook(exchange, usdeur,
+            var eurUsdOrderBook = new OrderBook(source, _usdeur.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/1.11m, 9),
@@ -257,38 +177,30 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/1.14m, 3)
                 },
                 timestamp2);
-            eurUsdOrderBook.SetAssetPair("EUR");
 
-            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, targetAssetPair);
-            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange, exchange), synthOrderBook.Source);
-            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
-            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
-            Assert.Equal(SynthOrderBook.GetConversionPath(exchange, btceur, exchange, usdeur), synthOrderBook.ConversionPath);
-            Assert.Equal(6, synthOrderBook.Bids.Count);
-            Assert.Equal(6, synthOrderBook.Asks.Count);
-            Assert.Equal(10060.5m, synthOrderBook.Bids.Max(x => x.Price), 8);
-            Assert.Equal(9990m, synthOrderBook.Asks.Max(x => x.Price), 8);
-            Assert.Equal(9881.76m, synthOrderBook.Bids.Min(x => x.Price), 8);
-            Assert.Equal(9790.135802447m, synthOrderBook.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00101197m, synthOrderBook.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00091101m, synthOrderBook.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00029820m, synthOrderBook.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00050505m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, _btcusd);
+            Assert.Equal("FakeExchange - FakeExchange", synthOrderBook.Source);
+            Assert.Equal(_btcusd, synthOrderBook.AssetPair);
+            Assert.Equal("BTCEUR & USDEUR", synthOrderBook.ConversionPath);
+            Assert.Equal(3, synthOrderBook.Bids.Count());
+            Assert.Equal(2, synthOrderBook.Asks.Count());
+            Assert.Equal(10060.5m, synthOrderBook.BestBid.Value.Price, 8);
+            Assert.Equal(9790.135802447m, synthOrderBook.BestAsk.Value.Price, 8);
+            Assert.Equal(0.00029820m, synthOrderBook.BestBid.Value.Volume, 8);
+            Assert.Equal(0.00051072m, synthOrderBook.BestAsk.Value.Volume, 8);
+            // TODO: Prices must be tested (i.e. GetOrderedVolumePrices methods)
             Assert.Equal(timestamp1, synthOrderBook.Timestamp);
             Assert.Equal(2, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
-        public void From2OrderBooksReversed_1_0_Test()
+        public void From2OrderBooks_1_0_Test()
         {
-            const string exchange = "FakeExchange";
-            const string eurbtc = "EURBTC";
-            const string eurusd = "EURUSD";
+            const string source = "FakeExchange";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp2 = DateTime.UtcNow;
-            var targetAssetPair = new AssetPair("BTC", "USD");
 
-            var btcEurOrderBook = new OrderBook(exchange, eurbtc,
+            var btcEurOrderBook = new OrderBook(source, _eurbtc.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/8825m, 9),
@@ -301,9 +213,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/8900.12345677m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair("EUR");
 
-            var eurUsdOrderBook = new OrderBook(exchange, eurusd,
+            var eurUsdOrderBook = new OrderBook(source, _eurusd.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1.11m, 9),
@@ -316,38 +227,29 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1.14m, 3)
                 },
                 timestamp2);
-            eurUsdOrderBook.SetAssetPair("EUR");
 
-            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, targetAssetPair);
-            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange, exchange), synthOrderBook.Source);
-            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
-            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
-            Assert.Equal(SynthOrderBook.GetConversionPath(exchange, eurbtc, exchange, eurusd), synthOrderBook.ConversionPath);
-            Assert.Equal(6, synthOrderBook.Bids.Count);
-            Assert.Equal(6, synthOrderBook.Asks.Count);
-            Assert.Equal(9990m, synthOrderBook.Bids.Max(x => x.Price), 8);
-            Assert.Equal(10060.5m, synthOrderBook.Asks.Max(x => x.Price), 8);
-            Assert.Equal(9790.13580245m, synthOrderBook.Bids.Min(x => x.Price), 8);
-            Assert.Equal(9881.76m, synthOrderBook.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.001m, synthOrderBook.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00101983m, synthOrderBook.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00033707m, synthOrderBook.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00033994m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, _btcusd);
+            Assert.Equal("FakeExchange - FakeExchange", synthOrderBook.Source);
+            Assert.Equal(_btcusd, synthOrderBook.AssetPair);
+            Assert.Equal("EURBTC & EURUSD", synthOrderBook.ConversionPath);
+            Assert.Equal(2, synthOrderBook.Bids.Count());
+            Assert.Equal(2, synthOrderBook.Asks.Count());
+            Assert.Equal(9990m, synthOrderBook.BestBid.Value.Price, 8);
+            Assert.Equal(9881.76m, synthOrderBook.BestAsk.Value.Price, 8);
+            Assert.Equal(0.001m, synthOrderBook.BestBid.Value.Volume, 8);
+            Assert.Equal(0.00056670m, synthOrderBook.BestAsk.Value.Volume, 8);
             Assert.Equal(timestamp1, synthOrderBook.Timestamp);
             Assert.Equal(2, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
-        public void From2OrderBooksReversed_1_1_Test()
+        public void From2OrderBooks_1_1_Test()
         {
-            const string exchange = "FakeExchange";
-            const string eurbtc = "EURBTC";
-            const string usdeur = "USDEUR";
+            const string source = "FakeExchange";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp2 = DateTime.UtcNow;
-            var targetAssetPair = new AssetPair("BTC", "USD");
 
-            var btcEurOrderBook = new OrderBook(exchange, eurbtc,
+            var btcEurOrderBook = new OrderBook(source, _eurbtc.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/8825m, 9),
@@ -360,9 +262,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/8900.12345677m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair("EUR");
 
-            var eurUsdOrderBook = new OrderBook(exchange, usdeur,
+            var eurUsdOrderBook = new OrderBook(source, _usdeur.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/1.11m, 9),
@@ -375,64 +276,34 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/1.14m, 3)
                 },
                 timestamp2);
-            eurUsdOrderBook.SetAssetPair("EUR");
 
-            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, targetAssetPair);
-            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange, exchange), synthOrderBook.Source);
-            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
-            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
-            Assert.Equal(SynthOrderBook.GetConversionPath(exchange, eurbtc, exchange, usdeur), synthOrderBook.ConversionPath);
-            Assert.Equal(9, synthOrderBook.Bids.Count);
-            Assert.Equal(4, synthOrderBook.Asks.Count);
-            Assert.Equal(10260m, synthOrderBook.Bids.Max(x => x.Price), 8);
-            Assert.Equal(9795.75m, synthOrderBook.Asks.Max(x => x.Price), 8);
-            Assert.Equal(9968.13827158m, synthOrderBook.Bids.Min(x => x.Price), 8);
-            Assert.Equal(9705.30m, synthOrderBook.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00099206m, synthOrderBook.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00091877m, synthOrderBook.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00029240m, synthOrderBook.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00051507m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurUsdOrderBook, _btcusd);
+            Assert.Equal("FakeExchange - FakeExchange", synthOrderBook.Source);
+            Assert.Equal(_btcusd, synthOrderBook.AssetPair);
+            Assert.Equal("EURBTC & USDEUR", synthOrderBook.ConversionPath);
+            Assert.Equal(3, synthOrderBook.Bids.Count());
+            Assert.Equal(3, synthOrderBook.Asks.Count());
+            Assert.Equal(10260m, synthOrderBook.BestBid.Value.Price, 8);
+            Assert.Equal(9705.30m, synthOrderBook.BestAsk.Value.Price, 8);
+            Assert.Equal(0.00029240m, synthOrderBook.BestBid.Value.Volume, 8);
+            Assert.Equal(0.00051518m, synthOrderBook.BestAsk.Value.Volume, 8);
             Assert.Equal(timestamp1, synthOrderBook.Timestamp);
             Assert.Equal(2, synthOrderBook.OriginalOrderBooks.Count);
         }
 
 
-        [Fact]
-        public void From3OrderBooksExceptionTest()
-        {
-            const string exchange = "FakeExchange";
-            var timestamp = DateTime.UtcNow;
-            var assetPair = new AssetPair("BTC", "EUR");
-
-            var orderBookWithEmptyAssetPair = new OrderBook(exchange, "BTCEUR", new List<VolumePrice>(), new List<VolumePrice>(), timestamp);
-            var goodOrderBook1 = new OrderBook(exchange, "BTCCHF", new List<VolumePrice>(), new List<VolumePrice>(), timestamp);
-            var goodOrderBook2 = new OrderBook(exchange, "BTCJPY", new List<VolumePrice>(), new List<VolumePrice>(), timestamp);
-
-            // AssetPair is not set in order book
-            Assert.Throws<ArgumentException>(() => SynthOrderBook.FromOrderBooks(orderBookWithEmptyAssetPair, goodOrderBook1, goodOrderBook2, assetPair));
-            Assert.Throws<ArgumentException>(() => SynthOrderBook.FromOrderBooks(goodOrderBook1, orderBookWithEmptyAssetPair, goodOrderBook2, assetPair));
-            Assert.Throws<ArgumentException>(() => SynthOrderBook.FromOrderBooks(goodOrderBook1, goodOrderBook2, orderBookWithEmptyAssetPair, assetPair));
-
-            orderBookWithEmptyAssetPair.SetAssetPair("EUR");
-
-            Assert.Throws<ArgumentException>(() => SynthOrderBook.FromOrderBooks(orderBookWithEmptyAssetPair, goodOrderBook1, goodOrderBook2, new AssetPair()));
-        }
 
         [Fact]
-        public void From3OrderBooksReversed_0_0_0_Test()
+        public void From3OrderBooks_0_0_0_Test()
         {
-            const string exchange1 = "TEST1";
-            const string exchange2 = "TEST2";
-            const string exchange3 = "TEST3";
-            const string btcEur = "BTCEUR";
-            const string eurJpy = "EURJPY";
-            const string jpyUsd = "JPYUSD";
+            const string source1 = "TEST1";
+            const string source2 = "TEST2";
+            const string source3 = "TEST3";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
-            var targetAssetPair = new AssetPair("BTC", "USD");
 
-            var btcEurOrderBook = new OrderBook(exchange1, btcEur,
+            var btcEurOrderBook = new OrderBook(source1, _btceur.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(7310m, 9), new VolumePrice(7300m, 5)
@@ -442,9 +313,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(7320m, 10), new VolumePrice(7330m, 7), new VolumePrice(7340m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair("BTC");
 
-            var eurJpyOrderBook = new OrderBook(exchange2, eurJpy,
+            var eurJpyOrderBook = new OrderBook(source2, _eurjpy.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(131m, 9), new VolumePrice(130m, 5)
@@ -454,9 +324,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(132m, 11), new VolumePrice(133m, 7), new VolumePrice(134m, 3)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair("EUR");
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, jpyUsd,
+            var jpyUsdOrderBook = new OrderBook(source3, _jpyusd.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(0.009132m, 9), new VolumePrice(0.009131m, 5)
@@ -466,42 +335,32 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(0.009133m, 12), new VolumePrice(0.009134m, 7), new VolumePrice(0.009135m, 3)
                 },
                 timestamp3);
-            jpyUsdOrderBook.SetAssetPair("JPY");
 
-            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
-            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange1, exchange2, exchange3), synthOrderBook.Source);
-            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
-            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
-            Assert.Equal(SynthOrderBook.GetConversionPath(exchange1, btcEur, exchange2, eurJpy, exchange3, jpyUsd), synthOrderBook.ConversionPath);
-            Assert.Equal(8, synthOrderBook.Bids.Count);
-            Assert.Equal(27, synthOrderBook.Asks.Count);
-            Assert.Equal(8744.894520m, synthOrderBook.Bids.Max(x => x.Price), 8);
-            Assert.Equal(8984.820600m, synthOrderBook.Asks.Max(x => x.Price), 8);
-            Assert.Equal(8665.319000m, synthOrderBook.Bids.Min(x => x.Price), 8);
-            Assert.Equal(8824.669920m, synthOrderBook.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00000948m, synthOrderBook.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00001242m, synthOrderBook.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00000522m, synthOrderBook.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00000305m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
+            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Source);
+            Assert.Equal(_btcusd, synthOrderBook.AssetPair);
+            Assert.Equal("BTCEUR & EURJPY & JPYUSD", synthOrderBook.ConversionPath);
+            Assert.Equal(2, synthOrderBook.Bids.Count());
+            Assert.Equal(3, synthOrderBook.Asks.Count());
+            Assert.Equal(8744.894520m, synthOrderBook.BestBid.Value.Price, 8);
+            Assert.Equal(8824.669920m, synthOrderBook.BestAsk.Value.Price, 8);
+            Assert.Equal(0.00000940m, synthOrderBook.BestBid.Value.Volume, 8);
+            Assert.Equal(0.00001242m, synthOrderBook.BestAsk.Value.Volume, 8);
             Assert.Equal(timestamp1, synthOrderBook.Timestamp);
             Assert.Equal(3, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
-        public void From3OrderBooksReversed_0_0_1_Test()
+        public void From3OrderBooks_0_0_1_Test()
         {
-            const string exchange1 = "TEST1";
-            const string exchange2 = "TEST2";
-            const string exchange3 = "TEST3";
-            const string btcEur = "BTCEUR";
-            const string eurJpy = "EURJPY";
-            const string usdJpy = "USDJPY";
+            const string source1 = "TEST1";
+            const string source2 = "TEST2";
+            const string source3 = "TEST3";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
-            var targetAssetPair = new AssetPair("BTC", "USD");
 
-            var btcEurOrderBook = new OrderBook(exchange1, btcEur,
+            var btcEurOrderBook = new OrderBook(source1, _btceur.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(7310m, 9), new VolumePrice(7300m, 5)
@@ -511,9 +370,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(7320m, 10), new VolumePrice(7330m, 7), new VolumePrice(7340m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair("BTC");
 
-            var eurJpyOrderBook = new OrderBook(exchange2, eurJpy,
+            var eurJpyOrderBook = new OrderBook(source2, _eurjpy.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(131m, 9), new VolumePrice(130m, 5)
@@ -523,9 +381,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(132m, 11), new VolumePrice(133m, 7), new VolumePrice(134m, 3)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair("EUR");
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, usdJpy,
+            var jpyUsdOrderBook = new OrderBook(source3, _usdjpy.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/0.009132m, 9), new VolumePrice(1/0.009131m, 5)
@@ -535,42 +392,32 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/0.009133m, 12), new VolumePrice(1/0.009134m, 7), new VolumePrice(1/0.009135m, 3)
                 },
                 timestamp3);
-            jpyUsdOrderBook.SetAssetPair("JPY");
 
-            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
-            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange1, exchange2, exchange3), synthOrderBook.Source);
-            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
-            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
-            Assert.Equal(SynthOrderBook.GetConversionPath(exchange1, btcEur, exchange2, eurJpy, exchange3, usdJpy), synthOrderBook.ConversionPath);
-            Assert.Equal(12, synthOrderBook.Bids.Count);
-            Assert.Equal(18, synthOrderBook.Asks.Count);
-            Assert.Equal(8747.767350m, synthOrderBook.Bids.Max(x => x.Price), 8);
-            Assert.Equal(8981.869920m, synthOrderBook.Asks.Max(x => x.Price), 8);
-            Assert.Equal(8667.217000m, synthOrderBook.Bids.Min(x => x.Price), 8);
-            Assert.Equal(8822.737440m, synthOrderBook.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00123288m, synthOrderBook.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00101998m, synthOrderBook.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00034294m, synthOrderBook.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00040872m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
+            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Source);
+            Assert.Equal(_btcusd, synthOrderBook.AssetPair);
+            Assert.Equal("BTCEUR & EURJPY & USDJPY", synthOrderBook.ConversionPath);
+            Assert.Equal(4, synthOrderBook.Bids.Count());
+            Assert.Equal(2, synthOrderBook.Asks.Count());
+            Assert.Equal(8747.767350m, synthOrderBook.BestBid.Value.Price, 8);
+            Assert.Equal(8822.737440m, synthOrderBook.BestAsk.Value.Price, 8);
+            Assert.Equal(0.00034294m, synthOrderBook.BestBid.Value.Volume, 8);
+            Assert.Equal(0.00056672m, synthOrderBook.BestAsk.Value.Volume, 8);
             Assert.Equal(timestamp1, synthOrderBook.Timestamp);
             Assert.Equal(3, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
-        public void From3OrderBooksReversed_0_1_0_Test()
+        public void From3OrderBooks_0_1_0_Test()
         {
-            const string exchange1 = "TEST1";
-            const string exchange2 = "TEST2";
-            const string exchange3 = "TEST3";
-            const string btcEur = "BTCEUR";
-            const string eurJpy = "EURJPY";
-            const string jpyUsd = "JPYUSD";
+            const string source1 = "TEST1";
+            const string source2 = "TEST2";
+            const string source3 = "TEST3";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
-            var targetAssetPair = new AssetPair("BTC", "USD");
 
-            var btcEurOrderBook = new OrderBook(exchange1, btcEur,
+            var btcEurOrderBook = new OrderBook(source1, _btceur.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(7310m, 9), new VolumePrice(7300m, 5)
@@ -580,9 +427,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(7320m, 10), new VolumePrice(7330m, 7), new VolumePrice(7340m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair("BTC");
 
-            var eurJpyOrderBook = new OrderBook(exchange2, eurJpy,
+            var eurJpyOrderBook = new OrderBook(source2, _eurjpy.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(131m, 9), new VolumePrice(130m, 5)
@@ -592,9 +438,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(132m, 11), new VolumePrice(133m, 7), new VolumePrice(134m, 3)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair("EUR");
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, jpyUsd,
+            var jpyUsdOrderBook = new OrderBook(source3, _jpyusd.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(0.009132m, 9), new VolumePrice(0.009131m, 5)
@@ -604,42 +449,32 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(0.009133m, 12), new VolumePrice(0.009134m, 7), new VolumePrice(0.009135m, 3)
                 },
                 timestamp3);
-            jpyUsdOrderBook.SetAssetPair("JPY");
 
-            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
-            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange1, exchange2, exchange3), synthOrderBook.Source);
-            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
-            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
-            Assert.Equal(SynthOrderBook.GetConversionPath(exchange1, btcEur, exchange2, eurJpy, exchange3, jpyUsd), synthOrderBook.ConversionPath);
-            Assert.Equal(8, synthOrderBook.Bids.Count);
-            Assert.Equal(27, synthOrderBook.Asks.Count);
-            Assert.Equal(8744.894520m, synthOrderBook.Bids.Max(x => x.Price));
-            Assert.Equal(8984.820600m, synthOrderBook.Asks.Max(x => x.Price));
-            Assert.Equal(8665.319000m, synthOrderBook.Bids.Min(x => x.Price));
-            Assert.Equal(8824.669920m, synthOrderBook.Asks.Min(x => x.Price));
-            Assert.Equal(0.00000948m, synthOrderBook.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00001242m, synthOrderBook.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00000522m, synthOrderBook.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00000305m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
+            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Source);
+            Assert.Equal(_btcusd, synthOrderBook.AssetPair);
+            Assert.Equal("BTCEUR & EURJPY & JPYUSD", synthOrderBook.ConversionPath);
+            Assert.Equal(2, synthOrderBook.Bids.Count());
+            Assert.Equal(3, synthOrderBook.Asks.Count());
+            Assert.Equal(8744.894520m, synthOrderBook.BestBid.Value.Price);
+            Assert.Equal(8824.669920m, synthOrderBook.BestAsk.Value.Price);
+            Assert.Equal(0.00000940m, synthOrderBook.BestBid.Value.Volume, 8);
+            Assert.Equal(0.00001242m, synthOrderBook.BestAsk.Value.Volume, 8);
             Assert.Equal(timestamp1, synthOrderBook.Timestamp);
             Assert.Equal(3, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
-        public void From3OrderBooksReversed_1_0_0_Test()
+        public void From3OrderBooks_1_0_0_Test()
         {
-            const string exchange1 = "TEST1";
-            const string exchange2 = "TEST2";
-            const string exchange3 = "TEST3";
-            const string eurBtc = "EURBTC";
-            const string eurJpy = "EURJPY";
-            const string jpyUsd = "JPYUSD";
+            const string source1 = "TEST1";
+            const string source2 = "TEST2";
+            const string source3 = "TEST3";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
-            var targetAssetPair = new AssetPair("BTC", "USD");
 
-            var btcEurOrderBook = new OrderBook(exchange1, eurBtc,
+            var btcEurOrderBook = new OrderBook(source1, _eurbtc.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/7310m, 9), new VolumePrice(1/7300m, 5)
@@ -649,9 +484,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/7320m, 10), new VolumePrice(1/7330m, 7), new VolumePrice(1/7340m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair("BTC");
 
-            var eurJpyOrderBook = new OrderBook(exchange2, eurJpy,
+            var eurJpyOrderBook = new OrderBook(source2, _eurjpy.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(131m, 9), new VolumePrice(130m, 5)
@@ -661,9 +495,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(132m, 11), new VolumePrice(133m, 7), new VolumePrice(134m, 3)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair("EUR");
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, jpyUsd,
+            var jpyUsdOrderBook = new OrderBook(source3, _jpyusd.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(0.009132m, 9), new VolumePrice(0.009131m, 5)
@@ -673,42 +506,32 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(0.009133m, 12), new VolumePrice(0.009134m, 7), new VolumePrice(0.009135m, 3)
                 },
                 timestamp3);
-            jpyUsdOrderBook.SetAssetPair("JPY");
 
-            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
-            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange1, exchange2, exchange3), synthOrderBook.Source);
-            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
-            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
-            Assert.Equal(SynthOrderBook.GetConversionPath(exchange1, eurBtc, exchange2, eurJpy, exchange3, jpyUsd), synthOrderBook.ConversionPath);
-            Assert.Equal(12, synthOrderBook.Bids.Count);
-            Assert.Equal(18, synthOrderBook.Asks.Count);
-            Assert.Equal(8780.78328m, synthOrderBook.Bids.Max(x => x.Price), 8);
-            Assert.Equal(8948.0979m, synthOrderBook.Asks.Max(x => x.Price), 8);
-            Assert.Equal(8689.0596m, synthOrderBook.Bids.Min(x => x.Price), 8);
-            Assert.Equal(8800.5588m, synthOrderBook.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00000946m, synthOrderBook.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00001245m, synthOrderBook.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.0000052m, synthOrderBook.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00000306m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
+            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Source);
+            Assert.Equal(_btcusd, synthOrderBook.AssetPair);
+            Assert.Equal("EURBTC & EURJPY & JPYUSD", synthOrderBook.ConversionPath);
+            Assert.Equal(2, synthOrderBook.Bids.Count());
+            Assert.Equal(3, synthOrderBook.Asks.Count());
+            Assert.Equal(8780.78328m, synthOrderBook.BestBid.Value.Price, 8);
+            Assert.Equal(8800.5588m, synthOrderBook.BestAsk.Value.Price, 8);
+            Assert.Equal(0.00000936m, synthOrderBook.BestBid.Value.Volume, 8);
+            Assert.Equal(0.00001245m, synthOrderBook.BestAsk.Value.Volume, 8);
             Assert.Equal(timestamp1, synthOrderBook.Timestamp);
             Assert.Equal(3, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
-        public void From3OrderBooksReversed_0_1_1_Test()
+        public void From3OrderBooks_0_1_1_Test()
         {
-            const string exchange1 = "TEST1";
-            const string exchange2 = "TEST2";
-            const string exchange3 = "TEST3";
-            const string btcEur = "BTCEUR";
-            const string jpyEur = "JPYEUR";
-            const string usdJpy = "USDJPY";
+            const string source1 = "TEST1";
+            const string source2 = "TEST2";
+            const string source3 = "TEST3";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
-            var targetAssetPair = new AssetPair("BTC", "USD");
 
-            var btcEurOrderBook = new OrderBook(exchange1, btcEur,
+            var btcEurOrderBook = new OrderBook(source1, _btceur.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(7310m, 9), new VolumePrice(7300m, 5)
@@ -718,9 +541,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(7320m, 10), new VolumePrice(7330m, 7), new VolumePrice(7340m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair("BTC");
 
-            var jpyEurOrderBook = new OrderBook(exchange2, jpyEur,
+            var jpyEurOrderBook = new OrderBook(source2, _jpyeur.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/132m, 11), new VolumePrice(1/133m, 7), new VolumePrice(1/134m, 3)
@@ -730,9 +552,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/131m, 9), new VolumePrice(1/130m, 5)
                 },
                 timestamp2);
-            jpyEurOrderBook.SetAssetPair("EUR");
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, usdJpy,
+            var jpyUsdOrderBook = new OrderBook(source3, _usdjpy.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/0.009132m, 9), new VolumePrice(1/0.009131m, 5)
@@ -742,42 +563,32 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/0.009133m, 12), new VolumePrice(1/0.009134m, 7), new VolumePrice(1/0.009135m, 3)
                 },
                 timestamp3);
-            jpyUsdOrderBook.SetAssetPair("JPY");
 
-            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, jpyEurOrderBook, jpyUsdOrderBook, targetAssetPair);
-            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange1, exchange2, exchange3), synthOrderBook.Source);
-            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
-            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
-            Assert.Equal(SynthOrderBook.GetConversionPath(exchange1, btcEur, exchange2, jpyEur, exchange3, usdJpy), synthOrderBook.ConversionPath);
-            Assert.Equal(12, synthOrderBook.Bids.Count);
-            Assert.Equal(18, synthOrderBook.Asks.Count);
-            Assert.Equal(8747.76735m, synthOrderBook.Bids.Max(x => x.Price), 8);
-            Assert.Equal(8981.86992m, synthOrderBook.Asks.Max(x => x.Price), 8);
-            Assert.Equal(8667.217m, synthOrderBook.Bids.Min(x => x.Price), 8);
-            Assert.Equal(8822.73744m, synthOrderBook.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00000941m, synthOrderBook.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00001138m, synthOrderBook.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00000526m, synthOrderBook.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00000305m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, jpyEurOrderBook, jpyUsdOrderBook, _btcusd);
+            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Source);
+            Assert.Equal(_btcusd, synthOrderBook.AssetPair);
+            Assert.Equal("BTCEUR & JPYEUR & USDJPY", synthOrderBook.ConversionPath);
+            Assert.Equal(2, synthOrderBook.Bids.Count());
+            Assert.Equal(3, synthOrderBook.Asks.Count());
+            Assert.Equal(8747.76735m, synthOrderBook.BestBid.Value.Price, 8);
+            Assert.Equal(8822.73744m, synthOrderBook.BestAsk.Value.Price, 8);
+            Assert.Equal(0.00000940m, synthOrderBook.BestBid.Value.Volume, 8);
+            Assert.Equal(0.00001138m, synthOrderBook.BestAsk.Value.Volume, 8);
             Assert.Equal(timestamp1, synthOrderBook.Timestamp);
             Assert.Equal(3, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
-        public void From3OrderBooksReversed_1_0_1_Test()
+        public void From3OrderBooks_1_0_1_Test()
         {
-            const string exchange1 = "TEST1";
-            const string exchange2 = "TEST2";
-            const string exchange3 = "TEST3";
-            const string eurBtc = "EURBTC";
-            const string eurJpy = "EURJPY";
-            const string usdJpy = "USDJPY";
+            const string source1 = "TEST1";
+            const string source2 = "TEST2";
+            const string source3 = "TEST3";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
-            var targetAssetPair = new AssetPair("BTC", "USD");
 
-            var btcEurOrderBook = new OrderBook(exchange1, eurBtc,
+            var btcEurOrderBook = new OrderBook(source1, _eurbtc.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/7310m, 9), new VolumePrice(1/7300m, 5)
@@ -787,9 +598,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/7320m, 10), new VolumePrice(1/7330m, 7), new VolumePrice(1/7340m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair("BTC");
 
-            var eurJpyOrderBook = new OrderBook(exchange2, eurJpy,
+            var eurJpyOrderBook = new OrderBook(source2, _eurjpy.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(131m, 9), new VolumePrice(130m, 5)
@@ -799,9 +609,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(132m, 11), new VolumePrice(133m, 7), new VolumePrice(134m, 3)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair("EUR");
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, usdJpy,
+            var jpyUsdOrderBook = new OrderBook(source3, _usdjpy.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/0.009132m, 9), new VolumePrice(1/0.009131m, 5)
@@ -811,42 +620,32 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/0.009133m, 12), new VolumePrice(1/0.009134m, 7), new VolumePrice(1/0.009135m, 3)
                 },
                 timestamp3);
-            jpyUsdOrderBook.SetAssetPair("JPY");
 
-            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
-            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange1, exchange2, exchange3), synthOrderBook.Source);
-            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
-            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
-            Assert.Equal(SynthOrderBook.GetConversionPath(exchange1, eurBtc, exchange2, eurJpy, exchange3, usdJpy), synthOrderBook.ConversionPath);
-            Assert.Equal(18, synthOrderBook.Bids.Count);
-            Assert.Equal(12, synthOrderBook.Asks.Count);
-            Assert.Equal(8783.6679m, synthOrderBook.Bids.Max(x => x.Price), 8);
-            Assert.Equal(8945.15928m, synthOrderBook.Asks.Max(x => x.Price), 8);
-            Assert.Equal(8690.9628m, synthOrderBook.Bids.Min(x => x.Price), 8);
-            Assert.Equal(8798.6316m, synthOrderBook.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00122951m, synthOrderBook.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00102138m, synthOrderBook.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00034154m, synthOrderBook.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00041040m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
+            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Source);
+            Assert.Equal(_btcusd, synthOrderBook.AssetPair);
+            Assert.Equal("EURBTC & EURJPY & USDJPY", synthOrderBook.ConversionPath);
+            Assert.Equal(6, synthOrderBook.Bids.Count());
+            Assert.Equal(3, synthOrderBook.Asks.Count());
+            Assert.Equal(8783.6679m, synthOrderBook.BestBid.Value.Price, 8);
+            Assert.Equal(8798.6316m, synthOrderBook.BestAsk.Value.Price, 8);
+            Assert.Equal(0.00034154m, synthOrderBook.BestBid.Value.Volume, 8);
+            Assert.Equal(0.00056827m, synthOrderBook.BestAsk.Value.Volume, 8);
             Assert.Equal(timestamp1, synthOrderBook.Timestamp);
             Assert.Equal(3, synthOrderBook.OriginalOrderBooks.Count);
         }
 
         [Fact]
-        public void From3OrderBooksReversed_1_1_0_Test()
+        public void From3OrderBooks_1_1_0_Test()
         {
-            const string exchange1 = "TEST1";
-            const string exchange2 = "TEST2";
-            const string exchange3 = "TEST3";
-            const string eurBtc = "EURBTC";
-            const string jpyEur = "JPYEUR";
-            const string jpyUsd = "JPYUSD";
+            const string source1 = "TEST1";
+            const string source2 = "TEST2";
+            const string source3 = "TEST3";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
-            var targetAssetPair = new AssetPair("BTC", "USD");
 
-            var btcEurOrderBook = new OrderBook(exchange1, eurBtc,
+            var btcEurOrderBook = new OrderBook(source1, _eurbtc.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/7310m, 9), new VolumePrice(1/7300m, 5)
@@ -856,9 +655,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/7320m, 10), new VolumePrice(1/7330m, 7), new VolumePrice(1/7340m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair("BTC");
 
-            var eurJpyOrderBook = new OrderBook(exchange2, jpyEur,
+            var eurJpyOrderBook = new OrderBook(source2, _jpyeur.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/131m, 9), new VolumePrice(1/130m, 5)
@@ -868,9 +666,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/132m, 11), new VolumePrice(1/133m, 7), new VolumePrice(1/134m, 3)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair("EUR");
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, jpyUsd,
+            var jpyUsdOrderBook = new OrderBook(source3, _jpyusd.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(0.009132m, 9), new VolumePrice(0.009131m, 5)
@@ -880,42 +677,32 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(0.009133m, 12), new VolumePrice(0.009134m, 7), new VolumePrice(0.009135m, 3)
                 },
                 timestamp3);
-            jpyUsdOrderBook.SetAssetPair("JPY");
 
-            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
-            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange1, exchange2, exchange3), synthOrderBook.Source);
-            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
-            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
-            Assert.Equal(SynthOrderBook.GetConversionPath(exchange1, eurBtc, exchange2, jpyEur, exchange3, jpyUsd), synthOrderBook.ConversionPath);
-            Assert.Equal(18, synthOrderBook.Bids.Count);
-            Assert.Equal(12, synthOrderBook.Asks.Count);
-            Assert.Equal(8981.86992m, synthOrderBook.Bids.Max(x => x.Price), 8);
-            Assert.Equal(8747.76735m, synthOrderBook.Asks.Max(x => x.Price), 8);
-            Assert.Equal(8822.73744m, synthOrderBook.Bids.Min(x => x.Price), 8);
-            Assert.Equal(8667.217m, synthOrderBook.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00000931m, synthOrderBook.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00000941m, synthOrderBook.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00000305m, synthOrderBook.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00000313m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
+            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Source);
+            Assert.Equal(_btcusd, synthOrderBook.AssetPair);
+            Assert.Equal("EURBTC & JPYEUR & JPYUSD", synthOrderBook.ConversionPath);
+            Assert.Equal(4, synthOrderBook.Bids.Count());
+            Assert.Equal(2, synthOrderBook.Asks.Count());
+            Assert.Equal(8981.86992m, synthOrderBook.BestBid.Value.Price, 8);
+            Assert.Equal(8667.217m, synthOrderBook.BestAsk.Value.Price, 8);
+            Assert.Equal(0.00000305m, synthOrderBook.BestBid.Value.Volume, 8);
+            Assert.Equal(0.00000527m, synthOrderBook.BestAsk.Value.Volume, 8);
             Assert.Equal(timestamp1, synthOrderBook.Timestamp);
             Assert.Equal(3, synthOrderBook.OriginalOrderBooks.Count);
         }
-        
+
         [Fact]
-        public void From3OrderBooksReversed_1_1_1_Test()
+        public void From3OrderBooks_1_1_1_Test()
         {
-            const string exchange1 = "TEST1";
-            const string exchange2 = "TEST2";
-            const string exchange3 = "TEST3";
-            const string eurBtc = "EURBTC";
-            const string jpyEur = "JPYEUR";
-            const string usdJpy = "USDJPY";
+            const string source1 = "TEST1";
+            const string source2 = "TEST2";
+            const string source3 = "TEST3";
             var timestamp1 = DateTime.UtcNow.AddSeconds(-2);
             var timestamp2 = DateTime.UtcNow.AddSeconds(-1);
             var timestamp3 = DateTime.UtcNow;
-            var targetAssetPair = new AssetPair("BTC", "USD");
 
-            var btcEurOrderBook = new OrderBook(exchange1, eurBtc,
+            var btcEurOrderBook = new OrderBook(source1, _eurbtc.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/7310m, 9), new VolumePrice(1/7300m, 5)
@@ -925,9 +712,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/7320m, 10), new VolumePrice(1/7330m, 7), new VolumePrice(1/7340m, 3)
                 },
                 timestamp1);
-            btcEurOrderBook.SetAssetPair("BTC");
 
-            var eurJpyOrderBook = new OrderBook(exchange2, jpyEur,
+            var eurJpyOrderBook = new OrderBook(source2, _jpyeur.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/131m, 9), new VolumePrice(1/130m, 5)
@@ -937,9 +723,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/132m, 11), new VolumePrice(1/133m, 7), new VolumePrice(1/134m, 3)
                 },
                 timestamp2);
-            eurJpyOrderBook.SetAssetPair("EUR");
 
-            var jpyUsdOrderBook = new OrderBook(exchange3, usdJpy,
+            var jpyUsdOrderBook = new OrderBook(source3, _usdjpy.Name,
                 new List<VolumePrice> // bids
                 {
                     new VolumePrice(1/0.009132m, 9), new VolumePrice(1/0.009131m, 5)
@@ -949,25 +734,309 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(1/0.009133m, 12), new VolumePrice(1/0.009134m, 7), new VolumePrice(1/0.009135m, 3)
                 },
                 timestamp3);
-            jpyUsdOrderBook.SetAssetPair("JPY");
 
-            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, targetAssetPair);
-            Assert.Equal(SynthOrderBook.GetSourcesPath(exchange1, exchange2, exchange3), synthOrderBook.Source);
-            Assert.Equal(targetAssetPair.Name, synthOrderBook.AssetPairStr);
-            Assert.Equal(targetAssetPair, synthOrderBook.AssetPair);
-            Assert.Equal(SynthOrderBook.GetConversionPath(exchange1, eurBtc, exchange2, jpyEur, exchange3, usdJpy), synthOrderBook.ConversionPath);
-            Assert.Equal(27, synthOrderBook.Bids.Count);
-            Assert.Equal(8, synthOrderBook.Asks.Count);
-            Assert.Equal(8984.8206m, synthOrderBook.Bids.Max(x => x.Price), 8);
-            Assert.Equal(8744.89452m, synthOrderBook.Asks.Max(x => x.Price), 8);
-            Assert.Equal(8824.66992m, synthOrderBook.Bids.Min(x => x.Price), 8);
-            Assert.Equal(8665.319m, synthOrderBook.Asks.Min(x => x.Price), 8);
-            Assert.Equal(0.00001138m, synthOrderBook.Bids.Max(x => x.Volume), 8);
-            Assert.Equal(0.00000941m, synthOrderBook.Asks.Max(x => x.Volume), 8);
-            Assert.Equal(0.00000305m, synthOrderBook.Bids.Min(x => x.Volume), 8);
-            Assert.Equal(0.00000526m, synthOrderBook.Asks.Min(x => x.Volume), 8);
+            var synthOrderBook = SynthOrderBook.FromOrderBooks(btcEurOrderBook, eurJpyOrderBook, jpyUsdOrderBook, _btcusd);
+            Assert.Equal("TEST1 - TEST2 - TEST3", synthOrderBook.Source);
+            Assert.Equal(_btcusd, synthOrderBook.AssetPair);
+            Assert.Equal("EURBTC & JPYEUR & USDJPY", synthOrderBook.ConversionPath);
+            Assert.Equal(3, synthOrderBook.Bids.Count());
+            Assert.Equal(2, synthOrderBook.Asks.Count());
+            Assert.Equal(8984.8206m, synthOrderBook.BestBid.Value.Price, 8);
+            Assert.Equal(8665.319m, synthOrderBook.BestAsk.Value.Price, 8);
+            Assert.Equal(0.00000305m, synthOrderBook.BestBid.Value.Volume, 8);
+            Assert.Equal(0.00000527m, synthOrderBook.BestAsk.Value.Volume, 8);
             Assert.Equal(timestamp1, synthOrderBook.Timestamp);
             Assert.Equal(3, synthOrderBook.OriginalOrderBooks.Count);
+        }
+
+
+
+
+        [Fact]
+        public void OrderBooks_PrepareForEnumeration_0_Test()
+        {
+            var orderBook = new OrderBook("FE", _btcusd.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
+            var result = SynthOrderBook.PrepareForEnumeration(new List<OrderBook> { orderBook }, _btcusd);
+
+            Assert.Single(result);
+            Assert.True(result.Single().Key.Equals(_btcusd));
+            Assert.True(result.Single().Value.AssetPair.IsEqualOrReversed(_btcusd));
+        }
+
+        [Fact]
+        public void OrderBooks_PrepareForEnumeration_1_Test()
+        {
+            var usdbtc = _btcusd.Reverse();
+            var orderBook = new OrderBook("FE", usdbtc.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
+
+            var result = SynthOrderBook.PrepareForEnumeration(new List<OrderBook> { orderBook }, _btcusd);
+
+            Assert.Single(result);
+            Assert.True(result.Single().Key.Equals(_btcusd));
+            Assert.True(result.Single().Value.AssetPair.IsEqualOrReversed(_btcusd));
+        }
+
+
+        [Fact]
+        public void OrderBooks_PrepareForEnumeration_0_0_Test()
+        {
+            var orderBooks = GetOrderBooks(_btceur, _eurusd);
+
+            var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
+
+            AssertChained2(result);
+        }
+
+        [Fact]
+        public void OrderBooks_PrepareForEnumeration_0_1_Test()
+        {
+            var orderBooks = GetOrderBooks(_btceur, _eurusd.Reverse());
+
+            var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
+
+            AssertChained2(result);
+        }
+
+        [Fact]
+        public void OrderBooks_PrepareForEnumeration_1_0_Test()
+        {
+            var orderBooks = GetOrderBooks(_btceur.Reverse(), _eurusd);
+
+            var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
+
+            AssertChained2(result);
+        }
+
+        [Fact]
+        public void OrderBooks_PrepareForEnumeration_1_1_Test()
+        {
+            var orderBooks = GetOrderBooks(_btceur.Reverse(), _eurusd.Reverse());
+
+            var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
+
+            AssertChained2(result);
+        }
+
+
+        [Fact]
+        public void OrderBooks_PrepareForEnumeration_0_0_0_Test()
+        {
+            var orderBooks = GetOrderBooks(_btceur, _eurchf, _chfusd);
+
+            var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
+
+            AssertChained3(result);
+        }
+
+        [Fact]
+        public void OrderBooks_PrepareForEnumeration_0_0_1_Test()
+        {
+            var orderBooks = GetOrderBooks(_btceur, _eurchf, _chfusd.Reverse());
+
+            var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
+
+            AssertChained3(result);
+        }
+
+        [Fact]
+        public void OrderBooks_PrepareForEnumeration_0_1_0_Test()
+        {
+            var orderBooks = GetOrderBooks(_btceur, _eurchf.Reverse(), _chfusd);
+
+            var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
+
+            AssertChained3(result);
+        }
+
+        [Fact]
+        public void OrderBooks_PrepareForEnumeration_1_0_0_Test()
+        {
+            var orderBooks = GetOrderBooks(_btceur.Reverse(), _eurchf, _chfusd);
+
+            var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
+
+            AssertChained3(result);
+        }
+
+        [Fact]
+        public void OrderBooks_PrepareForEnumeration_0_1_1_Test()
+        {
+            var orderBooks = GetOrderBooks(_btceur, _eurchf.Reverse(), _chfusd.Reverse());
+
+            var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
+
+            AssertChained3(result);
+        }
+
+        [Fact]
+        public void OrderBooks_PrepareForEnumeration_1_1_0_Test()
+        {
+            var orderBooks = GetOrderBooks(_btceur.Reverse(), _eurchf.Reverse(), _chfusd);
+
+            var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
+
+            AssertChained3(result);
+        }
+
+        [Fact]
+        public void OrderBooks_PrepareForEnumeration_1_0_1_Test()
+        {
+            var orderBooks = GetOrderBooks(_btceur.Reverse(), _eurchf, _chfusd.Reverse());
+
+            var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
+
+            AssertChained3(result);
+        }
+
+        [Fact]
+        public void OrderBooks_PrepareForEnumeration_1_1_1_Test()
+        {
+            var orderBooks = GetOrderBooks(_btceur.Reverse(), _eurchf.Reverse(), _chfusd.Reverse());
+
+            var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
+
+            AssertChained3(result);
+        }
+
+
+        [Fact]
+        public void SynthOrderBook_GetBids_Streight_Test()
+        {
+            var gbpusdOb = new OrderBook("FE", _gbpusd.Name,
+                new List<VolumePrice> // bids
+                {
+                    new VolumePrice(1.28167m, 2909.98m),
+                    new VolumePrice(1.29906m, 50000m)
+                },
+                new List<VolumePrice>(), // asks
+                DateTime.Now);
+
+            var bids = SynthOrderBook.GetBids(gbpusdOb, _gbpusd).ToList();
+            var orderedBids = bids.OrderByDescending(x => x.Price).ToList();
+
+            Assert.Equal(2, bids.Count);
+            Assert.Equal(bids[0].Price, orderedBids[0].Price);
+            Assert.Equal(bids[1].Price, orderedBids[1].Price);
+        }
+
+        [Fact]
+        public void SynthOrderBook_GetBids_Reverseed_Test()
+        {
+            var gbpusdOb = new OrderBook("FE", _gbpusd.Name,
+                new List<VolumePrice>(), // bids
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(1.29906m, 50000m),
+                    new VolumePrice(1.28167m, 2909.98m)
+                },
+                DateTime.Now);
+
+            var bids = SynthOrderBook.GetBids(gbpusdOb, _usdgbp).ToList();
+            var orderedBids = bids.OrderByDescending(x => x.Price).ToList();
+
+            Assert.Equal(2, bids.Count);
+            Assert.Equal(bids[0].Price, orderedBids[0].Price);
+            Assert.Equal(bids[1].Price, orderedBids[1].Price);
+        }
+
+        [Fact]
+        public void SynthOrderBook_GetAsks_Streight_Test()
+        {
+            var gbpusdOb = new OrderBook("FE", _gbpusd.Name,
+                new List<VolumePrice>(), // bids
+                new List<VolumePrice> // asks
+                {
+                    new VolumePrice(1.29906m, 50000m),
+                    new VolumePrice(1.28167m, 2909.98m)
+                },
+                DateTime.Now);
+
+            var bids = SynthOrderBook.GetAsks(gbpusdOb, _gbpusd).ToList();
+            var orderedBids = bids.OrderBy(x => x.Price).ToList();
+
+            Assert.Equal(2, bids.Count);
+            Assert.Equal(bids[0].Price, orderedBids[0].Price);
+            Assert.Equal(bids[1].Price, orderedBids[1].Price);
+        }
+
+        [Fact]
+        public void SynthOrderBook_GetAsks_Reverseed_Test()
+        {
+            var gbpusdOb = new OrderBook("FE", _gbpusd.Name,
+                new List<VolumePrice> // bids
+                {
+                    new VolumePrice(1.28167m, 2909.98m),
+                    new VolumePrice(1.29906m, 50000m)
+                },
+                new List<VolumePrice>(), // asks
+                DateTime.Now);
+
+            var bids = SynthOrderBook.GetAsks(gbpusdOb, _usdgbp).ToList();
+            var orderedBids = bids.OrderBy(x => x.Price).ToList();
+
+            Assert.Equal(2, bids.Count);
+            Assert.Equal(bids[0].Price, orderedBids[0].Price);
+            Assert.Equal(bids[1].Price, orderedBids[1].Price);
+        }
+
+
+
+        private IReadOnlyList<OrderBook> GetOrderBooks(AssetPair assetPair1, AssetPair assetPair2)
+        {
+            var orderBook1 = new OrderBook("FE", assetPair1.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
+            orderBook1.SetAssetPair(assetPair1);
+            var orderBook2 = new OrderBook("FE", assetPair2.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
+            orderBook2.SetAssetPair(assetPair2);
+
+            return new List<OrderBook> { orderBook1, orderBook2 };
+        }
+
+        private IReadOnlyList<OrderBook> GetOrderBooks(AssetPair assetPair1, AssetPair assetPair2, AssetPair assetPair3)
+        {
+            var orderBook1 = new OrderBook("FE", assetPair1.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
+            orderBook1.SetAssetPair(assetPair1);
+            var orderBook2 = new OrderBook("FE", assetPair2.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
+            orderBook2.SetAssetPair(assetPair2);
+            var orderBook3 = new OrderBook("FE", assetPair3.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
+            orderBook3.SetAssetPair(assetPair3);
+
+            return new List<OrderBook> { orderBook1, orderBook2, orderBook3 };
+        }
+
+        private void AssertChained2(IDictionary<AssetPair, OrderBook> result)
+        {
+            Assert.Equal(2, result.Count);
+
+            Assert.Equal("BTC", result.ElementAt(0).Key.Base);
+            Assert.Equal("EUR", result.ElementAt(0).Key.Quote);
+            Assert.True(result.ElementAt(0).Value.AssetPair.IsEqualOrReversed(_btceur));
+
+            Assert.Equal("EUR", result.ElementAt(1).Key.Base);
+            Assert.Equal("USD", result.ElementAt(1).Key.Quote);
+            Assert.True(result.ElementAt(1).Value.AssetPair.IsEqualOrReversed(_eurusd));
+        }
+
+        private void AssertChained3(IDictionary<AssetPair, OrderBook> result)
+        {
+            Assert.Equal(3, result.Count);
+
+            Assert.Equal("BTC", result.ElementAt(0).Key.Base);
+            Assert.Equal("EUR", result.ElementAt(0).Key.Quote);
+            Assert.True(result.ElementAt(0).Value.AssetPair.IsEqualOrReversed(_btceur));
+
+            Assert.Equal("EUR", result.ElementAt(1).Key.Base);
+            Assert.Equal("CHF", result.ElementAt(1).Key.Quote);
+            Assert.True(result.ElementAt(1).Value.AssetPair.IsEqualOrReversed(_eurchf));
+
+            Assert.Equal("CHF", result.ElementAt(2).Key.Base);
+            Assert.Equal("USD", result.ElementAt(2).Key.Quote);
+            Assert.True(result.ElementAt(2).Value.AssetPair.IsEqualOrReversed(_chfusd));
+        }
+
+
+        private static AssetPair GetAssetPair(string @base, string quote)
+        {
+            return new AssetPair(@base, quote);
         }
     }
 }
