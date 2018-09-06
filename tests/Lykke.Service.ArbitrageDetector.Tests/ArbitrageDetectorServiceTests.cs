@@ -1498,7 +1498,26 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             arbitrageDetectorService.SetSettings(settings);
 
             var newSettings = arbitrageDetectorService.GetSettings();
-            Assert.Equal(settings, newSettings);
+            Assert.Equal(settings.HistoryMaxSize, newSettings.HistoryMaxSize);
+            Assert.Equal(settings.ExpirationTimeInSeconds, newSettings.ExpirationTimeInSeconds);
+            Assert.True(settings.BaseAssets.SequenceEqual(newSettings.BaseAssets));
+            Assert.True(settings.IntermediateAssets.SequenceEqual(newSettings.IntermediateAssets));
+            Assert.Equal(settings.QuoteAsset, newSettings.QuoteAsset);
+            Assert.Equal(settings.MinSpread, newSettings.MinSpread);
+            Assert.True(settings.Exchanges.SequenceEqual(newSettings.Exchanges));
+            Assert.Equal(settings.MinimumPnL, newSettings.MinimumPnL);
+            Assert.Equal(settings.MinimumVolume, newSettings.MinimumVolume);
+            Assert.True(settings.PublicMatrixAssetPairs.SequenceEqual(newSettings.PublicMatrixAssetPairs));
+            Assert.True(settings.PublicMatrixExchanges.SequenceEqual(newSettings.PublicMatrixExchanges));
+            Assert.True(settings.MatrixAssetPairs.SequenceEqual(newSettings.MatrixAssetPairs));
+            Assert.Equal(settings.MatrixHistoryInterval, newSettings.MatrixHistoryInterval);
+            Assert.True(settings.MatrixHistoryAssetPairs.SequenceEqual(newSettings.MatrixHistoryAssetPairs));
+            Assert.Equal(settings.MatrixSignificantSpread, newSettings.MatrixSignificantSpread);
+            Assert.Equal(settings.MatrixHistoryLykkeName, newSettings.MatrixHistoryLykkeName);
+            Assert.Equal(settings.ExchangesFees.Count(), newSettings.ExchangesFees.Count());
+            Assert.Equal(settings.ExchangesFees.Single().ExchangeName, newSettings.ExchangesFees.Single().ExchangeName);
+            Assert.Equal(settings.ExchangesFees.Single().DepositFee, newSettings.ExchangesFees.Single().DepositFee);
+            Assert.Equal(settings.ExchangesFees.Single().TradingFee, newSettings.ExchangesFees.Single().TradingFee);
         }
 
         [Fact]
