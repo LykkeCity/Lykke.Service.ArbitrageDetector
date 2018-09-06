@@ -24,15 +24,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly object _lockArbitrages = new object();
         private readonly List<LykkeArbitrageRow> _arbitrages;
         private readonly TimerTrigger _trigger;
-        private readonly IArbitrageDetectorService _arbitrageDetectorService;
         private readonly ILog _log;
 
-        public LykkeArbitrageDetectorService(IArbitrageDetectorService arbitrageDetectorService, ILogFactory logFactory)
+        public LykkeArbitrageDetectorService(ILogFactory logFactory)
         {
             _orderBooks = new ConcurrentDictionary<AssetPair, OrderBook>();
             _arbitrages = new List<LykkeArbitrageRow>();
-
-            _arbitrageDetectorService = arbitrageDetectorService;
+            
             _log = logFactory.CreateLog(this);
 
             _trigger = new TimerTrigger(nameof(LykkeArbitrageDetectorService), DefaultInterval, logFactory, Execute);
@@ -277,11 +275,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 result = bestAsks.ElementAt(bestAsks.Count / 2);
 
             return result;
-        }
-
-        private Settings Settings()
-        {
-            return _arbitrageDetectorService.GetSettings();
         }
 
         private static LykkeArbitrageRow GetBestByProperty(IEnumerable<LykkeArbitrageRow> arbitrages, ArbitrageProperty property)
