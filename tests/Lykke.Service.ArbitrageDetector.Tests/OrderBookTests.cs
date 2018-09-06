@@ -9,31 +9,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
     public class OrderBookTests
     {
         [Fact]
-        public void SetAssetPairTest()
-        {
-            const string exchangeName = "FakeExchange";
-            var assetPair = new AssetPair("BTC", "USD");
-            var timestamp = DateTime.UtcNow;
-
-            var orderBook = new OrderBook(exchangeName, assetPair,
-                new List<VolumePrice> // bids
-                {
-                    new VolumePrice(8825, 9), new VolumePrice(8823, 5)
-                },
-                new List<VolumePrice> // asks
-                {
-                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
-                },
-                timestamp);
-
-            Assert.Null(orderBook.AssetPair.Base);
-            Assert.Null(orderBook.AssetPair.Quote);
-            Assert.Equal("BTC", orderBook.AssetPair.Base);
-            Assert.Equal("USD", orderBook.AssetPair.Quote);
-            Assert.Equal(assetPair.Name, orderBook.AssetPair.Name);
-        }
-
-        [Fact]
         public void ReverseTest()
         {
             const string exchangeName = "FakeExchange";
