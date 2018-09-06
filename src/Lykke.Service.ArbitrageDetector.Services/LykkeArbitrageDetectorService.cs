@@ -25,16 +25,14 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly List<LykkeArbitrageRow> _arbitrages;
         private readonly TimerTrigger _trigger;
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
-        private readonly ILykkeExchangeService _lykkeExchangeService;
         private readonly ILog _log;
 
-        public LykkeArbitrageDetectorService(ILykkeExchangeService lykkeExchangeService, IArbitrageDetectorService arbitrageDetectorService, ILogFactory logFactory)
+        public LykkeArbitrageDetectorService(IArbitrageDetectorService arbitrageDetectorService, ILogFactory logFactory)
         {
             _orderBooks = new ConcurrentDictionary<AssetPair, OrderBook>();
             _arbitrages = new List<LykkeArbitrageRow>();
 
             _arbitrageDetectorService = arbitrageDetectorService;
-            _lykkeExchangeService = lykkeExchangeService;
             _log = logFactory.CreateLog(this);
 
             _trigger = new TimerTrigger(nameof(LykkeArbitrageDetectorService), DefaultInterval, logFactory, Execute);
@@ -124,7 +122,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         public void Process(OrderBook orderBook)
         {
             var isLykkeExchange = string.Equals(orderBook.Source, LykkeExchangeName, StringComparison.OrdinalIgnoreCase);
-            if (isLykkeExchange && _lykkeExchangeService.InferBaseAndQuoteAssets(orderBook) > 0)
+            if (isLykkeExchange)
             {
                 _orderBooks[orderBook.AssetPair] = orderBook;
             }

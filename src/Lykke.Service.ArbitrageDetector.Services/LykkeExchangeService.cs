@@ -156,8 +156,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     asks.Add(new VolumePrice((decimal)volumePrice.Price, Math.Abs((decimal)volumePrice.Volume)));
             }
 
-            var result = new OrderBook("lykke", assetPair.Name, bids, asks, lykkeOrderBook.Timestamp);
-            result.AssetPair = assetPair;
+            var result = new OrderBook("lykke", assetPair, bids, asks, lykkeOrderBook.Timestamp);
 
             return result;
         }
@@ -185,19 +184,16 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return allNames.Where(x => x != null).MinBy(x => x.Length);
         }
 
-        public int InferBaseAndQuoteAssets(OrderBook orderBook)
+        public AssetPair? InferBaseAndQuoteAssets(string assetPairStr)
         {
-            if (orderBook == null)
-                throw new ArgumentNullException(nameof(orderBook));
-
-            var assetPairStr = orderBook.AssetPairStr;
+            if (string.IsNullOrWhiteSpace(assetPairStr))
+                throw new ArgumentNullException(nameof(assetPairStr));
 
             // The exact asset pair name
             var assetPair = _assetPairs.Keys.SingleOrDefault(x => string.Equals(x.Name, assetPairStr, StringComparison.OrdinalIgnoreCase));
             if (!assetPair.IsEmpty())
             {
-                orderBook.AssetPair = assetPair;
-                return 2;
+                return assetPair;
             }
 
             AssetPair oneInfered;
@@ -218,7 +214,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                     if (string.IsNullOrWhiteSpace(@base) || string.IsNullOrWhiteSpace(quote))
                     {
-                        _log.Info($"Strange situation with asset inference - assetPairStr: {orderBook.AssetPairStr}, found base: '{@base}', found quote: '{quote}', assets: {string.Join(", ", assets.Select(x => $"'{x}'"))}");
+                        _log.Info($"Strange situation with asset inference - assetPairStr: {assetPairStr}, found base: '{@base}', found quote: '{quote}', assets: {string.Join(", ", assets.Select(x => $"'{x}'"))}");
                         continue;
                     }
 
@@ -231,19 +227,17 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     }
 
                     // If found both assets then stop looking
-                    orderBook.SetAssetPair(assetPair);
-                    return 2;
+                    return assetPair;
                 }
             }
 
             // If found only one asset then use it
             if (!oneInfered.IsEmpty())
             {
-                orderBook.SetAssetPair(oneInfered);
-                return 1;
+                return oneInfered;
             }
 
-            return 0;
+            return null;
         }
 
         public (int Price, int Volume)? GetAccuracy(AssetPair assetPair)

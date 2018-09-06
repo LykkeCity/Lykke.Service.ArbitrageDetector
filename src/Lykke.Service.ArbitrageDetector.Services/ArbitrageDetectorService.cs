@@ -64,11 +64,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public void Process(OrderBook orderBook)
         {
-            if (_lykkeExchangeService.InferBaseAndQuoteAssets(orderBook) > 0)
-            {
-                var key = new AssetPairSource(orderBook.Source, orderBook.AssetPair);
-                _orderBooks[key] = orderBook;
-            }
+            var key = new AssetPairSource(orderBook.Source, orderBook.AssetPair);
+            _orderBooks[key] = orderBook;
         }
 
         public async Task Execute(ITimerTrigger timer, TimerTriggeredHandlerArgs args, CancellationToken cancellationtoken)
@@ -412,7 +409,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 result = result.Where(x => x.Source.ToUpper().Trim().Contains(exchange.ToUpper().Trim())).ToList();
 
             if (!string.IsNullOrWhiteSpace(assetPair))
-                result = result.Where(x => x.AssetPairStr.ToUpper().Trim().Contains(assetPair.ToUpper().Trim())).ToList();
+                result = result.Where(x => x.AssetPair.Name.ToUpper().Trim().Contains(assetPair.ToUpper().Trim())).ToList();
 
             return result.OrderByDescending(x => x.AssetPair.Name).ToList();
         }
