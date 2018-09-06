@@ -5,7 +5,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
     /// <summary>
     /// Represents an asset pair (an instrument).
     /// </summary>
-    public struct AssetPair : IComparable
+    public class AssetPair : IComparable
     {
         /// <summary>
         /// Base asset.
@@ -18,6 +18,16 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         public string Quote { get; }
 
         /// <summary>
+        /// Accuracy.
+        /// </summary>
+        public int Accuracy { get; }
+
+        /// <summary>
+        /// Inverted accuracy.
+        /// </summary>
+        public int InvertedAccuracy { get; } 
+
+        /// <summary>
         /// Name of the asset pair.
         /// </summary>
         public string Name => Base + Quote;
@@ -25,10 +35,12 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// <summary>
         /// Contructor.
         /// </summary>
-        public AssetPair(string @base, string quote)
+        public AssetPair(string @base, string quote, int accuracy, int invertedAccuracy)
         {
-            Base = string.IsNullOrWhiteSpace(@base) ? throw new ArgumentException($"AssetPair.ctor - missed {nameof(@base)} argument") : @base;
-            Quote = string.IsNullOrWhiteSpace(quote) ? throw new ArgumentException($"AssetPair.ctor - missed {nameof(@base)} argument") : quote;
+            Base = string.IsNullOrWhiteSpace(@base) ? throw new ArgumentException($"AssetPair.ctor - empty {nameof(@base)} argument") : @base;
+            Quote = string.IsNullOrWhiteSpace(quote) ? throw new ArgumentException($"AssetPair.ctor - empty {nameof(@base)} argument") : quote;
+            Accuracy = accuracy;
+            InvertedAccuracy = invertedAccuracy;
         }
 
         /// <summary>
@@ -36,9 +48,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// </summary>
         public AssetPair Reverse()
         {
-            Validate();
-
-            return new AssetPair(Quote, Base);
+            return new AssetPair(Quote, Base, InvertedAccuracy, Accuracy);
         }
 
         /// <summary>
@@ -46,11 +56,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// </summary>
         public bool IsReversed(AssetPair assetPair)
         {
-            Validate();
-
-            if (assetPair.IsEmpty())
-                throw new ArgumentException($"{nameof(assetPair)} is not filled properly.");
-
             return Base == assetPair.Quote && Quote == assetPair.Base;
         }
 
@@ -59,11 +64,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// </summary>
         public bool IsEqualOrReversed(AssetPair other)
         {
-            Validate();
-
-            if (other.IsEmpty())
-                throw new ArgumentException($"{nameof(other)} is not filled properly.");
-
             return Equals(other) || IsReversed(other);
         }
 
@@ -72,11 +72,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// </summary>
         public bool HasCommonAsset(AssetPair other)
         {
-            Validate();
-
-            if (other.IsEmpty())
-                throw new ArgumentException($"{nameof(other)} is not filled properly.");
-
             return Base == other.Base || Base == other.Quote || Quote == other.Base || Quote == other.Quote;
         }
 
@@ -85,8 +80,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// </summary>
         public bool ContainsAsset(string asset)
         {
-            Validate();
-
             if (string.IsNullOrWhiteSpace(asset))
                 throw new ArgumentException(nameof(asset));
 
@@ -98,8 +91,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// </summary>
         public bool ContainsAssets(string one, string another)
         {
-            Validate();
-
             if (string.IsNullOrWhiteSpace(one))
                 throw new ArgumentException(nameof(one));
 
@@ -115,8 +106,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// </summary>
         public string GetOtherAsset(string one)
         {
-            Validate();
-
             if (string.IsNullOrWhiteSpace(one))
                 throw new ArgumentException(nameof(one));
 
@@ -128,58 +117,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return result;
         }
 
-        /// <summary>
-        /// Create Asset Pair from string with one of the assets.
-        /// </summary>
-        public static AssetPair FromString(string assetPair, string oneOfTheAssets)
-        {
-            if (string.IsNullOrWhiteSpace(assetPair))
-                throw new ArgumentException(nameof(assetPair));
-
-            if (string.IsNullOrWhiteSpace(oneOfTheAssets))
-                throw new ArgumentException(nameof(oneOfTheAssets));
-
-            oneOfTheAssets = oneOfTheAssets.ToUpper().Trim();
-            assetPair = assetPair.ToUpper().Trim();
-
-            if (!assetPair.Contains(oneOfTheAssets))
-                throw new ArgumentOutOfRangeException($"{nameof(assetPair)} doesn't contain {nameof(oneOfTheAssets)}");
-
-            var otherAsset = assetPair.ToUpper().Trim().Replace(oneOfTheAssets, string.Empty);
-
-            var baseAsset = assetPair.StartsWith(oneOfTheAssets) ? oneOfTheAssets : otherAsset;
-            var quoteAsset = assetPair.Replace(baseAsset, string.Empty);
-
-            var result = new AssetPair(baseAsset, quoteAsset);
-
-            return result;
-        }
-
-        /// <summary>
-        /// Checks if not initialized.
-        /// </summary>
-        public bool IsEmpty()
-        {
-            return string.IsNullOrWhiteSpace(Base) || string.IsNullOrWhiteSpace(Quote);
-        }
-
-        /// <summary>
-        /// Throw ArgumentException if not initialized.
-        /// </summary>
-        private void Validate()
-        {
-            if (string.IsNullOrWhiteSpace(Base))
-                throw new ArgumentException(nameof(Base));
-
-            if (string.IsNullOrWhiteSpace(Quote))
-                throw new ArgumentException(nameof(Quote));
-        }
-
         /// <inheritdoc />
         public override string ToString()
         {
-            Validate();
-
             return Name;
         }
 
@@ -190,7 +130,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// </summary>
         public bool Equals(AssetPair other)
         {
-            return string.Equals(Base, other.Base) && string.Equals(Quote, other.Quote);
+            return string.Equals(Base, other.Base, StringComparison.InvariantCultureIgnoreCase)
+                   && string.Equals(Quote, other.Quote, StringComparison.InvariantCultureIgnoreCase);
         }
 
         /// <inheritdoc />
@@ -235,15 +176,15 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         /// </summary>
         public int CompareTo(AssetPair other)
         {
-            if (default(AssetPair).Equals(other) )
+            if (other == null)
                 throw new ArgumentOutOfRangeException(nameof(other));
 
-            var baseComparison = string.Compare(Base, other.Base, StringComparison.Ordinal);
+            var baseComparison = string.Compare(Base, other.Base, StringComparison.InvariantCultureIgnoreCase);
 
             if (baseComparison != 0)
                 return baseComparison;
 
-            return string.Compare(Quote, other.Quote, StringComparison.Ordinal);
+            return string.Compare(Quote, other.Quote, StringComparison.InvariantCultureIgnoreCase);
         }
 
         #endregion

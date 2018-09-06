@@ -2,23 +2,23 @@
 using Autofac;
 using Lykke.Sdk;
 using Lykke.Service.ArbitrageDetector.Core.Services;
-using Lykke.Service.ArbitrageDetector.RabbitSubscribers;
+using Lykke.Service.ArbitrageDetector.RabbitMq.Subscribers;
 
 namespace Lykke.Service.ArbitrageDetector.Managers
 {
     internal class StartupManager : IStartupManager
     {
-        private readonly RabbitMessageSubscriber _rabbitMessageSubscriber;
+        private readonly OrderBooksSubscriber _orderBooksSubscriber;
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
         private readonly ILykkeArbitrageDetectorService _lykkeArbitrageDetectorService;
         private readonly IMatrixHistoryService _matrixHistoryService;
 
-        public StartupManager(RabbitMessageSubscriber rabbitMessageSubscriber,
+        public StartupManager(OrderBooksSubscriber orderBooksSubscriber,
             IArbitrageDetectorService arbitrageDetectorService,
             ILykkeArbitrageDetectorService lykkeArbitrageDetectorService,
             IMatrixHistoryService matrixHistoryService)
         {
-            _rabbitMessageSubscriber = rabbitMessageSubscriber;
+            _orderBooksSubscriber = orderBooksSubscriber;
             _arbitrageDetectorService = arbitrageDetectorService;
             _lykkeArbitrageDetectorService = lykkeArbitrageDetectorService;
             _matrixHistoryService = matrixHistoryService;
@@ -26,7 +26,7 @@ namespace Lykke.Service.ArbitrageDetector.Managers
 
         public Task StartAsync()
         {
-            _rabbitMessageSubscriber.Start();
+            _orderBooksSubscriber.Start();
             ((IStartable)_arbitrageDetectorService).Start();
             ((IStartable)_lykkeArbitrageDetectorService).Start();
             ((IStartable)_matrixHistoryService).Start();

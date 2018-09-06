@@ -86,8 +86,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             string conversionPath, decimal volume, decimal? baseBid, decimal? baseAsk, decimal? synthBid, decimal? synthAsk, decimal? volumeInUsd,
             decimal pnL, decimal? pnLInUsd)
         {
-            Target = baseAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(baseAssetPair)) : baseAssetPair;
-            Source = crossAssetPair.IsEmpty() ? throw new ArgumentNullException(nameof(crossAssetPair)) : crossAssetPair;
+            Target = baseAssetPair ?? throw new ArgumentNullException(nameof(baseAssetPair));
+            Source = crossAssetPair ?? throw new ArgumentNullException(nameof(crossAssetPair));
             Spread = spread;
             TargetSide = string.IsNullOrWhiteSpace(baseSide) ? throw new ArgumentNullException(nameof(baseSide)) : baseSide;
             ConversionPath = string.IsNullOrWhiteSpace(conversionPath) ? throw new ArgumentNullException(nameof(conversionPath)) : conversionPath;

@@ -26,5 +26,10 @@ namespace Lykke.Service.ArbitrageDetector.RabbitMq.Models
             Asks = asks.Where(x => x.Price != 0 && x.Volume != 0).OrderBy(x => x.Price).ToList();
             Timestamp = timestamp;
         }
+
+        public override string ToString()
+        {
+            return $"{Source}-{AssetPairStr}";
+        }
     }
 }

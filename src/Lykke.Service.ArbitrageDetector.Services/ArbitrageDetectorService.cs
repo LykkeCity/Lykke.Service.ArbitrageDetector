@@ -29,10 +29,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private Settings _s;
         private readonly TimerTrigger _trigger;
         private readonly ISettingsRepository _settingsRepository;
-        private readonly ILykkeExchangeService _lykkeExchangeService;
         private readonly ILog _log;
 
-        public ArbitrageDetectorService(ISettingsRepository settingsRepository, ILykkeExchangeService lykkeExchangeService, ILogFactory logFactory)
+        public ArbitrageDetectorService(ISettingsRepository settingsRepository, ILogFactory logFactory)
         {
             _orderBooks = new ConcurrentDictionary<AssetPairSource, OrderBook>();
             _synthOrderBooks = new ConcurrentDictionary<AssetPairSource, SynthOrderBook>();
@@ -40,7 +39,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _arbitrageHistory = new ConcurrentDictionary<string, Arbitrage>();
 
             _settingsRepository = settingsRepository;
-            _lykkeExchangeService = lykkeExchangeService;
             _log = logFactory.CreateLog(this);
 
             InitSettings();
@@ -97,7 +95,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             foreach (var @base in _s.BaseAssets)
             {
-                var target = new AssetPair(@base, _s.QuoteAsset);
+                var target = new AssetPair(@base, _s.QuoteAsset, 8, 8);
                 var newActualSynthsFromAll = SynthOrderBook.GetSynthsFromAll(target, orderBooks, orderBooks);
 
                 newActualSynthOrderBooks.AddRange(newActualSynthsFromAll);
@@ -384,7 +382,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             if (!price.HasValue)
                 return null;
 
-            return Math.Round(price.Value, _lykkeExchangeService.GetAccuracy(assetPair)?.Price ?? 5);
+            return Math.Round(price.Value, assetPair.Accuracy == 0 ? 6 : assetPair.Accuracy);
         }
 
         private decimal? GetVolumeWithAccuracy(decimal? volume, AssetPair assetPair)
@@ -392,7 +390,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             if (!volume.HasValue)
                 return null;
 
-            return Math.Round(volume.Value, _lykkeExchangeService.GetAccuracy(assetPair)?.Volume ?? 4);
+            return Math.Round(volume.Value, assetPair.InvertedAccuracy == 0 ? 6 : assetPair.InvertedAccuracy);
         }
 
 

@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 using Lykke.Job.OrderBooksCacheProvider.Client;
 using Lykke.Sdk;
 using Lykke.Service.ArbitrageDetector.Managers;
-using Lykke.Service.ArbitrageDetector.RabbitSubscribers;
+using Lykke.Service.ArbitrageDetector.RabbitMq.Subscribers;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.ArbitrageDetector.Settings;
 using Lykke.SettingsReader;
@@ -44,7 +44,7 @@ namespace Lykke.Service.ArbitrageDetector
         {
             foreach (var exchange in _settings.CurrentValue.ArbitrageDetector.RabbitMq.Exchanges)
             {
-                builder.RegisterType<RabbitMessageSubscriber>()
+                builder.RegisterType<OrderBooksSubscriber>()
                     .AsSelf()
                     .As<IStartable>()
                     .As<IStopable>()
