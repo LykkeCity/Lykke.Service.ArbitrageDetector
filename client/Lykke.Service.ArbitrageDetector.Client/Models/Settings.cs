@@ -64,6 +64,11 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         public int SynthMaxDepth { get; set; }
 
 
+        // Lykke Arbitrages
+
+        public TimeSpan LykkeArbitragesExecutionInterval { get; set; } = new TimeSpan(0, 0, 0, 10);
+
+
         // Matrix
 
         /// <summary>

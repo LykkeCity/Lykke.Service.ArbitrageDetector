@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using AzureStorage;
 using AzureStorage.Tables;
 using Lykke.Common.Log;
@@ -30,15 +31,20 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
             var entity = new MatrixEntity(matrix);
             await _storage.InsertAsync(entity);
 
-            var blob = new MatrixBlob(matrix);
+            var blob = Mapper.Map<MatrixBlob>(matrix);
             await _blobRepository.SaveAsync(blob);
         }
 
         public async Task<Matrix> GetAsync(string assetPair, DateTime dateTime)
         {
-            var result = await _blobRepository.GetAsync(assetPair, dateTime);
+            var model = await _blobRepository.GetAsync(assetPair, dateTime);
 
-            return result?.Matrix();
+            if (model == null)
+                return null;
+
+            var domain = Mapper.Map<Matrix>(model);
+
+            return domain;
         }
 
         public async Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime date, decimal? maxSpread, IReadOnlyCollection<string> exchanges)

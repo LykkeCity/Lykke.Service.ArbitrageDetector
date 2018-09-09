@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
+using AutoMapper;
 using AzureStorage;
 using Common;
 using Lykke.Service.ArbitrageDetector.AzureRepositories.Models;
+using Lykke.Service.ArbitrageDetector.Core.Domain;
 
 namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 {
@@ -16,7 +18,8 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 
         public Task SaveAsync(MatrixBlob matrix)
         {
-            return SaveBlobAsync(MatrixEntity.GenerateBlobId(matrix.Matrix()), matrix.ToJson());
+            var domain = Mapper.Map<Matrix>(matrix);
+            return SaveBlobAsync(MatrixEntity.GenerateBlobId(domain), matrix.ToJson());
         }
 
         public async Task<MatrixBlob> GetAsync(string assetPair, DateTime dateTime)

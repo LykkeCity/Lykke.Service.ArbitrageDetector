@@ -16,7 +16,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
 {
     public class LykkeArbitrageDetectorService : ILykkeArbitrageDetectorService, IStartable, IStopable
     {
-        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 0, 10);
         private const string LykkeExchangeName = "lykke";
         private const string Usd = "USD";
         
@@ -26,13 +25,15 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private readonly IOrderBooksService _orderBooksService;
         private readonly ILog _log;
 
-        public LykkeArbitrageDetectorService(IOrderBooksService orderBooksService, ILogFactory logFactory)
+        public LykkeArbitrageDetectorService(IOrderBooksService orderBooksService, ISettingsService settingsService, ILogFactory logFactory)
         {
             _arbitrages = new List<LykkeArbitrageRow>();
             _orderBooksService = orderBooksService;
             _log = logFactory.CreateLog(this);
 
-            _trigger = new TimerTrigger(nameof(LykkeArbitrageDetectorService), DefaultInterval, logFactory, Execute);
+            var executionInterval = settingsService.GetAsync().GetAwaiter().GetResult().LykkeArbitragesExecutionInterval;
+
+            _trigger = new TimerTrigger(nameof(LykkeArbitrageDetectorService), executionInterval, logFactory, Execute);
         }
 
         public IEnumerable<LykkeArbitrageRow> GetArbitrages(string target, string source, ArbitrageProperty property = default, decimal minValue = 0)
