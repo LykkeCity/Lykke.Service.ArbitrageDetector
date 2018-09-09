@@ -6,14 +6,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
 {
     public interface IArbitrageDetectorService
     {
-        void Process(OrderBook orderBook);
-
-        // Order Books
-
-        IEnumerable<OrderBook> GetOrderBooks(string exchange, string assetPair);
-
-        OrderBook GetOrderBook(string exchange, string assetPair);
-
         // Cross Rates
 
         IEnumerable<SynthOrderBook> GetSynthOrderBooks();
@@ -31,11 +23,5 @@ namespace Lykke.Service.ArbitrageDetector.Core.Services
         // Matrix
 
         Matrix GetMatrix(string assetPair, bool isPublic = false, bool depositFee = false, bool tradingFee = false);
-
-        // Settings
-
-        Settings GetSettings();
-
-        void SetSettings(Settings settings);
     }
 }

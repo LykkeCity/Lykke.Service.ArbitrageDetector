@@ -11,7 +11,6 @@ using Common.Log;
 using Lykke.Common.Log;
 using Lykke.Service.ArbitrageDetector.Core.Utils;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
-using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Services.Models;
 using MoreLinq;
@@ -20,51 +19,29 @@ namespace Lykke.Service.ArbitrageDetector.Services
 {
     public class ArbitrageDetectorService : IArbitrageDetectorService, IStartable, IStopable
     {
-        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 0, 2);
-        private readonly ConcurrentDictionary<AssetPairSource, OrderBook> _orderBooks;
+        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 0, 10);
         private readonly ConcurrentDictionary<AssetPairSource, SynthOrderBook> _synthOrderBooks;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrages;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrageHistory;
         private bool _restartNeeded;
-        private Settings _s;
         private readonly TimerTrigger _trigger;
-        private readonly ISettingsRepository _settingsRepository;
+        private readonly ISettingsService _settingsService;
+        private readonly IOrderBooksService _orderBooksService;
         private readonly ILog _log;
 
-        public ArbitrageDetectorService(ISettingsRepository settingsRepository, ILogFactory logFactory)
+        public ArbitrageDetectorService(ISettingsService settingsService, IOrderBooksService orderBooksService, ILogFactory logFactory)
         {
-            _orderBooks = new ConcurrentDictionary<AssetPairSource, OrderBook>();
             _synthOrderBooks = new ConcurrentDictionary<AssetPairSource, SynthOrderBook>();
             _arbitrages = new ConcurrentDictionary<string, Arbitrage>();
             _arbitrageHistory = new ConcurrentDictionary<string, Arbitrage>();
 
-            _settingsRepository = settingsRepository;
+            _settingsService = settingsService;
+            _orderBooksService = orderBooksService;
             _log = logFactory.CreateLog(this);
-
-            InitSettings();
-
+            
             _trigger = new TimerTrigger(nameof(ArbitrageDetectorService), DefaultInterval, logFactory, Execute);
         }
 
-        private void InitSettings()
-        {
-            var dbSettings = _settingsRepository.GetAsync().GetAwaiter().GetResult();
-
-            if (dbSettings == null)
-            {
-                dbSettings = new Settings();
-                _settingsRepository.InsertOrReplaceAsync(dbSettings).GetAwaiter().GetResult();
-            }
-
-            _s = dbSettings;
-        }
-
-
-        public void Process(OrderBook orderBook)
-        {
-            var key = new AssetPairSource(orderBook.Source, orderBook.AssetPair);
-            _orderBooks[key] = orderBook;
-        }
 
         public async Task Execute(ITimerTrigger timer, TimerTriggeredHandlerArgs args, CancellationToken cancellationtoken)
         {
@@ -91,11 +68,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var watch = Stopwatch.StartNew();
 
             var newActualSynthOrderBooks = new List<SynthOrderBook>();
-            var orderBooks = GetWantedActualOrderBooks().Values.ToList();
+            var orderBooks = GetWantedActualOrderBooks().ToList();
+            var settings = Settings();
 
-            foreach (var @base in _s.BaseAssets)
+            foreach (var @base in settings.BaseAssets)
             {
-                var target = new AssetPair(@base, _s.QuoteAsset, 8, 8);
+                var target = new AssetPair(@base, settings.QuoteAsset, 8, 8);
                 var newActualSynthsFromAll = SynthOrderBook.GetSynthsFromAll(target, orderBooks, orderBooks);
 
                 newActualSynthOrderBooks.AddRange(newActualSynthsFromAll);
@@ -117,6 +95,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
             if (!synthOrderBooks.SelectMany(x => x.Bids).Any() || !synthOrderBooks.SelectMany(x => x.Asks).Any())
                 return null;
 
+            var settings = Settings();
+
             // 1. Calculate minAsk and maxBid
             var maxBid = synthOrderBooks.SelectMany(x => x.Bids).Max(x => x.Price);
             var minAsk = synthOrderBooks.SelectMany(x => x.Asks).Min(x => x.Price);
@@ -132,12 +112,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
             {
                 bids.AddRange(
                     synthOrderBook.Bids
-                        .Where(x => x.Price > minAsk && (_s.MinimumVolume == 0 || x.Volume >= _s.MinimumVolume))
+                        .Where(x => x.Price > minAsk && (settings.MinimumVolume == 0 || x.Volume >= settings.MinimumVolume))
                         .Select(x => new SynthOrderBookLine(synthOrderBook, x)));
 
                 asks.AddRange(
                     synthOrderBook.Asks
-                        .Where(x => x.Price < maxBid && (_s.MinimumVolume == 0 || x.Volume >= _s.MinimumVolume))
+                        .Where(x => x.Price < maxBid && (settings.MinimumVolume == 0 || x.Volume >= settings.MinimumVolume))
                         .Select(x => new SynthOrderBookLine(synthOrderBook, x)));
             }
 
@@ -152,6 +132,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             var newArbitrages = new Dictionary<string, Arbitrage>();
             var actualSynthOrderBooks = GetActualSynthOrderBooks();
+            var settings = Settings();
 
             // For each asset pair
             var uniqueAssetPairs = actualSynthOrderBooks.Select(x => x.AssetPair).Distinct().ToList();
@@ -194,7 +175,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
                         // Filtering by spread
                         var spread = Arbitrage.GetSpread(bidPrice, askPrice);
-                        if (_s.MinSpread < 0 && spread < _s.MinSpread)
+                        if (settings.MinSpread < 0 && spread < settings.MinSpread)
                             continue;
 
                         var bidVolume = bid.Volume;
@@ -202,7 +183,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         var volume = askVolume < bidVolume ? askVolume : bidVolume;
                         // Filtering by PnL
                         var pnL = Arbitrage.GetPnL(bidPrice, askPrice, volume);
-                        if (_s.MinimumPnL > 0 && pnL < _s.MinimumPnL)
+                        if (settings.MinimumPnL > 0 && pnL < settings.MinimumPnL)
                             continue;
 
                         var key = Arbitrage.FormatConversionPath(bid.SynthOrderBook.ConversionPath, ask.SynthOrderBook.ConversionPath);
@@ -293,7 +274,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             {
                 _arbitrageHistory.Where(x => x.Value.AssetPair.Equals(assetPair))
                     .OrderByDescending(x => x.Value.PnL)
-                    .Take(_s.HistoryMaxSize)
+                    .Take(Settings().HistoryMaxSize)
                     .ForEach(x => remained[x.Key] = x.Value);
             }
 
@@ -302,28 +283,30 @@ namespace Lykke.Service.ArbitrageDetector.Services
         }
 
 
-        private Dictionary<AssetPairSource, OrderBook> GetWantedActualOrderBooks()
+        private IReadOnlyList<OrderBook> GetWantedActualOrderBooks()
         {
-            var result = new Dictionary<AssetPairSource, OrderBook>();
+            var result = new List<OrderBook>();
+            var settings = Settings();
+            var orderBooks = _orderBooksService.GetAll();
 
-            foreach (var keyValue in _orderBooks)
+            foreach (var orderBook in orderBooks)
             {
                 // Filter by exchanges
-                if (_s.Exchanges.Any() && !_s.Exchanges.Contains(keyValue.Key.Exchange))
+                if (settings.Exchanges.Any() && !settings.Exchanges.Contains(orderBook.Source))
                     continue;
 
                 // Filter by base, quote and intermediate assets
-                var assetPair = keyValue.Key.AssetPair;
-                var passed = !_s.IntermediateAssets.Any()
-                  || _s.IntermediateAssets.Contains(assetPair.Base)
-                  || _s.IntermediateAssets.Contains(assetPair.Quote);
+                var assetPair = orderBook.AssetPair;
+                var passed = !settings.IntermediateAssets.Any()
+                  || settings.IntermediateAssets.Contains(assetPair.Base)
+                  || settings.IntermediateAssets.Contains(assetPair.Quote);
                 if (!passed)
                     continue;
 
                 // Filter by expiration time
-                if (DateTime.UtcNow - keyValue.Value.Timestamp < new TimeSpan(0, 0, 0, _s.ExpirationTimeInSeconds))
+                if (DateTime.UtcNow - orderBook.Timestamp < new TimeSpan(0, 0, 0, settings.ExpirationTimeInSeconds))
                 {
-                    result.Add(keyValue.Key, keyValue.Value);
+                    result.Add(orderBook);
                 }
             }
 
@@ -336,7 +319,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             foreach (var synthOrderBook in _synthOrderBooks)
             {
-                if (DateTime.UtcNow - synthOrderBook.Value.Timestamp < new TimeSpan(0, 0, 0, _s.ExpirationTimeInSeconds))
+                if (DateTime.UtcNow - synthOrderBook.Value.Timestamp < new TimeSpan(0, 0, 0, Settings().ExpirationTimeInSeconds))
                 {
                     result.Add(synthOrderBook.Value);
                 }
@@ -368,12 +351,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
             {
                 _restartNeeded = false;
 
-                _orderBooks.Clear();
                 _synthOrderBooks.Clear();
                 _arbitrages.Clear();
                 _arbitrageHistory.Clear();
 
-                _log.Info("Restarted");
+                _log.Info("Restarted softly.");
             }
         }
 
@@ -393,43 +375,13 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return Math.Round(volume.Value, assetPair.InvertedAccuracy == 0 ? 6 : assetPair.InvertedAccuracy);
         }
 
+        private Settings Settings()
+        {
+            return _settingsService.GetAsync().GetAwaiter().GetResult();
+        }
+
 
         #region IArbitrageDetectorService
-
-        public IEnumerable<OrderBook> GetOrderBooks(string exchange, string assetPair)
-        {
-            if (!_orderBooks.Any())
-                return new List<OrderBook>();
-
-            var result = _orderBooks.Select(x => x.Value).ToList();
-
-            if (!string.IsNullOrWhiteSpace(exchange))
-                result = result.Where(x => x.Source.ToUpper().Trim().Contains(exchange.ToUpper().Trim())).ToList();
-
-            if (!string.IsNullOrWhiteSpace(assetPair))
-                result = result.Where(x => x.AssetPair.Name.ToUpper().Trim().Contains(assetPair.ToUpper().Trim())).ToList();
-
-            return result.OrderByDescending(x => x.AssetPair.Name).ToList();
-        }
-
-        public OrderBook GetOrderBook(string exchange, string assetPair)
-        {
-            if (string.IsNullOrWhiteSpace(exchange))
-                throw new ArgumentException($"{nameof(exchange)} must be set.");
-
-            if (string.IsNullOrWhiteSpace(assetPair))
-                throw new ArgumentException($"{nameof(assetPair)} must be set.");
-
-            if (!_orderBooks.Any())
-                return null;
-
-            var allOrderBooks = _orderBooks.Values;
-            
-            var result = allOrderBooks.SingleOrDefault(x => x.Source.Equals(exchange, StringComparison.OrdinalIgnoreCase)
-                                                  && x.AssetPair.Name.Equals(assetPair, StringComparison.OrdinalIgnoreCase));
-
-            return result;
-        }
 
         public IEnumerable<SynthOrderBook> GetSynthOrderBooks()
         {
@@ -506,14 +458,15 @@ namespace Lykke.Service.ArbitrageDetector.Services
                 return null;
 
             var result = new Matrix(assetPair);
+            var s = Settings();
 
             // Filter by asset pair
-            var orderBooks = _orderBooks.Values.Where(x => 
+            var orderBooks = _orderBooksService.GetAll().Where(x => 
                 string.Equals(x.AssetPair.Name, assetPair.Replace("/", ""), StringComparison.OrdinalIgnoreCase)).ToList();
 
             // Filter by exchanges
-            if (isPublic && _s.PublicMatrixExchanges.Any())
-                orderBooks = orderBooks.Where(x => _s.PublicMatrixExchanges.Keys.Contains(x.Source)).ToList();
+            if (isPublic && s.PublicMatrixExchanges.Any())
+                orderBooks = orderBooks.Where(x => s.PublicMatrixExchanges.Keys.Contains(x.Source)).ToList();
 
             // Order by exchange name
             orderBooks = orderBooks.OrderBy(x => x.Source).ToList();
@@ -522,7 +475,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var exchangesFees = new List<ExchangeFees>();
             foreach (var orderBook in orderBooks)
             {
-                var exchangeFees = _s.ExchangesFees.SingleOrDefault(x => x.ExchangeName.Equals(orderBook.Source, StringComparison.OrdinalIgnoreCase))
+                var exchangeFees = s.ExchangesFees.SingleOrDefault(x => x.ExchangeName.Equals(orderBook.Source, StringComparison.OrdinalIgnoreCase))
                                    ?? new ExchangeFees { ExchangeName = orderBook.Source }; // deposit and trading fees = 0 by default
                 exchangesFees.Add(exchangeFees);
             }
@@ -546,15 +499,15 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var exchangesNames = orderBooks.Select(x => x.Source).ToList();
 
             // Raplace exchange names
-            if (isPublic && _s.PublicMatrixExchanges.Any())
-                exchangesNames = exchangesNames.Select(x => x.Replace(x, _s.PublicMatrixExchanges[x])).ToList();
+            if (isPublic && s.PublicMatrixExchanges.Any())
+                exchangesNames = exchangesNames.Select(x => x.Replace(x, s.PublicMatrixExchanges[x])).ToList();
 
             var matrixSide = exchangesNames.Count;
             for (var row = 0; row < matrixSide; row++)
             {
                 var orderBookRow = orderBooks[row];
                 var cellsRow = new List<MatrixCell>();
-                var isActual = (DateTime.UtcNow - orderBookRow.Timestamp).TotalSeconds < _s.ExpirationTimeInSeconds;
+                var isActual = (DateTime.UtcNow - orderBookRow.Timestamp).TotalSeconds < s.ExpirationTimeInSeconds;
                 var assetPairObj = orderBookRow.AssetPair;
 
                 // Add ask and exchange
@@ -607,119 +560,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
             result.DateTime = DateTime.UtcNow;
 
             return result;
-        }
-
-        public Settings GetSettings()
-        {
-            return _s;
-        }
-
-        public async void SetSettings(Settings settings)
-        {
-            if (settings == null)
-                throw new ArgumentNullException(nameof(settings));
-
-            var restartNeeded = false;
-
-            settings.ExpirationTimeInSeconds = settings.ExpirationTimeInSeconds < 0 ? 0 : settings.ExpirationTimeInSeconds;
-            if (_s.ExpirationTimeInSeconds != settings.ExpirationTimeInSeconds)
-            {
-                _s.ExpirationTimeInSeconds = settings.ExpirationTimeInSeconds;
-                restartNeeded = true;
-            }
-
-            settings.MinimumPnL = settings.MinimumPnL < 0 ? 0 : settings.MinimumPnL;
-            if (_s.MinimumPnL != settings.MinimumPnL)
-            {
-                _s.MinimumPnL = settings.MinimumPnL;
-                restartNeeded = true;
-            }
-
-            settings.MinimumVolume = settings.MinimumVolume < 0 ? 0 : settings.MinimumVolume;
-            if (_s.MinimumVolume != settings.MinimumVolume)
-            {
-                _s.MinimumVolume = settings.MinimumVolume;
-                restartNeeded = true;
-            }
-
-            settings.MinSpread = settings.MinSpread >= 0 || settings.MinSpread < -100 ? 0 : settings.MinSpread;
-            if (_s.MinSpread != settings.MinSpread)
-            {
-                _s.MinSpread = settings.MinSpread;
-                restartNeeded = true;
-            }
-
-            if (settings.IntermediateAssets != null && !_s.IntermediateAssets.SequenceEqual(settings.IntermediateAssets))
-            {
-                _s.IntermediateAssets = settings.IntermediateAssets.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
-                restartNeeded = true;
-            }
-
-            if (settings.BaseAssets != null && !_s.BaseAssets.SequenceEqual(settings.BaseAssets))
-            {
-                _s.BaseAssets = settings.BaseAssets.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
-                restartNeeded = true;
-            }
-
-            if (!string.IsNullOrWhiteSpace(settings.QuoteAsset) && _s.QuoteAsset != settings.QuoteAsset)
-            {
-                _s.QuoteAsset = settings.QuoteAsset.Trim();
-                restartNeeded = true;
-            }
-
-            if (settings.Exchanges != null && !_s.Exchanges.SequenceEqual(settings.Exchanges))
-            {
-                _s.Exchanges = settings.Exchanges.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
-                restartNeeded = true;
-            }
-
-            if (settings.PublicMatrixAssetPairs != null && !_s.PublicMatrixAssetPairs.SequenceEqual(settings.PublicMatrixAssetPairs))
-            {
-                _s.PublicMatrixAssetPairs = settings.PublicMatrixAssetPairs.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
-            }
-
-            if (settings.PublicMatrixExchanges != null && !_s.PublicMatrixExchanges.SequenceEqual(settings.PublicMatrixExchanges))
-            {
-                _s.PublicMatrixExchanges = settings.PublicMatrixExchanges;
-            }
-
-            if (settings.MatrixAssetPairs != null && !settings.MatrixAssetPairs.SequenceEqual(_s.MatrixAssetPairs ?? new List<string>()))
-            {
-                _s.MatrixAssetPairs = settings.MatrixAssetPairs.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
-            }
-
-            settings.MatrixSignificantSpread = settings.MatrixSignificantSpread >= 0 || settings.MatrixSignificantSpread < -100 ? null : settings.MatrixSignificantSpread;
-            if (_s.MatrixSignificantSpread != settings.MatrixSignificantSpread)
-            {
-                _s.MatrixSignificantSpread = settings.MatrixSignificantSpread;
-                restartNeeded = true;
-            }
-
-            if (settings.MatrixHistoryAssetPairs != null && !settings.MatrixHistoryAssetPairs.SequenceEqual(_s.MatrixHistoryAssetPairs ?? new List<string>()))
-            {
-                _s.MatrixHistoryAssetPairs = settings.MatrixHistoryAssetPairs.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
-            }
-
-            settings.MatrixHistoryInterval = (int)settings.MatrixHistoryInterval.TotalMinutes < 0 ? new TimeSpan(0, 0, 5, 0) : settings.MatrixHistoryInterval;
-            if (_s.MatrixHistoryInterval != settings.MatrixHistoryInterval)
-            {
-                _s.MatrixHistoryInterval = settings.MatrixHistoryInterval;
-            }
-
-            if (!string.IsNullOrWhiteSpace(settings.MatrixHistoryLykkeName) && _s.MatrixHistoryLykkeName != settings.MatrixHistoryLykkeName)
-            {
-                _s.MatrixHistoryLykkeName = settings.MatrixHistoryLykkeName.Trim();
-                restartNeeded = true;
-            }
-
-            if (settings.ExchangesFees != null && !_s.ExchangesFees.SequenceEqual(settings.ExchangesFees))
-            {
-                _s.ExchangesFees = settings.ExchangesFees;
-            }
-
-            await _settingsRepository.InsertOrReplaceAsync(_s);
-
-            _restartNeeded = restartNeeded;
         }
 
         #endregion

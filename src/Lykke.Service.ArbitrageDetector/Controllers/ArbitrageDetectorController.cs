@@ -13,17 +13,23 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 {
     public class ArbitrageDetectorController : Controller
     {
+        private readonly IOrderBooksService _orderBookService;
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
         private readonly ILykkeArbitrageDetectorService _lykkeArbitrageDetectorService;
         private readonly IMatrixHistoryService _matrixHistoryService;
+        private readonly ISettingsService _settingsService;
 
-        public ArbitrageDetectorController(IArbitrageDetectorService arbitrageDetectorService, 
+        public ArbitrageDetectorController(IOrderBooksService orderBookService,
+            IArbitrageDetectorService arbitrageDetectorService, 
             ILykkeArbitrageDetectorService lykkeArbitrageDetectorService,
-            IMatrixHistoryService matrixHistoryService)
+            IMatrixHistoryService matrixHistoryService,
+            ISettingsService settingsService)
         {
+            _orderBookService = orderBookService;
             _arbitrageDetectorService = arbitrageDetectorService;
             _lykkeArbitrageDetectorService = lykkeArbitrageDetectorService;
             _matrixHistoryService = matrixHistoryService;
+            _settingsService = settingsService;
         }
 
         [HttpGet]
@@ -33,7 +39,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "*" })]
         public virtual IActionResult OrderBooks(string exchange, string assetPair)
         {
-            var domain = _arbitrageDetectorService.GetOrderBooks(exchange, assetPair);
+            var domain = _orderBookService.GetOrderBooks(exchange, assetPair);
             var model = Mapper.Map<IReadOnlyList<OrderBookRow>>(domain);
 
             return Ok(model);
@@ -46,7 +52,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "*" })]
         public virtual IActionResult OrderBook(string exchange, string assetPair)
         {
-            var domain = _arbitrageDetectorService.GetOrderBook(exchange, assetPair);
+            var domain = _orderBookService.GetOrderBook(exchange, assetPair);
             var model = Mapper.Map<OrderBook>(domain);
 
             return Ok(model);
@@ -156,7 +162,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ResponseCache(Duration = 1)]
         public IActionResult PublicMatrixAssetPairs()
         {
-            var settings = _arbitrageDetectorService.GetSettings();
+            var settings = _settingsService.GetAsync().GetAwaiter().GetResult();
             var result = settings.PublicMatrixAssetPairs;
 
             return Ok(result);
@@ -219,7 +225,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ProducesResponseType(typeof(Client.Models.Settings), (int)HttpStatusCode.OK)]
         public IActionResult GetSettings()
         {
-            var domain = _arbitrageDetectorService.GetSettings();
+            var domain = _settingsService.GetAsync().GetAwaiter().GetResult();
             var model = Mapper.Map<Client.Models.Settings>(domain);
 
             return Ok(model);
@@ -232,7 +238,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         public IActionResult SetSettings([FromBody]Client.Models.Settings settings)
         {
             var domain = Mapper.Map<Core.Domain.Settings>(settings);
-            _arbitrageDetectorService.SetSettings(domain);
+            _settingsService.SetAsync(domain).GetAwaiter().GetResult();
 
             return Ok();
         }

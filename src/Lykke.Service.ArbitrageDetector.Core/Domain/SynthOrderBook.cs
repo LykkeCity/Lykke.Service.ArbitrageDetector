@@ -15,9 +15,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public IEnumerable<VolumePrice> Asks => OrderedVolumePrices(GetAsks);
 
-        public VolumePrice? BestBid => Bids.Any() ? Bids.First() : (VolumePrice?)null;
+        public VolumePrice? BestBid { get; }
 
-        public VolumePrice? BestAsk => Asks.Any() ? Asks.First() : (VolumePrice?)null;
+        public VolumePrice? BestAsk { get; }
 
         public IReadOnlyList<OrderBook> OriginalOrderBooks { get; }
 
@@ -30,6 +30,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         {
             AssetPair = assetPair;
             OriginalOrderBooks = originalOrderBooks;
+            BestBid = Bids.Any() ? Bids.First() : (VolumePrice?)null;
+            BestAsk = Asks.Any() ? Asks.First() : (VolumePrice?)null;
         }
 
 
