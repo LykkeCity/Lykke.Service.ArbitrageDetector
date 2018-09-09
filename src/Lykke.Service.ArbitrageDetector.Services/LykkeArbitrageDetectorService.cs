@@ -31,7 +31,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _orderBooksService = orderBooksService;
             _log = logFactory.CreateLog(this);
 
-            var executionInterval = settingsService.GetAsync().GetAwaiter().GetResult().LykkeArbitragesExecutionInterval;
+            var settings = settingsService.GetAsync().GetAwaiter().GetResult();
+            var executionInterval = settings.LykkeArbitragesExecutionInterval;
 
             _trigger = new TimerTrigger(nameof(LykkeArbitrageDetectorService), executionInterval, logFactory, Execute);
         }

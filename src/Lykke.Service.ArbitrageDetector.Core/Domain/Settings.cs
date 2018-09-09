@@ -27,8 +27,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public IEnumerable<string> Exchanges { get; set; }  = new List<string>();
 
-        public int SynthMaxDepth { get; set; } = 30;
-
         // Lykke Arbitrages
 
         public TimeSpan LykkeArbitragesExecutionInterval { get; set; } = new TimeSpan(0, 0, 0, 2);
