@@ -15,17 +15,19 @@ namespace Lykke.Service.ArbitrageDetector.Services
     public class MatrixHistoryService : IMatrixHistoryService, IStartable, IStopable
     {
         private readonly TimerTrigger _trigger;
-        private readonly IMatrixHistoryRepository _matrixHistoryRepository;
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
+        private readonly ISettingsService _settingsService;
+        private readonly IMatrixHistoryRepository _matrixHistoryRepository;
         private readonly ILog _log;
 
-        public MatrixHistoryService(IArbitrageDetectorService arbitrageDetectorService, IMatrixHistoryRepository matrixHistoryRepository, ILogFactory logFactory)
+        public MatrixHistoryService(IArbitrageDetectorService arbitrageDetectorService, ISettingsService settingsService, IMatrixHistoryRepository matrixHistoryRepository, ILogFactory logFactory)
         {
-            _matrixHistoryRepository = matrixHistoryRepository;
             _arbitrageDetectorService = arbitrageDetectorService;
+            _settingsService = settingsService;
+            _matrixHistoryRepository = matrixHistoryRepository;
             _log = logFactory.CreateLog(this);
 
-            var settings = _arbitrageDetectorService.GetSettings();
+            var settings = settingsService.GetAsync().GetAwaiter().GetResult();
             _trigger = new TimerTrigger(nameof(MatrixHistoryService), settings.MatrixHistoryInterval, logFactory, Execute);
         }
 
@@ -48,7 +50,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         private async Task SaveMatrixToDatabase()
         {
-            var settings = _arbitrageDetectorService.GetSettings();
+            var settings = await _settingsService.GetAsync();
 
             var assetPairs = settings.MatrixHistoryAssetPairs;
 
@@ -86,7 +88,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             lykkeName = null;
             if (lykkeArbitragesOnly)
             {
-                var settings = _arbitrageDetectorService.GetSettings();
+                var settings = _settingsService.GetAsync().GetAwaiter().GetResult();
                 matrixSignificantSpread = settings.MatrixSignificantSpread;
                 lykkeName = new[] { settings.MatrixHistoryLykkeName };
             }

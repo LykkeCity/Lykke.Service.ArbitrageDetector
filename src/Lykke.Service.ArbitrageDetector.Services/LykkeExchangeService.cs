@@ -24,7 +24,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
     {
         private readonly ConcurrentDictionary<string, IList<Asset>> _assets = new ConcurrentDictionary<string, IList<Asset>>();
         private readonly ConcurrentDictionary<AssetPair, LykkeAssetPair> _assetPairs = new ConcurrentDictionary<AssetPair, LykkeAssetPair>();
-        private readonly ConcurrentDictionary<AssetPair, (int Price, int Volume)> _accuracies = new ConcurrentDictionary<AssetPair, (int Price, int Volume)>();
         private readonly ConcurrentDictionary<AssetPair, OrderBook> _orderBooks = new ConcurrentDictionary<AssetPair, OrderBook>();
 
         private readonly IAssetsService _assetsService;
@@ -102,18 +101,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _log.Info($"Initialized {_assetPairs.Count} of {lykkeAssetPairs.Count} Lykke asset pairs.");
         }
 
-        private void InitializeAccuracies()
-        {
-            foreach (var assetPair in _assetPairs)
-            {
-                var accuracy = (assetPair.Value.Accuracy, assetPair.Value.InvertedAccuracy);
-
-                _accuracies[assetPair.Key] = accuracy;
-            }
-
-            _log.Info($"Initialized {_accuracies.Count} accuracies.");
-        }
-
         private async Task InitializeOrderBooks()
         {
             _log.Info($"Initializing Lykke order books...");
@@ -173,7 +160,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
         {
             InitializeAssets();
             InitializeAssetPairs();
-            InitializeAccuracies();
 
             Task.Run(async () =>
                 {
@@ -241,19 +227,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             // If found only one asset then use it
             return oneInfered;
-        }
-
-        public (int Price, int Volume)? GetAccuracy(AssetPair assetPair)
-        {
-            if (assetPair == null)
-                throw new ArgumentOutOfRangeException(nameof(assetPair));
-
-            if (!_accuracies.ContainsKey(assetPair))
-                return null;
-
-            var foundAssetPair = _accuracies[assetPair];
-
-            return foundAssetPair;
         }
 
         public void Start()

@@ -17,8 +17,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
 {
     public class LykkeArbitrageDetectorService : ILykkeArbitrageDetectorService, IStartable, IStopable
     {
-        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 0, 2);
+        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 0, 10);
         private const string LykkeExchangeName = "lykke";
+        private const string Usd = "USD";
 
         private readonly ConcurrentDictionary<AssetPair, OrderBook> _orderBooks;
         private readonly object _lockArbitrages = new object();
@@ -205,8 +206,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         if (string.IsNullOrWhiteSpace(targetSide)) // no arbitrages
                             continue;
 
-                        var baseToUsdRate = Convert(target.AssetPair.Base, "USD", _orderBooks.Values.ToList());
-                        var quoteToUsdRate = Convert(target.AssetPair.Quote, "USD", _orderBooks.Values.ToList());
+                        var baseToUsdRate = Convert(target.AssetPair.Base, Usd, _orderBooks.Values.ToList());
+                        var quoteToUsdRate = Convert(target.AssetPair.Quote, Usd, _orderBooks.Values.ToList());
                         var volumeInUsd = volume * baseToUsdRate;
                         volumeInUsd = volumeInUsd.HasValue ? Math.Round(volumeInUsd.Value) : (decimal?)null;
                         var pnLInUsd = pnL * quoteToUsdRate;
@@ -246,33 +247,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             decimal? result = null;
             var synths1 = SynthOrderBook.GetSynthsFrom1(target, orderBooks, orderBooks);
             if (synths1.Any())
-                result = GetMedianAskPrice(synths1);
-
-            if (result.HasValue)
-                return result;
-
-            var synths2 = SynthOrderBook.GetSynthsFrom2(target, orderBooks, orderBooks);
-            if (synths2.Any())
-                result = GetMedianAskPrice(synths2);
-
-            if (result.HasValue)
-                return result;
-
-            var synths3 = SynthOrderBook.GetSynthsFrom3(target, orderBooks, orderBooks);
-            if (synths3.Any())
-                result = GetMedianAskPrice(synths3);
-
-            return result;
-        }
-
-        private decimal? GetMedianAskPrice(IEnumerable<SynthOrderBook> synths)
-        {
-            decimal? result = null;
-
-            var bestAsks = synths.Where(x => x.BestAsk.HasValue).Select(x => x.BestAsk.Value.Price).OrderBy(x => x).ToList();
-
-            if (bestAsks.Any())
-                result = bestAsks.ElementAt(bestAsks.Count / 2);
+                result = synths1.First().BestAsk?.Price;
 
             return result;
         }

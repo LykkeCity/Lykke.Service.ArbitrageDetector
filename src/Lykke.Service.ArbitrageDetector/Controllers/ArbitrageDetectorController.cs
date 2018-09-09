@@ -16,14 +16,17 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
         private readonly ILykkeArbitrageDetectorService _lykkeArbitrageDetectorService;
         private readonly IMatrixHistoryService _matrixHistoryService;
+        private readonly ISettingsService _settingsService;
 
         public ArbitrageDetectorController(IArbitrageDetectorService arbitrageDetectorService, 
             ILykkeArbitrageDetectorService lykkeArbitrageDetectorService,
-            IMatrixHistoryService matrixHistoryService)
+            IMatrixHistoryService matrixHistoryService,
+            ISettingsService settingsService)
         {
             _arbitrageDetectorService = arbitrageDetectorService;
             _lykkeArbitrageDetectorService = lykkeArbitrageDetectorService;
             _matrixHistoryService = matrixHistoryService;
+            _settingsService = settingsService;
         }
 
         [HttpGet]
@@ -156,7 +159,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ResponseCache(Duration = 1)]
         public IActionResult PublicMatrixAssetPairs()
         {
-            var settings = _arbitrageDetectorService.GetSettings();
+            var settings = _settingsService.GetAsync().GetAwaiter().GetResult();
             var result = settings.PublicMatrixAssetPairs;
 
             return Ok(result);
@@ -219,7 +222,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ProducesResponseType(typeof(Client.Models.Settings), (int)HttpStatusCode.OK)]
         public IActionResult GetSettings()
         {
-            var domain = _arbitrageDetectorService.GetSettings();
+            var domain = _settingsService.GetAsync().GetAwaiter().GetResult();
             var model = Mapper.Map<Client.Models.Settings>(domain);
 
             return Ok(model);
@@ -232,7 +235,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         public IActionResult SetSettings([FromBody]Client.Models.Settings settings)
         {
             var domain = Mapper.Map<Core.Domain.Settings>(settings);
-            _arbitrageDetectorService.SetSettings(domain);
+            _settingsService.SetAsync(domain).GetAwaiter().GetResult();
 
             return Ok();
         }
