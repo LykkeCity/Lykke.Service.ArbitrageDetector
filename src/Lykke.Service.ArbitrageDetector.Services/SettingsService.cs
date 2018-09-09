@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
