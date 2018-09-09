@@ -45,10 +45,10 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public async Task Execute()
         {
-            await SaveMatrixToDatabase();
+            await SaveMatrixToDatabaseAsync();
         }
 
-        private async Task SaveMatrixToDatabase()
+        private async Task SaveMatrixToDatabaseAsync()
         {
             var settings = await _settingsService.GetAsync();
 
