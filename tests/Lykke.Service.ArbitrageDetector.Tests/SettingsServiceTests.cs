@@ -33,7 +33,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 MatrixHistoryAssetPairs = new List<string> { "BTCUSD" },
                 MatrixSignificantSpread = -77,
                 MatrixHistoryLykkeName = "lykke77",
-                ExchangesFees = new List<ExchangeFees> { new ExchangeFees { ExchangeName = "GDAX", DepositFee = 0.77m, TradingFee = 0.77m } }
+                ExchangesFees = new List<ExchangeFees> { new ExchangeFees("GDAX", 0.77m, 0.77m) }
             };
 
             var settingsService = new SettingsService(SettingsRepository(startupSettings));
@@ -56,7 +56,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 MatrixHistoryAssetPairs = new List<string> { "ETHUSD" },
                 MatrixSignificantSpread = -33,
                 MatrixHistoryLykkeName = "lykke33",
-                ExchangesFees = new List<ExchangeFees> { new ExchangeFees { ExchangeName = "Qoinex", DepositFee = 0.33m, TradingFee = 0.33m } }
+                ExchangesFees = new List<ExchangeFees> { new ExchangeFees ( "Qoinex", 0.33m, 0.33m ) }
             };
 
             await settingsService.SetAsync(settings);

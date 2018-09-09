@@ -2,39 +2,18 @@
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    /// <summary>
-    /// Represents an asset pair (an instrument).
-    /// </summary>
     public class AssetPair : IComparable
     {
-        /// <summary>
-        /// Base asset.
-        /// </summary>
         public string Base { get; }
 
-        /// <summary>
-        /// Quote asset.
-        /// </summary>
         public string Quote { get; }
 
-        /// <summary>
-        /// Accuracy.
-        /// </summary>
         public int Accuracy { get; }
 
-        /// <summary>
-        /// Inverted accuracy.
-        /// </summary>
         public int InvertedAccuracy { get; } 
 
-        /// <summary>
-        /// Name of the asset pair.
-        /// </summary>
         public string Name => Base + Quote;
 
-        /// <summary>
-        /// Contructor.
-        /// </summary>
         public AssetPair(string @base, string quote, int accuracy, int invertedAccuracy)
         {
             Base = string.IsNullOrWhiteSpace(@base) ? throw new ArgumentException($"AssetPair.ctor - empty {nameof(@base)} argument") : @base;
@@ -43,41 +22,26 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             InvertedAccuracy = invertedAccuracy;
         }
 
-        /// <summary>
-        /// Returns reversed asset pair.
-        /// </summary>
         public AssetPair Reverse()
         {
             return new AssetPair(Quote, Base, InvertedAccuracy, Accuracy);
         }
 
-        /// <summary>
-        /// Checks if assset pair is revered.
-        /// </summary>
         public bool IsReversed(AssetPair assetPair)
         {
             return Base == assetPair.Quote && Quote == assetPair.Base;
         }
 
-        /// <summary>
-        /// Checks if equal or reversed.
-        /// </summary>
         public bool IsEqualOrReversed(AssetPair other)
         {
             return Equals(other) || IsReversed(other);
         }
 
-        /// <summary>
-        /// Check if has common asset.
-        /// </summary>
         public bool HasCommonAsset(AssetPair other)
         {
             return Base == other.Base || Base == other.Quote || Quote == other.Base || Quote == other.Quote;
         }
 
-        /// <summary>
-        /// Checks if contains asset.
-        /// </summary>
         public bool ContainsAsset(string asset)
         {
             if (string.IsNullOrWhiteSpace(asset))
@@ -86,9 +50,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return Base == asset || Quote == asset;
         }
 
-        /// <summary>
-        /// Checks if contains both assets.
-        /// </summary>
         public bool ContainsAssets(string one, string another)
         {
             if (string.IsNullOrWhiteSpace(one))
@@ -101,9 +62,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return (Base == one && Quote == another) || (Base == another && Quote == one);
         }
 
-        /// <summary>
-        /// Returns other asset than argument
-        /// </summary>
         public string GetOtherAsset(string one)
         {
             if (string.IsNullOrWhiteSpace(one))
@@ -117,7 +75,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return result;
         }
 
-        /// <inheritdoc />
         public override string ToString()
         {
             return Name;

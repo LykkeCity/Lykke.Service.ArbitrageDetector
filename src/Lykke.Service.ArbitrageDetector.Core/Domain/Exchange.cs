@@ -1,28 +1,13 @@
 ﻿namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    /// <summary>
-    /// Represents an exchange.
-    /// </summary>
     public sealed class Exchange
     {
-        /// <summary>
-        /// Exchange name.
-        /// </summary>
-        public string Name { get; set; }
+        public string Name { get; }
 
-        /// <summary>
-        /// Is exchange actual.
-        /// </summary>
-        public bool IsActual { get; set; }
+        public bool IsActual { get; }
 
-        /// <summary>
-        /// Fees.
-        /// </summary>
-        public ExchangeFees Fees { get; set; }
+        public ExchangeFees Fees { get; }
 
-        /// <summary>
-        /// Constructor.
-        /// </summary>
         public Exchange(string name, bool isActual, ExchangeFees fees)
         {
             Name = name;
@@ -30,7 +15,6 @@
             Fees = fees;
         }
 
-        /// <inheritdoc />
         public override string ToString()
         {
             return Name;

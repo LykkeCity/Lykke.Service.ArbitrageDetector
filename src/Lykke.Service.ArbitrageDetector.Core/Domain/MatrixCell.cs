@@ -1,13 +1,10 @@
 ﻿namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    /// <summary>
-    /// Represents a matrix cell.
-    /// </summary>
     public sealed class MatrixCell
     {
-        public decimal? Spread { get; set; }
+        public decimal? Spread { get; }
 
-        public decimal? Volume { get; set; }
+        public decimal? Volume { get; }
 
         public MatrixCell(decimal? spread, decimal? volume)
         {
