@@ -1,26 +1,20 @@
 ﻿namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    /// <summary>
-    /// Represents fees of an exhange.
-    /// </summary>
     public class ExchangeFees
     {
-        /// <summary>
-        /// Exchange name.
-        /// </summary>
-        public string ExchangeName { get; set; }
+        public string ExchangeName { get; }
 
-        /// <summary>
-        /// Comulative fee for both deposit and withdrawal fees.
-        /// </summary>
-        public decimal DepositFee { get; set; }
+        public decimal DepositFee { get; }
 
-        /// <summary>
-        /// Trading fee.
-        /// </summary>
-        public decimal TradingFee { get; set; }
+        public decimal TradingFee { get; }
 
-        /// <inheritdoc />
+        public ExchangeFees(string exchangeName, decimal depositFee, decimal tradingFee)
+        {
+            ExchangeName = exchangeName;
+            DepositFee = depositFee;
+            TradingFee = tradingFee;
+        }
+
         public override string ToString()
         {
             return $"{ExchangeName} - deposit: {DepositFee}, trading: {TradingFee}";

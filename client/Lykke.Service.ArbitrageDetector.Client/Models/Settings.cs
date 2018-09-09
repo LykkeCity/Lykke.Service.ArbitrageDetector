@@ -58,15 +58,13 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// </summary>
         public IEnumerable<string> Exchanges { get; set; } = new List<string>();
 
-        /// <summary>
-        /// Maximum depth of asks and bids while synthetic order books calculation.
-        /// </summary>
-        public int SynthMaxDepth { get; set; }
-
 
         // Lykke Arbitrages
 
-        public TimeSpan LykkeArbitragesExecutionInterval { get; set; } = new TimeSpan(0, 0, 0, 10);
+        /// <summary>
+        /// Execution interval for lykke arbitrage detector.
+        /// </summary>
+        public TimeSpan LykkeArbitragesExecutionInterval { get; set; }
 
 
         // Matrix

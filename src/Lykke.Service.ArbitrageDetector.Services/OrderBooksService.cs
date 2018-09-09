@@ -197,7 +197,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
             Task.Run(async () =>
             {
-                await InitializeOrderBooks();
+                await InitializeOrderBooksAsync();
             })
             .ContinueWith(t =>
             {
@@ -241,7 +241,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             _log.Info($"Initialized {_lykkeAssetIdsAssetPairs.Count} of {lykkeAssetPairs.Count} asset pairs.");
         }
 
-        private async Task InitializeOrderBooks()
+        private async Task InitializeOrderBooksAsync()
         {
             foreach (var assetIdAssetPair in _lykkeAssetIdsAssetPairs)
             {

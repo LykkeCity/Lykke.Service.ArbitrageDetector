@@ -32,11 +32,9 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
         [JsonValueSerializer]
         public IEnumerable<string> Exchanges { get; set; } = new List<string>();
 
-        public int SynthMaxDepth { get; set; }
-
         // Lykke Arbitrages
 
-        public TimeSpan LykkeArbitragesExecutionInterval { get; set; } = new TimeSpan(0, 0, 0, 10);
+        public TimeSpan LykkeArbitragesExecutionInterval { get; set; } = new TimeSpan(0, 0, 0, 2);
 
         // Matrix
 

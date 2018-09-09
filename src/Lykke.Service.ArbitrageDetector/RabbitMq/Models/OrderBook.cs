@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Lykke.Service.ArbitrageDetector.RabbitMq.Models
@@ -20,8 +21,11 @@ namespace Lykke.Service.ArbitrageDetector.RabbitMq.Models
 
         public OrderBook(string source, string asset, IReadOnlyList<VolumePrice> bids, IReadOnlyList<VolumePrice> asks, DateTime timestamp)
         {
-            Source = string.IsNullOrEmpty(source) ? throw new ArgumentException(nameof(source)) : source;
-            AssetPairStr = string.IsNullOrWhiteSpace(asset) ? throw new ArgumentException(nameof(asset)) : asset;
+            Debug.Assert(!string.IsNullOrEmpty(source));
+            Debug.Assert(!string.IsNullOrEmpty(asset));
+
+            Source = source;
+            AssetPairStr = asset;
             Bids = bids.Where(x => x.Price != 0 && x.Volume != 0).OrderByDescending(x => x.Price).ToList();
             Asks = asks.Where(x => x.Price != 0 && x.Volume != 0).OrderBy(x => x.Price).ToList();
             Timestamp = timestamp;

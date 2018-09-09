@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json;
 
 namespace Lykke.Service.ArbitrageDetector.Client.Models
 {
@@ -60,11 +61,13 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// How log the arbitrage lasted.
         /// </summary>
+        [JsonIgnore]
         public TimeSpan Lasted => EndedAt == default ? DateTime.UtcNow - StartedAt : EndedAt - StartedAt;
 
         /// <summary>
         /// Conversion path.
         /// </summary>
+        [JsonIgnore]
         public string ConversionPath => FormatConversionPath(BidSynth.ConversionPath, AskSynth.ConversionPath);
 
         /// <inheritdoc />

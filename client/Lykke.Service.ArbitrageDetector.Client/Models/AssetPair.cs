@@ -1,4 +1,6 @@
-﻿namespace Lykke.Service.ArbitrageDetector.Client.Models
+﻿using Newtonsoft.Json;
+
+namespace Lykke.Service.ArbitrageDetector.Client.Models
 {
     /// <summary>
     /// represents an asset pair aka instrument.
@@ -18,6 +20,7 @@
         /// <summary>
         /// Name of the asset pair.
         /// </summary>
+        [JsonIgnore]
         public string Name => Base + Quote;
 
         /// <inheritdoc />

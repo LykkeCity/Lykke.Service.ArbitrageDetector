@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using MoreLinq;
+using Newtonsoft.Json;
 
 namespace Lykke.Service.ArbitrageDetector.Client.Models
 {
@@ -33,21 +34,25 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Best bid.
         /// </summary>
+        [JsonIgnore]
         public VolumePrice? BestBid => Bids.Any() ? Bids.MaxBy(x => x.Price) : (VolumePrice?)null;
 
         /// <summary>
         /// Best ask.
         /// </summary>
+        [JsonIgnore]
         public VolumePrice? BestAsk => Asks.Any() ? Asks.MinBy(x => x.Price) : (VolumePrice?)null;
 
         /// <summary>
         /// All bids volume.
         /// </summary>
+        [JsonIgnore]
         public decimal BidsVolume => Bids.Sum(x => x.Volume);
 
         /// <summary>
         /// All asks volume.
         /// </summary>
+        [JsonIgnore]
         public decimal AsksVolume => Asks.Sum(x => x.Volume);
 
         /// <summary>
