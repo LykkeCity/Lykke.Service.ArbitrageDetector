@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Diagnostics;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
@@ -38,11 +38,16 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             string conversionPath, decimal volume, decimal? baseBid, decimal? baseAsk, decimal? synthBid, decimal? synthAsk, decimal? volumeInUsd,
             decimal pnL, decimal? pnLInUsd)
         {
-            Target = baseAssetPair ?? throw new ArgumentNullException(nameof(baseAssetPair));
-            Source = crossAssetPair ?? throw new ArgumentNullException(nameof(crossAssetPair));
+            Debug.Assert(baseAssetPair != null);
+            Debug.Assert(crossAssetPair != null);
+            Debug.Assert(!string.IsNullOrWhiteSpace(baseSide));
+            Debug.Assert(!string.IsNullOrWhiteSpace(conversionPath));
+
+            Target = baseAssetPair;
+            Source = crossAssetPair;
             Spread = spread;
-            TargetSide = string.IsNullOrWhiteSpace(baseSide) ? throw new ArgumentNullException(nameof(baseSide)) : baseSide;
-            ConversionPath = string.IsNullOrWhiteSpace(conversionPath) ? throw new ArgumentNullException(nameof(conversionPath)) : conversionPath;
+            TargetSide = baseSide;
+            ConversionPath = conversionPath;
             Volume = volume;
             BaseAsk = baseAsk;
             BaseBid = baseBid;

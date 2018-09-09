@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using MoreLinq;
 
@@ -28,8 +29,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public OrderBook(string source, AssetPair assetPair, IReadOnlyList<VolumePrice> bids, IReadOnlyList<VolumePrice> asks, DateTime timestamp)
         {
-            Source = string.IsNullOrEmpty(source) ? throw new ArgumentException(nameof(source)) : source;
-            AssetPair = assetPair ?? throw new ArgumentException(nameof(assetPair));
+            Debug.Assert(!string.IsNullOrEmpty(source));
+            Debug.Assert(assetPair != null);
+
+            Source = source;
+            AssetPair = assetPair;
             Bids = bids.Where(x => x.Price != 0 && x.Volume != 0)
                        .OrderByDescending(x => x.Price).ToList();
             Asks = asks.Where(x => x.Price != 0 && x.Volume != 0)

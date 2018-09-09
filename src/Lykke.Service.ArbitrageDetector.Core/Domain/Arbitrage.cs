@@ -32,9 +32,12 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public Arbitrage(AssetPair assetPair, SynthOrderBook bidSynth, VolumePrice bid, SynthOrderBook askSynth, VolumePrice ask)
         {
+            Debug.Assert(bidSynth != null);
+            Debug.Assert(askSynth != null);
+
             AssetPair = assetPair;
-            BidSynth = bidSynth ?? throw new ArgumentNullException(nameof(bidSynth));
-            AskSynth = askSynth ?? throw new ArgumentNullException(nameof(askSynth));
+            BidSynth = bidSynth;
+            AskSynth = askSynth;
             Bid = bid;
             Ask = ask;
             Spread = GetSpread(Bid.Price, Ask.Price);

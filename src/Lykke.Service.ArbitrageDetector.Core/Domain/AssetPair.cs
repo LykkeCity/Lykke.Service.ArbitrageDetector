@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
@@ -16,8 +17,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public AssetPair(string @base, string quote, int accuracy, int invertedAccuracy)
         {
-            Base = string.IsNullOrWhiteSpace(@base) ? throw new ArgumentException($"AssetPair.ctor - empty {nameof(@base)} argument") : @base;
-            Quote = string.IsNullOrWhiteSpace(quote) ? throw new ArgumentException($"AssetPair.ctor - empty {nameof(@base)} argument") : quote;
+            Debug.Assert(!string.IsNullOrWhiteSpace(@base));
+            Debug.Assert(!string.IsNullOrWhiteSpace(quote));
+
+            Base = @base;
+            Quote = quote;
             Accuracy = accuracy;
             InvertedAccuracy = invertedAccuracy;
         }
@@ -44,28 +48,22 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public bool ContainsAsset(string asset)
         {
-            if (string.IsNullOrWhiteSpace(asset))
-                throw new ArgumentException(nameof(asset));
+            Debug.Assert(!string.IsNullOrWhiteSpace(asset));
 
             return Base == asset || Quote == asset;
         }
 
         public bool ContainsAssets(string one, string another)
         {
-            if (string.IsNullOrWhiteSpace(one))
-                throw new ArgumentException(nameof(one));
-
-            if (string.IsNullOrWhiteSpace(another))
-                throw new ArgumentException(nameof(another));
-
+            Debug.Assert(!string.IsNullOrWhiteSpace(one));
+            Debug.Assert(!string.IsNullOrWhiteSpace(another));
 
             return (Base == one && Quote == another) || (Base == another && Quote == one);
         }
 
         public string GetOtherAsset(string one)
         {
-            if (string.IsNullOrWhiteSpace(one))
-                throw new ArgumentException(nameof(one));
+            Debug.Assert(!string.IsNullOrWhiteSpace(one));
 
             if (!ContainsAsset(one))
                 return null;

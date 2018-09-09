@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -22,8 +23,10 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 
         public MatrixHistoryRepository(MatrixHistoryBlobRepository matrixHistoryBlobRepository, IReloadingManager<string> connectionString, ILogFactory logFactory)
         {
+            Debug.Assert(matrixHistoryBlobRepository != null);
+
             _storage = AzureTableStorage<MatrixEntity>.Create(connectionString, TableName, logFactory);
-            _blobRepository = matrixHistoryBlobRepository ?? throw new ArgumentNullException(nameof(matrixHistoryBlobRepository));
+            _blobRepository = matrixHistoryBlobRepository;
         }
 
         public async Task InsertAsync(Matrix matrix)
@@ -49,7 +52,8 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 
         public async Task<IEnumerable<DateTime>> GetDateTimeStampsAsync(string assetPair, DateTime date, decimal? maxSpread, IReadOnlyCollection<string> exchanges)
         {
-            if (string.IsNullOrWhiteSpace(assetPair)) { throw new ArgumentException(nameof(assetPair)); }
+            Debug.Assert(!string.IsNullOrWhiteSpace(assetPair));
+
             date = date.Date;
 
             return await GetDateTimeStampsAsync(assetPair, date.Date, date.AddDays(1).Date, maxSpread, exchanges);
@@ -91,8 +95,8 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 
         private async Task<IEnumerable<MatrixEntity>> GetAsync(string assetPair, DateTime from, DateTime to)
         {
-            if (string.IsNullOrWhiteSpace(assetPair)) { throw new ArgumentException(nameof(assetPair)); }
-
+            Debug.Assert(!string.IsNullOrWhiteSpace(assetPair));
+            
             var pKeyFrom = MatrixEntity.GeneratePartitionKey(assetPair, from);
             var pKeyTo = MatrixEntity.GeneratePartitionKey(assetPair, to);
             var rowKeyFrom = MatrixEntity.GenerateRowKey(from);

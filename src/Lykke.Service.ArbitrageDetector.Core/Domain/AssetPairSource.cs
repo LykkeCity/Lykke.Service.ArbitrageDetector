@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
@@ -10,8 +11,12 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public AssetPairSource(string exchange, AssetPair assetPair)
         {
-            Exchange = string.IsNullOrEmpty(exchange) ? throw new ArgumentNullException(nameof(exchange)) : exchange;
-            AssetPair = string.IsNullOrEmpty(assetPair.Base) || string.IsNullOrEmpty(assetPair.Quote) ? throw new ArgumentNullException(nameof(assetPair)) : assetPair;
+            Debug.Assert(!string.IsNullOrEmpty(exchange));
+            Debug.Assert(!string.IsNullOrEmpty(assetPair.Base));
+            Debug.Assert(!string.IsNullOrEmpty(assetPair.Quote));
+
+            Exchange = exchange;
+            AssetPair = assetPair;
         }
 
         public override string ToString()

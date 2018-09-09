@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Lykke.Service.ArbitrageDetector.Client.Models
 {
@@ -42,7 +43,9 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// </summary>
         public SynthOrderBookRow(string source, AssetPair assetPair, VolumePrice? bestBid, VolumePrice? bestAsk, string conversionPath, DateTime timestamp)
         {
-            Source = string.IsNullOrWhiteSpace(source) ? throw new ArgumentNullException(nameof(source)) : source;
+            Debug.Assert(!string.IsNullOrWhiteSpace(source));
+
+            Source = source;
             AssetPair = assetPair;
             BestBid = bestBid;
             BestAsk = bestAsk;
