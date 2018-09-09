@@ -39,7 +39,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         {
             Debug.Assert(orderBook != null);
             Debug.Assert(target != null);
-            Debug.Assert(target.IsEqualOrReversed(orderBook.AssetPair));
+            Debug.Assert(target.IsEqualOrInverted(orderBook.AssetPair));
 
             var result = new SynthOrderBook(target, new List<OrderBook> { orderBook });
 
@@ -399,7 +399,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         {
             Debug.Assert(orderBook != null);
             Debug.Assert(target != null);
-            Debug.Assert(target.IsEqualOrReversed(orderBook.AssetPair));
+            Debug.Assert(target.IsEqualOrInverted(orderBook.AssetPair));
 
             var bids = orderBook.Bids;
             var asks = orderBook.Asks;
@@ -430,7 +430,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
         {
             Debug.Assert(orderBook != null);
             Debug.Assert(target != null);
-            Debug.Assert(target.IsEqualOrReversed(orderBook.AssetPair));
+            Debug.Assert(target.IsEqualOrInverted(orderBook.AssetPair));
 
             var bids = orderBook.Bids;
             var asks = orderBook.Asks;
@@ -475,7 +475,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 return result;
 
             var nextAsset = first.AssetPair.GetOtherAsset(@base);
-            var second = orderBooks.Single(x => x.AssetPair.ContainsAsset(nextAsset) && !x.AssetPair.IsEqualOrReversed(first.AssetPair));
+            var second = orderBooks.Single(x => x.AssetPair.ContainsAsset(nextAsset) && !x.AssetPair.IsEqualOrInverted(first.AssetPair));
             result.Add(second);
 
             if (orderBooks.Count == 2)
@@ -501,7 +501,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
             var first = orderBooks.Single(x => x.AssetPair.ContainsAsset(@base)).AssetPair;
             if (first.Quote == @base)
-                first = first.Reverse();
+                first = first.Invert();
             result.Add(first);
 
             if (orderBooks.Count == 1)
@@ -511,9 +511,9 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             }
 
             var nextAsset = first.GetOtherAsset(@base);
-            var second = orderBooks.Single(x => x.AssetPair.ContainsAsset(nextAsset) && !x.AssetPair.IsEqualOrReversed(first)).AssetPair;
+            var second = orderBooks.Single(x => x.AssetPair.ContainsAsset(nextAsset) && !x.AssetPair.IsEqualOrInverted(first)).AssetPair;
             if (second.Quote == nextAsset)
-                second = second.Reverse();
+                second = second.Invert();
             result.Add(second);
 
             if (orderBooks.Count == 2)
@@ -525,7 +525,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             nextAsset = second.GetOtherAsset(nextAsset);
             var third = orderBooks.Single(x => x.AssetPair.ContainsAsset(nextAsset) && x.AssetPair.ContainsAsset(quote)).AssetPair;
             if (third.Quote == nextAsset)
-                third = third.Reverse();
+                third = third.Invert();
             result.Add(third);
 
             Debug.Assert(third.Quote == quote);

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
@@ -27,7 +26,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public override string ToString()
         {
-            return new StringBuilder(Price.ToString("0.########")).Append(", ").Append(Volume.ToString("0.########")).ToString();
+            return $"{Price:0.#####}, {Volume:0.#####}";
         }
     }
 }

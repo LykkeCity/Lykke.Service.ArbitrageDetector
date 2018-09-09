@@ -55,7 +55,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public override string ToString()
         {
-            return Target + "-" + Source + " : " + ConversionPath;
+            return $"{Target}-{Source} : {ConversionPath}";
         }
     }
 }

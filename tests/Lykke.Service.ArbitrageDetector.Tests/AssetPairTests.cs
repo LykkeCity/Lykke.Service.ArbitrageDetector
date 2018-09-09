@@ -20,7 +20,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void AssetPairReverseTest()
         {
-            var reversed = assetPair.Reverse();
+            var reversed = assetPair.Invert();
 
             Assert.Equal(@base, reversed.Quote);
             Assert.Equal(quote, reversed.Base);
@@ -31,10 +31,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void AssetPairIsReversedTest()
         {
-            var reversed = assetPair.Reverse();
+            var reversed = assetPair.Invert();
 
-            Assert.True(assetPair.IsReversed(reversed));
-            Assert.True(reversed.IsReversed(assetPair));
+            Assert.True(assetPair.IsInverted(reversed));
+            Assert.True(reversed.IsInverted(assetPair));
         }
 
         [Fact]
@@ -50,12 +50,12 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         public void AssetPairIsEqualOrReversedTest()
         {
             var equalAssetPair = new AssetPair(@base, quote, 3, 5);
-            var reversed = assetPair.Reverse();
+            var reversed = assetPair.Invert();
 
-            Assert.True(assetPair.IsEqualOrReversed(equalAssetPair));
-            Assert.True(equalAssetPair.IsEqualOrReversed(assetPair));
-            Assert.True(assetPair.IsEqualOrReversed(reversed));
-            Assert.True(reversed.IsEqualOrReversed(assetPair));
+            Assert.True(assetPair.IsEqualOrInverted(equalAssetPair));
+            Assert.True(equalAssetPair.IsEqualOrInverted(assetPair));
+            Assert.True(assetPair.IsEqualOrInverted(reversed));
+            Assert.True(reversed.IsEqualOrInverted(assetPair));
         }
 
         [Fact]

@@ -51,7 +51,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public static string FormatConversionPath(string bidSynthOrderBookConversionPath, string askSynthOrderBookConversionPath)
         {
-            return "(" + bidSynthOrderBookConversionPath + ") > (" + askSynthOrderBookConversionPath + ")";
+            return $"({bidSynthOrderBookConversionPath}) > ({askSynthOrderBookConversionPath})";
         }
 
         public static decimal GetSpread(decimal bidPrice, decimal askPrice)

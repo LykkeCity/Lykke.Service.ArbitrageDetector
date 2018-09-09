@@ -63,7 +63,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         {
             const string source = "FakeExchange";
             var timestamp = DateTime.UtcNow;
-            var inverted = _btcusd.Reverse();
+            var inverted = _btcusd.Invert();
 
             var btcUsdOrderBook = new OrderBook(source, _btcusd,
                 new List<VolumePrice> // bids
@@ -760,20 +760,20 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             Assert.Single(result);
             Assert.True(result.Single().Key.Equals(_btcusd));
-            Assert.True(result.Single().Value.AssetPair.IsEqualOrReversed(_btcusd));
+            Assert.True(result.Single().Value.AssetPair.IsEqualOrInverted(_btcusd));
         }
 
         [Fact]
         public void OrderBooks_PrepareForEnumeration_1_Test()
         {
-            var usdbtc = _btcusd.Reverse();
+            var usdbtc = _btcusd.Invert();
             var orderBook = new OrderBook("FE", usdbtc, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
 
             var result = SynthOrderBook.PrepareForEnumeration(new List<OrderBook> { orderBook }, _btcusd);
 
             Assert.Single(result);
             Assert.True(result.Single().Key.Equals(_btcusd));
-            Assert.True(result.Single().Value.AssetPair.IsEqualOrReversed(_btcusd));
+            Assert.True(result.Single().Value.AssetPair.IsEqualOrInverted(_btcusd));
         }
 
 
@@ -790,7 +790,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void OrderBooks_PrepareForEnumeration_0_1_Test()
         {
-            var orderBooks = GetOrderBooks(_btceur, _eurusd.Reverse());
+            var orderBooks = GetOrderBooks(_btceur, _eurusd.Invert());
 
             var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
 
@@ -800,7 +800,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void OrderBooks_PrepareForEnumeration_1_0_Test()
         {
-            var orderBooks = GetOrderBooks(_btceur.Reverse(), _eurusd);
+            var orderBooks = GetOrderBooks(_btceur.Invert(), _eurusd);
 
             var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
 
@@ -810,7 +810,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void OrderBooks_PrepareForEnumeration_1_1_Test()
         {
-            var orderBooks = GetOrderBooks(_btceur.Reverse(), _eurusd.Reverse());
+            var orderBooks = GetOrderBooks(_btceur.Invert(), _eurusd.Invert());
 
             var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
 
@@ -831,7 +831,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void OrderBooks_PrepareForEnumeration_0_0_1_Test()
         {
-            var orderBooks = GetOrderBooks(_btceur, _eurchf, _chfusd.Reverse());
+            var orderBooks = GetOrderBooks(_btceur, _eurchf, _chfusd.Invert());
 
             var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
 
@@ -841,7 +841,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void OrderBooks_PrepareForEnumeration_0_1_0_Test()
         {
-            var orderBooks = GetOrderBooks(_btceur, _eurchf.Reverse(), _chfusd);
+            var orderBooks = GetOrderBooks(_btceur, _eurchf.Invert(), _chfusd);
 
             var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
 
@@ -851,7 +851,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void OrderBooks_PrepareForEnumeration_1_0_0_Test()
         {
-            var orderBooks = GetOrderBooks(_btceur.Reverse(), _eurchf, _chfusd);
+            var orderBooks = GetOrderBooks(_btceur.Invert(), _eurchf, _chfusd);
 
             var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
 
@@ -861,7 +861,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void OrderBooks_PrepareForEnumeration_0_1_1_Test()
         {
-            var orderBooks = GetOrderBooks(_btceur, _eurchf.Reverse(), _chfusd.Reverse());
+            var orderBooks = GetOrderBooks(_btceur, _eurchf.Invert(), _chfusd.Invert());
 
             var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
 
@@ -871,7 +871,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void OrderBooks_PrepareForEnumeration_1_1_0_Test()
         {
-            var orderBooks = GetOrderBooks(_btceur.Reverse(), _eurchf.Reverse(), _chfusd);
+            var orderBooks = GetOrderBooks(_btceur.Invert(), _eurchf.Invert(), _chfusd);
 
             var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
 
@@ -881,7 +881,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void OrderBooks_PrepareForEnumeration_1_0_1_Test()
         {
-            var orderBooks = GetOrderBooks(_btceur.Reverse(), _eurchf, _chfusd.Reverse());
+            var orderBooks = GetOrderBooks(_btceur.Invert(), _eurchf, _chfusd.Invert());
 
             var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
 
@@ -891,7 +891,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         [Fact]
         public void OrderBooks_PrepareForEnumeration_1_1_1_Test()
         {
-            var orderBooks = GetOrderBooks(_btceur.Reverse(), _eurchf.Reverse(), _chfusd.Reverse());
+            var orderBooks = GetOrderBooks(_btceur.Invert(), _eurchf.Invert(), _chfusd.Invert());
 
             var result = SynthOrderBook.PrepareForEnumeration(orderBooks, _btcusd);
 
@@ -1004,11 +1004,11 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             Assert.Equal("BTC", result.ElementAt(0).Key.Base);
             Assert.Equal("EUR", result.ElementAt(0).Key.Quote);
-            Assert.True(result.ElementAt(0).Value.AssetPair.IsEqualOrReversed(_btceur));
+            Assert.True(result.ElementAt(0).Value.AssetPair.IsEqualOrInverted(_btceur));
 
             Assert.Equal("EUR", result.ElementAt(1).Key.Base);
             Assert.Equal("USD", result.ElementAt(1).Key.Quote);
-            Assert.True(result.ElementAt(1).Value.AssetPair.IsEqualOrReversed(_eurusd));
+            Assert.True(result.ElementAt(1).Value.AssetPair.IsEqualOrInverted(_eurusd));
         }
 
         private void AssertChained3(IDictionary<AssetPair, OrderBook> result)
@@ -1017,15 +1017,15 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 
             Assert.Equal("BTC", result.ElementAt(0).Key.Base);
             Assert.Equal("EUR", result.ElementAt(0).Key.Quote);
-            Assert.True(result.ElementAt(0).Value.AssetPair.IsEqualOrReversed(_btceur));
+            Assert.True(result.ElementAt(0).Value.AssetPair.IsEqualOrInverted(_btceur));
 
             Assert.Equal("EUR", result.ElementAt(1).Key.Base);
             Assert.Equal("CHF", result.ElementAt(1).Key.Quote);
-            Assert.True(result.ElementAt(1).Value.AssetPair.IsEqualOrReversed(_eurchf));
+            Assert.True(result.ElementAt(1).Value.AssetPair.IsEqualOrInverted(_eurchf));
 
             Assert.Equal("CHF", result.ElementAt(2).Key.Base);
             Assert.Equal("USD", result.ElementAt(2).Key.Quote);
-            Assert.True(result.ElementAt(2).Value.AssetPair.IsEqualOrReversed(_chfusd));
+            Assert.True(result.ElementAt(2).Value.AssetPair.IsEqualOrInverted(_chfusd));
         }
 
 

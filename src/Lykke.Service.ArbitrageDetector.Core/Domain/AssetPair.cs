@@ -22,19 +22,19 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             InvertedAccuracy = invertedAccuracy;
         }
 
-        public AssetPair Reverse()
+        public AssetPair Invert()
         {
             return new AssetPair(Quote, Base, InvertedAccuracy, Accuracy);
         }
 
-        public bool IsReversed(AssetPair assetPair)
+        public bool IsInverted(AssetPair assetPair)
         {
             return Base == assetPair.Quote && Quote == assetPair.Base;
         }
 
-        public bool IsEqualOrReversed(AssetPair other)
+        public bool IsEqualOrInverted(AssetPair other)
         {
-            return Equals(other) || IsReversed(other);
+            return Equals(other) || IsInverted(other);
         }
 
         public bool HasCommonAsset(AssetPair other)

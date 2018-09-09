@@ -43,7 +43,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 Asks.Select(x => x.Reciprocal()).OrderBy(x => x.Price).ToList(),
                 Bids.Select(x => x.Reciprocal()).OrderByDescending(x => x.Price).ToList(),
                 Timestamp);
-            result.AssetPair = AssetPair.Reverse();
+            result.AssetPair = AssetPair.Invert();
 
             return result;
         }
@@ -83,8 +83,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
             return result;
         }
-
-        /// <inheritdoc />
+        
         public override string ToString()
         {
             return FormatSourceAssetPair(Source, AssetPair.Name);

@@ -16,7 +16,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
 
         public override string ToString()
         {
-            return Exchange + "-" + AssetPair;
+            return$"{Exchange}-{AssetPair}";
         }
 
         public int CompareTo(object obj)
