@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using AutoMapper;
 using AzureStorage;
 using Lykke.Service.ArbitrageDetector.AzureRepositories.Models;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
@@ -18,13 +19,16 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
         public async Task<DomainSettings> GetAsync()
         {
             var settings = await _storage.GetDataAsync("", "");
+            var domain = Mapper.Map<DomainSettings>(settings);
 
-            return settings.ToDomain();
+            return domain;
         }
 
         public async Task InsertOrReplaceAsync(DomainSettings settings)
         {
-            await _storage.InsertOrReplaceAsync(new Settings(settings));
+            var model = Mapper.Map<Settings>(settings);
+
+            await _storage.InsertOrReplaceAsync(model);
         }
 
         public async Task<bool> DeleteAsync()

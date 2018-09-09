@@ -37,6 +37,7 @@ namespace Lykke.Service.ArbitrageDetector
                 Mapper.Initialize(cfg =>
                 {
                     cfg.AddProfiles(typeof(AutoMapperProfile));
+                    cfg.AddProfiles(typeof(AzureRepositories.AutoMapperProfile));
                 });
                 Mapper.AssertConfigurationIsValid();
             });

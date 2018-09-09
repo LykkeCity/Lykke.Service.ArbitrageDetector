@@ -29,9 +29,6 @@ namespace Lykke.Service.ArbitrageDetector
 
             builder.RegisterModule(new Services.AutofacModule());
 
-            builder.RegisterType<StartupManager>()
-                .As<IStartupManager>();
-
             builder.RegisterType<ShutdownManager>()
                 .As<IShutdownManager>();
 
@@ -50,7 +47,6 @@ namespace Lykke.Service.ArbitrageDetector
                     .As<IStopable>()
                     .WithParameter("connectionString", _settings.CurrentValue.ArbitrageDetector.RabbitMq.ConnectionString)
                     .WithParameter("exchangeName", exchange)
-                    .AutoActivate()
                     .SingleInstance();
             }
         }
