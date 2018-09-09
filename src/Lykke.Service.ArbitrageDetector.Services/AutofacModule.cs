@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Common;
+using Lykke.Service.ArbitrageDetector.Core.Handlers;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 
 namespace Lykke.Service.ArbitrageDetector.Services
@@ -13,10 +14,14 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         private void RegisterOrderBooks(ContainerBuilder builder)
         {
-            builder.RegisterType<LykkeExchangeService>()
-                .As<ILykkeExchangeService>()
+            builder.RegisterType<SettingsService>()
+                .As<ISettingsService>()
+                .SingleInstance();
+
+            builder.RegisterType<OrderBooksService>()
+                .As<IOrderBooksService>()
+                .As<IOrderBookHandler>()
                 .As<IStartable>()
-                .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies)
                 .SingleInstance();
 
             builder.RegisterType<ArbitrageDetectorService>()

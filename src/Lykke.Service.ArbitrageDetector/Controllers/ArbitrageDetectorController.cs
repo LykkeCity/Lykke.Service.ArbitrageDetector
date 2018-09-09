@@ -13,16 +13,19 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
 {
     public class ArbitrageDetectorController : Controller
     {
+        private readonly IOrderBooksService _orderBookService;
         private readonly IArbitrageDetectorService _arbitrageDetectorService;
         private readonly ILykkeArbitrageDetectorService _lykkeArbitrageDetectorService;
         private readonly IMatrixHistoryService _matrixHistoryService;
         private readonly ISettingsService _settingsService;
 
-        public ArbitrageDetectorController(IArbitrageDetectorService arbitrageDetectorService, 
+        public ArbitrageDetectorController(IOrderBooksService orderBookService,
+            IArbitrageDetectorService arbitrageDetectorService, 
             ILykkeArbitrageDetectorService lykkeArbitrageDetectorService,
             IMatrixHistoryService matrixHistoryService,
             ISettingsService settingsService)
         {
+            _orderBookService = orderBookService;
             _arbitrageDetectorService = arbitrageDetectorService;
             _lykkeArbitrageDetectorService = lykkeArbitrageDetectorService;
             _matrixHistoryService = matrixHistoryService;
@@ -36,7 +39,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "*" })]
         public virtual IActionResult OrderBooks(string exchange, string assetPair)
         {
-            var domain = _arbitrageDetectorService.GetOrderBooks(exchange, assetPair);
+            var domain = _orderBookService.GetOrderBooks(exchange, assetPair);
             var model = Mapper.Map<IReadOnlyList<OrderBookRow>>(domain);
 
             return Ok(model);
@@ -49,7 +52,7 @@ namespace Lykke.Service.ArbitrageDetector.Controllers
         [ResponseCache(Duration = 1, VaryByQueryKeys = new[] { "*" })]
         public virtual IActionResult OrderBook(string exchange, string assetPair)
         {
-            var domain = _arbitrageDetectorService.GetOrderBook(exchange, assetPair);
+            var domain = _orderBookService.GetOrderBook(exchange, assetPair);
             var model = Mapper.Map<OrderBook>(domain);
 
             return Ok(model);

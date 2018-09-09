@@ -5,59 +5,27 @@ using MoreLinq;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    /// <summary>
-    /// Represents an order book or depth of market.
-    /// </summary>
     public class OrderBook
     {
-        /// <summary>
-        /// Exchange name.
-        /// </summary>
         public string Source { get; }
 
-        /// <summary>
-        /// Asset pair.
-        /// </summary>
         public AssetPair AssetPair { get; set; }
 
-        /// <summary>
-        /// Bidding prices and volumes.
-        /// </summary>
         public IReadOnlyList<VolumePrice> Bids { get; protected set; }
 
-        /// <summary>
-        /// Asking prices and volumes.
-        /// </summary>
         public IReadOnlyList<VolumePrice> Asks { get; protected set; }
 
-        /// <summary>
-        /// Best bid.
-        /// </summary>
         public VolumePrice? BestBid => Bids.Any() ? Bids.MaxBy(x => x.Price) : (VolumePrice?)null;
 
-        /// <summary>
-        /// Best ask.
-        /// </summary>
         public VolumePrice? BestAsk => Asks.Any() ? Asks.MinBy(x => x.Price) : (VolumePrice?)null;
 
-        /// <summary>
-        /// All bids volume.
-        /// </summary>
         public decimal BidsVolume => Bids.Sum(x => x.Volume);
 
-        /// <summary>
-        /// All asks volume.
-        /// </summary>
         public decimal AsksVolume => Asks.Sum(x => x.Volume);
 
-        /// <summary>
-        /// Timestamp.
-        /// </summary>
         public DateTime Timestamp { get; protected set; }
 
-        /// <summary>
-        /// Constructor.
-        /// </summary>
+
         public OrderBook(string source, AssetPair assetPair, IReadOnlyList<VolumePrice> bids, IReadOnlyList<VolumePrice> asks, DateTime timestamp)
         {
             Source = string.IsNullOrEmpty(source) ? throw new ArgumentException(nameof(source)) : source;
@@ -69,9 +37,6 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             Timestamp = timestamp;
         }
 
-        /// <summary>
-        /// Returns new reversed order book.
-        /// </summary>
         public OrderBook Reverse()
         {
             var result = new OrderBook(Source, AssetPair,
@@ -83,23 +48,11 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return result;
         }
 
-        /// <inheritdoc />
-        public override string ToString()
-        {
-            return FormatSourceAssetPair(Source, AssetPair.Name);
-        }
-
-        /// <summary>
-        /// Formats source asset pair.
-        /// </summary>
         public static string FormatSourceAssetPair(string source, string assetPair)
         {
-            return source + "-" + assetPair;
+            return $"{source}-{assetPair}";
         }
 
-        /// <summary>
-        /// Returns a deep clone.
-        /// </summary>
         public OrderBook DeepClone(decimal fee = 0)
         {
             var result = (OrderBook)MemberwiseClone();
@@ -129,6 +82,12 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             }
 
             return result;
+        }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return FormatSourceAssetPair(Source, AssetPair.Name);
         }
     }
 }

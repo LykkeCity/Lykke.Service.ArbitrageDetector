@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Lykke.Logs;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
+using Lykke.Service.ArbitrageDetector.Core.Handlers;
 using Lykke.Service.ArbitrageDetector.Core.Repositories;
 using Lykke.Service.ArbitrageDetector.Core.Services;
 using Lykke.Service.ArbitrageDetector.Services;
@@ -25,7 +26,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         private readonly AssetPair _jpyeur = new AssetPair("JPY", "EUR", 8, 8);
         private readonly AssetPair _jpyusd = new AssetPair("JPY", "USD", 8, 8);
         private readonly AssetPair _usdjpy = new AssetPair("USD", "JPY", 8, 8);
-        //private const bool performance = true;
+        private const bool performance = false;
 
         [Fact]
         public async Task From2OrderBooks_0_0_Test()
@@ -36,7 +37,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "FE";
 
             var settings = GetSettings(baseAssets, quoteAsset, -20);
-            var arbitrageCalculator = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var btcEurOrderBook = new OrderBook(exchange, _btceur,
                 new List<VolumePrice> // bids
@@ -80,14 +83,14 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            arbitrageCalculator.Process(btcEurOrderBook);
-            arbitrageCalculator.Process(eurUsdOrderBook);
-            arbitrageCalculator.Process(btcUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcEurOrderBook);
+            await orderBookHandler.HandleAsync(eurUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook);
 
-            await arbitrageCalculator.Execute();
+            await arbitrageDetector.Execute();
 
-            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
-            var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
+            var synthOrderBooks = arbitrageDetector.GetSynthOrderBooks().ToList();
+            var arbitrages = arbitrageDetector.GetArbitrages().ToList();
 
             Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(2, arbitrages.Count);
@@ -126,7 +129,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "FE";
 
             var settings = GetSettings(baseAssets, quoteAsset, -20);
-            var arbitrageCalculator = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var btcEurOrderBook = new OrderBook(exchange, _btceur,
                 new List<VolumePrice> // bids
@@ -169,14 +174,14 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            arbitrageCalculator.Process(btcEurOrderBook);
-            arbitrageCalculator.Process(usdEurOrderBook);
-            arbitrageCalculator.Process(btcUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcEurOrderBook);
+            await orderBookHandler.HandleAsync(usdEurOrderBook);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook);
 
-            await arbitrageCalculator.Execute();
+            await arbitrageDetector.Execute();
 
-            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
-            var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
+            var synthOrderBooks = arbitrageDetector.GetSynthOrderBooks().ToList();
+            var arbitrages = arbitrageDetector.GetArbitrages().ToList();
 
             Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(2, arbitrages.Count);
@@ -215,7 +220,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "FE";
 
             var settings = GetSettings(baseAssets, quoteAsset, -20);
-            var arbitrageCalculator = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var btcEurOrderBook = new OrderBook(exchange, _eurbtc,
                 new List<VolumePrice> // bids
@@ -258,14 +265,14 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            arbitrageCalculator.Process(btcEurOrderBook);
-            arbitrageCalculator.Process(eurUsdOrderBook);
-            arbitrageCalculator.Process(btcUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcEurOrderBook);
+            await orderBookHandler.HandleAsync(eurUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook);
 
-            await arbitrageCalculator.Execute();
+            await arbitrageDetector.Execute();
 
-            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
-            var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
+            var synthOrderBooks = arbitrageDetector.GetSynthOrderBooks().ToList();
+            var arbitrages = arbitrageDetector.GetArbitrages().ToList();
 
             Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(2, arbitrages.Count);
@@ -304,7 +311,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string exchange = "FE";
 
             var settings = GetSettings(baseAssets, quoteAsset, -20);
-            var arbitrageCalculator = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var eurBtcOrderBook = new OrderBook(exchange, _eurbtc,
                 new List<VolumePrice> // bids
@@ -347,14 +356,14 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            arbitrageCalculator.Process(eurBtcOrderBook);
-            arbitrageCalculator.Process(usdEurOrderBook);
-            arbitrageCalculator.Process(btcUsdOrderBook);
+            await orderBookHandler.HandleAsync(eurBtcOrderBook);
+            await orderBookHandler.HandleAsync(usdEurOrderBook);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook);
 
-            await arbitrageCalculator.Execute();
+            await arbitrageDetector.Execute();
 
-            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
-            var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
+            var synthOrderBooks = arbitrageDetector.GetSynthOrderBooks().ToList();
+            var arbitrages = arbitrageDetector.GetArbitrages().ToList();
 
             Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(2, arbitrages.Count);
@@ -400,7 +409,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp3 = DateTime.UtcNow;
 
             var settings = GetSettings(baseAssets, quoteAsset, 0);
-            var arbitrageCalculator = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var btcEurOrderBook = new OrderBook(exchange1, _btceur,
                 new List<VolumePrice> // bids
@@ -458,15 +469,15 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            arbitrageCalculator.Process(btcEurOrderBook);
-            arbitrageCalculator.Process(eurJpyOrderBook);
-            arbitrageCalculator.Process(jpyUsdOrderBook);
-            arbitrageCalculator.Process(btcUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcEurOrderBook);
+            await orderBookHandler.HandleAsync(eurJpyOrderBook);
+            await orderBookHandler.HandleAsync(jpyUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook);
 
-            await arbitrageCalculator.Execute();
+            await arbitrageDetector.Execute();
 
-            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
-            var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
+            var synthOrderBooks = arbitrageDetector.GetSynthOrderBooks().ToList();
+            var arbitrages = arbitrageDetector.GetArbitrages().ToList();
 
             Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(1, arbitrages.Count);
@@ -498,7 +509,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp3 = DateTime.UtcNow;
 
             var settings = GetSettings(baseAssets, quoteAsset, 0);
-            var arbitrageCalculator = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var btcEurOrderBook = new OrderBook(exchange1, _btceur,
                 new List<VolumePrice> // bids
@@ -556,15 +569,15 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            arbitrageCalculator.Process(btcEurOrderBook);
-            arbitrageCalculator.Process(eurJpyOrderBook);
-            arbitrageCalculator.Process(jpyUsdOrderBook);
-            arbitrageCalculator.Process(btcUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcEurOrderBook);
+            await orderBookHandler.HandleAsync(eurJpyOrderBook);
+            await orderBookHandler.HandleAsync(jpyUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook);
 
-            await arbitrageCalculator.Execute();
+            await arbitrageDetector.Execute();
 
-            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
-            var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
+            var synthOrderBooks = arbitrageDetector.GetSynthOrderBooks().ToList();
+            var arbitrages = arbitrageDetector.GetArbitrages().ToList();
 
             Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(1, arbitrages.Count);
@@ -596,7 +609,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp3 = DateTime.UtcNow;
 
             var settings = GetSettings(baseAssets, quoteAsset, 0);
-            var arbitrageCalculator = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var btcEurOrderBook = new OrderBook(exchange1, _btceur,
                 new List<VolumePrice> // bids
@@ -654,15 +669,15 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            arbitrageCalculator.Process(btcEurOrderBook);
-            arbitrageCalculator.Process(eurJpyOrderBook);
-            arbitrageCalculator.Process(jpyUsdOrderBook);
-            arbitrageCalculator.Process(btcUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcEurOrderBook);
+            await orderBookHandler.HandleAsync(eurJpyOrderBook);
+            await orderBookHandler.HandleAsync(jpyUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook);
 
-            await arbitrageCalculator.Execute();
+            await arbitrageDetector.Execute();
 
-            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
-            var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
+            var synthOrderBooks = arbitrageDetector.GetSynthOrderBooks().ToList();
+            var arbitrages = arbitrageDetector.GetArbitrages().ToList();
 
             Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(1, arbitrages.Count);
@@ -694,7 +709,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp3 = DateTime.UtcNow;
 
             var settings = GetSettings(baseAssets, quoteAsset, 0);
-            var arbitrageCalculator = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var btcEurOrderBook = new OrderBook(exchange1, _eurbtc,
                 new List<VolumePrice> // bids
@@ -752,15 +769,15 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            arbitrageCalculator.Process(btcEurOrderBook);
-            arbitrageCalculator.Process(eurJpyOrderBook);
-            arbitrageCalculator.Process(jpyUsdOrderBook);
-            arbitrageCalculator.Process(btcUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcEurOrderBook);
+            await orderBookHandler.HandleAsync(eurJpyOrderBook);
+            await orderBookHandler.HandleAsync(jpyUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook);
 
-            await arbitrageCalculator.Execute();
+            await arbitrageDetector.Execute();
 
-            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
-            var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
+            var synthOrderBooks = arbitrageDetector.GetSynthOrderBooks().ToList();
+            var arbitrages = arbitrageDetector.GetArbitrages().ToList();
 
             Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(1, arbitrages.Count);
@@ -792,7 +809,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp3 = DateTime.UtcNow;
 
             var settings = GetSettings(baseAssets, quoteAsset, 0);
-            var arbitrageCalculator = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var btcEurOrderBook = new OrderBook(exchange1, _btceur,
                 new List<VolumePrice> // bids
@@ -850,15 +869,15 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            arbitrageCalculator.Process(btcEurOrderBook);
-            arbitrageCalculator.Process(eurJpyOrderBook);
-            arbitrageCalculator.Process(jpyUsdOrderBook);
-            arbitrageCalculator.Process(btcUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcEurOrderBook);
+            await orderBookHandler.HandleAsync(eurJpyOrderBook);
+            await orderBookHandler.HandleAsync(jpyUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook);
 
-            await arbitrageCalculator.Execute();
+            await arbitrageDetector.Execute();
 
-            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
-            var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
+            var synthOrderBooks = arbitrageDetector.GetSynthOrderBooks().ToList();
+            var arbitrages = arbitrageDetector.GetArbitrages().ToList();
 
             Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(1, arbitrages.Count);
@@ -890,7 +909,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp3 = DateTime.UtcNow;
 
             var settings = GetSettings(baseAssets, quoteAsset, 0);
-            var arbitrageCalculator = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var btcEurOrderBook = new OrderBook(exchange1, _eurbtc,
                 new List<VolumePrice> // bids
@@ -948,15 +969,15 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            arbitrageCalculator.Process(btcEurOrderBook);
-            arbitrageCalculator.Process(eurJpyOrderBook);
-            arbitrageCalculator.Process(jpyUsdOrderBook);
-            arbitrageCalculator.Process(btcUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcEurOrderBook);
+            await orderBookHandler.HandleAsync(eurJpyOrderBook);
+            await orderBookHandler.HandleAsync(jpyUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook);
 
-            await arbitrageCalculator.Execute();
+            await arbitrageDetector.Execute();
 
-            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
-            var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
+            var synthOrderBooks = arbitrageDetector.GetSynthOrderBooks().ToList();
+            var arbitrages = arbitrageDetector.GetArbitrages().ToList();
 
             Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(1, arbitrages.Count);
@@ -988,7 +1009,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp3 = DateTime.UtcNow;
 
             var settings = GetSettings(baseAssets, quoteAsset, 0);
-            var arbitrageCalculator = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var btcEurOrderBook = new OrderBook(exchange1, _eurbtc,
                 new List<VolumePrice> // bids
@@ -1046,15 +1069,15 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            arbitrageCalculator.Process(btcEurOrderBook);
-            arbitrageCalculator.Process(jpyEurOrderBook);
-            arbitrageCalculator.Process(jpyUsdOrderBook);
-            arbitrageCalculator.Process(btcUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcEurOrderBook);
+            await orderBookHandler.HandleAsync(jpyEurOrderBook);
+            await orderBookHandler.HandleAsync(jpyUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook);
 
-            await arbitrageCalculator.Execute();
+            await arbitrageDetector.Execute();
 
-            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
-            var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
+            var synthOrderBooks = arbitrageDetector.GetSynthOrderBooks().ToList();
+            var arbitrages = arbitrageDetector.GetArbitrages().ToList();
 
             Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(1, arbitrages.Count);
@@ -1086,7 +1109,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var timestamp3 = DateTime.UtcNow;
 
             var settings = GetSettings(baseAssets, quoteAsset, 0);
-            var arbitrageCalculator = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var btcEurOrderBook = new OrderBook(exchange1, _eurbtc,
                 new List<VolumePrice> // bids
@@ -1144,15 +1169,15 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 },
                 DateTime.UtcNow);
 
-            arbitrageCalculator.Process(btcEurOrderBook);
-            arbitrageCalculator.Process(jpyEurOrderBook);
-            arbitrageCalculator.Process(usdJpyOrderBook);
-            arbitrageCalculator.Process(btcUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcEurOrderBook);
+            await orderBookHandler.HandleAsync(jpyEurOrderBook);
+            await orderBookHandler.HandleAsync(usdJpyOrderBook);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook);
 
-            await arbitrageCalculator.Execute();
+            await arbitrageDetector.Execute();
 
-            var synthOrderBooks = arbitrageCalculator.GetSynthOrderBooks().ToList();
-            var arbitrages = arbitrageCalculator.GetArbitrages().ToList();
+            var synthOrderBooks = arbitrageDetector.GetSynthOrderBooks().ToList();
+            var arbitrages = arbitrageDetector.GetArbitrages().ToList();
 
             Assert.Equal(2, synthOrderBooks.Count);
             Assert.Equal(1, arbitrages.Count);
@@ -1179,7 +1204,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string quoteAsset = "USD";
 
             var settings = GetSettings(baseAssets, quoteAsset, -20);
-            var arbitrageDetector = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", _btcusd,
                 new List<VolumePrice> { new VolumePrice(11000, 10) }, // bids
@@ -1201,10 +1228,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 new List<VolumePrice> { new VolumePrice(1.22033m, 10) }, // asks
                 DateTime.UtcNow);
 
-            arbitrageDetector.Process(btcUsdOrderBook1);
-            arbitrageDetector.Process(btcUsdOrderBook2);
-            arbitrageDetector.Process(btcEurOrderBook);
-            arbitrageDetector.Process(eurUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook1);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook2);
+            await orderBookHandler.HandleAsync(btcEurOrderBook);
+            await orderBookHandler.HandleAsync(eurUsdOrderBook);
 
             await arbitrageDetector.Execute();
 
@@ -1236,12 +1263,14 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var settings = new Settings
             {
                 ExpirationTimeInSeconds = 1,
-                BaseAssets = new List<string> {"BTC"},
+                BaseAssets = new List<string> { "BTC" },
                 QuoteAsset = "USD",
                 MinSpread = -20
             };
-
-            var arbitrageDetector = GetArbitrageDetector(settings);
+            
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", _btcusd,
                 new List<VolumePrice> { new VolumePrice(11000, 10) }, // bids
@@ -1263,10 +1292,10 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 new List<VolumePrice> { new VolumePrice(1.22033m, 10) }, // asks
                 DateTime.UtcNow);
 
-            arbitrageDetector.Process(btcUsdOrderBook1);
-            arbitrageDetector.Process(btcUsdOrderBook2);
-            arbitrageDetector.Process(btcEurOrderBook);
-            arbitrageDetector.Process(eurUsdOrderBook);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook1);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook2);
+            await orderBookHandler.HandleAsync(btcEurOrderBook);
+            await orderBookHandler.HandleAsync(eurUsdOrderBook);
 
             await arbitrageDetector.Execute();
             Thread.Sleep(1000); // Wait until synthetic order book expire and arbitrage appears in history
@@ -1285,7 +1314,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string quoteAsset = "USD";
 
             var settings = GetSettings(baseAssets, quoteAsset, -20);
-            var arbitrageDetector = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var orderBooks = new List<OrderBook>();
             orderBooks.AddRange(Generate2OrderBooksForSynthOrderBooks(500, "GDAX", new AssetPair("BTC", "USD", 8, 8), 10, 11000, 10000, 10, 11500, 11000));
@@ -1293,7 +1324,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(2000, orderBooks.Count);
 
             foreach (var orderBook in orderBooks)
-                arbitrageDetector.Process(orderBook);
+                await orderBookHandler.HandleAsync(orderBook);
 
             var watch = Stopwatch.StartNew();
             await arbitrageDetector.CalculateSynthOrderBooksAsync();
@@ -1315,7 +1346,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string quoteAsset = "USD";
 
             var settings = GetSettings(baseAssets, quoteAsset, -20);
-            var arbitrageDetector = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var orderBooks = new List<OrderBook>();
             orderBooks.AddRange(GenerateOrderBooks(2, "TEST1", new AssetPair("BTC", "USD", 8, 8), 10, 11000, 10000, 10, 11500, 11000));
@@ -1330,7 +1363,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             Assert.Equal(9, orderBooks.Count);
 
             foreach (var orderBook in orderBooks)
-                arbitrageDetector.Process(orderBook);
+                await orderBookHandler.HandleAsync(orderBook);
 
             var watch = Stopwatch.StartNew();
             var synthOrderBooks = await arbitrageDetector.CalculateSynthOrderBooksAsync();
@@ -1352,7 +1385,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string quoteAsset = "USD";
 
             var settings = GetSettings(baseAssets, quoteAsset, -20);
-            var arbitrageDetector = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var orderBooks = new List<OrderBook>();
             orderBooks.AddRange(GenerateOrderBooks(7, "GDAX", new AssetPair("BTC", "USD", 8, 8), 10, 11000, 10000, 10, 11500, 11000));
@@ -1361,7 +1396,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             orderBooks.AddRange(GenerateOrderBooks(7, "Binance", new AssetPair("EUR", "USD", 8, 8), 10, 1.2200m, 1.2190m, 10, 1.2205m, 1.2200m));
             Assert.Equal(28, orderBooks.Count);
             foreach (var orderBook in orderBooks)
-                arbitrageDetector.Process(orderBook);
+                await orderBookHandler.HandleAsync(orderBook);
 
             var watch = Stopwatch.StartNew();
             await arbitrageDetector.Execute();
@@ -1383,7 +1418,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             orderBooks.AddRange(GenerateOrderBooks(7, "Binance", new AssetPair("EUR", "USD", 8, 8), 10, 1.2200m, 1.2190m, 10, 1.2205m, 1.2200m));
             Assert.Equal(28, orderBooks.Count);
             foreach (var orderBook in orderBooks)
-                arbitrageDetector.Process(orderBook);
+                await orderBookHandler.HandleAsync(orderBook);
 
             watch = Stopwatch.StartNew();
             await arbitrageDetector.Execute();
@@ -1415,7 +1450,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 MinimumPnL = 500.000000001m
             };
 
-            var arbitrageDetector = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", _btcusd,
                 new List<VolumePrice> { new VolumePrice(11000, 10) }, // bids
@@ -1427,8 +1464,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 new List<VolumePrice> { new VolumePrice(11300, 10) }, // asks
                 DateTime.UtcNow);
 
-            arbitrageDetector.Process(btcUsdOrderBook1);
-            arbitrageDetector.Process(btcUsdOrderBook2);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook1);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook2);
 
             await arbitrageDetector.Execute();
 
@@ -1449,7 +1486,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 MinimumVolume = 10.00000001m
             };
 
-            var arbitrageDetector = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", _btcusd,
                 new List<VolumePrice> { new VolumePrice(11000, 10) }, // bids
@@ -1461,8 +1500,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 new List<VolumePrice> { new VolumePrice(11300, 10) }, // asks
                 DateTime.UtcNow);
 
-            arbitrageDetector.Process(btcUsdOrderBook1);
-            arbitrageDetector.Process(btcUsdOrderBook2);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook1);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook2);
 
             await arbitrageDetector.Execute();
 
@@ -1483,7 +1522,9 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 Exchanges = new List<string> { "GDAX" }
             };
 
-            var arbitrageDetector = GetArbitrageDetector(settings);
+            var orderBooksService = OrderBooksService();
+            var orderBookHandler = (IOrderBookHandler)orderBooksService;
+            var arbitrageDetector = GetArbitrageDetector(settings, orderBooksService);
 
             var btcUsdOrderBook1 = new OrderBook("GDAX", _btcusd,
                 new List<VolumePrice> { new VolumePrice(11000, 10) }, // bids
@@ -1495,8 +1536,8 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                 new List<VolumePrice> { new VolumePrice(11300, 10) }, // asks
                 DateTime.UtcNow);
 
-            arbitrageDetector.Process(btcUsdOrderBook1);
-            arbitrageDetector.Process(btcUsdOrderBook2);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook1);
+            await orderBookHandler.HandleAsync(btcUsdOrderBook2);
 
             await arbitrageDetector.Execute();
 
@@ -1508,9 +1549,14 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         }
 
 
-        private ArbitrageDetectorService GetArbitrageDetector(Settings settings)
+        private ArbitrageDetectorService GetArbitrageDetector(Settings settings, IOrderBooksService orderBooksService)
         {
-            return new ArbitrageDetectorService(SettingsService(settings), LogFactory.Create());
+            return new ArbitrageDetectorService(SettingsService(settings), orderBooksService, LogFactory.Create());
+        }
+
+        private IOrderBooksService OrderBooksService()
+        {
+            return new OrderBooksService(null, null, LogFactory.Create());
         }
 
         private ISettingsService SettingsService(Settings settings)

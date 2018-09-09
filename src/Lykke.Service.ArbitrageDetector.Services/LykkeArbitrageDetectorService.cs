@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -20,18 +19,17 @@ namespace Lykke.Service.ArbitrageDetector.Services
         private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 0, 10);
         private const string LykkeExchangeName = "lykke";
         private const string Usd = "USD";
-
-        private readonly ConcurrentDictionary<AssetPair, OrderBook> _orderBooks;
+        
         private readonly object _lockArbitrages = new object();
         private readonly List<LykkeArbitrageRow> _arbitrages;
         private readonly TimerTrigger _trigger;
+        private readonly IOrderBooksService _orderBooksService;
         private readonly ILog _log;
 
-        public LykkeArbitrageDetectorService(ILogFactory logFactory)
+        public LykkeArbitrageDetectorService(IOrderBooksService orderBooksService, ILogFactory logFactory)
         {
-            _orderBooks = new ConcurrentDictionary<AssetPair, OrderBook>();
             _arbitrages = new List<LykkeArbitrageRow>();
-            
+            _orderBooksService = orderBooksService;
             _log = logFactory.CreateLog(this);
 
             _trigger = new TimerTrigger(nameof(LykkeArbitrageDetectorService), DefaultInterval, logFactory, Execute);
@@ -118,15 +116,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
             return result;
         }
 
-        public void Process(OrderBook orderBook)
-        {
-            var isLykkeExchange = string.Equals(orderBook.Source, LykkeExchangeName, StringComparison.OrdinalIgnoreCase);
-            if (isLykkeExchange)
-            {
-                _orderBooks[orderBook.AssetPair] = orderBook;
-            }
-        }
-
         public async Task Execute(ITimerTrigger timer, TimerTriggeredHandlerArgs args, CancellationToken cancellationtoken)
         {
             try
@@ -141,7 +130,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public async Task Execute()
         {
-            var lykkeArbitrages = await GetArbitragesAsync(_orderBooks.Values.ToList());
+            var lykkeOrderBooks = _orderBooksService.GetAll()
+                .Where(x => x.Source.Equals(LykkeExchangeName, StringComparison.InvariantCultureIgnoreCase)).ToList();
+            var lykkeArbitrages = await GetArbitragesAsync(lykkeOrderBooks);
             RefreshArbitrages(lykkeArbitrages);
         }
 
@@ -206,8 +197,8 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         if (string.IsNullOrWhiteSpace(targetSide)) // no arbitrages
                             continue;
 
-                        var baseToUsdRate = Convert(target.AssetPair.Base, Usd, _orderBooks.Values.ToList());
-                        var quoteToUsdRate = Convert(target.AssetPair.Quote, Usd, _orderBooks.Values.ToList());
+                        var baseToUsdRate = Convert(target.AssetPair.Base, Usd, orderBooks);
+                        var quoteToUsdRate = Convert(target.AssetPair.Quote, Usd, orderBooks);
                         var volumeInUsd = volume * baseToUsdRate;
                         volumeInUsd = volumeInUsd.HasValue ? Math.Round(volumeInUsd.Value) : (decimal?)null;
                         var pnLInUsd = pnL * quoteToUsdRate;

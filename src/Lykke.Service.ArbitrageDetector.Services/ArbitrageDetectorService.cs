@@ -19,35 +19,29 @@ namespace Lykke.Service.ArbitrageDetector.Services
 {
     public class ArbitrageDetectorService : IArbitrageDetectorService, IStartable, IStopable
     {
-        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 0, 2);
-        private readonly ConcurrentDictionary<AssetPairSource, OrderBook> _orderBooks;
+        private static readonly TimeSpan DefaultInterval = new TimeSpan(0, 0, 0, 10);
         private readonly ConcurrentDictionary<AssetPairSource, SynthOrderBook> _synthOrderBooks;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrages;
         private readonly ConcurrentDictionary<string, Arbitrage> _arbitrageHistory;
         private bool _restartNeeded;
         private readonly TimerTrigger _trigger;
         private readonly ISettingsService _settingsService;
+        private readonly IOrderBooksService _orderBooksService;
         private readonly ILog _log;
 
-        public ArbitrageDetectorService(ISettingsService settingsService, ILogFactory logFactory)
+        public ArbitrageDetectorService(ISettingsService settingsService, IOrderBooksService orderBooksService, ILogFactory logFactory)
         {
-            _orderBooks = new ConcurrentDictionary<AssetPairSource, OrderBook>();
             _synthOrderBooks = new ConcurrentDictionary<AssetPairSource, SynthOrderBook>();
             _arbitrages = new ConcurrentDictionary<string, Arbitrage>();
             _arbitrageHistory = new ConcurrentDictionary<string, Arbitrage>();
 
             _settingsService = settingsService;
+            _orderBooksService = orderBooksService;
             _log = logFactory.CreateLog(this);
-
+            
             _trigger = new TimerTrigger(nameof(ArbitrageDetectorService), DefaultInterval, logFactory, Execute);
         }
 
-
-        public void Process(OrderBook orderBook)
-        {
-            var key = new AssetPairSource(orderBook.Source, orderBook.AssetPair);
-            _orderBooks[key] = orderBook;
-        }
 
         public async Task Execute(ITimerTrigger timer, TimerTriggeredHandlerArgs args, CancellationToken cancellationtoken)
         {
@@ -74,7 +68,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var watch = Stopwatch.StartNew();
 
             var newActualSynthOrderBooks = new List<SynthOrderBook>();
-            var orderBooks = GetWantedActualOrderBooks().Values.ToList();
+            var orderBooks = GetWantedActualOrderBooks().ToList();
             var settings = Settings();
 
             foreach (var @base in settings.BaseAssets)
@@ -289,19 +283,20 @@ namespace Lykke.Service.ArbitrageDetector.Services
         }
 
 
-        private Dictionary<AssetPairSource, OrderBook> GetWantedActualOrderBooks()
+        private IReadOnlyList<OrderBook> GetWantedActualOrderBooks()
         {
-            var result = new Dictionary<AssetPairSource, OrderBook>();
+            var result = new List<OrderBook>();
             var settings = Settings();
+            var orderBooks = _orderBooksService.GetAll();
 
-            foreach (var keyValue in _orderBooks)
+            foreach (var orderBook in orderBooks)
             {
                 // Filter by exchanges
-                if (settings.Exchanges.Any() && !settings.Exchanges.Contains(keyValue.Key.Exchange))
+                if (settings.Exchanges.Any() && !settings.Exchanges.Contains(orderBook.Source))
                     continue;
 
                 // Filter by base, quote and intermediate assets
-                var assetPair = keyValue.Key.AssetPair;
+                var assetPair = orderBook.AssetPair;
                 var passed = !settings.IntermediateAssets.Any()
                   || settings.IntermediateAssets.Contains(assetPair.Base)
                   || settings.IntermediateAssets.Contains(assetPair.Quote);
@@ -309,9 +304,9 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     continue;
 
                 // Filter by expiration time
-                if (DateTime.UtcNow - keyValue.Value.Timestamp < new TimeSpan(0, 0, 0, settings.ExpirationTimeInSeconds))
+                if (DateTime.UtcNow - orderBook.Timestamp < new TimeSpan(0, 0, 0, settings.ExpirationTimeInSeconds))
                 {
-                    result.Add(keyValue.Key, keyValue.Value);
+                    result.Add(orderBook);
                 }
             }
 
@@ -387,41 +382,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
 
         #region IArbitrageDetectorService
-
-        public IEnumerable<OrderBook> GetOrderBooks(string exchange, string assetPair)
-        {
-            if (!_orderBooks.Any())
-                return new List<OrderBook>();
-
-            var result = _orderBooks.Select(x => x.Value).ToList();
-
-            if (!string.IsNullOrWhiteSpace(exchange))
-                result = result.Where(x => x.Source.ToUpper().Trim().Contains(exchange.ToUpper().Trim())).ToList();
-
-            if (!string.IsNullOrWhiteSpace(assetPair))
-                result = result.Where(x => x.AssetPair.Name.ToUpper().Trim().Contains(assetPair.ToUpper().Trim())).ToList();
-
-            return result.OrderByDescending(x => x.AssetPair.Name).ToList();
-        }
-
-        public OrderBook GetOrderBook(string exchange, string assetPair)
-        {
-            if (string.IsNullOrWhiteSpace(exchange))
-                throw new ArgumentException($"{nameof(exchange)} must be set.");
-
-            if (string.IsNullOrWhiteSpace(assetPair))
-                throw new ArgumentException($"{nameof(assetPair)} must be set.");
-
-            if (!_orderBooks.Any())
-                return null;
-
-            var allOrderBooks = _orderBooks.Values;
-            
-            var result = allOrderBooks.SingleOrDefault(x => x.Source.Equals(exchange, StringComparison.OrdinalIgnoreCase)
-                                                  && x.AssetPair.Name.Equals(assetPair, StringComparison.OrdinalIgnoreCase));
-
-            return result;
-        }
 
         public IEnumerable<SynthOrderBook> GetSynthOrderBooks()
         {
@@ -501,7 +461,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
             var s = Settings();
 
             // Filter by asset pair
-            var orderBooks = _orderBooks.Values.Where(x => 
+            var orderBooks = _orderBooksService.GetAll().Where(x => 
                 string.Equals(x.AssetPair.Name, assetPair.Replace("/", ""), StringComparison.OrdinalIgnoreCase)).ToList();
 
             // Filter by exchanges
