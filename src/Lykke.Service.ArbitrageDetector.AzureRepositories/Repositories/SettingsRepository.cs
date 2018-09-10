@@ -27,6 +27,8 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
         public async Task InsertOrReplaceAsync(DomainSettings settings)
         {
             var model = Mapper.Map<Settings>(settings);
+            model.PartitionKey = "";
+            model.RowKey = "";
 
             await _storage.InsertOrReplaceAsync(model);
         }
