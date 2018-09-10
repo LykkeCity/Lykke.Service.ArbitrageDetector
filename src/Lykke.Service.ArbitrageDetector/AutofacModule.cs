@@ -30,7 +30,8 @@ namespace Lykke.Service.ArbitrageDetector
             builder.RegisterModule(new Services.AutofacModule());
 
             builder.RegisterType<ShutdownManager>()
-                .As<IShutdownManager>();
+                .As<IShutdownManager>()
+                .SingleInstance();
 
             RegisterRabbit(builder);
 
