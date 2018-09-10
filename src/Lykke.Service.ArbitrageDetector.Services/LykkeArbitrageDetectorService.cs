@@ -39,34 +39,22 @@ namespace Lykke.Service.ArbitrageDetector.Services
 
         public IEnumerable<LykkeArbitrageRow> GetArbitrages(string target, string source, ArbitrageProperty property = default, decimal minValue = 0)
         {
-            IEnumerable<LykkeArbitrageRow> copy;
+            IEnumerable<LykkeArbitrageRow> arbitrages;
             lock (_lockArbitrages)
             {
-                copy = _arbitrages.ToList();
+                arbitrages = _arbitrages.ToList();
             }
 
             // Filter by minValue
-            if (minValue != 0)
-                switch (property)
-                {
-                    case ArbitrageProperty.Volume:
-                        copy = copy.Where(x => x.VolumeInUsd >= minValue).ToList();
-                        break;
-                    case ArbitrageProperty.Spread:
-                        copy = copy.Where(x => Math.Abs(x.Spread) >= minValue).ToList();
-                        break;
-                    default:
-                        copy = copy.Where(x => x.PnLInUsd >= minValue).ToList();
-                        break;
-                }
+            arbitrages = GetFilterdByProperty(arbitrages, minValue, property);
 
             var result = new List<LykkeArbitrageRow>();
 
             // Filter by target
             if (!string.IsNullOrWhiteSpace(target))
-                copy = copy.Where(x => x.Target.Name.Equals(target, StringComparison.OrdinalIgnoreCase)).ToList();
+                arbitrages = arbitrages.Where(x => x.Target.Name.Equals(target, StringComparison.OrdinalIgnoreCase));
 
-            var groupedByTarget = copy.GroupBy(x => x.Target);
+            var groupedByTarget = arbitrages.GroupBy(x => x.Target);
             foreach (var targetPairArbitrages in groupedByTarget)
             {
                 var targetArbitrages = targetPairArbitrages.ToList();
@@ -162,11 +150,11 @@ namespace Lykke.Service.ArbitrageDetector.Services
                     if (target.ToString() == source.ToString())
                         continue;
 
-                    // Calculate all synthetic order books between source order book and target order book
+                    // Calculate all synthetic order books between a source order book and a target order book
                     var synthOrderBooks = SynthOrderBook.GetSynthsFromAll(target.AssetPair, source, orderBooks);
                     synthsCount += synthOrderBooks.Count;
 
-                    // Compare each synthetic with target
+                    // Compare each synthetic with current target asset pair
                     foreach (var synthOrderBook in synthOrderBooks)
                     {
                         decimal spread = 0;
@@ -174,9 +162,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         decimal pnL = 0;
                         string targetSide = null;
 
+                        // Bid side
                         if (target.BestBid?.Price > synthOrderBook.BestAsk?.Price)
                         {
                             spread = Arbitrage.GetSpread(target.BestBid.Value.Price, synthOrderBook.BestAsk.Value.Price);
+                            if (spread >= 0)
+                                continue;
                             var volumePnL = Arbitrage.GetArbitrageVolumePnL(target.Bids, synthOrderBook.Asks);
                             Debug.Assert(volumePnL?.Volume != null);
                             Debug.Assert(volumePnL?.PnL != null);
@@ -185,9 +176,12 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             pnL = volumePnL.Value.PnL;
                         }
 
+                        // Ask side
                         if (synthOrderBook.BestBid?.Price > target.BestAsk?.Price)
                         {
                             spread = Arbitrage.GetSpread(synthOrderBook.BestBid.Value.Price, target.BestAsk.Value.Price);
+                            if (spread >= 0)
+                                continue;
                             var volumePnL = Arbitrage.GetArbitrageVolumePnL(synthOrderBook.Bids, target.Asks);
                             Debug.Assert(volumePnL?.Volume != null);
                             Debug.Assert(volumePnL?.PnL != null);
@@ -196,7 +190,7 @@ namespace Lykke.Service.ArbitrageDetector.Services
                             pnL = volumePnL.Value.PnL;
                         }
 
-                        if (string.IsNullOrWhiteSpace(targetSide)) // no arbitrages
+                        if (string.IsNullOrWhiteSpace(targetSide)) // no arbitrage
                             continue;
 
                         var baseToUsdRate = Convert(target.AssetPair.Base, Usd, orderBooks);
@@ -275,6 +269,21 @@ namespace Lykke.Service.ArbitrageDetector.Services
                                       .ThenByDescending(x => x.VolumeInUsd)
                                       .ThenBy(x => x.Spread);
             }
+        }
+
+        private static IEnumerable<LykkeArbitrageRow> GetFilterdByProperty(IEnumerable<LykkeArbitrageRow> arbitrages, decimal minValue, ArbitrageProperty property)
+        {
+            minValue = Math.Round(minValue, 2);
+
+            // Filter by minValue
+            if (minValue != 0)
+                switch (property)
+                {
+                    case ArbitrageProperty.Volume: return arbitrages.Where(x => Math.Round(x.VolumeInUsd.Value, 2) >= minValue);
+                    case ArbitrageProperty.Spread: return arbitrages.Where(x => Math.Round(Math.Abs(x.Spread), 2) >= minValue);
+                }
+
+            return arbitrages.Where(x => x.PnLInUsd >= minValue);
         }
 
         #region IStartable, IStopable
