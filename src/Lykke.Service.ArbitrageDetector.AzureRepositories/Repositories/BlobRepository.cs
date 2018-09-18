@@ -13,8 +13,8 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Repositories
 
         protected BlobRepository(IBlobStorage storage, string container)
         {
-            _container = !string.IsNullOrWhiteSpace(container) ? container.ToLower() : throw new ArgumentOutOfRangeException(nameof(container));
-            _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            _container = container;
+            _storage = storage;
 
             storage.CreateContainerIfNotExistsAsync(_container).GetAwaiter().GetResult();
         }

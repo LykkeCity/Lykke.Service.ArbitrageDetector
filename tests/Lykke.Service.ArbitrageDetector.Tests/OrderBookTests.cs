@@ -9,69 +9,11 @@ namespace Lykke.Service.ArbitrageDetector.Tests
     public class OrderBookTests
     {
         [Fact]
-        public void ConstructorTest()
-        {
-            const string exchangeName = "FakeExchange";
-            const string assetPair = "BTCUSD";
-            var timestamp = DateTime.UtcNow;
-
-            var bids = new List<VolumePrice>
-            {
-                new VolumePrice(8825, 9),
-                new VolumePrice(8823, 5)
-            };
-            var asks = new List<VolumePrice>
-            {
-                new VolumePrice(9000, 10),
-                new VolumePrice(8999.95m, 7),
-                new VolumePrice(8900.12345677m, 3)
-            };
-
-            void Construct1() => new OrderBook("", assetPair, bids, asks, timestamp);
-            Assert.Throws<ArgumentException>((Action)Construct1);
-
-            void Construct2() => new OrderBook(null, assetPair, bids, asks, timestamp);
-            Assert.Throws<ArgumentException>((Action)Construct2);
-
-            void Construct3() => new OrderBook(exchangeName, "", bids, asks, timestamp);
-            Assert.Throws<ArgumentException>((Action)Construct3);
-
-            void Construct4() => new OrderBook(exchangeName, null, bids, asks, timestamp);
-            Assert.Throws<ArgumentException>((Action)Construct4);
-        }
-
-        [Fact]
-        public void SetAssetPairTest()
-        {
-            const string exchangeName = "FakeExchange";
-            const string assetPair = "BTCUSD";
-            var timestamp = DateTime.UtcNow;
-
-            var orderBook = new OrderBook(exchangeName, assetPair,
-                new List<VolumePrice> // bids
-                {
-                    new VolumePrice(8825, 9), new VolumePrice(8823, 5)
-                },
-                new List<VolumePrice> // asks
-                {
-                    new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
-                },
-                timestamp);
-
-            Assert.Null(orderBook.AssetPair.Base);
-            Assert.Null(orderBook.AssetPair.Quote);
-            orderBook.SetAssetPair("USD");
-            Assert.Equal("BTC", orderBook.AssetPair.Base);
-            Assert.Equal("USD", orderBook.AssetPair.Quote);
-            Assert.Equal(assetPair, orderBook.AssetPair.Name);
-        }
-
-        [Fact]
         public void ReverseTest()
         {
             const string exchangeName = "FakeExchange";
-            const string assetPair = "BTCUSD";
-            const string reversedPair = "USDBTC";
+            var assetPair = new AssetPair("BTC", "USD", 8, 8);
+            var reversedPair = new AssetPair("USD", "BTC", 8, 8);
             var timestamp = DateTime.UtcNow;
 
             var orderBook = new OrderBook(exchangeName, assetPair,
@@ -84,12 +26,11 @@ namespace Lykke.Service.ArbitrageDetector.Tests
                     new VolumePrice(9000, 10), new VolumePrice(8999.95m, 7), new VolumePrice(8900.12345677m, 3)
                 },
                 timestamp);
-            orderBook.SetAssetPair("USD");
 
             var reversed = orderBook.Reverse();
             Assert.NotNull(reversed);
             Assert.Equal(exchangeName, reversed.Source);
-            Assert.Equal(reversedPair, reversed.AssetPairStr);
+            Assert.Equal(reversedPair.Name, reversed.AssetPair.Name);
             Assert.Equal(orderBook.Bids.Count, reversed.Asks.Count);
             Assert.Equal(orderBook.Asks.Count, reversed.Bids.Count);
 

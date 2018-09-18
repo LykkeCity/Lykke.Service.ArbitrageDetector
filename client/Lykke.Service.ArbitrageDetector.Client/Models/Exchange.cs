@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Lykke.Service.ArbitrageDetector.Client.Models
+﻿namespace Lykke.Service.ArbitrageDetector.Client.Models
 {
     /// <summary>
     /// Represents an exchange.
@@ -21,16 +19,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// Fees.
         /// </summary>
         public ExchangeFees Fees { get; set; }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        public Exchange(string name, bool isActual, ExchangeFees fees)
-        {
-            Name = name;
-            IsActual = isActual;
-            Fees = fees;
-        }
 
         /// <inheritdoc />
         public override string ToString()

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Lykke.AzureStorage.Tables;
 using Lykke.AzureStorage.Tables.Entity.Annotation;
-using DomainSettings = Lykke.Service.ArbitrageDetector.Core.Domain.Settings;
 
 namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
 {
@@ -34,7 +32,9 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
         [JsonValueSerializer]
         public IEnumerable<string> Exchanges { get; set; } = new List<string>();
 
-        public int SynthMaxDepth { get; set; } = 30;
+        // Lykke Arbitrages
+
+        public TimeSpan LykkeArbitragesExecutionInterval { get; set; } = new TimeSpan(0, 0, 0, 2);
 
         // Matrix
 
@@ -42,6 +42,9 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
         public IEnumerable<string> MatrixAssetPairs { get; set; } = new List<string>();
 
         public decimal? MatrixSignificantSpread { get; set; }
+
+        [JsonValueSerializer]
+        public IEnumerable<ExchangeFees> ExchangesFees { get; set; } = new List<ExchangeFees>();
 
         // Public Matrix
 
@@ -51,9 +54,6 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
         [JsonValueSerializer]
         public IDictionary<string, string> PublicMatrixExchanges { get; set; } = new Dictionary<string, string>();
 
-        [JsonValueSerializer]
-        public IEnumerable<ExchangeFees> ExchangesFees { get; set; } = new List<ExchangeFees>();
-
         // Matrix History
 
         public TimeSpan MatrixHistoryInterval { get; set; }
@@ -62,60 +62,5 @@ namespace Lykke.Service.ArbitrageDetector.AzureRepositories.Models
         public IEnumerable<string> MatrixHistoryAssetPairs { get; set; } = new List<string>();
 
         public string MatrixHistoryLykkeName { get; set; }
-
-
-        public Settings()
-        {
-        }
-
-        public Settings(DomainSettings domain)
-        {
-            PartitionKey = "";
-            RowKey = "";
-            HistoryMaxSize = domain.HistoryMaxSize;
-            ExpirationTimeInSeconds = domain.ExpirationTimeInSeconds;
-            MinimumPnL = domain.MinimumPnL;
-            MinimumVolume = domain.MinimumVolume;
-            MinSpread = domain.MinSpread;
-            BaseAssets = domain.BaseAssets;
-            IntermediateAssets = domain.IntermediateAssets;
-            QuoteAsset = domain.QuoteAsset;
-            Exchanges = domain.Exchanges;
-            SynthMaxDepth = domain.SynthMaxDepth;
-            PublicMatrixAssetPairs = domain.PublicMatrixAssetPairs;
-            PublicMatrixExchanges = domain.PublicMatrixExchanges;
-            MatrixAssetPairs = domain.MatrixAssetPairs;
-            MatrixHistoryInterval = domain.MatrixHistoryInterval;
-            MatrixHistoryAssetPairs = domain.MatrixHistoryAssetPairs;
-            MatrixSignificantSpread = domain.MatrixSignificantSpread;
-            MatrixHistoryLykkeName = domain.MatrixHistoryLykkeName;
-            ExchangesFees = domain.ExchangesFees.Select(x => new ExchangeFees(x)).ToList();
-        }
-
-        public DomainSettings ToDomain()
-        {
-            var result = new DomainSettings();
-
-            result.HistoryMaxSize = HistoryMaxSize;
-            result.ExpirationTimeInSeconds = ExpirationTimeInSeconds;
-            result.MinimumPnL = MinimumPnL;
-            result.MinimumVolume = MinimumVolume;
-            result.MinSpread = MinSpread;
-            result.BaseAssets = BaseAssets;
-            result.IntermediateAssets = IntermediateAssets;
-            result.QuoteAsset = QuoteAsset;
-            result.Exchanges = Exchanges;
-            result.SynthMaxDepth = SynthMaxDepth;
-            result.PublicMatrixAssetPairs = PublicMatrixAssetPairs;
-            result.PublicMatrixExchanges = PublicMatrixExchanges;
-            result.MatrixAssetPairs = MatrixAssetPairs;
-            result.MatrixHistoryInterval = MatrixHistoryInterval;
-            result.MatrixHistoryAssetPairs = MatrixHistoryAssetPairs;
-            result.MatrixSignificantSpread = MatrixSignificantSpread;
-            result.MatrixHistoryLykkeName = MatrixHistoryLykkeName;
-            result.ExchangesFees = ExchangesFees.Select(x => x.ToDomain()).ToList();
-
-            return result;
-        }
     }
 }

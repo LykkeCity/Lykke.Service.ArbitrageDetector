@@ -1,358 +1,84 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using Lykke.Service.ArbitrageDetector.Core.Utils;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    /// <summary>
-    /// Represents a synthetic order book.
-    /// </summary>
-    public class SynthOrderBook : OrderBook
+    public class SynthOrderBook
     {
-        private const int MaxDepth = 30;
+        public string Source => string.Join("-", OriginalOrderBooks.Select(x => x.Source));
 
-        /// <summary>
-        /// Conversion path.
-        /// </summary>
-        public string ConversionPath { get; }
+        public AssetPair AssetPair { get; }
 
-        /// <summary>
-        /// Original order books.
-        /// </summary>
-        public IReadOnlyCollection<OrderBook> OriginalOrderBooks { get; }
+        public IEnumerable<VolumePrice> Bids => OrderedVolumePrices(GetBids);
 
-        /// <inheritdoc />
-        public SynthOrderBook(string source, AssetPair assetPair,
-            IReadOnlyCollection<VolumePrice> bids, IReadOnlyCollection<VolumePrice> asks,
-            string conversionPath, IReadOnlyCollection<OrderBook> originalOrderBooks, DateTime timestamp)
-            : base(source, assetPair.Name, bids, asks, timestamp)
+        public IEnumerable<VolumePrice> Asks => OrderedVolumePrices(GetAsks);
+
+        public VolumePrice? BestBid { get; }
+
+        public VolumePrice? BestAsk { get; }
+
+        public IReadOnlyList<OrderBook> OriginalOrderBooks { get; }
+
+        public string ConversionPath => string.Join(" * ", OriginalOrderBooks.Select(x => $"{x.Source}-{x.AssetPair.Name}"));
+
+        public DateTime Timestamp => OriginalOrderBooks.Select(x => x.Timestamp).Min();
+
+
+        public SynthOrderBook(AssetPair assetPair, IReadOnlyList<OrderBook> originalOrderBooks)
         {
-            if (assetPair.IsEmpty())
-                throw new ArgumentOutOfRangeException($"{nameof(assetPair)}. Base: {assetPair.Base}, Quote: {assetPair.Quote}.");
-
             AssetPair = assetPair;
-
-            ConversionPath = string.IsNullOrEmpty(conversionPath)
-                ? throw new ArgumentException(nameof(conversionPath))
-                : conversionPath;
-
-            OriginalOrderBooks = originalOrderBooks ?? throw new ArgumentNullException(nameof(originalOrderBooks));
+            OriginalOrderBooks = originalOrderBooks;
+            BestBid = Bids.Any() ? Bids.First() : (VolumePrice?)null;
+            BestAsk = Asks.Any() ? Asks.First() : (VolumePrice?)null;
         }
 
 
-        /// <summary>
-        /// From one order book if equal or reversed.
-        /// </summary>
-        public static SynthOrderBook FromOrderBook(OrderBook orderBook, AssetPair targetAssetPair, int maxDepth = MaxDepth)
+        public static SynthOrderBook FromOrderBook(OrderBook orderBook, AssetPair target)
         {
-            #region Checking arguments
+            Debug.Assert(orderBook != null);
+            Debug.Assert(target != null);
+            Debug.Assert(target.IsEqualOrInverted(orderBook.AssetPair));
 
-            if (orderBook == null)
-                throw new ArgumentNullException(nameof(orderBook));
-
-            if (string.IsNullOrWhiteSpace(targetAssetPair.Base))
-                throw new ArgumentException(nameof(targetAssetPair.Base));
-
-            if (string.IsNullOrWhiteSpace(targetAssetPair.Quote))
-                throw new ArgumentException(nameof(targetAssetPair.Quote));
-
-            if (orderBook.AssetPair.IsEmpty())
-                throw new ArgumentException(nameof(orderBook) + "." + nameof(orderBook.AssetPair));
-
-            if (!targetAssetPair.IsEqualOrReversed(orderBook.AssetPair))
-                throw new ArgumentOutOfRangeException($"{nameof(orderBook.AssetPair)} and {nameof(targetAssetPair)} aren't semantically equal.");
-
-            #endregion
-
-            var originalOrderBooks = new List<OrderBook>();
-            OrderBook orderBookResult = null;
-            var conversionPath = orderBook.ToString();
-            // Streight
-            if (orderBook.AssetPair.Base == targetAssetPair.Base && orderBook.AssetPair.Quote == targetAssetPair.Quote)
-            {
-                orderBookResult = orderBook;
-                originalOrderBooks.Add(orderBook);
-            }
-
-            // Reversed
-            if (orderBook.AssetPair.Base == targetAssetPair.Quote && orderBook.AssetPair.Quote == targetAssetPair.Base)
-            {
-                orderBookResult = orderBook.Reverse();
-                originalOrderBooks.Add(orderBook);
-            }
-            
-            if (orderBookResult == null)
-                throw new InvalidOperationException("AssetPairs must be the same or reversed)");
-
-            var result = new SynthOrderBook(orderBookResult.Source, targetAssetPair, orderBookResult.Bids.Take(maxDepth).ToList(), orderBookResult.Asks.Take(maxDepth).ToList(), conversionPath, originalOrderBooks, orderBook.Timestamp);
+            var result = new SynthOrderBook(target, new List<OrderBook> { orderBook });
 
             return result;
         }
 
-        /// <summary>
-        /// From two order books.
-        /// </summary>
-        public static SynthOrderBook FromOrderBooks(OrderBook one, OrderBook another, AssetPair targetAssetPair, int maxDepth = MaxDepth)
+        public static SynthOrderBook FromOrderBooks(OrderBook first, OrderBook second, AssetPair target)
         {
-            #region Checking arguments 
+            Debug.Assert(first != null);
+            Debug.Assert(first.AssetPair != null);
+            Debug.Assert(second != null);
+            Debug.Assert(second.AssetPair != null);
+            Debug.Assert(target != null);
 
-            if (one == null)
-                throw new ArgumentNullException(nameof(one));
-
-            if (another == null)
-                throw new ArgumentNullException(nameof(another));
-
-            if (one.AssetPair.IsEmpty())
-                throw new ArgumentException(nameof(one) + "." + nameof(one.AssetPair));
-
-            if (another.AssetPair.IsEmpty())
-                throw new ArgumentException(nameof(another) + "." + nameof(another.AssetPair));
-
-            if (targetAssetPair.IsEmpty())
-                throw new ArgumentException(nameof(targetAssetPair));
-
-            #endregion
-
-            // Prepare left and right order books for calculating target
-            OrderBook left = null;
-            OrderBook right = null;
-
-            if (targetAssetPair.Base == one.AssetPair.Base)
-                left = one;
-
-            if (targetAssetPair.Base == one.AssetPair.Quote)
-                left = one.Reverse();
-
-            if (targetAssetPair.Base == another.AssetPair.Base)
-                left = another;
-
-            if (targetAssetPair.Base == another.AssetPair.Quote)
-                left = another.Reverse();
-
-            if (targetAssetPair.Quote == one.AssetPair.Base)
-                right = one.Reverse();
-
-            if (targetAssetPair.Quote == one.AssetPair.Quote)
-                right = one;
-
-            if (targetAssetPair.Quote == another.AssetPair.Base)
-                right = another.Reverse();
-
-            if (targetAssetPair.Quote == another.AssetPair.Quote)
-                right = another;
-
-            #region Checking left and right
-
-            if (left == null || right == null)
-                throw new ArgumentException($"Order books don't correspond to {targetAssetPair}");
-
-            if (left.AssetPair.Base != targetAssetPair.Base
-                || right.AssetPair.Quote != targetAssetPair.Quote
-                || left.AssetPair.Quote != right.AssetPair.Base)
-                throw new ArgumentException($"Order books don't correspond to {targetAssetPair}");
-
-            #endregion
-
-            var bids = new List<VolumePrice>();
-            var asks = new List<VolumePrice>();
-
-            // Calculating new bids
-            foreach (var leftBid in left.Bids.Take(maxDepth))
-            {
-                foreach (var rightBid in right.Bids.Take(maxDepth))
-                {
-                    var newBidPrice = leftBid.Price * rightBid.Price;
-                    var rightBidVolumeInBaseAsset = rightBid.Volume / leftBid.Price;
-                    var newBidVolume = Math.Min(leftBid.Volume, rightBidVolumeInBaseAsset);
-
-                    var newBidVolumePrice = new VolumePrice(newBidPrice, newBidVolume);
-                    bids.Add(newBidVolumePrice);
-                }
-            }
-
-            // Calculating new asks
-            foreach (var leftAsk in left.Asks.Take(maxDepth))
-            {
-                foreach (var rightAsk in right.Asks.Take(maxDepth))
-                {
-                    var newAskPrice = leftAsk.Price * rightAsk.Price;
-                    var rightAskVolumeInBaseAsset = rightAsk.Volume / leftAsk.Price;
-                    var newAskVolume = Math.Min(leftAsk.Volume, rightAskVolumeInBaseAsset);
-
-                    var newAskVolumePrice = new VolumePrice(newAskPrice, newAskVolume);
-                    asks.Add(newAskVolumePrice);
-                }
-            }
-
-            var source = GetSourcesPath(one.Source, another.Source);
-            var conversionPath = GetConversionPath(one, another);
-            var originalOrderBooks = new List<OrderBook> { one, another };
-            var timestamp = left.Timestamp < right.Timestamp ? left.Timestamp : right.Timestamp;
-
-            var result = new SynthOrderBook(source, targetAssetPair, bids, asks, conversionPath, originalOrderBooks, timestamp);
+            var result = new SynthOrderBook(target, GetOrdered(new List<OrderBook> { first, second }, target));
 
             return result;
         }
 
-        /// <summary>
-        /// From three order books.
-        /// </summary>
-        public static SynthOrderBook FromOrderBooks(OrderBook one, OrderBook second, OrderBook third, AssetPair targetAssetPair, int maxDepth = MaxDepth)
+        public static SynthOrderBook FromOrderBooks(OrderBook first, OrderBook second, OrderBook third, AssetPair target)
         {
-            #region Checking arguments 
+            Debug.Assert(first != null);
+            Debug.Assert(first.AssetPair != null);
+            Debug.Assert(second != null);
+            Debug.Assert(second.AssetPair != null);
+            Debug.Assert(third != null);
+            Debug.Assert(third.AssetPair != null);
+            Debug.Assert(target != null);
 
-            if (one == null)
-                throw new ArgumentNullException(nameof(one));
-
-            if (second == null)
-                throw new ArgumentNullException(nameof(second));
-
-            if (third == null)
-                throw new ArgumentNullException(nameof(third));
-
-            if (one.AssetPair.IsEmpty())
-                throw new ArgumentException(nameof(one) + "." + nameof(one.AssetPair));
-
-            if (second.AssetPair.IsEmpty())
-                throw new ArgumentException(nameof(second) + "." + nameof(second.AssetPair));
-
-            if (third.AssetPair.IsEmpty())
-                throw new ArgumentException(nameof(third) + "." + nameof(third.AssetPair));
-
-            if (targetAssetPair.IsEmpty())
-                throw new ArgumentException(nameof(targetAssetPair));
-
-            #endregion
-
-            var orderBooks = new List<OrderBook> { one, second, third };
-
-            OrderBook FindOrderBookByAsset(string asset)
-            {
-                foreach (var orderBook in orderBooks)
-                {
-                    if (orderBook.AssetPair.ContainsAsset(asset))
-                    {
-                        orderBooks.Remove(orderBook);
-                        return orderBook;
-                    }
-                }
-
-                throw new InvalidOperationException("This point can't be reached");
-            }
-
-            // Prepare left, middle and right order books for calculating target
-
-            var left = FindOrderBookByAsset(targetAssetPair.Base);
-            if (left == null)
-                throw new ArgumentException($"There is no asset pair with target.Base asset");
-            if (left.AssetPair.Quote == targetAssetPair.Base)
-                left = left.Reverse();
-
-            var intermediate1Asset = left.AssetPair.Quote;
-            var middle = FindOrderBookByAsset(intermediate1Asset);
-            if (middle == null)
-                throw new ArgumentException($"There is no asset pair with intermediate1 asset");
-            if (middle.AssetPair.Quote == intermediate1Asset)
-                middle = middle.Reverse();
-
-            var intermediate2Asset = middle.AssetPair.Quote;
-            var right = FindOrderBookByAsset(intermediate2Asset);
-            if (right == null)
-                throw new ArgumentException($"There is no asset pair with intermediate2 asset");
-            if (right.AssetPair.Quote == intermediate2Asset)
-                right = right.Reverse();
-
-            #region Checking left, middle and right
-
-            if (left.AssetPair.Base != targetAssetPair.Base
-                || left.AssetPair.Quote != middle.AssetPair.Base
-                || middle.AssetPair.Quote != right.AssetPair.Base
-                || right.AssetPair.Quote != targetAssetPair.Quote)
-                throw new ArgumentException($"Order books don't correspond to {targetAssetPair}");
-
-            #endregion
-
-            var bids = new List<VolumePrice>();
-            var asks = new List<VolumePrice>();
-
-            // Calculating new bids
-            foreach (var leftBid in left.Bids.Take(maxDepth))
-            {
-                foreach (var middleBid in middle.Bids.Take(maxDepth))
-                {
-                    foreach (var rightBid in right.Bids.Take(maxDepth))
-                    {
-                        var newBidPrice = leftBid.Price * middleBid.Price * rightBid.Price;
-                        var interimBidPrice = leftBid.Price * middleBid.Price;
-                        var interimBidVolumeInBaseAsset = middleBid.Volume / leftBid.Price;
-                        var rightBidVolumeInBaseAsset = rightBid.Volume / interimBidPrice;
-                        var newBidVolume = Math.Min(Math.Min(leftBid.Volume, interimBidVolumeInBaseAsset), rightBidVolumeInBaseAsset);
-
-                        var newBidVolumePrice = new VolumePrice(newBidPrice, newBidVolume);
-                        bids.Add(newBidVolumePrice);
-                    }
-                }
-            }
-
-            // Calculating new asks
-            foreach (var leftAsk in left.Asks.Take(maxDepth))
-            {
-                foreach (var middleAsk in middle.Asks.Take(maxDepth))
-                {
-                    foreach (var rightAsk in right.Asks.Take(maxDepth))
-                    {
-                        var newAskPrice = leftAsk.Price * middleAsk.Price * rightAsk.Price;
-                        var interimAskPrice = leftAsk.Price * middleAsk.Price;
-                        var interimAskVolumeInBaseAsset = middleAsk.Volume / leftAsk.Price;
-                        var rightAskVolumeInBaseAsset = rightAsk.Volume / interimAskPrice;
-                        var newAskVolume = Math.Min(Math.Min(leftAsk.Volume, interimAskVolumeInBaseAsset), rightAskVolumeInBaseAsset);
-
-                        var newAskVolumePrice = new VolumePrice(newAskPrice, newAskVolume);
-                        asks.Add(newAskVolumePrice);
-                    }
-                }
-            }
-
-            var source = GetSourcesPath(one.Source, second.Source, third.Source);
-            var conversionPath = GetConversionPath(one, second, third);
-            var originalOrderBooks = new List<OrderBook> { one, second, third };
-
-            var interimTimestamp = left.Timestamp < middle.Timestamp ? left.Timestamp : middle.Timestamp;
-            var timestamp = interimTimestamp < right.Timestamp ? interimTimestamp : right.Timestamp;
-
-            var result = new SynthOrderBook(source, targetAssetPair, bids, asks, conversionPath, originalOrderBooks, timestamp);
+            var result = new SynthOrderBook(target, GetOrdered(new List<OrderBook> { first, second, third }, target));
 
             return result;
         }
 
 
-
-        /// <summary>
-        /// Get synthetic order books from 1 order book (the same or reverted).
-        /// </summary>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom1(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks,
-            int maxDepth = MaxDepth)
+        public static IReadOnlyList<SynthOrderBook> GetSynthsFrom1(AssetPair target,
+            IReadOnlyList<OrderBook> sourceOrderBooks, IReadOnlyList<OrderBook> allOrderBooks)
         {
-            return GetSynthsFrom1(target, orderBooks, orderBooks, maxDepth);
-        }
-
-        /// <summary>
-        /// Get synthetic order books from 1 order book (the same or reverted).
-        /// </summary>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom1(AssetPair target,
-            OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks, int maxDepth = MaxDepth)
-        {
-            return GetSynthsFrom1(target, new List<OrderBook> { source }, allOrderBooks, maxDepth);
-        }
-
-        /// <summary>
-        /// Get synthetic order books from 1 order book (the same or reverted).
-        /// </summary>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom1(AssetPair target,
-            IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks, int maxDepth = MaxDepth)
-        {
-            var result = new Dictionary<AssetPairSource, SynthOrderBook>();
+            var result = new List<SynthOrderBook>();
 
             // Trying to find base asset in current source's asset pair
             var withBaseOrQuoteOrderBooks = sourceOrderBooks.Where(x => x.AssetPair.ContainsAsset(target.Base) ||
@@ -363,54 +89,27 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 var withBaseOrQuoteAssetPair = withBaseOrQuoteOrderBook.AssetPair;
 
                 // Get intermediate asset
-                var intermediate = withBaseOrQuoteAssetPair.GetOtherAsset(target.Base)
-                                   ?? withBaseOrQuoteAssetPair.GetOtherAsset(target.Quote);
+                var intermediateId = withBaseOrQuoteAssetPair.GetOtherAsset(target.Base)
+                                  ?? withBaseOrQuoteAssetPair.GetOtherAsset(target.Quote);
 
-                // If current is target or reversed then just use it
-                if (intermediate == target.Base || intermediate == target.Quote)
+                // If current is target or inverted then just use it
+                if (intermediateId == target.Base || intermediateId == target.Quote)
                 {
                     if (!withBaseOrQuoteOrderBook.Asks.Any() && !withBaseOrQuoteOrderBook.Bids.Any())
                         continue;
 
-                    var key = new AssetPairSource(withBaseOrQuoteOrderBook.ToString(), target);
-                    if (result.ContainsKey(key))
-                        continue;
-
-                    var synthOrderBook = FromOrderBook(withBaseOrQuoteOrderBook, target, maxDepth);
-                    result[key] = synthOrderBook;
+                    var synthOrderBook = FromOrderBook(withBaseOrQuoteOrderBook, target);
+                    result.Add(synthOrderBook);
                 }
             }
 
             return result;
         }
 
-
-
-        /// <summary>
-        /// Get synthetic order books from 2 original order books.
-        /// </summary>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom2(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks,
-            int maxDepth = MaxDepth)
+        public static IReadOnlyList<SynthOrderBook> GetSynthsFrom2(AssetPair target,
+            IReadOnlyList<OrderBook> sourceOrderBooks, IReadOnlyList<OrderBook> allOrderBooks)
         {
-            return GetSynthsFrom2(target, orderBooks, orderBooks, maxDepth);
-        }
-
-        /// <summary>
-        /// Get synthetic order books from 2 original order books.
-        /// </summary>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom2(AssetPair target,
-            OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks, int maxDepth = MaxDepth)
-        {
-            return GetSynthsFrom2(target, new List<OrderBook> { source }, allOrderBooks, maxDepth);
-        }
-
-        /// <summary>
-        /// Get synthetic order books from 2 original order books.
-        /// </summary>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom2(AssetPair target,
-            IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks, int maxDepth = MaxDepth)
-        {
-            var result = new Dictionary<AssetPairSource, SynthOrderBook>();
+            var result = new List<SynthOrderBook>();
 
             // Trying to find base asset in current source's asset pair
             var withBaseOrQuoteOrderBooks = sourceOrderBooks.Where(x => x.AssetPair.ContainsAsset(target.Base) ||
@@ -421,12 +120,12 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                 var withBaseOrQuoteAssetPair = withBaseOrQuoteOrderBook.AssetPair;
 
                 // Get intermediate asset
-                var intermediate = withBaseOrQuoteAssetPair.GetOtherAsset(target.Base)
+                var intermediateId = withBaseOrQuoteAssetPair.GetOtherAsset(target.Base)
                                 ?? withBaseOrQuoteAssetPair.GetOtherAsset(target.Quote);
 
-                // 1. If current is target or reversed then just use it
-                if (intermediate == target.Base || intermediate == target.Quote)
-                    continue; // The pairs are the same or reversed (it is from 1 order book)
+                // 1. If current is target or inverted then just use it
+                if (intermediateId == target.Base || intermediateId == target.Quote)
+                    continue; // The pairs are the same or inverted (it is from 1 order book)
 
                 // 1. If current is base&intermediate then find quote&intermediate
                 if (withBaseOrQuoteAssetPair.ContainsAsset(target.Base))
@@ -434,7 +133,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                     var baseAndIntermediate = withBaseOrQuoteOrderBook;
                     // Trying to find quote/intermediate or intermediate/quote pair (quote&intermediate)
                     var intermediateQuoteOrderBooks = allOrderBooks
-                        .Where(x => x.AssetPair.ContainsAsset(intermediate) && x.AssetPair.ContainsAsset(target.Quote))
+                        .Where(x => x.AssetPair.ContainsAsset(intermediateId) && x.AssetPair.ContainsAsset(target.Quote))
                         .ToList();
 
                     foreach (var intermediateQuoteOrderBook in intermediateQuoteOrderBooks)
@@ -443,12 +142,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                             || !intermediateQuoteOrderBook.Asks.Any() && !intermediateQuoteOrderBook.Bids.Any())
                             continue;
 
-                        var key = new AssetPairSource(GetConversionPath(baseAndIntermediate, intermediateQuoteOrderBook), target);
-                        if (result.ContainsKey(key))
-                            continue;
-
-                        var synthOrderBook = FromOrderBooks(baseAndIntermediate, intermediateQuoteOrderBook, target, maxDepth);
-                        result[key] = synthOrderBook;
+                        var synthOrderBook = FromOrderBooks(baseAndIntermediate, intermediateQuoteOrderBook, target);
+                        result.Add(synthOrderBook);
                     }
                 }
 
@@ -458,7 +153,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                     var quoteAndIntermediate = withBaseOrQuoteOrderBook;
                     // Trying to find base/intermediate or intermediate/base pair (base&intermediate)
                     var intermediateBaseOrderBooks = allOrderBooks
-                        .Where(x => x.AssetPair.ContainsAsset(intermediate) && x.AssetPair.ContainsAsset(target.Base))
+                        .Where(x => x.AssetPair.ContainsAsset(intermediateId) && x.AssetPair.ContainsAsset(target.Base))
                         .ToList();
 
                     foreach (var intermediateBaseOrderBook in intermediateBaseOrderBooks)
@@ -467,12 +162,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                             || !quoteAndIntermediate.Asks.Any() && !quoteAndIntermediate.Bids.Any())
                             continue;
 
-                        var key = new AssetPairSource(GetConversionPath(intermediateBaseOrderBook, quoteAndIntermediate), target);
-                        if (result.ContainsKey(key))
-                            continue;
-
-                        var synthOrderBook = FromOrderBooks(intermediateBaseOrderBook, quoteAndIntermediate, target, maxDepth);
-                        result[key] = synthOrderBook;
+                        var synthOrderBook = FromOrderBooks(intermediateBaseOrderBook, quoteAndIntermediate, target);
+                        result.Add(synthOrderBook);
                     }
                 }
             }
@@ -480,33 +171,10 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return result;
         }
 
-
-
-        /// <summary>
-        /// Get synthetic order books from 3 asset pairs.
-        /// </summary>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom3(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks,
-            int maxDepth = MaxDepth)
+        public static IReadOnlyList<SynthOrderBook> GetSynthsFrom3(AssetPair target,
+            IReadOnlyList<OrderBook> sourceOrderBooks, IReadOnlyList<OrderBook> allOrderBooks)
         {
-            return GetSynthsFrom3(target, orderBooks, orderBooks, maxDepth);
-        }
-
-        /// <summary>
-        /// Get synthetic order books from 3 asset pairs.
-        /// </summary>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom3(AssetPair target,
-            OrderBook source, IReadOnlyCollection<OrderBook> allOrderBooks, int maxDepth = MaxDepth)
-        {
-            return GetSynthsFrom3(target, new List<OrderBook> { source }, allOrderBooks, maxDepth);
-        }
-
-        /// <summary>
-        /// Get synthetic order books from 3 asset pairs.
-        /// </summary>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFrom3(AssetPair target,
-            IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks, int maxDepth = MaxDepth)
-        {
-            var result = new Dictionary<AssetPairSource, SynthOrderBook>();
+            var result = new List<SynthOrderBook>();
 
             var woBaseAndQuoteOrderBooks = sourceOrderBooks
                 .Where(x => !x.AssetPair.ContainsAsset(target.Base)
@@ -530,12 +198,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                             || !quoteTargetQuoteOrderBook.Asks.Any() && !quoteTargetQuoteOrderBook.Bids.Any())
                             continue;
 
-                        var key = new AssetPairSource(GetConversionPath(baseTargetBaseOrderBook, woBaseAndQuoteOrderBook, quoteTargetQuoteOrderBook), target);
-                        if (result.ContainsKey(key))
-                            continue;
-
-                        var synthOrderBook = FromOrderBooks(baseTargetBaseOrderBook, woBaseAndQuoteOrderBook, quoteTargetQuoteOrderBook, target, maxDepth);
-                        result[key] = synthOrderBook;
+                        var synthOrderBook = FromOrderBooks(baseTargetBaseOrderBook, woBaseAndQuoteOrderBook, quoteTargetQuoteOrderBook, target);
+                        result.Add(synthOrderBook);
                     }
                 }
 
@@ -551,12 +215,8 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
                             || !baseTargetQuoteOrderBook.Asks.Any() && !baseTargetQuoteOrderBook.Bids.Any())
                             continue;
 
-                        var key = new AssetPairSource(GetConversionPath(quoteTargetBaseOrderBook, woBaseAndQuoteOrderBook, baseTargetQuoteOrderBook), target);
-                        if (result.ContainsKey(key))
-                            continue;
-
-                        var synthOrderBook = FromOrderBooks(quoteTargetBaseOrderBook, woBaseAndQuoteOrderBook, baseTargetQuoteOrderBook, target, maxDepth);
-                        result[key] = synthOrderBook;
+                        var synthOrderBook = FromOrderBooks(quoteTargetBaseOrderBook, woBaseAndQuoteOrderBook, baseTargetQuoteOrderBook, target);
+                        result.Add(synthOrderBook);
                     }
                 }
             }
@@ -564,95 +224,382 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             return result;
         }
 
-
-
-        /// <summary>
-        /// Get synthetic from 1, 2 or 3 asset pairs.
-        /// </summary>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFromAll(AssetPair target, IReadOnlyCollection<OrderBook> orderBooks,
-            int maxDepth = MaxDepth)
+        public static IReadOnlyList<SynthOrderBook> GetSynthsFromAll(AssetPair target,
+            IReadOnlyList<OrderBook> sourceOrderBooks, IReadOnlyList<OrderBook> allOrderBooks)
         {
-            return GetSynthsFromAll(target, orderBooks, orderBooks, maxDepth);
-        }
+            var result = new List<SynthOrderBook>();
 
-        /// <summary>
-        /// Get synthetic from 1, 2 or 3 asset pairs.
-        /// </summary>
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFromAll(AssetPair target, OrderBook source,
-            IReadOnlyCollection<OrderBook> allOrderBooks, int maxDepth = MaxDepth)
-        {
-            return GetSynthsFromAll(target, new List<OrderBook> { source }, allOrderBooks, maxDepth);
-        }
-
-        public static Dictionary<AssetPairSource, SynthOrderBook> GetSynthsFromAll(AssetPair target,
-            IReadOnlyCollection<OrderBook> sourceOrderBooks, IReadOnlyCollection<OrderBook> allOrderBooks, int maxDepth = MaxDepth)
-        {
-            var result = new Dictionary<AssetPairSource, SynthOrderBook>();
-
-            var synthOrderBookFrom1Pair = GetSynthsFrom1(target, sourceOrderBooks, allOrderBooks, maxDepth);
+            var synthOrderBookFrom1Pair = GetSynthsFrom1(target, sourceOrderBooks, allOrderBooks);
             result.AddRange(synthOrderBookFrom1Pair);
-            var synthOrderBookFrom2Pairs = GetSynthsFrom2(target, sourceOrderBooks, allOrderBooks, maxDepth);
+            var synthOrderBookFrom2Pairs = GetSynthsFrom2(target, sourceOrderBooks, allOrderBooks);
             result.AddRange(synthOrderBookFrom2Pairs);
-            var synthOrderBookFrom3Pairs = GetSynthsFrom3(target, sourceOrderBooks, allOrderBooks, maxDepth);
+            var synthOrderBookFrom3Pairs = GetSynthsFrom3(target, sourceOrderBooks, allOrderBooks);
             result.AddRange(synthOrderBookFrom3Pairs);
 
             return result;
         }
 
-
-
-        /// <summary>
-        /// Formats conversion path.
-        /// </summary>
-        public static string GetConversionPath(OrderBook left, OrderBook right)
+        public static IReadOnlyList<SynthOrderBook> GetSynthsFromAll(AssetPair target, OrderBook source,
+            IReadOnlyList<OrderBook> allOrderBooks)
         {
-            return left + " * " + right;
+            return GetSynthsFromAll(target, new List<OrderBook> { source }, allOrderBooks);
         }
 
-        /// <summary>
-        /// Formats conversion path.
-        /// </summary>
-        public static string GetConversionPath(OrderBook left, OrderBook middle, OrderBook right)
+
+        public static IDictionary<AssetPair, OrderBook> PrepareForEnumeration(IReadOnlyList<OrderBook> orderBooks, AssetPair target)
         {
-            return left + " * " + middle + " * " + right;
+            var result = new Dictionary<AssetPair, OrderBook>();
+
+            var chainedAssetPairs = GetChained(orderBooks, target);
+            var orderedOrderBooks = GetOrdered(orderBooks, target);
+            Debug.Assert(orderBooks.Count == orderedOrderBooks.Count && orderedOrderBooks.Count == chainedAssetPairs.Count);
+
+            for (var i = 0; i < orderBooks.Count; i++)
+                result.Add(chainedAssetPairs[i], orderedOrderBooks[i]);
+
+            return result;
         }
 
-        /// <summary>
-        /// Formats conversion path.
-        /// </summary>
-        public static string GetConversionPath(string leftSource, string leftAssetPair, string rightSource, string rightAssetPair)
-        {
-            return leftSource + "-" + leftAssetPair + " * " + rightSource + "-" + rightAssetPair;
-        }
-
-        /// <summary>
-        /// Formats conversion path.
-        /// </summary>
-        public static string GetConversionPath(string leftSource, string leftAssetPair, string middleSource, string middleAssetPair, string rightSource, string rightAssetPair)
-        {
-            return leftSource + "-" + leftAssetPair + " * " + middleSource + "-" + middleAssetPair + " * " + rightSource + "-" + rightAssetPair;
-        }
-
-        /// <summary>
-        /// Formats source - source path.
-        /// </summary>
-        public static string GetSourcesPath(string leftSource, string rightSource)
-        {
-            return leftSource + "-" + rightSource;
-        }
-
-        /// <summary>
-        /// Formats source - source path.
-        /// </summary>
-        public static string GetSourcesPath(string leftSource, string middleSource, string rightSource)
-        {
-            return leftSource + "-" + middleSource + "-" + rightSource;
-        }
-
-        /// <inheritdoc />
         public override string ToString()
         {
             return ConversionPath;
         }
+
+
+        public IEnumerable<VolumePrice> OrderedVolumePrices(Func<OrderBook, AssetPair, IEnumerable<VolumePrice>> getOrdersMethod)
+        {
+            var prepared = PrepareForEnumeration(OriginalOrderBooks, AssetPair);
+
+            if (prepared.Count == 1)
+            {
+                var keyValue = prepared.ElementAt(0);
+                foreach (var limitOrder in getOrdersMethod(keyValue.Value, keyValue.Key))
+                    yield return limitOrder;
+            }
+
+            if (prepared.Count == 2)
+            {
+                var left = prepared.ElementAt(0);
+                var right = prepared.ElementAt(1);
+
+                var leftOrders = getOrdersMethod(left.Value, left.Key);
+                var rightOrders = getOrdersMethod(right.Value, right.Key);
+
+                foreach (var order in GetOrderedVolumePrices(leftOrders, rightOrders))
+                    yield return order;
+            }
+
+            if (prepared.Count == 3)
+            {
+                var left = prepared.ElementAt(0);
+                var middle = prepared.ElementAt(1);
+                var right = prepared.ElementAt(2);
+
+                var leftOrders = getOrdersMethod(left.Value, left.Key);
+                var middleOrders = getOrdersMethod(middle.Value, middle.Key);
+                var rightOrders = getOrdersMethod(right.Value, right.Key);
+
+                foreach (var order in GetOrderedVolumePrices(leftOrders, middleOrders, rightOrders))
+                    yield return order;
+            }
+        }
+
+        private static IEnumerable<VolumePrice> GetOrderedVolumePrices(IEnumerable<VolumePrice> leftOrders,
+            IEnumerable<VolumePrice> rightOrders)
+        {
+            var leftEnumerator = leftOrders.GetEnumerator();
+            var rightEnumerator = rightOrders.GetEnumerator();
+
+            if (!leftEnumerator.MoveNext() || !rightEnumerator.MoveNext())
+                yield break;
+
+            var currentLeftOrder = leftEnumerator.Current;
+            var currentRightOrder = rightEnumerator.Current;
+
+            // Just return first generated order
+            yield return SynthVolumePrice(currentLeftOrder, currentRightOrder);
+
+            while (true)
+            {
+                var whichOrders = GetWithMinVolumeInBaseAsset(currentLeftOrder, currentRightOrder);
+
+                if (whichOrders.Contains(WhichOrder.Left))
+                {
+                    if (!leftEnumerator.MoveNext())
+                        break;
+                    currentLeftOrder = leftEnumerator.Current;
+                }
+
+                if (whichOrders.Contains(WhichOrder.Right))
+                {
+                    if (!rightEnumerator.MoveNext())
+                        break;
+                    currentRightOrder = rightEnumerator.Current;
+                }
+
+                yield return SynthVolumePrice(currentLeftOrder, currentRightOrder);
+            }
+
+            leftEnumerator.Dispose();
+            rightEnumerator.Dispose();
+        }
+
+        private static IEnumerable<VolumePrice> GetOrderedVolumePrices(IEnumerable<VolumePrice> leftOrders,
+            IEnumerable<VolumePrice> middleOrders, IEnumerable<VolumePrice> rightOrders)
+        {
+            var leftEnumerator = leftOrders.GetEnumerator();
+            var middleEnumerator = middleOrders.GetEnumerator();
+            var rightEnumerator = rightOrders.GetEnumerator();
+
+            if (!leftEnumerator.MoveNext() || !middleEnumerator.MoveNext() || !rightEnumerator.MoveNext())
+                yield break;
+
+            var currentLeftOrder = leftEnumerator.Current;
+            var currentMiddleOrder = middleEnumerator.Current;
+            var currentRightOrder = rightEnumerator.Current;
+
+            // Just return first generated order
+            yield return SynthVolumePrice(currentLeftOrder, currentMiddleOrder, currentRightOrder);
+
+            while (true)
+            {
+                var whichOrders = GetWithMinVolumeInBaseAsset(currentLeftOrder, currentMiddleOrder, currentRightOrder);
+
+                if (whichOrders.Contains(WhichOrder.Left))
+                {
+                    if (!leftEnumerator.MoveNext())
+                        break;
+                    currentLeftOrder = leftEnumerator.Current;
+                }
+
+                if (whichOrders.Contains(WhichOrder.Middle))
+                {
+                    if (!middleEnumerator.MoveNext())
+                        break;
+                    currentMiddleOrder = middleEnumerator.Current;
+                }
+
+                if (whichOrders.Contains(WhichOrder.Right))
+                {
+                    if (!rightEnumerator.MoveNext())
+                        break;
+                    currentRightOrder = rightEnumerator.Current;
+                }
+
+                yield return SynthVolumePrice(currentLeftOrder, currentMiddleOrder, currentRightOrder);
+            }
+
+            leftEnumerator.Dispose();
+            middleEnumerator.Dispose();
+            rightEnumerator.Dispose();
+        }
+
+
+        public static IEnumerable<VolumePrice> GetBids(OrderBook orderBook, AssetPair target)
+        {
+            Debug.Assert(orderBook != null);
+            Debug.Assert(target != null);
+            Debug.Assert(target.IsEqualOrInverted(orderBook.AssetPair));
+
+            var bids = orderBook.Bids;
+            var asks = orderBook.Asks;
+
+            // Streight
+            if (orderBook.AssetPair.Base == target.Base &&
+                orderBook.AssetPair.Quote == target.Quote)
+            {
+                foreach (var bid in bids)
+                {
+                    yield return bid;
+                }
+            }
+
+            // Inverted
+            if (orderBook.AssetPair.Base == target.Quote &&
+                orderBook.AssetPair.Quote == target.Base)
+            {
+                foreach (var ask in asks)
+                {
+                    var bid = ask.Reciprocal();
+                    yield return bid;
+                }
+            }
+        }
+
+        public static IEnumerable<VolumePrice> GetAsks(OrderBook orderBook, AssetPair target)
+        {
+            Debug.Assert(orderBook != null);
+            Debug.Assert(target != null);
+            Debug.Assert(target.IsEqualOrInverted(orderBook.AssetPair));
+
+            var bids = orderBook.Bids;
+            var asks = orderBook.Asks;
+
+            // Streight
+            if (orderBook.AssetPair.Base == target.Base &&
+                orderBook.AssetPair.Quote == target.Quote)
+            {
+                foreach (var ask in asks)
+                {
+                    yield return ask;
+                }
+            }
+
+            // Inverted
+            if (orderBook.AssetPair.Base == target.Quote &&
+                orderBook.AssetPair.Quote == target.Base)
+            {
+                foreach (var bid in bids)
+                {
+                    var ask = bid.Reciprocal();
+                    yield return ask;
+                }
+            }
+        }
+
+        public static IReadOnlyList<OrderBook> GetOrdered(IReadOnlyCollection<OrderBook> orderBooks, AssetPair target)
+        {
+            Debug.Assert(orderBooks != null);
+            Debug.Assert(orderBooks.Any());
+            Debug.Assert(target != null);
+
+            var result = new List<OrderBook>();
+
+            var @base = target.Base;
+            var quote = target.Quote;
+
+            var first = orderBooks.Single(x => x.AssetPair.ContainsAsset(@base));
+            result.Add(first);
+
+            if (orderBooks.Count == 1)
+                return result;
+
+            var nextAsset = first.AssetPair.GetOtherAsset(@base);
+            var second = orderBooks.Single(x => x.AssetPair.ContainsAsset(nextAsset) && !x.AssetPair.IsEqualOrInverted(first.AssetPair));
+            result.Add(second);
+
+            if (orderBooks.Count == 2)
+                return result;
+
+            nextAsset = second.AssetPair.GetOtherAsset(nextAsset);
+            var third = orderBooks.Single(x => x.AssetPair.ContainsAsset(nextAsset) && x.AssetPair.ContainsAsset(quote));
+            result.Add(third);
+
+            return result;
+        }
+
+        public static IReadOnlyList<AssetPair> GetChained(IReadOnlyCollection<OrderBook> orderBooks, AssetPair target)
+        {
+            Debug.Assert(orderBooks != null);
+            Debug.Assert(orderBooks.Any());
+            Debug.Assert(target != null);
+
+            var result = new List<AssetPair>();
+
+            var @base = target.Base;
+            var quote = target.Quote;
+
+            var first = orderBooks.Single(x => x.AssetPair.ContainsAsset(@base)).AssetPair;
+            if (first.Quote == @base)
+                first = first.Invert();
+            result.Add(first);
+
+            if (orderBooks.Count == 1)
+            {
+                Debug.Assert(first.Quote == quote);
+                return result;
+            }
+
+            var nextAsset = first.GetOtherAsset(@base);
+            var second = orderBooks.Single(x => x.AssetPair.ContainsAsset(nextAsset) && !x.AssetPair.IsEqualOrInverted(first)).AssetPair;
+            if (second.Quote == nextAsset)
+                second = second.Invert();
+            result.Add(second);
+
+            if (orderBooks.Count == 2)
+            {
+                Debug.Assert(second.Quote == quote);
+                return result;
+            }
+
+            nextAsset = second.GetOtherAsset(nextAsset);
+            var third = orderBooks.Single(x => x.AssetPair.ContainsAsset(nextAsset) && x.AssetPair.ContainsAsset(quote)).AssetPair;
+            if (third.Quote == nextAsset)
+                third = third.Invert();
+            result.Add(third);
+
+            Debug.Assert(third.Quote == quote);
+            return result;
+        }
+
+
+        private static VolumePrice SynthVolumePrice(VolumePrice left, VolumePrice right)
+        {
+            var newPrice = left.Price * right.Price;
+
+            var rightVolumeInBaseAsset = right.Volume / left.Price;
+            var minVolume = Math.Min(left.Volume, rightVolumeInBaseAsset);
+
+            var result = new VolumePrice(newPrice, minVolume);
+
+            return result;
+        }
+
+        private static WhichOrder[] GetWithMinVolumeInBaseAsset(VolumePrice left, VolumePrice right)
+        {
+            var rightVolumeInBaseAsset = right.Volume / left.Price;
+            var minVolume = Math.Min(left.Volume, rightVolumeInBaseAsset);
+
+            var result = new List<WhichOrder>();
+
+            if (left.Volume == minVolume)
+                result.Add(WhichOrder.Left);
+
+            if (rightVolumeInBaseAsset == minVolume)
+                result.Add(WhichOrder.Right);
+
+            return result.ToArray();
+        }
+
+        private static VolumePrice SynthVolumePrice(VolumePrice left, VolumePrice middle, VolumePrice right)
+        {
+            var newPrice = left.Price * middle.Price * right.Price;
+
+            var middleVolumeInBaseAsset = middle.Volume / left.Price;
+
+            var interimBidPrice = left.Price * middle.Price;
+            var rightVolumeInBaseAsset = right.Volume / interimBidPrice;
+
+            var minVolume = Math.Min(Math.Min(left.Volume, middleVolumeInBaseAsset), rightVolumeInBaseAsset);
+
+            var result = new VolumePrice(newPrice, minVolume);
+
+            return result;
+        }
+
+        private static WhichOrder[] GetWithMinVolumeInBaseAsset(VolumePrice left, VolumePrice middle, VolumePrice right)
+        {
+            var middleVolumeInBaseAsset = middle.Volume / left.Price;
+
+            var interimBidPrice = left.Price * middle.Price;
+            var rightVolumeInBaseAsset = right.Volume / interimBidPrice;
+
+            var minVolume = Math.Min(Math.Min(left.Volume, middleVolumeInBaseAsset), rightVolumeInBaseAsset);
+
+            var result = new List<WhichOrder>();
+
+            if (left.Volume == minVolume)
+                result.Add(WhichOrder.Left);
+
+            if (middleVolumeInBaseAsset == minVolume)
+                result.Add(WhichOrder.Middle);
+
+            if (rightVolumeInBaseAsset == minVolume)
+                result.Add(WhichOrder.Right);
+
+            return result.ToArray();
+        }
+
+        private enum WhichOrder { Left, Middle, Right }
     }
 }

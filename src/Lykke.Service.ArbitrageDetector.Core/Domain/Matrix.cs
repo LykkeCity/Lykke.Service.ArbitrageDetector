@@ -4,12 +4,9 @@ using System.Linq;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    /// <summary>
-    /// Represents a matrix with arbitrages.
-    /// </summary>
     public sealed class Matrix
     {
-        public string AssetPair { get; set; }
+        public string AssetPair { get; }
 
         public IList<Exchange> Exchanges { get; set; } = new List<Exchange>();
 
@@ -52,7 +49,7 @@ namespace Lykke.Service.ArbitrageDetector.Core.Domain
             if (minSpreadInRow.HasValue && !minSpreadInColumn.HasValue)
                 return minSpreadInRow;
 
-            if (!minSpreadInRow.HasValue && minSpreadInColumn.HasValue)
+            if (!minSpreadInRow.HasValue)
                 return minSpreadInColumn;
 
             var result = Math.Min(minSpreadInRow.Value, minSpreadInColumn.Value);

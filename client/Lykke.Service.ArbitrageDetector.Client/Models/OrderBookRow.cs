@@ -10,50 +10,36 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// Conversion path.
         /// </summary>
-        public string Source { get; }
+        public string Source { get; set; }
 
         /// <summary>
         /// Asset pair.
         /// </summary>
-        public AssetPair AssetPair { get; }
+        public AssetPair AssetPair { get; set; }
 
         /// <summary>
         /// Best bid.
         /// </summary>
-        public VolumePrice? BestBid { get; }
+        public VolumePrice? BestBid { get; set; }
 
         /// <summary>
         /// Best ask.
         /// </summary>
-        public VolumePrice? BestAsk { get; }
+        public VolumePrice? BestAsk { get; set; }
 
         /// <summary>
         /// Comulative volume of all bids.
         /// </summary>
-        public decimal BidsVolume { get; }
+        public decimal BidsVolume { get; set; }
 
         /// <summary>
         /// Comulative volume of all asks.
         /// </summary>
-        public decimal AsksVolume { get; }
+        public decimal AsksVolume { get; set; }
 
         /// <summary>
         /// Timestamp.
         /// </summary>
-        public DateTime Timestamp { get; }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        public OrderBookRow(string source, AssetPair assetPair, VolumePrice? bestBid, VolumePrice? bestAsk, decimal bidsVolume, decimal asksVolume, DateTime timestamp)
-        {
-            Source = string.IsNullOrWhiteSpace(source) ? throw new ArgumentNullException(nameof(source)) : source;
-            AssetPair = assetPair;
-            BestBid = bestBid;
-            BestAsk = bestAsk;
-            BidsVolume = bidsVolume;
-            AsksVolume = asksVolume;
-            Timestamp = timestamp;
-        }
+        public DateTime Timestamp { get; set; }
     }
 }

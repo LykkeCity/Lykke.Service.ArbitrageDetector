@@ -1,38 +1,29 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    /// <summary>
-    /// Represents a pair of an exchange and an asset pair.
-    /// </summary>
     public struct AssetPairSource : IComparable
     {
-        /// <summary>
-        /// Exchange.
-        /// </summary>
         public string Exchange { get; }
         
-        /// <summary>
-        /// Asset pair.
-        /// </summary>
         public AssetPair AssetPair { get; }
 
-        /// <summary>
-        /// Constructor.
-        /// </summary>
         public AssetPairSource(string exchange, AssetPair assetPair)
         {
-            Exchange = string.IsNullOrEmpty(exchange) ? throw new ArgumentNullException(nameof(exchange)) : exchange;
-            AssetPair = string.IsNullOrEmpty(assetPair.Base) || string.IsNullOrEmpty(assetPair.Quote) ? throw new ArgumentNullException(nameof(assetPair)) : assetPair;
+            Debug.Assert(!string.IsNullOrEmpty(exchange));
+            Debug.Assert(!string.IsNullOrEmpty(assetPair.Base));
+            Debug.Assert(!string.IsNullOrEmpty(assetPair.Quote));
+
+            Exchange = exchange;
+            AssetPair = assetPair;
         }
 
-        /// <inheritdoc />
         public override string ToString()
         {
-            return Exchange + "-" + AssetPair;
+            return$"{Exchange}-{AssetPair}";
         }
 
-        /// <inheritdoc />
         public int CompareTo(object obj)
         {
             if (!(obj is AssetPairSource))

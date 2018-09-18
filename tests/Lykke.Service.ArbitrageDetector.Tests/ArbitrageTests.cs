@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 using Xunit;
 
@@ -12,14 +11,11 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         public void ArbitrageVolume_NoArbitrage_EmptyOrderBooks_Test()
         {
             const string exchangeName = "FE";
-            const string assetPair = "BTCUSD";
+            var assetPair = new AssetPair("BTC", "USD", 8, 8);
             var timestamp = DateTime.UtcNow;
 
-            var asks = new List<VolumePrice>();
-            var bids = new List<VolumePrice>();
-
-            var orderBook1 = new OrderBook(exchangeName, assetPair, bids, asks, timestamp);
-            var orderBook2 = new OrderBook(exchangeName, assetPair, bids, asks, timestamp);
+            var orderBook1 = new OrderBook(exchangeName, assetPair, new List<VolumePrice>(), new List<VolumePrice>(), timestamp);
+            var orderBook2 = new OrderBook(exchangeName, assetPair, new List<VolumePrice>(), new List<VolumePrice>(), timestamp);
 
             var volume = Arbitrage.GetArbitrageVolumePnL(orderBook1.Bids, orderBook2.Asks);
             Assert.Null(volume);
@@ -29,7 +25,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         public void ArbitrageVolume_NoArbitrage_TheSameOrderBook_Test()
         {
             const string exchangeName = "FE";
-            const string assetPair = "BTCUSD";
+            var assetPair = new AssetPair("BTC", "USD", 8, 8);
             var timestamp = DateTime.UtcNow;
 
             var asks = new List<VolumePrice>
@@ -55,7 +51,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         public void ArbitrageVolumePnL_Simple1_Test()
         {
             const string exchangeName = "FE";
-            const string assetPair = "BTCUSD";
+            var assetPair = new AssetPair("BTC", "USD", 8, 8);
             var timestamp = DateTime.UtcNow;
             
             var asks = new List<VolumePrice>
@@ -85,7 +81,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             // https://docs.google.com/spreadsheets/d/1plnbQSS-WP6ykTv8wIi_hbAhk_aSz_tllXFIE3jhFpU/edit#gid=0
 
             const string exchangeName = "FE";
-            const string assetPair = "BTCUSD";
+            var assetPair = new AssetPair("BTC", "USD", 8, 8);
             var timestamp = DateTime.UtcNow;
 
             var asks = new List<VolumePrice>
@@ -121,7 +117,7 @@ namespace Lykke.Service.ArbitrageDetector.Tests
         {
             // https://docs.google.com/spreadsheets/d/1plnbQSS-WP6ykTv8wIi_hbAhk_aSz_tllXFIE3jhFpU/edit#gid=2011486790
             const string exchangeName = "FE";
-            const string assetPair = "BTCUSD";
+            var assetPair = new AssetPair("BTC", "USD", 8, 8);
             var timestamp = DateTime.UtcNow;
 
             var asks = new List<VolumePrice>
@@ -160,267 +156,6 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             var volumePnL = Arbitrage.GetArbitrageVolumePnL(bidsOrderBook.Bids, asksOrderBook.Asks);
             Assert.Equal(70, volumePnL?.Volume);
             Assert.Equal(40.4m, volumePnL?.PnL);
-        }
-
-
-        [Fact]
-        public void OrderBooks_ChainedOrderBooks_0_Test()
-        {
-            var assetPair = new AssetPair("BTC", "USD");
-            var orderBook = new OrderBook("FE", assetPair.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
-            orderBook.SetAssetPair(assetPair);
-            var synthOrderBook = new SynthOrderBook("FE", assetPair, new List<VolumePrice>(), new List<VolumePrice>(), "None", new List<OrderBook> {orderBook}, DateTime.UtcNow);
-
-            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, assetPair);
-            Assert.Single(result);
-            Assert.True(result.Single().AssetPair.Equals(assetPair));
-        }
-
-        [Fact]
-        public void OrderBooks_ChainedOrderBooks_1_Test()
-        {
-            var assetPair = new AssetPair("BTC", "USD");
-            var reversed = assetPair.Reverse();
-            var orderBook = new OrderBook("FE", reversed.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
-            orderBook.SetAssetPair(reversed);
-            var synthOrderBook = new SynthOrderBook("FE", assetPair, new List<VolumePrice>(), new List<VolumePrice>(), "None", new List<OrderBook> { orderBook }, DateTime.UtcNow);
-
-            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, assetPair);
-            Assert.Single(result);
-            Assert.True(result.Single().AssetPair.Equals(assetPair));
-        }
-
-
-        [Fact]
-        public void OrderBooks_ChainedOrderBooks_0_0_Test()
-        {
-            var target = new AssetPair("BTC", "USD");
-            var assetPair1 = new AssetPair("BTC", "EUR");
-            var assetPair2 = new AssetPair("EUR", "USD");
-            // result = EUR/USD, BTC/EUR
-
-            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, target);
-
-            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
-
-            AssertChained2(result);
-        }
-
-        [Fact]
-        public void OrderBooks_ChainedOrderBooks_0_1_Test()
-        {
-            var target = new AssetPair("BTC", "USD");
-            var assetPair1 = new AssetPair("BTC", "EUR");
-            var assetPair2 = new AssetPair("USD", "EUR");
-            // result = EUR/USD, BTC/EUR
-
-            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, target);
-
-            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
-
-            AssertChained2(result);
-        }
-
-        [Fact]
-        public void OrderBooks_ChainedOrderBooks_1_0_Test()
-        {
-            var target = new AssetPair("BTC", "USD");
-            var assetPair1 = new AssetPair("EUR", "BTC");
-            var assetPair2 = new AssetPair("EUR", "USD");
-            // result = EUR/USD, BTC/EUR
-
-            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, target);
-
-            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
-
-            AssertChained2(result);
-        }
-
-        [Fact]
-        public void OrderBooks_ChainedOrderBooks_1_1_Test()
-        {
-            var target = new AssetPair("BTC", "USD");
-            var assetPair1 = new AssetPair("EUR", "BTC");
-            var assetPair2 = new AssetPair("USD", "EUR");
-            // result = EUR/USD, BTC/EUR
-
-            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, target);
-
-            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
-
-            AssertChained2(result);
-        }
-
-        
-        [Fact]
-        public void OrderBooks_ChainedOrderBooks_0_0_0_Test()
-        {
-            var target = new AssetPair("BTC", "USD");
-            var assetPair1 = new AssetPair("BTC", "EUR");
-            var assetPair2 = new AssetPair("EUR", "CHF");
-            var assetPair3 = new AssetPair("CHF", "USD");
-            // result = CHF/USD, EUR/CHF, BTC/EUR
-
-            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
-
-            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
-
-            AssertChained3(result);
-        }
-
-        [Fact]
-        public void OrderBooks_ChainedOrderBooks_0_0_1_Test()
-        {
-            var target = new AssetPair("BTC", "USD");
-            var assetPair1 = new AssetPair("BTC", "EUR");
-            var assetPair2 = new AssetPair("EUR", "CHF");
-            var assetPair3 = new AssetPair("USD", "CHF");
-            // result = CHF/USD, EUR/CHF, BTC/EUR
-
-            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
-
-            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
-
-            AssertChained3(result);
-        }
-
-        [Fact]
-        public void OrderBooks_ChainedOrderBooks_0_1_0_Test()
-        {
-            var target = new AssetPair("BTC", "USD");
-            var assetPair1 = new AssetPair("BTC", "EUR");
-            var assetPair2 = new AssetPair("CHF", "EUR");
-            var assetPair3 = new AssetPair("CHF", "USD");
-            // result = CHF/USD, EUR/CHF, BTC/EUR
-
-            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
-
-            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
-
-            AssertChained3(result);
-        }
-
-        [Fact]
-        public void OrderBooks_ChainedOrderBooks_1_0_0_Test()
-        {
-            var target = new AssetPair("BTC", "USD");
-            var assetPair1 = new AssetPair("EUR", "BTC");
-            var assetPair2 = new AssetPair("EUR", "CHF");
-            var assetPair3 = new AssetPair("CHF", "USD");
-            // result = CHF/USD, EUR/CHF, BTC/EUR
-
-            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
-
-            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
-
-            AssertChained3(result);
-        }
-
-        [Fact]
-        public void OrderBooks_ChainedOrderBooks_0_1_1_Test()
-        {
-            var target = new AssetPair("BTC", "USD");
-            var assetPair1 = new AssetPair("BTC", "EUR");
-            var assetPair2 = new AssetPair("CHF", "EUR");
-            var assetPair3 = new AssetPair("USD", "CHF");
-            // result = CHF/USD, EUR/CHF, BTC/EUR
-
-            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
-
-            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
-
-            AssertChained3(result);
-        }
-
-        [Fact]
-        public void OrderBooks_ChainedOrderBooks_1_1_0_Test()
-        {
-            var target = new AssetPair("BTC", "USD");
-            var assetPair1 = new AssetPair("EUR", "BTC");
-            var assetPair2 = new AssetPair("CHF", "EUR");
-            var assetPair3 = new AssetPair("CHF", "USD");
-            // result = CHF/USD, EUR/CHF, BTC/EUR
-
-            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
-
-            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
-
-            AssertChained3(result);
-        }
-
-        [Fact]
-        public void OrderBooks_ChainedOrderBooks_1_0_1_Test()
-        {
-            var target = new AssetPair("BTC", "USD");
-            var assetPair1 = new AssetPair("EUR", "BTC");
-            var assetPair2 = new AssetPair("EUR", "CHF");
-            var assetPair3 = new AssetPair("USD", "CHF");
-            // result = CHF/USD, EUR/CHF, BTC/EUR
-
-            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
-
-            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
-
-            AssertChained3(result);
-        }
-
-        [Fact]
-        public void OrderBooks_ChainedOrderBooks_1_1_1_Test()
-        {
-            var target = new AssetPair("BTC", "USD");
-            var assetPair1 = new AssetPair("EUR", "BTC");
-            var assetPair2 = new AssetPair("CHF", "EUR");
-            var assetPair3 = new AssetPair("USD", "CHF");
-            // result = CHF/USD, EUR/CHF, BTC/EUR
-
-            var synthOrderBook = GetSynthOrderBook(assetPair1, assetPair2, assetPair3, target);
-
-            var result = Arbitrage.GetChainedOrderBooks(synthOrderBook, target);
-
-            AssertChained3(result);
-        }
-
-
-        private SynthOrderBook GetSynthOrderBook(AssetPair assetPair1, AssetPair assetPair2, AssetPair target)
-        {
-            var orderBook1 = new OrderBook("FE", assetPair1.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
-            orderBook1.SetAssetPair(assetPair1);
-            var orderBook2 = new OrderBook("FE", assetPair2.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
-            orderBook2.SetAssetPair(assetPair2);
-
-            return new SynthOrderBook("FE", target, new List<VolumePrice>(), new List<VolumePrice>(), "None", new List<OrderBook> { orderBook1, orderBook2 }, DateTime.UtcNow);
-        }
-
-        private SynthOrderBook GetSynthOrderBook(AssetPair assetPair1, AssetPair assetPair2, AssetPair assetPair3, AssetPair target)
-        {
-            var orderBook1 = new OrderBook("FE", assetPair1.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
-            orderBook1.SetAssetPair(assetPair1);
-            var orderBook2 = new OrderBook("FE", assetPair2.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
-            orderBook2.SetAssetPair(assetPair2);
-            var orderBook3 = new OrderBook("FE", assetPair3.Name, new List<VolumePrice>(), new List<VolumePrice>(), DateTime.UtcNow);
-            orderBook3.SetAssetPair(assetPair3);
-
-            return new SynthOrderBook("FE", target, new List<VolumePrice>(), new List<VolumePrice>(), "None", new List<OrderBook> { orderBook1, orderBook2, orderBook3 }, DateTime.UtcNow);
-        }
-
-        private void AssertChained2(IReadOnlyCollection<OrderBook> result)
-        {
-            Assert.Equal(2, result.Count);
-            Assert.Equal("EUR", result.ElementAt(0).AssetPair.Base);
-            Assert.Equal("USD", result.ElementAt(0).AssetPair.Quote);
-            Assert.Equal("BTC", result.ElementAt(1).AssetPair.Base);
-            Assert.Equal("EUR", result.ElementAt(1).AssetPair.Quote);
-        }
-
-        private void AssertChained3(IReadOnlyCollection<OrderBook> result)
-        {
-            Assert.Equal(3, result.Count);
-            Assert.Equal("CHF", result.ElementAt(0).AssetPair.Base);
-            Assert.Equal("USD", result.ElementAt(0).AssetPair.Quote);
-            Assert.Equal("EUR", result.ElementAt(1).AssetPair.Base);
-            Assert.Equal("CHF", result.ElementAt(1).AssetPair.Quote);
-            Assert.Equal("BTC", result.ElementAt(2).AssetPair.Base);
-            Assert.Equal("EUR", result.ElementAt(2).AssetPair.Quote);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Lykke.Service.ArbitrageDetector.Core.Domain;
 
 namespace Lykke.Service.ArbitrageDetector.Services.Models
@@ -13,9 +14,11 @@ namespace Lykke.Service.ArbitrageDetector.Services.Models
 
         public SynthOrderBookLine(SynthOrderBook synthOrderBook, VolumePrice volumePrice)
         {
+            Debug.Assert(synthOrderBook != null);
+
             Price = volumePrice.Price;
             Volume = volumePrice.Volume;
-            SynthOrderBook = synthOrderBook ?? throw new ArgumentNullException(nameof(synthOrderBook));
+            SynthOrderBook = synthOrderBook;
         }
     }
 }

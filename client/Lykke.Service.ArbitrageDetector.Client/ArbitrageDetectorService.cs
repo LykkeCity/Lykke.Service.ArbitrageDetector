@@ -74,12 +74,6 @@ namespace Lykke.Service.ArbitrageDetector.Client
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<CrossRateRow>> CrossRatesAsync()
-        {
-            return await _runner.RunAsync(() => _arbitrageDetectorApi.CrossRatesAsync());
-        }
-
-        /// <inheritdoc />
         public async Task<IEnumerable<ArbitrageRow>> ArbitragesAsync()
         {
             return await _runner.RunAsync(() => _arbitrageDetectorApi.ArbitragesAsync());

@@ -17,10 +17,6 @@ namespace Lykke.Service.ArbitrageDetector.Client.Api
         [Get("/synthOrderBooks")]
         Task<IEnumerable<SynthOrderBookRow>> SynthOrderBooksAsync();
 
-        [Get("/crossRates")]
-        [Obsolete]
-        Task<IEnumerable<CrossRateRow>> CrossRatesAsync();
-
         [Get("/arbitrages")]
         Task<IEnumerable<ArbitrageRow>> ArbitragesAsync();
 

@@ -58,23 +58,13 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// </summary>
         public IEnumerable<string> Exchanges { get; set; } = new List<string>();
 
-        /// <summary>
-        /// Maximum depth of asks and bids while synthetic order books calculation.
-        /// </summary>
-        public int SynthMaxDepth { get; set; }
 
-
-        // Public Matrix
+        // Lykke Arbitrages
 
         /// <summary>
-        /// Public matrix asset pairs.
+        /// Execution interval for lykke arbitrage detector.
         /// </summary>
-        public IEnumerable<string> PublicMatrixAssetPairs { get; set; } = new List<string>();
-
-        /// <summary>
-        /// Public matrix exchanges
-        /// </summary>
-        public IDictionary<string, string> PublicMatrixExchanges { get; set; } = new Dictionary<string, string>();
+        public TimeSpan LykkeArbitragesExecutionInterval { get; set; }
 
 
         // Matrix
@@ -93,6 +83,19 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// Exchanges fees.
         /// </summary>
         public IEnumerable<ExchangeFees> ExchangesFees { get; set; } = new List<ExchangeFees>();
+
+
+        // Public Matrix
+
+        /// <summary>
+        /// Public matrix asset pairs.
+        /// </summary>
+        public IEnumerable<string> PublicMatrixAssetPairs { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Public matrix exchanges
+        /// </summary>
+        public IDictionary<string, string> PublicMatrixExchanges { get; set; } = new Dictionary<string, string>();
 
 
         // Matrix History

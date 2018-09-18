@@ -14,14 +14,5 @@
         /// Volume.
         /// </summary>
         public decimal? Volume { get; set; }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        public MatrixCell(decimal? spread, decimal? volume)
-        {
-            Spread = spread;
-            Volume = volume;
-        }
     }
 }

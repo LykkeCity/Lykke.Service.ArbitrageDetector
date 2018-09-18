@@ -6,149 +6,70 @@ namespace Lykke.Service.ArbitrageDetector.Tests
 {
     public class AssetPairTests
     {
+        private const string @base = "BTC";
+        private const string quote = "USD";
+        private AssetPair assetPair = new AssetPair(@base, quote, 3, 5);
+
         [Fact]
         public void AssetPairConstructorTest()
         {
-            const string @base = "BTC";
-            const string quote = "USD";
-
-            var assetPair = new AssetPair(@base, quote);
-
             Assert.Equal(@base, assetPair.Base);
             Assert.Equal(quote, assetPair.Quote);
-
-            void Construct1() => new AssetPair(null, quote);
-            Assert.Throws<ArgumentException>((Action) Construct1);
-
-            void Construct2() => new AssetPair("", quote);
-            Assert.Throws<ArgumentException>((Action)Construct2);
-
-            void Construct3() => new AssetPair(@base, null);
-            Assert.Throws<ArgumentException>((Action)Construct3);
-
-            void Construct4() => new AssetPair(@base, "");
-            Assert.Throws<ArgumentException>((Action)Construct4);
         }
 
         [Fact]
         public void AssetPairReverseTest()
         {
-            const string @base = "BTC";
-            const string quote = "USD";
-
-            var assetPair = new AssetPair(@base, quote);
-
-            var reversed = assetPair.Reverse();
+            var reversed = assetPair.Invert();
 
             Assert.Equal(@base, reversed.Quote);
             Assert.Equal(quote, reversed.Base);
+            Assert.Equal(assetPair.Accuracy, reversed.InvertedAccuracy);
+            Assert.Equal(assetPair.InvertedAccuracy, reversed.Accuracy);
         }
 
         [Fact]
         public void AssetPairIsReversedTest()
         {
-            const string @base = "BTC";
-            const string quote = "USD";
+            var reversed = assetPair.Invert();
 
-            var assetPair = new AssetPair(@base, quote);
-            var reversed = assetPair.Reverse();
-
-            Assert.True(assetPair.IsReversed(reversed));
-            Assert.True(reversed.IsReversed(assetPair));
-
-            void IsReversed1() => assetPair.IsReversed(new AssetPair(null, quote));
-            Assert.Throws<ArgumentException>((Action)IsReversed1);
-
-            void IsReversed2() => assetPair.IsReversed(new AssetPair("", quote));
-            Assert.Throws<ArgumentException>((Action)IsReversed2);
-
-            void IsReversed3() => assetPair.IsReversed(new AssetPair(@base, null));
-            Assert.Throws<ArgumentException>((Action)IsReversed3);
-
-            void IsReversed4() => assetPair.IsReversed(new AssetPair(@base, ""));
-            Assert.Throws<ArgumentException>((Action)IsReversed4);
+            Assert.True(assetPair.IsInverted(reversed));
+            Assert.True(reversed.IsInverted(assetPair));
         }
 
         [Fact]
         public void AssetPairIsEqualTest()
         {
-            const string @base = "BTC";
-            const string quote = "USD";
-
-            var assetPair = new AssetPair(@base, quote);
-            var equalAssetPair = new AssetPair(@base, quote);
+            var equalAssetPair = new AssetPair(@base, quote, 3, 5);
 
             Assert.True(assetPair.Equals(equalAssetPair));
             Assert.True(equalAssetPair.Equals(assetPair));
-
-            void IsEqual1() => assetPair.Equals(new AssetPair(null, quote));
-            Assert.Throws<ArgumentException>((Action)IsEqual1);
-
-            void IsEqual2() => assetPair.Equals(new AssetPair("", quote));
-            Assert.Throws<ArgumentException>((Action)IsEqual2);
-
-            void IsEqual3() => assetPair.Equals(new AssetPair(@base, null));
-            Assert.Throws<ArgumentException>((Action)IsEqual3);
-
-            void IsEqual4() => assetPair.Equals(new AssetPair(@base, ""));
-            Assert.Throws<ArgumentException>((Action)IsEqual4);
         }
 
         [Fact]
         public void AssetPairIsEqualOrReversedTest()
         {
-            const string @base = "BTC";
-            const string quote = "USD";
+            var equalAssetPair = new AssetPair(@base, quote, 3, 5);
+            var reversed = assetPair.Invert();
 
-            var assetPair = new AssetPair(@base, quote);
-            var equalAssetPair = new AssetPair(@base, quote);
-            var reversed = assetPair.Reverse();
-
-            Assert.True(assetPair.IsEqualOrReversed(equalAssetPair));
-            Assert.True(equalAssetPair.IsEqualOrReversed(assetPair));
-            Assert.True(assetPair.IsEqualOrReversed(reversed));
-            Assert.True(reversed.IsEqualOrReversed(assetPair));
-
-            void IsEqualOrReversed1() => assetPair.IsEqualOrReversed(new AssetPair(null, quote));
-            Assert.Throws<ArgumentException>((Action)IsEqualOrReversed1);
-
-            void IsEqualOrReversed2() => assetPair.IsEqualOrReversed(new AssetPair("", quote));
-            Assert.Throws<ArgumentException>((Action)IsEqualOrReversed2);
-
-            void IsEqualOrReversed3() => assetPair.IsEqualOrReversed(new AssetPair(@base, null));
-            Assert.Throws<ArgumentException>((Action)IsEqualOrReversed3);
-
-            void IsEqualOrReversed4() => assetPair.IsEqualOrReversed(new AssetPair(@base, ""));
-            Assert.Throws<ArgumentException>((Action)IsEqualOrReversed4);
+            Assert.True(assetPair.IsEqualOrInverted(equalAssetPair));
+            Assert.True(equalAssetPair.IsEqualOrInverted(assetPair));
+            Assert.True(assetPair.IsEqualOrInverted(reversed));
+            Assert.True(reversed.IsEqualOrInverted(assetPair));
         }
 
         [Fact]
         public void AssetPairHasCommonAssetTest()
         {
-            const string @base = "BTC";
-            const string quote = "USD";
             const string third = "EUR";
 
-            var assetPair = new AssetPair(@base, quote);
-            var assetPair2 = new AssetPair(@base, third);
-            var assetPair3 = new AssetPair(third, @base);
+            var assetPair2 = new AssetPair(@base, third, 3, 5);
+            var assetPair3 = new AssetPair(third, @base, 2, 4);
 
             Assert.True(assetPair.HasCommonAsset(assetPair2));
             Assert.True(assetPair2.HasCommonAsset(assetPair));
             Assert.True(assetPair.HasCommonAsset(assetPair3));
             Assert.True(assetPair3.HasCommonAsset(assetPair));
-
-            void HasCommonAsset1() => assetPair.HasCommonAsset(new AssetPair(null, quote));
-            Assert.Throws<ArgumentException>((Action)HasCommonAsset1);
-
-            void HasCommonAsset2() => assetPair.HasCommonAsset(new AssetPair("", quote));
-            Assert.Throws<ArgumentException>((Action)HasCommonAsset2);
-
-            void HasCommonAsset3() => assetPair.HasCommonAsset(new AssetPair(@base, null));
-            Assert.Throws<ArgumentException>((Action)HasCommonAsset3);
-
-            void HasCommonAsset4() => assetPair.HasCommonAsset(new AssetPair(@base, ""));
-            Assert.Throws<ArgumentException>((Action)HasCommonAsset4);
         }
 
         [Fact]
@@ -158,53 +79,11 @@ namespace Lykke.Service.ArbitrageDetector.Tests
             const string usd = "USD";
             const string eur = "EUR";
 
-            var btcusd = new AssetPair(btc, usd);
+            var btcusd = new AssetPair(btc, usd, 3, 5);
 
             Assert.True(btcusd.ContainsAsset(btc));
             Assert.True(btcusd.ContainsAsset(usd));
             Assert.False(btcusd.ContainsAsset(eur));
-
-            void ContainsAsset1() => btcusd.ContainsAsset(null);
-            Assert.Throws<ArgumentException>((Action)ContainsAsset1);
-
-            void ContainsAsset2() => btcusd.ContainsAsset("");
-            Assert.Throws<ArgumentException>((Action)ContainsAsset2);
-        }
-
-        [Fact]
-        public void AssetPairFromStringTest()
-        {
-            const string btcusd = "BTCUSD";
-            const string btc = "btc";
-            const string usd = "USD";
-
-            var assetPair = AssetPair.FromString(btcusd, btc);
-            var assetPair2 = AssetPair.FromString(btcusd, usd);
-
-            Assert.True(assetPair.Equals(assetPair2));
-
-            void FromString1() => AssetPair.FromString(null, usd);
-            Assert.Throws<ArgumentException>((Action)FromString1);
-
-            void FromString2() => AssetPair.FromString("", usd);
-            Assert.Throws<ArgumentException>((Action)FromString2);
-
-            void FromString3() => AssetPair.FromString(btcusd, null);
-            Assert.Throws<ArgumentException>((Action)FromString3);
-
-            void FromString4() => AssetPair.FromString(btcusd, "");
-            Assert.Throws<ArgumentException>((Action)FromString4);
-
-            void FromString5() => AssetPair.FromString(btcusd, "chf");
-            Assert.Throws<ArgumentOutOfRangeException>((Action)FromString5);            
-        }
-
-        [Fact]
-        public void AssetPairIsEmptyTest()
-        {
-            var assetPair = new AssetPair();
-
-            Assert.True(assetPair.IsEmpty());
         }
     }
 }

@@ -1,44 +1,32 @@
 ﻿using System;
-using System.Text;
 
 namespace Lykke.Service.ArbitrageDetector.Core.Domain
 {
-    /// <summary>
-    /// Represents a pair of price and volume.
-    /// </summary>
     public struct VolumePrice
     {
-        /// <summary>
-        /// Price.
-        /// </summary>
         public decimal Price { get; }
 
-        /// <summary>
-        /// Volume.
-        /// </summary>
-        public decimal Volume { get; }
+        public decimal Volume { get; private set; }
 
-        /// <summary>
-        /// Contructor.
-        /// </summary>
         public VolumePrice(decimal price, decimal volume)
         {
             Price = price;
             Volume = Math.Abs(volume);
         }
 
-        /// <summary>
-        /// Returns reciprocal volume price.
-        /// </summary>
+        public void SubtractVolume(decimal volume)
+        {
+            Volume -= volume;
+        }
+
         public VolumePrice Reciprocal()
         {
             return new VolumePrice(1 / Price, Volume * Price);
         }
 
-        /// <inheritdoc />
         public override string ToString()
         {
-            return new StringBuilder(Price.ToString("0.########")).Append(", ").Append(Volume.ToString("0.########")).ToString();
+            return $"{Price:0.#####}, {Volume:0.#####}";
         }
     }
 }

@@ -9,8 +9,6 @@ Client: [Nuget](https://www.nuget.org/packages/Lykke.Service.ArbitrageDetector.C
 Register client service in container:
 
 ```cs
-IArbitrageDetectorService _arbitrageDetectorService;
 ...
-container.RegisterInstance<IArbitrageDetectorService>(
-    new ArbitrageDetectorService(settings.ArbitrageDetectorUrl));
+ContainerBuilder.RegisterArbitrageDetectorClient({urlToService}, null);
 ```

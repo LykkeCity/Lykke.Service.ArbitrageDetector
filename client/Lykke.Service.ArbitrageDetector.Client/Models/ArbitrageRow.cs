@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json;
 
 namespace Lykke.Service.ArbitrageDetector.Client.Models
 {
@@ -10,57 +11,57 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// AssetPair.
         /// </summary>
-        public AssetPair AssetPair { get; }
+        public AssetPair AssetPair { get; set; }
 
         /// <summary>
         /// Bid exchange name.
         /// </summary>
-        public string BidSource { get; }
+        public string BidSource { get; set; }
 
         /// <summary>
         /// Ask exchange name.
         /// </summary>
-        public string AskSource { get; }
+        public string AskSource { get; set; }
 
         /// <summary>
         /// Conversion path from bid.
         /// </summary>
-        public string BidConversionPath { get; }
+        public string BidConversionPath { get; set; }
 
         /// <summary>
         /// Conversion path from ask.
         /// </summary>
-        public string AskConversionPath { get; }
+        public string AskConversionPath { get; set; }
 
         /// <summary>
         /// Price and volume of high bid.
         /// </summary>
-        public VolumePrice Bid { get; }
+        public VolumePrice Bid { get; set; }
 
         /// <summary>
         /// Price and volume of low ask.
         /// </summary>
-        public VolumePrice Ask { get; }
+        public VolumePrice Ask { get; set; }
 
         /// <summary>
         /// Spread between ask and bid.
         /// </summary>
-        public decimal Spread { get; }
+        public decimal Spread { get; set; }
 
         /// <summary>
         /// The smallest volume of ask or bid.
         /// </summary>
-        public decimal Volume { get; }
+        public decimal Volume { get; set; }
 
         /// <summary>
         /// Potential profit or loss.
         /// </summary>
-        public decimal PnL { get; }
+        public decimal PnL { get; set; }
 
         /// <summary>
         /// The time when it first appeared.
         /// </summary>
-        public DateTime StartedAt { get; }
+        public DateTime StartedAt { get; set; }
 
         /// <summary>
         /// The time when it disappeared.
@@ -70,32 +71,14 @@ namespace Lykke.Service.ArbitrageDetector.Client.Models
         /// <summary>
         /// How log the arbitrage lasted.
         /// </summary>
+        [JsonIgnore]
         public TimeSpan Lasted => EndedAt == default ? DateTime.UtcNow - StartedAt : EndedAt - StartedAt;
 
         /// <summary>
         /// Conversion path.
         /// </summary>
+        [JsonIgnore]
         public string ConversionPath => Arbitrage.FormatConversionPath(BidConversionPath, AskConversionPath);
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        public ArbitrageRow(AssetPair assetPair, string bidSource, string askSource, string bidConversionPath, string askConversionPath, VolumePrice bid, VolumePrice ask,
-            decimal spread, decimal volume, decimal pnL, DateTime startedAt, DateTime endedAt)
-        {
-            AssetPair = assetPair;
-            BidSource = string.IsNullOrWhiteSpace(bidSource) ? throw new ArgumentNullException(nameof(bidSource)) : bidSource;
-            AskSource = string.IsNullOrWhiteSpace(askSource) ? throw new ArgumentNullException(nameof(askSource)) : askSource;
-            BidConversionPath = string.IsNullOrWhiteSpace(bidConversionPath) ? throw new ArgumentNullException(nameof(bidConversionPath)) : bidConversionPath;
-            AskConversionPath = string.IsNullOrWhiteSpace(askConversionPath) ? throw new ArgumentNullException(nameof(askConversionPath)) : askConversionPath;
-            Bid = bid;
-            Ask = ask;
-            Spread = spread;
-            Volume = volume;
-            PnL = pnL;
-            StartedAt = startedAt;
-            EndedAt = endedAt;
-        }
 
         /// <inheritdoc />
         public override string ToString()
