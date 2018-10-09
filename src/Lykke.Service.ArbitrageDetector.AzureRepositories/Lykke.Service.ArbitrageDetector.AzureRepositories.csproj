@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="7.0.1" />
-    <PackageReference Include="Lykke.AzureStorage" Version="8.10.0" />
+    <PackageReference Include="Lykke.AzureStorage" Version="8.12.0" />
   </ItemGroup>
 
   <ItemGroup>

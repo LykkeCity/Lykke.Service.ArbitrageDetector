@@ -166,8 +166,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         if (target.BestBid?.Price > synthOrderBook.BestAsk?.Price)
                         {
                             spread = Arbitrage.GetSpread(target.BestBid.Value.Price, synthOrderBook.BestAsk.Value.Price);
-                            if (spread >= 0)
-                                continue;
                             var volumePnL = Arbitrage.GetArbitrageVolumePnL(target.Bids, synthOrderBook.Asks);
                             Debug.Assert(volumePnL?.Volume != null);
                             Debug.Assert(volumePnL?.PnL != null);
@@ -180,8 +178,6 @@ namespace Lykke.Service.ArbitrageDetector.Services
                         if (synthOrderBook.BestBid?.Price > target.BestAsk?.Price)
                         {
                             spread = Arbitrage.GetSpread(synthOrderBook.BestBid.Value.Price, target.BestAsk.Value.Price);
-                            if (spread >= 0)
-                                continue;
                             var volumePnL = Arbitrage.GetArbitrageVolumePnL(synthOrderBook.Bids, target.Asks);
                             Debug.Assert(volumePnL?.Volume != null);
                             Debug.Assert(volumePnL?.PnL != null);
